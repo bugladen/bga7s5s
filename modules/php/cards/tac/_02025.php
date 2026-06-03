@@ -129,7 +129,7 @@ class _02025 extends Scheme implements IHasActions
                 throw new UserException($game->translate("Location not found"));
             }
 
-            $renownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $renownEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($renownEvent);
             $game->theah->queueEvent($renownEvent);
 
@@ -152,7 +152,7 @@ class _02025 extends Scheme implements IHasActions
 
             $opponentId = $game->getActivePlayerId();
 
-            $renownEvent = EventFactory::createReknownAddedToLocationEvent($opponentId, $location, 1, $this->getInjectCode());
+            $renownEvent = EventFactory::createRenownAddedToLocationEvent($opponentId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($renownEvent);
             $game->theah->queueEvent($renownEvent);
 

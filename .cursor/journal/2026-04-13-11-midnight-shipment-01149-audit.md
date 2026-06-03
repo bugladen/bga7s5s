@@ -6,7 +6,7 @@
 
 ## Scheme Resolution - OK
 The `_01149.php` handleEvent correctly:
-- Adds Renown to Docks and Grand Bazaar via two `createReknownAddedToLocationEvent` calls
+- Adds Renown to Docks and Grand Bazaar via two `createRenownAddedToLocationEvent` calls
 - Adds a City Card to Docks via `createCityCardAddedToLocationEvent`
 
 ## City Action Availability - OK

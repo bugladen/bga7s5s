@@ -192,7 +192,7 @@ class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $removeRenown->batchId = $batchId;
                 $game->theah->queueEvent($removeRenown);
 
-                $addRenown = EventFactory::createReknownAddedToLocationEvent($performer->ControllerId, $location, 1, $owner->getInjectCode(), $isMove = true);
+                $addRenown = EventFactory::createRenownAddedToLocationEvent($performer->ControllerId, $location, 1, $owner->getInjectCode(), $isMove = true);
                 $addRenown->batchId = $batchId;
                 $game->theah->queueEvent($addRenown);
             }

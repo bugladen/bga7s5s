@@ -6,7 +6,7 @@
 **Reaction:** At the end of High Drama, if there are no available Mercenaries and attachments • Gain a Renown.
 
 ## Resolve — Add Renown to Forum: Correct
-`handleEvent` on `EventResolveScheme` queues `createReknownAddedToLocationEvent` for `LOCATION_CITY_FORUM` with amount 1. Straightforward.
+`handleEvent` on `EventResolveScheme` queues `createRenownAddedToLocationEvent` for `LOCATION_CITY_FORUM` with amount 1. Straightforward.
 
 ## Resolve — Mercenary from Discard to Deck: One Bug Fixed
 

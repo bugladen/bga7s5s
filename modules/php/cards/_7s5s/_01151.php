@@ -154,7 +154,7 @@ class _01151 extends Scheme
             $this->locations[] = $location;
             $this->IsUpdated = true;
 
-            $renownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $renownEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $renownEvent->priority = Event::HIGHEST_PRIORITY;
             $game->theah->eventCheck($renownEvent);
             $game->theah->queueEvent($renownEvent);

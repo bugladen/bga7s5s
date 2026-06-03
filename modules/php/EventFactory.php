@@ -1019,7 +1019,7 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createReknownAddedToLocationEvent(int $playerId, string $location, int $amount, string $description, bool $isMove = false)
+    public static function createRenownAddedToLocationEvent(int $playerId, string $location, int $amount, string $description, bool $isMove = false)
     {
         $event = self::createEvent(Events::ReknownAddedToLocation);
         if ($event instanceof EventReknownAddedToLocation) 

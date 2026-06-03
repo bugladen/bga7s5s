@@ -60,10 +60,10 @@ class _01147 extends Scheme implements IHasActions
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
-            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
             $attachment = $game->revealFirstCardTypeFromCityDeck($event->playerId, "Attachment", $this->Id);

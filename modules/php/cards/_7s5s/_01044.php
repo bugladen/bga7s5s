@@ -60,10 +60,10 @@ class _01044 extends Scheme implements IHasActions
                 "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
             ]);
 
-            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 1, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
             
-            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
             //Transition to the state where player can choose an item out of their discard pile

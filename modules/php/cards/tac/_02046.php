@@ -116,7 +116,7 @@ class _02046 extends Scheme
         {
             $location = $ids[0];
 
-            $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $reknownEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
 
@@ -139,7 +139,7 @@ class _02046 extends Scheme
                 throw new UserException($game->translate("You must choose a different location."));
             }
 
-            $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $reknownEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
 

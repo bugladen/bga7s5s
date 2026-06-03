@@ -70,7 +70,7 @@ class _02014 extends Scheme implements IHasActions
         {
             if ($id == 1)
             {
-                $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+                $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
@@ -102,7 +102,7 @@ class _02014 extends Scheme implements IHasActions
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode(), $isMove = true);
+            $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode(), $isMove = true);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 

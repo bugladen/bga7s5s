@@ -94,7 +94,7 @@ class _02015 extends Scheme
                     throw new UserException(sprintf($game->translate("%s has/have Renown."), $location->Name));
                 }
 
-                $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $id, 1, $this->getInjectCode());
+                $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $id, 1, $this->getInjectCode());
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
             }

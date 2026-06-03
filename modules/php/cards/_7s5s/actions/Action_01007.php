@@ -96,7 +96,7 @@ class Action_01007 extends CharacterAction
             $reknownRemovedEvent = EventFactory::createRenownRemovedFromLocationEvent($owner->ControllerId, $location->Name, 1, $owner->getInjectCode());
             $game->theah->queueEvent($reknownRemovedEvent);
 
-            $reknownAddedEvent = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $owner->Location, 1, $owner->getInjectCode(), $isMove = true);
+            $reknownAddedEvent = EventFactory::createRenownAddedToLocationEvent($owner->ControllerId, $owner->Location, 1, $owner->getInjectCode(), $isMove = true);
             $game->theah->queueEvent($reknownAddedEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

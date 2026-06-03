@@ -63,7 +63,7 @@ class _02053 extends Scheme implements IHasReactions
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $addEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 1, $this->getInjectCode());
+            $addEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 1, $this->getInjectCode());
             $event->theah->queueEvent($addEvent);
         }
 

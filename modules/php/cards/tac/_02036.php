@@ -53,7 +53,7 @@ class _02036 extends Scheme implements IHasActions
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 2, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_DOCKS, 2, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
         }
     }

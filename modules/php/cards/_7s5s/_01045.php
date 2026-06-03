@@ -74,7 +74,7 @@ class _01045 extends Scheme implements IHasReactions
                 "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
             ]);
 
-            $reknown = EventFactory::createReknownAddedToLocationEvent($event->playerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($event->playerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
             //Transition to the state where player can choose a mercenary out of the City Deck discard pile

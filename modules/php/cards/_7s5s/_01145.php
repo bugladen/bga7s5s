@@ -117,7 +117,7 @@ class _01145 extends Scheme
             $game->theah->eventCheck($playerRemoved);
             $game->theah->queueEvent($playerRemoved);
     
-            $playerAdded = EventFactory::createReknownAddedToLocationEvent($playerId, $toLocation, 1, $this->getInjectCode(), $isMove = true);
+            $playerAdded = EventFactory::createRenownAddedToLocationEvent($playerId, $toLocation, 1, $this->getInjectCode(), $isMove = true);
             $game->theah->eventCheck($playerAdded);
             $game->theah->queueEvent($playerAdded);
 
@@ -152,7 +152,7 @@ class _01145 extends Scheme
 
                 if ($amount == 0)
                 {
-                    $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location->Name, 1, $this->getInjectCode());
+                    $reknownEvent = EventFactory::createRenownAddedToLocationEvent($playerId, $location->Name, 1, $this->getInjectCode());
                     $game->theah->queueEvent($reknownEvent);
                 }
             }

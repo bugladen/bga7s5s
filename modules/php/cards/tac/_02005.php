@@ -156,7 +156,7 @@ class _02005 extends Scheme
         {
             $location = $ids[0];
 
-            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
@@ -183,7 +183,7 @@ class _02005 extends Scheme
                 throw new UserException(sprintf($game->translate("%s already has Renown."), $location));
             }
 
-            $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $reknownEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
 

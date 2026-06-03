@@ -76,7 +76,7 @@ class Reaction_01118 extends CardReaction
             $game->theah->queueEvent($reknownRemovedEvent);
             $game->theah->eventCheck($reknownRemovedEvent);
 
-            $reknownAddedEvent = EventFactory::createReknownAddedToLocationEvent($elina->ControllerId, $elina->Location, 1, $elina->getInjectCode(), $isMove = true);
+            $reknownAddedEvent = EventFactory::createRenownAddedToLocationEvent($elina->ControllerId, $elina->Location, 1, $elina->getInjectCode(), $isMove = true);
             $game->theah->eventCheck($reknownAddedEvent);
             $game->theah->queueEvent($reknownAddedEvent);
 
