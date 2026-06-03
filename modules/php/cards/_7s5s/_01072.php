@@ -94,7 +94,7 @@ class _01072 extends Scheme implements IHasActions
                 throw new UserException(sprintf($game->translate("%s already has Renown."), $location));
             }
 
-            $reknownEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $reknownEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($reknownEvent);
             $game->theah->queueEvent($reknownEvent);
     

@@ -125,7 +125,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
-                $event = EventFactory::createReknownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $odette->getInjectCode(), $isMove = true);
+                $event = EventFactory::createRenownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $odette->getInjectCode(), $isMove = true);
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 

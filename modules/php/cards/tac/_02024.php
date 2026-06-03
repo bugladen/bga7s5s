@@ -149,7 +149,7 @@ class _02024 extends Scheme
             $event = EventFactory::createReknownRemovedFromCardEvent($this->ControllerId, $this->Id, 1);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location->Name, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location->Name, 1, $this->getInjectCode());
             $game->theah->queueEvent($event);
 
             $game->notify->all("message", clienttranslate('${scheme_inject_code}: Renown has been moved to Location ${location_name}.'), [

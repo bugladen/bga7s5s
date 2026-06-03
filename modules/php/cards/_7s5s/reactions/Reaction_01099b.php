@@ -70,7 +70,7 @@ class Reaction_01099b extends CardReaction
         {
             $locationName = str_replace("addReknown-", "", $reactionId);
             $owner = $this->getOwningCard($game->theah);
-            $event = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $locationName, 1, $owner->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($owner->ControllerId, $locationName, 1, $owner->getInjectCode());
             $game->theah->queueEvent($event);
 
             $game->notify->all("message", clienttranslate('${player_name} uses ${reaction_inject_code} to add a Renown to ${location_name}.'), [

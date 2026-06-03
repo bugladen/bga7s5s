@@ -122,7 +122,7 @@ class _01125 extends Scheme
             $location = $ids[0];
 
             $playerId = $game->getActivePlayerId();
-            $event = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
@@ -165,7 +165,7 @@ class _01125 extends Scheme
             $location = $ids[0];
 
             $playerId = $game->getActivePlayerId();
-            $event = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     

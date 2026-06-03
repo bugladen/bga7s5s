@@ -124,7 +124,7 @@ class _01152 extends Scheme implements IHasActions
         {
             $location = $ids[0];
         
-            $event = EventFactory::createReknownAddedToLocationEvent($game->getActivePlayerId(), $location, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($game->getActivePlayerId(), $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
@@ -154,7 +154,7 @@ class _01152 extends Scheme implements IHasActions
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);    
 
-            $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode(), $isMove = true);
+            $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode(), $isMove = true);
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     

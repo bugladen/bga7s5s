@@ -51,7 +51,7 @@ class _01150 extends Scheme
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
             $players = $game->loadPlayersBasicInfos();
@@ -139,7 +139,7 @@ class _01150 extends Scheme
             $removeEvent->priority = Event::HIGH_PRIORITY;
             $game->theah->eventCheck($removeEvent);
 
-            $addEvent = EventFactory::createReknownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName, $isMove = true);
+            $addEvent = EventFactory::createRenownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName, $isMove = true);
             $addEvent->priority = Event::HIGH_PRIORITY;
             $game->theah->eventCheck($addEvent);
 

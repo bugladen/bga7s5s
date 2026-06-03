@@ -145,7 +145,7 @@ class _02045 extends Scheme implements IHasActions
             }
 
             foreach ($locations as $location) {
-                $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+                $reknownEvent = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
                 $game->theah->eventCheck($reknownEvent);
             }
 
@@ -166,7 +166,7 @@ class _02045 extends Scheme implements IHasActions
             ]);
 
             foreach ($locations as $location) {
-                $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+                $reknownEvent = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
                 $game->theah->queueEvent($reknownEvent);
             }
 

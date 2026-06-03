@@ -127,7 +127,7 @@ class _02035 extends Scheme implements IHasActions
                     throw new UserException($game->translate("Location not found"));
                 }
 
-                $event = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, $id, 1, $this->getInjectCode());
+                $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $id, 1, $this->getInjectCode());
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
             }

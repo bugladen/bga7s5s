@@ -5,7 +5,7 @@
 - **City Action**: Engage your performer's attachment and target an opposing character with equal or fewer attachments • Engage them or move them Home.
 
 ## Scheme Effect — Renown + Discard Recovery
-Renown addition to Docks and Bazaar is clean — two `createReknownAddedToLocationEvent` calls with the correct location constants.
+Renown addition to Docks and Bazaar is clean — two `createRenownAddedToLocationEvent` calls with the correct location constants.
 
 The discard-to-hand transition uses `argsEmpty` + client-side JS filtering (`card.type === 'Attachment'`). The pass handler correctly checks `instanceof Attachment` to prevent passing when valid targets exist.
 

@@ -116,7 +116,7 @@ class Reaction_02050 extends RiskReaction
             $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($owner->ControllerId, $this->TriggeredLocation, 1, $owner->getInjectCode());
             $event->theah->queueEvent($removeEvent);
 
-            $addEvent = EventFactory::createReknownAddedToLocationEvent($owner->ControllerId, $performer->Location, 1, $owner->getInjectCode(), true);
+            $addEvent = EventFactory::createRenownAddedToLocationEvent($owner->ControllerId, $performer->Location, 1, $owner->getInjectCode(), true);
             $event->theah->queueEvent($addEvent);
 
             $event->theah->game->notify->all("message", clienttranslate('${reaction_inject_code}: Pressure successful! One Renown moved from ${from_location} to ${to_location}.'), [

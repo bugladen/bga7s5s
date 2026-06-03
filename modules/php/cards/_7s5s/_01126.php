@@ -192,7 +192,7 @@ class _01126 extends Scheme
     
             //Check to be sure renown can be added to locations
             foreach ($locations as $location) {
-                $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+                $reknownEvent = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
                 $game->theah->eventCheck($reknownEvent);
             }
     
@@ -214,7 +214,7 @@ class _01126 extends Scheme
             ]);
 
             foreach ($locations as $location) {
-                $reknownEvent = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+                $reknownEvent = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
                 $game->theah->queueEvent($reknownEvent);
             }
     

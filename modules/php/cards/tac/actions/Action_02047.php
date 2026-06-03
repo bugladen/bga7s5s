@@ -97,7 +97,7 @@ class Action_02047 extends AttachmentAction implements IAbilityThatTargetsCards
 
             if ($isArtifact)
             {
-                $reknownEvent = EventFactory::createReknownAddedToLocationEvent(
+                $reknownEvent = EventFactory::createRenownAddedToLocationEvent(
                     $owner->ControllerId,
                     $owner->Location,
                     1,

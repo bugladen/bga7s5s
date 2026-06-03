@@ -84,7 +84,7 @@ class _01144 extends Scheme implements IHasReactions
             $location = $ids[0];
             $activePlayerId = $game->getActivePlayerId();
     
-            $event = EventFactory::createReknownAddedToLocationEvent($activePlayerId, $location, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($activePlayerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
@@ -124,7 +124,7 @@ class _01144 extends Scheme implements IHasReactions
         {
             $location = $ids[0];
     
-            $event = EventFactory::createReknownAddedToLocationEvent($game->getActivePlayerId(), $location, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($game->getActivePlayerId(), $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
             

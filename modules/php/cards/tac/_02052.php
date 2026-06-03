@@ -48,7 +48,7 @@ class _02052 extends Scheme
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $addEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+            $addEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
             $event->theah->queueEvent($addEvent);
 
             $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "02052");
@@ -151,7 +151,7 @@ class _02052 extends Scheme
             $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($removeEvent);
 
-            $addEvent = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode(), $isMove = true);
+            $addEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode(), $isMove = true);
             $game->theah->eventCheck($addEvent);
 
             $game->theah->queueEvent($removeEvent);

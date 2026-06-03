@@ -82,7 +82,7 @@ class _01143 extends Scheme implements IHasActions
                 "player_name" => $event->playerName,
             ]);
 
-            $reknown = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+            $reknown = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($reknown);
 
             //Transition to the state where player can choose any location.
@@ -151,7 +151,7 @@ class _01143 extends Scheme implements IHasActions
             $location = $ids[0];
             $playerId = $game->getActivePlayerId();
     
-            $event = EventFactory::createReknownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
+            $event = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
