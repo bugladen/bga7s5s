@@ -63,10 +63,10 @@ class _03018 extends Scheme implements IHasReactions
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 
-            $bazaar = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+            $bazaar = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
             $event->theah->queueEvent($bazaar);
 
-            $forum = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+            $forum = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($forum);
 
             $this->syncAllTechniques($event->theah);

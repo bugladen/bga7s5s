@@ -56,10 +56,10 @@ class _03005 extends Scheme implements IHasReactions
                 "player_name" => $event->theah->game->getPlayerNameById($event->playerId),
             ]);
 
-            $bazaar = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+            $bazaar = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
             $event->theah->queueEvent($bazaar);
 
-            $forum = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+            $forum = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
             $event->theah->queueEvent($forum);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, "03005");

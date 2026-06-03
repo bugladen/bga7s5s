@@ -77,7 +77,7 @@ Read each clause of the printed Text and classify it before writing code. The cl
 
 | Card phrase | Pattern |
 |---|---|
-| **"Add a Renown to [Location]"** / **"Move a Renown from X to Y"** | Pattern A — resolve via `EventResolveScheme`. Queue `createReknownAddedToLocationEvent` / `createReknownRemovedFromLocationEvent`. No state class if the choice is forced; add a state class if the player picks the source/target. |
+| **"Add a Renown to [Location]"** / **"Move a Renown from X to Y"** | Pattern A — resolve via `EventResolveScheme`. Queue `createRenownAddedToLocationEvent` / `createRenownRemovedFromLocationEvent`. No state class if the choice is forced; add a state class if the player picks the source/target. |
 | **"When this scheme is revealed, …"** | Pattern B — When-Revealed effect. Override `hasWhenRevealedEffect()` to `true` AND handle `EventCardWhenRevealedEffect` in `handleEvent`. The When-Revealed fires *before* the resolve (and before other schemes' resolves), per card text. |
 | **"Put a card from your discard into your hand"** / **"Search your discard for X"** | Pattern A resolve with a transition to a discard-pick state. New state class + JS wiring (chooseList). Reference: `_01044`, `_03005`. |
 | **"Add a Renown to a city location"** (player choice) | Pattern A resolve with a transition to a location-pick state. JS uses `makeCityLocationSelectable` / `onCityLocationsSelected`. Reference: `_01071`, `_01072`, `_02046`. |
@@ -109,10 +109,10 @@ public function handleEvent(Event $event)
             "scheme_inject_code" => $this->getInjectCode(),
         ]);
 
-        $event1 = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+        $event1 = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
         $event->theah->queueEvent($event1);
 
-        $event2 = EventFactory::createReknownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+        $event2 = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
         $event->theah->queueEvent($event2);
     }
 }
@@ -126,7 +126,7 @@ Reference: `_02004` (Crash the Party).
 if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
 {
     // Queue the automatic part first.
-    $event->theah->queueEvent(EventFactory::createReknownAddedToLocationEvent(
+    $event->theah->queueEvent(EventFactory::createRenownAddedToLocationEvent(
         $this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode()));
 
     // Then queue a transition into the player-choice state.
@@ -238,7 +238,7 @@ public function actFromCardWithIds(Game $game, int $state, string $stateName, st
     {
         $locationName = $ids[0];
         // Re-validate the location is a city location, has Renown, etc.
-        // Queue createReknownAddedToLocationEvent / RemovedFromLocationEvent.
+        // Queue createRenownAddedToLocationEvent / RemovedFromLocationEvent.
         $game->gamestate->nextState();
     }
 }
@@ -719,7 +719,7 @@ A concrete worked example combining most patterns above. Card text:
 > **Reaction:** After your **Red Hand**'s challenge is refused • Claim that location.
 
 1. **Constructor.** `initializeFaction('Vodacce')`, set `Initiative = 91`, `PanacheModifier = -1`, Traits = Villainous + Duress. Both traits already in `TraitNames::$TraitsJson`.
-2. **Resolve.** `EventResolveScheme` handler queues `createReknownAddedToLocationEvent` for Bazaar and Forum, then a `createTransitionEvent($playerId, $this->Id, "03005")` with `MEDIUM_PRIORITY` to move into the discard-pick state.
+2. **Resolve.** `EventResolveScheme` handler queues `createRenownAddedToLocationEvent` for Bazaar and Forum, then a `createTransitionEvent($playerId, $this->Id, "03005")` with `MEDIUM_PRIORITY` to move into the discard-pick state.
 3. **Discard-pick state.** New GameState class `State_planningPhaseResolveSchemes03005` in `States/faf/`. `#[PossibleAction]` for `actFromCardWithId(int)` and `actFromCardPass()`. `zombie()` calls `nextState()`. **No `ZombieTrait.php` edit.**
 4. **State constant.** `States::PLANNING_PHASE_RESOLVE_SCHEMES_03005 = 2603005`.
 5. **Transition map.** `"03005" => States::PLANNING_PHASE_RESOLVE_SCHEMES_03005` in `states.inc.php`'s `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`.
@@ -760,11 +760,11 @@ Full implementation lives at `modules/php/cards/faf/_03005.php`, `modules/php/ca
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${scheme_inject_code}` placeholder).
 
 Event factories you'll likely need:
-- `createReknownAddedToLocationEvent($playerId, $location, $count, $reason, $isMove = false)`
+- `createRenownAddedToLocationEvent($playerId, $location, $count, $reason, $isMove = false)`
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createCharacterBeingHealedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createCardDrawnEvent($playerId, $reason)` — for "draw a card" clauses.
-- `createReknownRemovedFromLocationEvent($playerId, $location, $count, $reason)`
+- `createRenownRemovedFromLocationEvent($playerId, $location, $count, $reason)`
 - `createCardRemovedFromPlayerDiscardPileEvent($playerId, $cardId)` (notification-only)
 - `createCardAddedToHandEvent($playerId, $cardId)` (does the actual move)
 - `createLocationClaimedEvent($playerId, ?int $performerId, $location)`

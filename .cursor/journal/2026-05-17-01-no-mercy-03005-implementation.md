@@ -32,7 +32,7 @@ the older inline `states.7s5s.php`-based states are dispatched there).
 ## Resolve flow — two Renowns + transition
 
 Modeled after `_01044` (Armed and Marshaled): the resolve handler queues
-the two `createReknownAddedToLocationEvent` calls (Bazaar + Forum) then
+the two `createRenownAddedToLocationEvent` calls (Bazaar + Forum) then
 queues a `createTransitionEvent` to move into the discard-pick state.
 The Renown adds resolve first because they're queued first; the
 transition has `MEDIUM_PRIORITY` so reaction-triggers don't preempt it.
