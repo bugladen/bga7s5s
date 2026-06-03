@@ -1561,7 +1561,7 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 
 | File | What it demonstrates |
 |---|---|
-| `modules/php/cards/_7s5s/_01007.php` (Aldo Bussotti) | **Canonical regular Character.** `initializeFaction`, `handleEvent` listening on `EventCardMoved` / `EventReknownAddedToLocation` / `EventReknownRemovedFromLocation` to keep Influence in sync with current-location Renown, paired with a one-step City Action. |
+| `modules/php/cards/_7s5s/_01007.php` (Aldo Bussotti) | **Canonical regular Character.** `initializeFaction`, `handleEvent` listening on `EventCardMoved` / `EventRenownAddedToLocation` / `EventReknownRemovedFromLocation` to keep Influence in sync with current-location Renown, paired with a one-step City Action. |
 | `modules/php/cards/_7s5s/_01006.php` (Don Constanzo Scarpa) | **Leader with setup-time reaction.** `EventTableSetup` flow (reveal a Red Hand Thug from your deck), `EventPressureOccuring` listener that flips a pressure-type global, paired with multi-step setup states. |
 | `modules/php/cards/_7s5s/_01089.php` (Soline el Gato) | **Leader with passive duel hook + City Reaction.** `EventDuelStarted` / `EventDuelEnd` / `EventDefenderSwapped` / `EventChallengerSwapped` keep the affected character's Finesse modified; `Reaction_01089` adds a button-based "move to adjacent location after an Action resolves" prompt. |
 | `modules/php/cards/_7s5s/_01116.php` (Yevgeni) | **Leader with passive duel-stat hook + paired Reactions.** Demonstrates `EventDuelCalculateCombatCardStats`, `actorId == $this->Id` checks, and multi-reaction wiring. |

@@ -37,7 +37,7 @@ Embargo (`_01098`) — same exact "Add a Renown to two different locations"
 text — it uses a **single** state and the framework helper
 `actCityLocationsForReknownSelected(string $locationsJson)`. The JS sets
 `numberOfCityLocationsSelectable = 2`, the player picks both at once, and
-the helper iterates and queues a `ReknownAddedToLocation` per name.
+the helper iterates and queues a `RenownAddedToLocation` per name.
 
 WHY this over the `_02046` two-step pattern: simpler, fewer states, and
 the "two different" enforcement happens client-side (the city-location
