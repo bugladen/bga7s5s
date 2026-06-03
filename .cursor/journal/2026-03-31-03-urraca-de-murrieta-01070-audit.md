@@ -9,7 +9,7 @@
 
 This is the exact same class of bug as the missing `isAvailable()` check from the 01066 audit — a guard condition that every other reaction in the codebase includes was simply omitted here. Pattern: `Reaction_01016`, `Reaction_01124`, `Reaction_01116b` all check `$event->playerId == $owner->ControllerId` for "you" triggers.
 
-No infinite loop risk: `setUsed(true)` is called in `performReaction` before the queued `EventReknownAddedToLocation` fires, so `isAvailable()` blocks the re-trigger.
+No infinite loop risk: `setUsed(true)` is called in `performReaction` before the queued `EventRenownAddedToLocation` fires, so `isAvailable()` blocks the re-trigger.
 
 ## Typo Fix
 

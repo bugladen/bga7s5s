@@ -20,14 +20,14 @@ WHY this is wrong: `EventRenownRemovedFromLocation` has `runEventHubAfterCards =
 
 `updateInfluence` sets NewInfluence = base (1) + count. Passing `-$location->Renown` gives `1 - newTotal`, which is completely wrong. Example: location had 3 renown, 1 removed → Renown is now 2 → code computed 1 + (-2) = -1 → clamped to 0. Should be 1 + 2 = 3.
 
-The `EventReknownAddedToLocation` handler on line 85 does the same thing correctly — passes `$location->Renown` (positive) — so this was just a sign error on the removed handler.
+The `EventRenownAddedToLocation` handler on line 85 does the same thing correctly — passes `$location->Renown` (positive) — so this was just a sign error on the removed handler.
 
 Fixed by removing the negation: `$this->updateInfluence($event->theah, $location->Renown)`.
 
 ## Verified Correct
 
 - **Passive influence tracking** (`EventCardMoved`): When Aldo moves to PLAYER_HOME, influence resets to base (1). When he moves to a city location, influence = base + location's renown. Both correct. `EventCardMoved` has `runEventHubAfterCards = true` (card handlers fire first), but this doesn't matter since we're reading the destination's renown which isn't changed by the move.
-- **Passive influence tracking** (`EventReknownAddedToLocation`): When renown is added at Aldo's location, influence updates to base + new total. Correct — EventHub increments first, then this handler reads the updated value.
+- **Passive influence tracking** (`EventRenownAddedToLocation`): When renown is added at Aldo's location, influence updates to base + new total. Correct — EventHub increments first, then this handler reads the updated value.
 - **Action availability** (`Action_01007::isAvailableToPlayer`): Checks for controlled locations (excluding Aldo's current location) with Renown > 0. Matches "a location you control."
 - **Action args** (`getArgsFromAction`): Returns same filtered locations for UI. Consistent.
 - **Action execution** (`actFromActionWithIds`): Validates control and renown, removes 1 from chosen location, adds 1 to Aldo's location. Matches "Move a Renown from a location you control to this one." Events queued in correct order (remove then add).
@@ -36,4 +36,4 @@ Fixed by removing the negation: `$this->updateInfluence($event->theah, $location
 
 ## Note on event ordering within the action
 
-When Aldo's action fires: remove event is at a different location (not Aldo's), so the `EventRenownRemovedFromLocation` handler doesn't trigger (location check fails). The add event IS at Aldo's location, so `EventReknownAddedToLocation` handler fires and correctly updates influence. No double-update issue.
+When Aldo's action fires: remove event is at a different location (not Aldo's), so the `EventRenownRemovedFromLocation` handler doesn't trigger (location check fails). The add event IS at Aldo's location, so `EventRenownAddedToLocation` handler fires and correctly updates influence. No double-update issue.

@@ -67,7 +67,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseBegin;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlunderPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
@@ -1190,7 +1190,7 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
-            case $event instanceof EventReknownAddedToLocation:
+            case $event instanceof EventRenownAddedToLocation:
                 //Update the reknown for the location in the database
                 $reknown = $this->game->getRenownForLocation($event->location) + $event->amount;
                 $this->game->setReknownForLocation($event->location, $reknown);
@@ -1198,7 +1198,7 @@ trait EventHub
                 $this->cityLocations[$event->location]->Renown += $event->amount;
 
                 // Notify players that the player has lost reknown
-                $this->game->notify->all("reknownAddedToLocation", clienttranslate('${amount} Renown ADDED to ${location} ${source}.'), [
+                $this->game->notify->all("renownAddedToLocation", clienttranslate('${amount} Renown ADDED to ${location} ${source}.'), [
                     'i18n' => ['location'],
                     "location" => $event->location,
                     "amount" => $event->amount,

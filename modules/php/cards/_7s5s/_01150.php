@@ -9,7 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 
 class _01150 extends Scheme
@@ -67,7 +67,7 @@ class _01150 extends Scheme
         }
 
         //When a player adds Reknown to The Forum, they may intervene this turn
-        if ($event instanceof EventReknownAddedToLocation && $this->Location == Game::LOCATION_PLAYER_HOME && $event->location == Game::LOCATION_CITY_FORUM) 
+        if ($event instanceof EventRenownAddedToLocation && $this->Location == Game::LOCATION_PLAYER_HOME && $event->location == Game::LOCATION_CITY_FORUM) 
         {
             $game = $event->theah->game;
             if ( $event->playerId != 0 && ! in_array($event->playerId, $this->interveneList)) {

@@ -11,7 +11,7 @@
 - `modules/php/cards/_7s5s/_01150.php` (main class — Scheme)
 - `modules/php/cards/Scheme.php` (parent class)
 - `modules/php/EventFactory.php` (createRenownAddedToLocationEvent, createRenownRemovedFromLocationEvent)
-- `modules/php/theah/events/EventReknownAddedToLocation.php` (event class)
+- `modules/php/theah/events/EventRenownAddedToLocation.php` (event class)
 - `modules/php/theah/events/EventCharacterIntervened.php` (event class)
 - `modules/php/theah/EventHub.php` (event processing for both events)
 - `modules/php/theah/Theah.php` (eventCheck dispatch)
@@ -39,7 +39,7 @@ Fixed to `$this->ControllerId`. This matches the pattern in `_01151` (line 156) 
 ### Resolution Effect (Above the BAR)
 
 **"Add a Renown to [The Forums]."**
-- `EventResolveScheme` handler creates `EventReknownAddedToLocation` with `ControllerId`, `LOCATION_CITY_FORUM`, amount 1. ✅
+- `EventResolveScheme` handler creates `EventRenownAddedToLocation` with `ControllerId`, `LOCATION_CITY_FORUM`, amount 1. ✅
 
 **"Then, each opponent may move a Renown from any location to [The Forums]."**
 - Iterates all players, skips controller, creates transition events to state 01150. ✅
@@ -51,9 +51,9 @@ Fixed to `$this->ControllerId`. This matches the pattern in `_01151` (line 156) 
 ### Ongoing Effect (Below the BAR)
 
 **Intervene tracking:**
-- Listens for ALL `EventReknownAddedToLocation` at `LOCATION_CITY_FORUM` while scheme is at `LOCATION_PLAYER_HOME`. ✅
+- Listens for ALL `EventRenownAddedToLocation` at `LOCATION_CITY_FORUM` while scheme is at `LOCATION_PLAYER_HOME`. ✅
 - Tracks `playerId` in `interveneList` (skips `playerId == 0`). ✅
-- Covers both adds and moves — a "move" fires an `EventReknownAddedToLocation` with `isMove = true`, which the handler doesn't distinguish from a plain add. Correct per card text. ✅
+- Covers both adds and moves — a "move" fires an `EventRenownAddedToLocation` with `isMove = true`, which the handler doesn't distinguish from a plain add. Correct per card text. ✅
 
 **Intervene restriction (`eventCheck`):**
 - Triggers on `EventCharacterIntervened` while at `LOCATION_PLAYER_HOME`. ✅
@@ -67,7 +67,7 @@ Fixed to `$this->ControllerId`. This matches the pattern in `_01151` (line 156) 
 **Scheme lifecycle timing:**
 - Scheme moves to `LOCATION_PLAYER_HOME` during `stPlanningPhaseApproachCardsPlayed` (before resolution). ✅
 - `EventResolveScheme` fires later in the same phase. ✅
-- The `EventReknownAddedToLocation` from resolution is queued and fires while scheme is at home → controller gets added to intervene list. ✅
+- The `EventRenownAddedToLocation` from resolution is queued and fires while scheme is at home → controller gets added to intervene list. ✅
 - Opponent transition events are queued after the Renown event (lower priority), so opponents' moves also trigger tracking. ✅
 
 ### Zombie handling

@@ -6,7 +6,7 @@
 
 ## What was correct
 
-- **Resolution effect**: `handleEvent` correctly transitions to state 02015 on `EventResolveScheme`. The state lets the player pick exactly 2 locations. Server validates count==2, validates each has Reknown==0, then queues `EventReknownAddedToLocation` for each.
+- **Resolution effect**: `handleEvent` correctly transitions to state 02015 on `EventResolveScheme`. The state lets the player pick exactly 2 locations. Server validates count==2, validates each has Reknown==0, then queues `EventRenownAddedToLocation` for each.
 - **Intervention prevention**: `eventCheck` correctly catches `EventCharacterIntervened` when the card is in `LOCATION_PLAYER_HOME`. Gets the intervening character via `$event->newTargetId`, checks their city location, blocks if `!$location->isControlled()`. This applies to ALL characters regardless of owner, which matches the card text (no owner restriction).
 - **JS entering state**: Correctly sets `numberOfCityLocationsSelectable = 2` and filters to only locations with `reknown == 0`.
 - **JS leaving state**: Properly resets city locations.

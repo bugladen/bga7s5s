@@ -5,7 +5,7 @@ A game ended planning phase with `LOCATION_CITY_GOVERNORS_GARDEN` at **-2 Renown
 
 ## Root cause — event queue ordering
 
-`_01150::handleEvent` queues one `EventTransition` per opponent at `MEDIUM_PRIORITY` (`_01150.php:60-66`). Each transition routes the opponent to state `PLANNING_PHASE_RESOLVE_SCHEMES_01150`, where they pick a location via `actFromCardWithIds`. That handler then queued `EventRenownRemovedFromLocation` + `EventReknownAddedToLocation` *also at MEDIUM_PRIORITY* (the default in `Event.php:27`).
+`_01150::handleEvent` queues one `EventTransition` per opponent at `MEDIUM_PRIORITY` (`_01150.php:60-66`). Each transition routes the opponent to state `PLANNING_PHASE_RESOLVE_SCHEMES_01150`, where they pick a location via `actFromCardWithIds`. That handler then queued `EventRenownRemovedFromLocation` + `EventRenownAddedToLocation` *also at MEDIUM_PRIORITY* (the default in `Event.php:27`).
 
 `DB.php:46` dequeues purely by `event_priority`. Within the same priority it's FIFO by `event_id`. And `Theah.php:262-288` shows that processing an `EventTransition` returns from `runEvents` immediately.
 

@@ -82,7 +82,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRangedAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
@@ -1021,8 +1021,8 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
 
     public static function createRenownAddedToLocationEvent(int $playerId, string $location, int $amount, string $description, bool $isMove = false)
     {
-        $event = self::createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation) 
+        $event = self::createEvent(Events::RenownAddedToLocation);
+        if ($event instanceof EventRenownAddedToLocation) 
         {
             $event->playerId = $playerId;
             $event->location = $location;

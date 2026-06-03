@@ -19,7 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 
 trait DebugTrait
@@ -160,8 +160,8 @@ trait DebugTrait
     #[Debug(reload: true)] 
     public function debug_AddReknownToLocation(string $location, int $amount)
     {
-        $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-        if ($event instanceof EventReknownAddedToLocation)
+        $event = $this->theah->createEvent(Events::RenownAddedToLocation);
+        if ($event instanceof EventRenownAddedToLocation)
         {
             $event->location = $location;
             $event->amount = $amount;
