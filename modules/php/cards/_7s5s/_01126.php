@@ -12,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
@@ -57,7 +57,7 @@ class _01126 extends Scheme
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventReknownAddedToLocation) 
+        if ($event instanceof EventRenownAddedToLocation) 
         {
             if ($event->location == $this->ChosenLocation)
                 throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));    

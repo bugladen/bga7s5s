@@ -10,7 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -79,7 +79,7 @@ class _01007 extends Character implements IHasActions
             $this->updateInfluence($event->theah, $location->Renown);
         }
 
-        if ($event instanceof EventReknownAddedToLocation && $event->location == $this->Location)
+        if ($event instanceof EventRenownAddedToLocation && $event->location == $this->Location)
         {
             $location = $event->theah->getCityLocation($event->location);
             $this->updateInfluence($event->theah, $location->Renown);

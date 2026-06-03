@@ -16,7 +16,7 @@ Two-phase flow:
 - Removes all Renown (bypasses own eventCheck via `$reknown->source = $this->Name`)
 
 ## eventCheck Restrictions - OK
-- Blocks EventReknownAddedToLocation at ChosenLocation
+- Blocks EventRenownAddedToLocation at ChosenLocation
 - Blocks EventRenownRemovedFromLocation at ChosenLocation (except by itself)
 - Blocks EventLocationClaimed at ChosenLocation
 - No separate "renown moved" event type exists; add/remove coverage is sufficient

@@ -25,7 +25,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelActionsDone;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelPlayerGambled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPassed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 
 trait FrameworkActionsTrait
 {
@@ -184,8 +184,8 @@ trait FrameworkActionsTrait
         }
 
         foreach ($locations as $location) {
-            $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($event instanceof EventReknownAddedToLocation) {
+            $event = $this->theah->createEvent(Events::RenownAddedToLocation);
+            if ($event instanceof EventRenownAddedToLocation) {
                 $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;
@@ -194,8 +194,8 @@ trait FrameworkActionsTrait
         }
 
         foreach ($locations as $location) {
-            $event = $this->theah->createEvent(Events::ReknownAddedToLocation);
-            if ($event instanceof EventReknownAddedToLocation) {
+            $event = $this->theah->createEvent(Events::RenownAddedToLocation);
+            if ($event instanceof EventRenownAddedToLocation) {
                 $event->playerId = $this->getActivePlayerId();
                 $event->location = $location;
                 $event->amount = 1;

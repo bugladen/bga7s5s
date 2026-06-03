@@ -11,7 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -126,7 +126,7 @@ class _01071 extends Scheme implements IHasActions
             }
         }
 
-        if ($event instanceof EventReknownAddedToLocation && $this->Location == Game::LOCATION_PLAYER_HOME)
+        if ($event instanceof EventRenownAddedToLocation && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             // Do we have any Musketeers in that location?
             $characters = $event->theah->getCharactersAtLocation($event->location);

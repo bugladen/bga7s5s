@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-class EventReknownAddedToLocation extends Event
+class EventRenownAddedToLocation extends Event
 {
     public int $playerId;
     public string $location;

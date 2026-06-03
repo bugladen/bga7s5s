@@ -6,7 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01070 extends CardReaction
@@ -43,7 +43,7 @@ class Reaction_01070 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventReknownAddedToLocation && $this->isAvailable() && ! $event->isMove)
+        if ($event instanceof EventRenownAddedToLocation && $this->isAvailable() && ! $event->isMove)
         {
             $owner = $this->getOwningCard($event->theah);
             if ($event->playerId == $owner->ControllerId)

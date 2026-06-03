@@ -8,7 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -52,7 +52,7 @@ class Reaction_02050 extends RiskReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventReknownAddedToLocation && $this->isAvailable())
+        if ($event instanceof EventRenownAddedToLocation && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
