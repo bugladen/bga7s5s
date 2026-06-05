@@ -86,7 +86,14 @@ trait StatesTrait
     public function stHighDramaInPlayActionDispatch()
     {
         $this->theah->buildCity();
-        $playerId = (int)$this->getActivePlayerId();
+
+        // WHY: getActivePlayerId() can be stale here — if a reaction fired
+        // during the preceding confirm-events run, active player is still the
+        // reactor (runEvents' fallback only resets when current state.type ==
+        // ACTIVE_PLAYER, and the confirm-events state is type=game). Reset to
+        // CURRENT_PLAYER so EventActionTriggered carries the right player.
+        $playerId = (int)$this->globals->get(Game::CURRENT_PLAYER);
+        $this->gamestate->changeActivePlayer($playerId);
 
         $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
         $action = $this->theah->getInPlayActionById($actionId);
