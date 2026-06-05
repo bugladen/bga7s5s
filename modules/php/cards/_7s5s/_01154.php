@@ -20,6 +20,7 @@ class _01154 extends FactionAttachment implements IHasActions
         $this->Name = clienttranslate("Corpse Speak");
         $this->Image = "01154.jpg";
         $this->ExpansionName = "_7s5s";
+        $this->CardNumber = 154;
         $this->ExpansionNumber = 1;
         
         $this->ResolveModifier = 0;

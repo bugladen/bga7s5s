@@ -22,6 +22,7 @@ class _01153 extends FactionAttachment
         $this->Image = "01153.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 153;
         
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;

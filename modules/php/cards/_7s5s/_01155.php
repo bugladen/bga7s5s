@@ -27,6 +27,7 @@ class _01155 extends FactionAttachment implements IHasManeuvers, IHasTechniques,
         $this->Image = "01155.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 155;
         
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;
