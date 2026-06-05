@@ -299,6 +299,51 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    // Tighten card overlap in the floating hand so the row stays within the viewport
+    // when the player has too many cards to fit at the default 5px-gap spacing.
+    // The bga-cards lib sets --card-overlap on the element but the lib's CSS isn't
+    // loaded in this project, so we own the rule (see seventhseacityoffivesails.css
+    // — the `margin-left: calc(-1 * var(--card-overlap, 0px))` on non-first cards).
+    adjustHandCardOverlap: function() {
+        const handEl = $('factionHand');
+        if (!handEl) return;
+
+        // Mobile uses LineStock + horizontal scroll; this layout does not apply there.
+        const isMobile = window.innerWidth <= 768 || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
+        if (isMobile) return;
+
+        const cardCount = handEl.querySelectorAll('.bga-cards_card').length;
+        if (cardCount <= 1) {
+            handEl.style.removeProperty('--card-overlap');
+            return;
+        }
+
+        const cardWidth = Math.round(this.wholeCardWidth * 1.5);
+        const gap = 5; // matches `gap: 5px` on the hand container
+        // Target close to full viewport when overlap engages. The container has
+        // max-width: 90vw, but cards use overflow: visible and the hand uses
+        // justify-content: center — so the fan can extend past the container and
+        // stay centered on screen. Leaving ~30px each side for hover scale and
+        // any scrollbar.
+        const availableWidth = window.innerWidth - 60;
+
+        // With flex `gap` + `margin-left: -overlap` on every card after the first:
+        //   total = cardWidth + (N - 1) * (cardWidth + gap - overlap)
+        // Solve total ≤ available:
+        //   overlap ≥ cardWidth + gap - (available - cardWidth) / (N - 1)
+        const requiredOverlap = Math.ceil(cardWidth + gap - (availableWidth - cardWidth) / (cardCount - 1));
+
+        // Default to no overlap (preserves current look); only engage when needed.
+        // Cap so each card still shows ≥ 18px past its neighbor.
+        const overlap = Math.max(0, Math.min(requiredOverlap, cardWidth + gap - 18));
+
+        if (overlap > 0) {
+            handEl.style.setProperty('--card-overlap', `${overlap}px`);
+        } else {
+            handEl.style.removeProperty('--card-overlap');
+        }
+    },
+
     // Setup floating hand behavior based on placeholder visibility
     setupFloatingHand: function() {
         const wrapper = $('factionHand-wrapper');
@@ -315,6 +360,20 @@ return declare('seventhseacityoffivesails.utilities', null, {
             this.checkFloatingHand = () => {}; // No-op
             return;
         }
+
+        // Recompute overlap whenever cards enter/leave the hand. This catches the
+        // initial page-load case where bga-cards may not have finished placing cards
+        // in #factionHand by the time setupFloatingHand runs, as well as any later
+        // additions/removals we might miss from the notification handlers.
+        const handEl = $('factionHand');
+        if (handEl && typeof MutationObserver !== 'undefined') {
+            const observer = new MutationObserver(() => this.adjustHandCardOverlap());
+            observer.observe(handEl, { childList: true, subtree: true });
+        }
+
+        // Initial overlap fit (and again on next frame in case layout/cards weren't ready)
+        this.adjustHandCardOverlap();
+        requestAnimationFrame(() => this.adjustHandCardOverlap());
         
         // Track current floating state to avoid unnecessary DOM updates
         let isCurrentlyFloating = null;
@@ -384,12 +443,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.checkFloatingHand = () => {
             isCurrentlyFloating = null; // Reset state for immediate recalculation
             cooldownUntil = 0; // Clear cooldown
+            this.adjustHandCardOverlap();
             doCheck(true);
         };
-        
-        // Check on scroll and resize
+
+        // Resize affects available width AND floating state; scroll only affects floating state.
+        const onResize = () => {
+            this.adjustHandCardOverlap();
+            checkFloating();
+        };
         window.addEventListener('scroll', checkFloating, { passive: true });
-        window.addEventListener('resize', checkFloating, { passive: true });
+        window.addEventListener('resize', onResize, { passive: true });
         
         // Initial check
         doCheck(true);

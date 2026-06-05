@@ -1362,6 +1362,16 @@ body {
     overflow: visible !important;
 }
 
+/* Pull non-first cards leftward so the fan fits the viewport when the hand is large.
+   --card-overlap defaults to 0 (no overlap, current 5px gap remains) and is bumped up
+   by adjustHandCardOverlap() when the row would otherwise overflow. Mirrors what the
+   bga-cards hand-stock SCSS does, which we re-add here because this project doesn't
+   load that stylesheet. */
+#factionHand .bga-cards_card:not(:first-child),
+._7sfs-floating-hand-cards .bga-cards_card:not(:first-child) {
+    margin-left: calc(-1 * var(--card-overlap, 0px));
+}
+
 /* Only show pointer cursor when cards are selectable */
 #factionHand.bga-cards_selectable-cards-stock .bga-cards_card:not(._7sfs-unselectable),
 #factionHand .bga-cards_card._7sfs-selectable:not(._7sfs-unselectable) {
