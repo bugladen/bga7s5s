@@ -21,7 +21,7 @@ class Reaction_02033 extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate('Opponent discards a card after moving to Rosa\'s location');
+        $this->Name = clienttranslate("Player discards a card after moving to Rosa's location");
     }
 
     public function handleEvent(Event $event)
