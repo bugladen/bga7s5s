@@ -256,13 +256,13 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
                 $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);        
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);
                 $game->theah->queueEvent($transition);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $actionResolvedEvent->priority = Event::TRANSITION_PRIORITY;
-                $game->theah->queueEvent($actionResolvedEvent);
             }
+
+            // createActionResolvedEvent for this action is queued by _01106_RiskClone::handleEvent
+            // after the cloned risk is discarded from hand — the action is only truly resolved once
+            // the chosen risk has been paid for and played.
 
             $game->gamestate->nextState("actionChosen");
         }

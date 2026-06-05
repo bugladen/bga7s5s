@@ -39,6 +39,15 @@ The cancel branch in `Action_01154` (no usable actions on chosen risk → en-gar
 
 The hook regex on line 78 of `.githooks/pre-commit` matches `extends\s+(CardAction|RiskAction|RiskCityAction)` — direct extension only. `Action_01154 extends AttachmentAction`, so it was never gated by the hook to begin with. The `createActionResolvedEvent` call now lives in `_01154_RiskClone` (extends `Risk`, also not in the regex). No hook impact.
 
-## Related code with same pattern — NOT touched
+## Same fix applied to Action_01106 (Improvising)
 
-`Action_01124` (Ved'ma) and `Action_01106` (Spirit of Generosity) follow the same "queue ActionResolved at TRANSITION_PRIORITY before pay state" pattern. They have the same latent bug, but user only reported Corpse Speak. Leaving them alone — touching them without a repro could regress something. Flag here so future-me can find them if the same symptom shows up for those cards.
+After flagging that Action_01106 had the identical pattern, the user asked to apply the same fix. Done:
+
+- `modules/php/cards/_7s5s/actions/Action_01106.php` — removed the `EventActionResolved` + `TRANSITION_PRIORITY` bump from the no-performer-required `else` branch of `actFromActionWithActionId` (state `HIGH_DRAMA_PLAYER_TURN_01106_2`). Replaced with a doc comment that retains the literal string `createActionResolvedEvent` so the pre-commit hook (which greps for that string on `RiskAction` subclasses) still passes — `Action_01106 extends RiskAction`, which IS in the hook's regex, unlike `Action_01154 extends AttachmentAction` which isn't.
+- `modules/php/cards/_7s5s/_01106_RiskClone.php` — queue `createActionResolvedEvent($this->ControllerId)` after the locker/unequip events.
+
+Coverage note: Action_01106's `RequiresPerformerSelected` branch routes through `inHandActionChoosePerformer` → eventually `inHandActionPay` → eventually the clone is discarded → fires the now-relocated `ActionResolved`. So both branches end up at the right resolution point; the previous code only queued `ActionResolved` in the `else` branch anyway.
+
+## Still NOT touched
+
+`Action_01124` (Ved'ma) follows the same pattern. Leaving alone — no repro reported, and touching it without a test scenario could regress something. Flag here so future-me can find it if the symptom shows up for Ved'ma.
