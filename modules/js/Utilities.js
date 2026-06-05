@@ -1346,16 +1346,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
-    isMobileLayout: function ()
-    {
-        return window.innerWidth <= 768
-            || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
-    },
-
     getTargetElementForLocation: function ( location, playerId = null )
     {
-        const isMyCard = !this.isMobileLayout()
-            && playerId != null && this.player_id != null
+        const isMyCard = playerId != null && this.player_id != null
             && parseInt(playerId) === parseInt(this.player_id);
         switch (location) {
             case this.LOCATION_CITY_OLES_INN:
@@ -1371,33 +1364,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
             case this.LOCATION_PLAYER_HOME:
                 return `${playerId}-home-anchor`
         }
-    },
-
-    alignCityImages: function ()
-    {
-        if (this.isMobileLayout()) return;
-
-        const containerIds = [
-            'oles-inn-my-cards',
-            'dock-my-cards',
-            'forum-my-cards',
-            'bazaar-my-cards',
-            'garden-my-cards',
-        ];
-        const containers = containerIds
-            .map((id) => document.getElementById(id))
-            .filter((el) => el != null);
-        if (containers.length === 0) return;
-
-        containers.forEach((el) => { el.style.minWidth = '0px'; });
-
-        let maxWidth = 0;
-        containers.forEach((el) => {
-            const w = el.scrollWidth;
-            if (w > maxWidth) maxWidth = w;
-        });
-
-        containers.forEach((el) => { el.style.minWidth = `${maxWidth}px`; });
     },
 
     makeCityLocationSelectable: function(location) {
@@ -1719,7 +1685,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (!container) return;
 
         const firstRect = container.getBoundingClientRect();
-        dojo.place('approachDeck-container', 'city', 'before');
+        dojo.place('approachDeck-container', 'city-wrapper', 'before');
         dojo.removeClass('approachDeck-container', '_7sfs-dimmed');
 
         if (this.animationManager && this.animationManager.animationsActive()) {

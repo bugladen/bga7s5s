@@ -199,13 +199,31 @@ body {
 
 
 
+#city-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+#city.hidden {
+    display: none;
+}
+
 #city {
     position: relative;
     padding: 15px;
     background-color: saddlebrown;
     border: 1px solid black;
-    margin: 20px auto;
+    margin: 20px 0;
     width: fit-content;
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    row-gap: 5px;
+}
+
+#city > div:not([id]):not([class]) {
+    display: none;
 }
 
 #city-discard {
@@ -313,31 +331,39 @@ body {
 
 ._7sfs-city-location {
     position: relative;
-    display: inline-flex;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: center;
     box-sizing: border-box;
     border-radius: 10px;
 }
 
 ._7sfs-city-location-contents {
-    display: inline-flex;
-    flex-wrap: wrap;
-    box-sizing: border-box;
-    row-gap: 15px;
+    display: contents;
 }
 
 ._7sfs-city-my-cards {
-    display: inline-flex;
+    display: flex;
     flex-wrap: wrap;
     box-sizing: border-box;
     row-gap: 15px;
     justify-content: flex-end;
     align-items: center;
-    vertical-align: middle;
 }
 
 ._7sfs-city-my-cards-endcap {
     width: 0;
     height: 0;
+}
+
+._7sfs-city-other-cards {
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    row-gap: 15px;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 #city-oles-inn {
@@ -491,6 +517,10 @@ body {
 ._7sfs-city-endcap {
     width:15px;
     vertical-align: middle;
+}
+
+._7sfs-city-location > ._7sfs-city-endcap {
+    margin-top: 0 !important;
 }
 
 #oles-inn-frontcap {

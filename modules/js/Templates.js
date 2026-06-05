@@ -364,6 +364,7 @@
                 </div>
 
                 <!-- Begin City -->
+                <div id="city-wrapper">
                 <div id="city">
                     <div id="city-ul-tower">
                         <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
@@ -389,7 +390,9 @@
                             <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01004.jpg)">
                                 <div id="oles-inn-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
                             </div>
-                            <div id="oles-inn-endcap" class="_7sfs-city-endcap"></div>
+                            <div id="oles-inn-other-cards" class="_7sfs-city-other-cards">
+                                <div id="oles-inn-endcap" class="_7sfs-city-endcap"></div>
+                            </div>
                         </div>
                     </div>
                     <div></div>
@@ -402,7 +405,9 @@
                             <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01003.jpg)">
                                 <div id="dock-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
                             </div>
-                            <div id="dock-endcap" class="_7sfs-city-endcap"></div>
+                            <div id="dock-other-cards" class="_7sfs-city-other-cards">
+                                <div id="dock-endcap" class="_7sfs-city-endcap"></div>
+                            </div>
                         </div>
                     </div>
                     <div></div>
@@ -415,7 +420,9 @@
                             <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01001.jpg)">
                                 <div id="forum-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
                             </div>
-                            <div id="forum-endcap" class="_7sfs-city-endcap"></div>
+                            <div id="forum-other-cards" class="_7sfs-city-other-cards">
+                                <div id="forum-endcap" class="_7sfs-city-endcap"></div>
+                            </div>
                         </div>
                     </div>
                     <div></div>
@@ -428,7 +435,9 @@
                             <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01002.jpg)">
                                 <div id="bazaar-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
                             </div>
-                            <div id="bazaar-endcap" class="_7sfs-city-endcap"></div>
+                            <div id="bazaar-other-cards" class="_7sfs-city-other-cards">
+                                <div id="bazaar-endcap" class="_7sfs-city-endcap"></div>
+                            </div>
                         </div>
                     </div>
                     <div></div>
@@ -441,7 +450,9 @@
                             <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01005.jpg)">
                                 <div id="garden-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
                             </div>
-                            <div id="garden-endcap" class="_7sfs-city-endcap"></div>
+                            <div id="garden-other-cards" class="_7sfs-city-other-cards">
+                                <div id="garden-endcap" class="_7sfs-city-endcap"></div>
+                            </div>
                         </div>
                     </div>
                     <div id="city-ll-tower">
@@ -454,6 +465,7 @@
                             <rect width="30" height="30" class="_7sfs-city-tower" />
                         </svg>
                     </div>
+                </div>
                 </div>
                 <!-- End  City -->
 
