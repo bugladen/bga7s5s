@@ -48,6 +48,13 @@ After flagging that Action_01106 had the identical pattern, the user asked to ap
 
 Coverage note: Action_01106's `RequiresPerformerSelected` branch routes through `inHandActionChoosePerformer` → eventually `inHandActionPay` → eventually the clone is discarded → fires the now-relocated `ActionResolved`. So both branches end up at the right resolution point; the previous code only queued `ActionResolved` in the `else` branch anyway.
 
-## Still NOT touched
+## Same fix applied to Action_01124 (Ved'ma)
 
-`Action_01124` (Ved'ma) follows the same pattern. Leaving alone — no repro reported, and touching it without a test scenario could regress something. Flag here so future-me can find it if the symptom shows up for Ved'ma.
+User asked to apply the same fix to Ved'ma after confirming the pattern matched. Done:
+
+- `modules/php/cards/_7s5s/actions/Action_01124.php` — removed the `EventActionResolved` + `CHANGE_ACTIVE_PLAYER_PRIORITY` bump from `stateFromAction` for state `HIGH_DRAMA_PLAYER_TURN_01124_2`. Note: in Ved'ma the bumped `ActionResolved` was queued OUTSIDE the if/else, so it covered BOTH the `RequiresPerformerSelected` and the no-performer branch — removing it is symmetric across both paths.
+- `modules/php/cards/_7s5s/_01124_RiskClone.php` — queue `createActionResolvedEvent($this->ControllerId)` after the locker event.
+
+The separate `actFromActionPass` branch in `Action_01124.php` (line ~85) still queues its own `createActionResolvedEvent` at default priority for the pass-due-to-no-options case. That one is correct (pass = action did not resolve a sorcery, but is the terminating event of the Ved'ma activation) and stays untouched.
+
+No pre-commit hook sentinel needed: `Action_01124 extends CharacterAction`, and the hook regex `extends\s+(CardAction|RiskAction|RiskCityAction)` only matches direct extension. Plus the `actFromActionPass` instance keeps the literal string in the file anyway.
