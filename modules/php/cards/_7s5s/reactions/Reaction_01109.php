@@ -11,9 +11,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -62,21 +62,21 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventRiskPlayed && $this->isAvailable())
+        if ($event instanceof EventActionActivated && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
             {
-                $risk = $event->theah->getCardById($event->riskId);
-                if ($risk instanceof Risk && $risk->ControllerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery"))
+                $risk = $event->theah->getCardById($event->sourceId);
+                if ($risk instanceof Risk && $event->playerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery"))
                 {
                     //Make sure there is not another copy of this reaction queued
                     if (! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
                     {
                         $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                         $event->theah->stackEvent($transitionEvent);
-        
-                        $this->RiskId = $event->riskId;
+
+                        $this->RiskId = $risk->Id;
                         $owner->IsUpdated = true;
                     }
                 }
@@ -151,9 +151,14 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
                 }
             }
 
-            //Delete any cancel Risk ActionTriggered or RiskReactionTriggered events
+            //Delete any cancel Risk ActionTriggered or RiskReactionTriggered events.
+            //Also delete the queued EventRiskPlayed for this risk — the trigger is now
+            //EventActionActivated (which fires before EventRiskPlayed), so the played
+            //event is still in the queue and would otherwise let other "after a Risk
+            //is played" reactions fire on the cancelled card.
             $game->theah->deleteActionTriggeredEvents($this->RiskId);
             $game->theah->deleteRiskReactionTriggeredEvents($this->RiskId);
+            $game->theah->deleteRiskPlayedEvents($this->RiskId);
 
             // Cancel Maneuver if it exists
             if ($this->ManeuverId !== '')

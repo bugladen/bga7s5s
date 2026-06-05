@@ -1404,6 +1404,11 @@ class Theah
         $this->db->deleteRiskReactionTriggeredEvents($reactionId);
     }
 
+    public function deleteRiskPlayedEvents(int $riskId)
+    {
+        $this->db->deleteRiskPlayedEvents($riskId);
+    }
+
     public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)
     {
         $sql = "SELECT challenging_player_id, challenger_id, defending_player_id, defender_id FROM duel where duel_id = $duelId";
