@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
@@ -110,6 +111,16 @@ trait EventHub
                 };
                 $handler($this, $event);
                 break;
+
+            case $event instanceof EventActionResolved:
+                $handler = function (Theah $theah, EventActionResolved $event)
+                {
+                    $theah->game->notify->all("message", 'Action has resolved for ${player_name}.', [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                    ]);
+                };
+                $handler($this, $event);
+                break;            
 
             case $event instanceof EventApproachCharacterPlayed:
                 $handler = function (Theah $theah, EventApproachCharacterPlayed $event)
