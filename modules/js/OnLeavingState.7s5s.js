@@ -1062,7 +1062,10 @@
                     if (card)
                     {
                         const targetImage = $(`${card.divId}_image`);
-                        dojo.removeClass(targetImage, '_7sfs-chosen');
+                        if (targetImage)
+                        {
+                            dojo.removeClass(targetImage, '_7sfs-chosen');
+                        }
                     }
 
                     this.factionHand.setSelectionMode('none');
@@ -1083,13 +1086,16 @@
                     if (card)
                     {
                         const targetImage = $(`${card.divId}_image`);
-                        dojo.removeClass(targetImage, '_7sfs-chosen');
+                        if (targetImage)
+                        {
+                            dojo.removeClass(targetImage, '_7sfs-chosen');
+                        }
                     }
 
                     this.factionHand.setSelectionMode('none');
                 }
             },
-    
+
             'highDramaPhase01149': () => {
                 if (this.isCurrentPlayerActive()) 
                 {
