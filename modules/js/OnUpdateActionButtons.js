@@ -46,7 +46,7 @@ onUpdateActionButtons: function( stateName, args )
                     vodacce_description_tac: _('<strong>Vodacce</strong>: “Don” Constanzo Scarpa loves his city, for Five Sails is indeed his city, and he is willing to do whatever it takes to protect it, even if it is from itself. Reputation, family and loyalty are the things that are of paramount importance to Constanzo as he tries to advance politically through the ranks of the city’s elite. Constanzo’s style is cutthroat and brutal where the ends always justify the means. He cares not for what or even who gets sacrificed along the way as long as it advances his goals. <p>Deck: <a target="_blank" href="https://sailsdb.onrender.com/decks/9a5981c2-76b4-410f-8ef0-eab1c7c12862">Tooth & Claw Vodacce Starter</a></p>'),
                     custom_description: _('Paste your deck JSON above.  Use <a href="https://sailsdb.onrender.com" target="_blank">SailsDB</a> to generate the JSON code.'),
                     select_description: _('Confirm Deck'),
-                }),  'city', 'after');
+                }),  'city-wrapper', 'after');
             }
         }
         else if (! this.isSpectator)

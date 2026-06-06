@@ -46,6 +46,9 @@ class _01106_RiskClone extends Risk implements IHasActions
 
             $lockerEvent = EventFactory::createCardSentToLockerEvent($this->ControllerId, $this->ParentCardId);
             $event->theah->queueEvent($lockerEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($this->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 }

@@ -24,6 +24,8 @@ class _01075 extends FactionAttachment implements IHasActions
         $this->Image = "01075.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 75;
+        
         $this->initializeFaction('Montaigne');
         
         $this->ResolveModifier = 0;

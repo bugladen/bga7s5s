@@ -103,6 +103,7 @@ class Action_02047 extends AttachmentAction implements IAbilityThatTargetsCards
                     1,
                     $owningAttachment->getInjectCode()
                 );
+                $game->theah->eventCheck($reknownEvent);
                 $game->theah->queueEvent($reknownEvent);
             }
 

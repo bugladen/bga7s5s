@@ -221,13 +221,9 @@ class Action_01154 extends AttachmentAction implements ISorcererAbility, IAbilit
                 $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);        
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);
                 $game->theah->queueEvent($transition);
             }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $actionResolvedEvent->priority = Event::CHANGE_ACTIVE_PLAYER_PRIORITY;
-            $game->theah->queueEvent($actionResolvedEvent);
 
             $sorceryEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
             $game->theah->queueEvent($sorceryEvent);

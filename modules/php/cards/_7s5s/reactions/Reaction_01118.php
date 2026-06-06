@@ -72,11 +72,19 @@ class Reaction_01118 extends CardReaction
             $elina = $this->getOwningCharacter($game->theah);
             $location = str_replace("moveRenown-", "", $reactionId);
 
+            $batchId = $game->getNextEventBatchId();
+            $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($elina->ControllerId, $location, $elina->Location, 1, $elina->getInjectCode());
+            $movingEvent->batchId = $batchId;
+            $game->theah->eventCheck($movingEvent);
+            $game->theah->queueEvent($movingEvent);
+
             $reknownRemovedEvent = EventFactory::createRenownRemovedFromLocationEvent($elina->ControllerId, $location, 1, $elina->getInjectCode());
-            $game->theah->queueEvent($reknownRemovedEvent);
+            $reknownRemovedEvent->batchId = $batchId;
             $game->theah->eventCheck($reknownRemovedEvent);
+            $game->theah->queueEvent($reknownRemovedEvent);
 
             $reknownAddedEvent = EventFactory::createRenownAddedToLocationEvent($elina->ControllerId, $elina->Location, 1, $elina->getInjectCode(), $isMove = true);
+            $reknownAddedEvent->batchId = $batchId;
             $game->theah->eventCheck($reknownAddedEvent);
             $game->theah->queueEvent($reknownAddedEvent);
 

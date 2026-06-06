@@ -18,6 +18,7 @@ class _01156 extends FactionAttachment implements IHasActions
         $this->Image = "01156.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 156;
         
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;

@@ -672,9 +672,12 @@
             },
 
             'highDramaPhase01148_3': () => {
-                this.addActionButton(`actFactionCardSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
-                this.addActionButton(`actFinished`, _('Finished'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
-                dojo.addClass('actFactionCardSelected', 'disabled');
+                if (args.args.targetInPlay)
+                {
+                    this.addActionButton(`actFactionCardSelected`, _('Confirm'), () => this.onChooseHandCardConfirmed());
+                    dojo.addClass('actFactionCardSelected', 'disabled');
+                }
+                this.statusBar.addActionButton(_('Finished'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}), { id: 'actFinished', color: 'alert' }) 
             },
 
             'highDramaPhase01148_4': () => {

@@ -138,13 +138,7 @@ class _01126 extends Scheme
             $location = $event->theah->getCityLocation($this->ChosenLocation);
             if ($location->Renown > 0)
             {
-                $reknown = $event->theah->createEvent(Events::RenownRemovedFromLocation);
-                if ($reknown instanceof EventRenownRemovedFromLocation)
-                {
-                    $reknown->location = $this->ChosenLocation;
-                    $reknown->amount = $location->Renown;
-                    $reknown->source = $this->Name;
-                }
+                $reknown = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $this->ChosenLocation, $location->Renown, $this->getInjectCode());
                 $event->theah->queueEvent($reknown);
             }
         }

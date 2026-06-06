@@ -23,6 +23,8 @@ class _01074 extends FactionAttachment implements IHasTechniques
         $this->Image = "01074.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 74;
+        
         $this->initializeFaction('Montaigne');
         
         $this->ResolveModifier = 0;

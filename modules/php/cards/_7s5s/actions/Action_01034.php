@@ -30,29 +30,19 @@ class Action_01034 extends RiskAction implements IAbilityThatTargetsCharacters
             return false;
         }
 
-        $performers = $theah->getCharactersinCityWithOpposingCharacters($playerId);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->Engaged));
-
-        $availablePerformers = [];
-        foreach ($performers as $performer)
-        {
-            $opposingCharacters = $theah->getCharactersAtLocation($performer->Location);
-            $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId) && ! $character->Engaged);
-            if (count($opposingCharacters) > 0)
-            {
-                $availablePerformers[] = $performer;
-                break;
-            }
-        }
-
-        return count($availablePerformers) > 0;
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = $theah->getCharactersinCityWithOpposingCharacters($playerId);
-        $performers = array_values(array_filter($performers, fn($character) => $character->Engaged));
-        return $performers;
+        $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
+        $performers = array_filter($performers, fn($performer) => $performer->Engaged);
+        $performers = array_filter($performers, function ($performer) use ($theah, $playerId) {
+            $opposingCharacters = $theah->getCharactersAtLocation($performer->Location);
+            $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId) && ! $character->Engaged);
+            return count($opposingCharacters) > 0;
+        });
+        return array_values($performers);
     }
 
     public function handleEvent(Event $event)
@@ -110,6 +100,11 @@ class Action_01034 extends RiskAction implements IAbilityThatTargetsCharacters
             return [false, $game->translate("Target character is not at the same location as the performer")];
         }
 
+        if ($character->Engaged)
+        {
+            return [false, $game->translate("Target character must be en garde")];
+        }
+
         return [true, ""];
     }
 
@@ -158,11 +153,11 @@ class Action_01034 extends RiskAction implements IAbilityThatTargetsCharacters
             if ($id == 1)
             {
                 $game->notify->all("message", clienttranslate('${player_name} decided to engage ${character_inject_code}'), [
-                    'player_name' => $game->getPlayerNameById($performer->ControllerId),
+                    'player_name' => $game->getPlayerNameById($target->ControllerId),
                     'character_inject_code' => $target->getInjectCode(),
                 ]);
 
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $targetId, $owner->Id, $this->Id);
+                $engageEvent = EventFactory::createCardEngagedEvent($target->ControllerId, $targetId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
@@ -185,7 +180,7 @@ class Action_01034 extends RiskAction implements IAbilityThatTargetsCharacters
             $target = $game->theah->getCharacterById($targetId);
 
             $game->notify->all("message", clienttranslate('${player_name} chooses not to engage ${character_inject_code}'), [
-                'player_name' => $game->getPlayerNameById($performer->ControllerId),
+                'player_name' => $game->getPlayerNameById($target->ControllerId),
                 'character_inject_code' => $target->getInjectCode(),
             ]);
 

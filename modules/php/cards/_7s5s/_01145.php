@@ -112,12 +112,20 @@ class _01145 extends Scheme
             $toLocation = $ids[0];
 
             $playerId = $game->getActivePlayerId();
+
+            $batchId = $game->getNextEventBatchId();
+            $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($playerId, $fromLocation, $toLocation, 1, $this->getInjectCode());
+            $movingEvent->batchId = $batchId;
+            $game->theah->eventCheck($movingEvent);
+            $game->theah->queueEvent($movingEvent);
     
             $playerRemoved = EventFactory::createRenownRemovedFromLocationEvent($playerId, $fromLocation, 1, $this->getInjectCode());
+            $playerRemoved->batchId = $batchId;
             $game->theah->eventCheck($playerRemoved);
             $game->theah->queueEvent($playerRemoved);
     
             $playerAdded = EventFactory::createRenownAddedToLocationEvent($playerId, $toLocation, 1, $this->getInjectCode(), $isMove = true);
+            $playerAdded->batchId = $batchId;
             $game->theah->eventCheck($playerAdded);
             $game->theah->queueEvent($playerAdded);
 

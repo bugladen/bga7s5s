@@ -133,10 +133,20 @@ class Action_01064 extends CharacterAction
             $event = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $cardId, $owner->Id);
             $game->theah->queueEvent($event);
 
+            $batchId = $game->getNextEventBatchId();
+            $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($owner->ControllerId, $location, $owner->Location, 1, $owner->getInjectCode());
+            $movingEvent->batchId = $batchId;
+            $game->theah->eventCheck($movingEvent);
+            $game->theah->queueEvent($movingEvent);
+
             $event = EventFactory::createRenownRemovedFromLocationEvent($owner->ControllerId, $location, 1, $owner->getInjectCode());
+            $event->batchId = $batchId;
+            $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createRenownAddedToLocationEvent($owner->ControllerId, $owner->Location, 1, $owner->getInjectCode(), $isMove = true);
+            $event->batchId = $batchId;
+            $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

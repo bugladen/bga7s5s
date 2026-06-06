@@ -22,7 +22,7 @@ class _01065 extends Character implements IHasReactions
         $this->Image = "01065.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
-        $this->CardNumber = 67;
+        $this->CardNumber = 65;
 
         $this->initializeFaction("Montaigne");
         $this->Title = clienttranslate("Maestro Machinist");

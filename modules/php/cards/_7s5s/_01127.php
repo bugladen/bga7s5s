@@ -23,6 +23,8 @@ class _01127 extends FactionAttachment implements IHasReactions, IHasTechniques
         $this->Image = "01127.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 127;
+        
         $this->initializeFaction("Ussura");
         
         $this->ResolveModifier = 0;

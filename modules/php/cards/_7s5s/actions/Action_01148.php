@@ -76,6 +76,13 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $args["targetId"] = $game->globals->get(Game::CHOSEN_TARGET);
         }
 
+        if ($state === States::HIGH_DRAMA_PLAYER_TURN_01148_3)
+        {
+            $targetId = $game->globals->get(Game::CHOSEN_TARGET);
+            $target = $game->theah->getCharacterById($targetId);
+            $args["targetInPlay"] = $target !== null && ! $game->characterIsInDiscardOrLocker($target);
+        }
+
         if ($state === States::HIGH_DRAMA_PLAYER_TURN_01148_4)
         {
             $targetId = $game->globals->get(Game::CHOSEN_TARGET);

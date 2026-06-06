@@ -124,8 +124,19 @@ class DB
 
     public function deleteRiskReactionTriggeredEvents(string $reactionId)
     {
-        $sql = "DELETE FROM events 
+        $sql = "DELETE FROM events
                 WHERE (event_serialized LIKE '%EventRiskReactionTriggered%' AND event_serialized LIKE '%{$reactionId}%')";
+        $this->executeSql($sql);
+    }
+
+    public function deleteRiskPlayedEvents(int $riskId)
+    {
+        if ($riskId <= 0)
+        {
+            return;
+        }
+        $sql = "DELETE FROM events
+                WHERE (event_serialized LIKE '%EventRiskPlayed%' AND event_serialized LIKE '%riskId\";i:{$riskId};%')";
         $this->executeSql($sql);
     }
 

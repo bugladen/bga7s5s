@@ -119,13 +119,20 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
                 $locationName = str_replace("moveFrom-", "", $reactionId);
 
                 $odette = $this->getOwningCharacter($game->theah);
-                $location = $game->theah->getCityLocation($locationName);
+
+                $batchId = $game->getNextEventBatchId();
+                $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($odette->ControllerId, $locationName, $odette->Location, 1, $odette->getInjectCode());
+                $movingEvent->batchId = $batchId;
+                $game->theah->eventCheck($movingEvent);
+                $game->theah->queueEvent($movingEvent);
 
                 $event = EventFactory::createRenownRemovedFromLocationEvent($odette->ControllerId, $locationName, 1, $odette->getInjectCode());
+                $event->batchId = $batchId;
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 
                 $event = EventFactory::createRenownAddedToLocationEvent($odette->ControllerId, $odette->Location, 1, $odette->getInjectCode(), $isMove = true);
+                $event->batchId = $batchId;
                 $game->theah->eventCheck($event);
                 $game->theah->queueEvent($event);
 

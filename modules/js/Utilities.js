@@ -299,22 +299,200 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    // Canonical breakpoint for "use mobile faction-hand layout". Mirrors the
+    // mobile media query in seventhseacityoffivesails.css. Used by Setup.js
+    // to pick HandStock vs LineStock at construction, by adjustHandCardOverlap
+    // to skip fan calculations on mobile, and by swapFactionHandStockIfNeeded
+    // to swap stock types when the window resizes across the breakpoint.
+    isFactionHandMobile: function() {
+        return window.innerWidth <= 768
+            || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
+    },
+
+    // Build a HandStock (desktop) or LineStock (mobile) on #factionHand and
+    // wire up the selection callback. Reuses this.factionHandManager so card
+    // divs survive a swap.
+    createFactionHandStock: function() {
+        const sort = (a, b) => {
+            // Schemes and Attachments first, then by id
+            const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
+            const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
+            if (weightA !== weightB) return weightA - weightB;
+            return a.id - b.id;
+        };
+
+        let stock;
+        if (this.isFactionHandMobile()) {
+            stock = new LineStock(this.factionHandManager, $('factionHand'), {
+                center: false,
+                sort,
+            });
+        } else {
+            stock = new HandStock(this.factionHandManager, $('factionHand'), {
+                cardOverlap: '40px',
+                sort,
+            });
+        }
+
+        stock.onSelectionChange = (selection, lastChange) => {
+            this.onFactionCardClicked(null, lastChange ? lastChange.id : undefined);
+        };
+        return stock;
+    },
+
+    // Rebuild this.factionHand as the correct stock type when the window crosses
+    // the mobile breakpoint at runtime. Without this, a desktop player who shrinks
+    // the window past 768px would see the mobile CSS layout but still be backed
+    // by a HandStock (and vice versa).
+    //
+    // Sibling approach: rather than clone-and-replace the #factionHand container
+    // (which detaches every card div from the document, causing bga-cards' addCard
+    // to fall through createCardElement and produce blank new divs), we PUT THE
+    // FRESH CONTAINER IN AS A SIBLING and rename the old one. The card divs stay
+    // in document throughout, so:
+    //   - manager.getCardElement (which is document.getElementById) keeps returning
+    //     them, letting addCard go down the moveFromOtherStock path
+    //   - moveFromOtherStock then just appendChild's the existing div into the
+    //     fresh container — preserving inline background-image, tippy tooltips,
+    //     child chips, and the inner card-sides DOM untouched
+    //   - origin.removeCard sees the moved div is no longer in the old container,
+    //     so it does NOT destroy the div via manager.removeCard (it only calls
+    //     cardRemoved, which updates the old stock's internal array)
+    //
+    // The earlier clone-and-replace approach hit a ghost-frame bug specifically in
+    // the desktop→mobile direction. Going via createCardElement + repaint sometimes
+    // raced with the animationManager and left exactly one card empty. The sibling
+    // approach sidesteps that entirely because no card div is ever recreated.
+    swapFactionHandStockIfNeeded: function() {
+        const wantsMobile = this.isFactionHandMobile();
+        if (wantsMobile === this.factionHandIsMobile) return;
+        if (!this.factionHand || !this.factionHandManager) return;
+
+        const cards = this.factionHand.getCards();
+        const oldStock = this.factionHand;
+
+        const oldEl = document.getElementById('factionHand');
+        if (!oldEl) return;
+
+        // Stand up the fresh container as a sibling and reassign the 'factionHand' id
+        // to it. The old container keeps its DOM position (with card divs in it)
+        // under a new id so addCard can still find the cards via document.getElementById.
+        const freshEl = oldEl.cloneNode(false);
+        freshEl.className = '_7sfs-floating-hand-cards';
+        oldEl.id = '_7sfs-factionHand-pre-swap';
+        freshEl.id = 'factionHand';
+        oldEl.parentNode.insertBefore(freshEl, oldEl);
+        oldEl.style.display = 'none';
+
+        this.factionHand = this.createFactionHandStock();
+        this.factionHandIsMobile = wantsMobile;
+
+        // addCard finds each card div via getElementById, then moveFromOtherStock
+        // appendChild's it into freshEl. Existing inline styles + child nodes
+        // (cats-embargo chip) ride along. No re-application needed.
+        cards.forEach((card) => this.factionHand.addCard(card));
+
+        this.factionHand.setSelectionMode('none');
+
+        // The old stock has been drained by moveFromOtherStock's removeCard calls
+        // (which only ran cardRemoved on the origin, not manager.removeCard). Drop
+        // the now-empty old container from the DOM and unregister the old stock
+        // from the manager so its container-level click listener can be GC'd.
+        if (oldEl.parentNode) oldEl.parentNode.removeChild(oldEl);
+        if (typeof this.factionHandManager.removeStock === 'function') {
+            this.factionHandManager.removeStock(oldStock);
+        }
+    },
+
+    // Tighten card overlap in the floating hand so the row stays within the viewport
+    // when the player has too many cards to fit at the default 5px-gap spacing.
+    // The bga-cards lib sets --card-overlap on the element but the lib's CSS isn't
+    // loaded in this project, so we own the rule (see seventhseacityoffivesails.css
+    // — the `margin-left: calc(-1 * var(--card-overlap, 0px))` on non-first cards).
+    adjustHandCardOverlap: function() {
+        const handEl = $('factionHand');
+        if (!handEl) return;
+
+        if (this.isFactionHandMobile()) return;
+
+        const cardCount = handEl.querySelectorAll('.bga-cards_card').length;
+        if (cardCount <= 1) {
+            handEl.style.removeProperty('--card-overlap');
+            return;
+        }
+
+        const cardWidth = Math.round(this.wholeCardWidth * 1.5);
+        const gap = 5; // matches `gap: 5px` on the hand container
+        // Target close to full viewport when overlap engages. The container has
+        // max-width: 90vw, but cards use overflow: visible and the hand uses
+        // justify-content: center — so the fan can extend past the container and
+        // stay centered on screen. Leaving ~30px each side for hover scale and
+        // any scrollbar.
+        const availableWidth = window.innerWidth - 60;
+
+        // With flex `gap` + `margin-left: -overlap` on every card after the first:
+        //   total = cardWidth + (N - 1) * (cardWidth + gap - overlap)
+        // Solve total ≤ available:
+        //   overlap ≥ cardWidth + gap - (available - cardWidth) / (N - 1)
+        const requiredOverlap = Math.ceil(cardWidth + gap - (availableWidth - cardWidth) / (cardCount - 1));
+
+        // Default to no overlap (preserves current look); only engage when needed.
+        // Cap so each card still shows ≥ 18px past its neighbor.
+        const overlap = Math.max(0, Math.min(requiredOverlap, cardWidth + gap - 18));
+
+        if (overlap > 0) {
+            handEl.style.setProperty('--card-overlap', `${overlap}px`);
+        } else {
+            handEl.style.removeProperty('--card-overlap');
+        }
+    },
+
     // Setup floating hand behavior based on placeholder visibility
     setupFloatingHand: function() {
         const wrapper = $('factionHand-wrapper');
         const placeholder = $('factionHand-placeholder');
-        
+
         if (!wrapper || !placeholder) return;
-        
-        // Check if mobile - skip floating logic entirely on mobile
-        // Mobile includes portrait (width <= 768) and landscape (height <= 500 with landscape orientation)
-        const isMobile = () => window.innerWidth <= 768 || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
-        
-        // On mobile, don't set up floating behavior at all
-        if (isMobile()) {
-            this.checkFloatingHand = () => {}; // No-op
-            return;
-        }
+
+        // The stock-type swap must run on every resize, not just when starting
+        // desktop — if the player starts mobile and resizes wider, we need to
+        // swap from LineStock to HandStock too. Installed once at setup.
+        window.addEventListener('resize', () => this.swapFactionHandStockIfNeeded(), { passive: true });
+
+        const isMobile = () => this.isFactionHandMobile();
+
+        // Recompute overlap whenever cards enter/leave the hand. This catches the
+        // initial page-load case where bga-cards may not have finished placing cards
+        // in #factionHand by the time setupFloatingHand runs, as well as any later
+        // additions/removals we might miss from the notification handlers.
+        // adjustHandCardOverlap itself skips on mobile, so this can run unconditionally.
+        // The observer targets #factionHand by ID rather than holding a node reference,
+        // because swapFactionHandStockIfNeeded clones the container to drop listeners.
+        const installObserver = () => {
+            const handEl = document.getElementById('factionHand');
+            if (handEl && typeof MutationObserver !== 'undefined') {
+                const observer = new MutationObserver(() => this.adjustHandCardOverlap());
+                observer.observe(handEl, { childList: true, subtree: true });
+                return observer;
+            }
+            return null;
+        };
+        let handObserver = installObserver();
+        // After a stock swap the #factionHand node is replaced, so the observer on the
+        // old node fires no more. Re-attach to the fresh node after each swap.
+        const origSwap = this.swapFactionHandStockIfNeeded.bind(this);
+        this.swapFactionHandStockIfNeeded = () => {
+            const wasMobile = this.factionHandIsMobile;
+            origSwap();
+            if (wasMobile !== this.factionHandIsMobile) {
+                if (handObserver) handObserver.disconnect();
+                handObserver = installObserver();
+            }
+        };
+
+        // Initial overlap fit (and again on next frame in case layout/cards weren't ready)
+        this.adjustHandCardOverlap();
+        requestAnimationFrame(() => this.adjustHandCardOverlap());
         
         // Track current floating state to avoid unnecessary DOM updates
         let isCurrentlyFloating = null;
@@ -331,12 +509,21 @@ return declare('seventhseacityoffivesails.utilities', null, {
         // Core check function
         const doCheck = (forcedCheck) => {
             rafPending = false;
-            
+
+            // Mobile media query handles layout via !important; toggling our floating
+            // classes here would be wasted work (and could leave stale state behind
+            // when we cross back to desktop). Reset the tracking var so the next
+            // desktop-side check re-evaluates from scratch.
+            if (isMobile()) {
+                isCurrentlyFloating = null;
+                return;
+            }
+
             // Skip checks during cooldown period (unless forced)
             if (!forcedCheck && Date.now() < cooldownUntil) {
                 return;
             }
-            
+
             const placeholderRect = placeholder.getBoundingClientRect();
             
             // Float when placeholder is visible or within FLOAT_OFFSET of the viewport top
@@ -384,12 +571,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.checkFloatingHand = () => {
             isCurrentlyFloating = null; // Reset state for immediate recalculation
             cooldownUntil = 0; // Clear cooldown
+            this.adjustHandCardOverlap();
             doCheck(true);
         };
-        
-        // Check on scroll and resize
+
+        // Resize affects available width AND floating state; scroll only affects floating state.
+        const onResize = () => {
+            this.adjustHandCardOverlap();
+            checkFloating();
+        };
         window.addEventListener('scroll', checkFloating, { passive: true });
-        window.addEventListener('resize', checkFloating, { passive: true });
+        window.addEventListener('resize', onResize, { passive: true });
         
         // Initial check
         doCheck(true);
@@ -1356,16 +1548,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
-    isMobileLayout: function ()
-    {
-        return window.innerWidth <= 768
-            || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
-    },
-
     getTargetElementForLocation: function ( location, playerId = null )
     {
-        const isMyCard = !this.isMobileLayout()
-            && playerId != null && this.player_id != null
+        const isMyCard = playerId != null && this.player_id != null
             && parseInt(playerId) === parseInt(this.player_id);
         switch (location) {
             case this.LOCATION_CITY_OLES_INN:
@@ -1381,33 +1566,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
             case this.LOCATION_PLAYER_HOME:
                 return `${playerId}-home-anchor`
         }
-    },
-
-    alignCityImages: function ()
-    {
-        if (this.isMobileLayout()) return;
-
-        const containerIds = [
-            'oles-inn-my-cards',
-            'dock-my-cards',
-            'forum-my-cards',
-            'bazaar-my-cards',
-            'garden-my-cards',
-        ];
-        const containers = containerIds
-            .map((id) => document.getElementById(id))
-            .filter((el) => el != null);
-        if (containers.length === 0) return;
-
-        containers.forEach((el) => { el.style.minWidth = '0px'; });
-
-        let maxWidth = 0;
-        containers.forEach((el) => {
-            const w = el.scrollWidth;
-            if (w > maxWidth) maxWidth = w;
-        });
-
-        containers.forEach((el) => { el.style.minWidth = `${maxWidth}px`; });
     },
 
     makeCityLocationSelectable: function(location) {
@@ -1521,10 +1679,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     displayDuelTable: function(challengeStat) {
-        const city = $('city');
         dojo.place( this.format_block( 'jstpl_duel_table', {
             challengeStatClass: (challengeStat || '').toLowerCase(),
-        }),  city, 'before');
+        }),  'city-wrapper', 'before');
         this.setupDuelScrollSync();
     },
 
@@ -1729,7 +1886,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (!container) return;
 
         const firstRect = container.getBoundingClientRect();
-        dojo.place('approachDeck-container', 'city', 'before');
+        dojo.place('approachDeck-container', 'city-wrapper', 'before');
         dojo.removeClass('approachDeck-container', '_7sfs-dimmed');
 
         if (this.animationManager && this.animationManager.animationsActive()) {

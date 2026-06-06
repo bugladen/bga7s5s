@@ -1768,10 +1768,13 @@
                     if (card)
                     {
                         const targetImage = $(`${card.divId}_image`);
-                        dojo.addClass(targetImage, '_7sfs-chosen');
+                        if (targetImage)
+                        {
+                            dojo.addClass(targetImage, '_7sfs-chosen');
+                        }
                         this.clientStateArgs.targetId = args.args.args.targetId;
                     }
-    
+
                     this.factionHand.setSelectionMode('single');
                 }
             },
@@ -1793,10 +1796,13 @@
                     if (card)
                     {
                         const targetImage = $(`${card.divId}_image`);
-                        dojo.addClass(targetImage, '_7sfs-chosen');
+                        if (targetImage)
+                        {
+                            dojo.addClass(targetImage, '_7sfs-chosen');
+                        }
                         this.clientStateArgs.targetId = args.args.args.targetId;
                     }
-    
+
                     this.factionHand.setSelectionMode('single');
                 }
             },                

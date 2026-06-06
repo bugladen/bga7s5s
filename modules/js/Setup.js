@@ -259,8 +259,6 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
         }
 
-        this.alignCityImages();
-
         if (gamedatas.sirensScreamUsedList && gamedatas.sirensScreamUsedList.usedList.length > 0) {
             this.displaySirensScreamUsedList(gamedatas.sirensScreamUsedList.cardId, gamedatas.sirensScreamUsedList.usedList);
         }
@@ -308,44 +306,17 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.approachDeck.setSelectionMode(0);
         dojo.addClass('approachDeck-container', '_7sfs-dimmed');
 
-        // Create CardManager for faction hand cards
-        // Mobile includes portrait (width <= 768) and landscape (height <= 500 with landscape orientation)
-        const isMobile = window.innerWidth <= 768 || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
-        
+        // Create CardManager for faction hand cards. The same manager is reused
+        // if we later swap the stock type on resize across the mobile breakpoint
+        // (see swapFactionHandStockIfNeeded in Utilities.js) — card divs it tracks
+        // get moved between stocks rather than recreated.
         this.factionHandManager = new CardManager(this, {
             getId: (card) => `factionhand-card-${card.id}`,
-            animationManager: isMobile ? undefined : this.animationManager, // No animations on mobile
+            animationManager: this.isFactionHandMobile() ? undefined : this.animationManager,
         });
 
-        // Create HandStock - use LineStock on mobile to avoid fanning calculations
-        if (isMobile) {
-            this.factionHand = new LineStock(this.factionHandManager, $('factionHand'), {
-                center: false,
-                sort: (a, b) => {
-                    const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
-                    const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
-                    if (weightA !== weightB) return weightA - weightB;
-                    return a.id - b.id;
-                },
-            });
-        } else {
-            this.factionHand = new HandStock(this.factionHandManager, $('factionHand'), {
-                cardOverlap: '40px',
-                sort: (a, b) => {
-                    // Schemes and Attachments first, then by id
-                    const weightA = (a.type === "Scheme" || a.type === 'Attachment') ? 1 : 2;
-                    const weightB = (b.type === "Scheme" || b.type === 'Attachment') ? 1 : 2;
-                    if (weightA !== weightB) return weightA - weightB;
-                    return a.id - b.id;
-                },
-            });
-        }
-
-        // Selection change handler
-        this.factionHand.onSelectionChange = (selection, lastChange) => {
-            // Pass null for control_name and lastChange.id for item_id to match expected signature
-            this.onFactionCardClicked(null, lastChange ? lastChange.id : undefined);
-        };
+        this.factionHand = this.createFactionHandStock();
+        this.factionHandIsMobile = this.isFactionHandMobile();
 
         // Add initial cards
         gamedatas.factionHand.forEach((card) => {

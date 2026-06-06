@@ -125,7 +125,7 @@ abstract class Card
             $action = $this->getActionById($internalId);
             if ($action)
             {
-                $action->actFromActionPass($game, $state, $stateName);
+                $action->actFromActionPass($game, $state);
             }
         }
 
@@ -134,7 +134,7 @@ abstract class Card
             $technique = $this->getTechniqueById($internalId);
             if ($technique)
             {
-                $technique->actFromTechniquePass($game, $state, $stateName);
+                $technique->actFromTechniquePass($game, $state);
             }
         }
 
@@ -143,7 +143,7 @@ abstract class Card
             $maneuver = $this->getManeuverById($internalId);
             if ($maneuver)
             {
-                $maneuver->actFromManeuverPass($game, $state, $stateName);
+                $maneuver->actFromManeuverPass($game, $state);
             }
         }
 
@@ -152,13 +152,9 @@ abstract class Card
             $reaction = $this->getReactionById($internalId);
             if ($reaction)
             {
-                $reaction->actFromReactionPass($game, $state, $stateName);
+                $reaction->actFromReactionPass($game, $state);
             }
         }
-
-        $game->notify->all("message", clienttranslate('${player_name} passes.'), [
-            "player_name" => $game->getPlayerNameById($this->ControllerId),
-        ]);
     }
 
     public function actFromCardWithId(Game $game, int $state, string $stateName, string $internalId, int $id): void 

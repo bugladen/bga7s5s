@@ -19,6 +19,7 @@ class _01048 extends FactionAttachment implements IHasTechniques
         $this->Image = "01048.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 48;
         $this->initializeFaction('Eisen');
         
         $this->ResolveModifier = 0;

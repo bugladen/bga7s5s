@@ -19,6 +19,8 @@ class _01100 extends FactionAttachment implements IHasReactions
         $this->Image = "01100.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
+        $this->CardNumber = 100;
+        
         $this->initializeFaction("Castille");
         
         $this->ResolveModifier = 0;
