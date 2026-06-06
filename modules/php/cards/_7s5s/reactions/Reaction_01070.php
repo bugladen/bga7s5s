@@ -74,6 +74,7 @@ class Reaction_01070 extends CardReaction
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createRenownAddedToLocationEvent($owner->ControllerId, $this->location, 1, $owner->getInjectCode());
+            $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} uses Reaction.'), [

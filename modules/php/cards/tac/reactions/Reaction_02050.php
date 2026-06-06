@@ -113,11 +113,23 @@ class Reaction_02050 extends RiskReaction
             $owner = $this->getOwningCard($event->theah);
             $performer = $event->theah->getCharacterById($this->PerformerId);
 
+            $game = $event->theah->game;
+
+            $batchId = $game->getNextEventBatchId();
+            $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($owner->ControllerId, $this->TriggeredLocation, $performer->Location, 1, $owner->getInjectCode());
+            $movingEvent->batchId = $batchId;
+            $game->theah->eventCheck($movingEvent);
+            $game->theah->queueEvent($movingEvent);
+
             $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($owner->ControllerId, $this->TriggeredLocation, 1, $owner->getInjectCode());
-            $event->theah->queueEvent($removeEvent);
+            $removeEvent->batchId = $batchId;
+            $game->theah->eventCheck($removeEvent);
+            $game->theah->queueEvent($removeEvent);
 
             $addEvent = EventFactory::createRenownAddedToLocationEvent($owner->ControllerId, $performer->Location, 1, $owner->getInjectCode(), true);
-            $event->theah->queueEvent($addEvent);
+            $addEvent->batchId = $batchId;
+            $game->theah->eventCheck($addEvent);
+            $game->theah->queueEvent($addEvent);
 
             $event->theah->game->notify->all("message", clienttranslate('${reaction_inject_code}: Pressure successful! One Renown moved from ${from_location} to ${to_location}.'), [
                 "i18n" => ["from_location", "to_location"],

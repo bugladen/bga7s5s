@@ -105,6 +105,7 @@ class Action_01185 extends EventCityAction
             //Add a reknown to the location
             $location = $riskyUndertaking->Location;            
             $event = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $playerName);
+            $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             //Discard this card

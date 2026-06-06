@@ -150,6 +150,7 @@ class _02024 extends Scheme
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $location->Name, 1, $this->getInjectCode());
+            $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             $game->notify->all("message", clienttranslate('${scheme_inject_code}: Renown has been moved to Location ${location_name}.'), [

@@ -38,6 +38,7 @@ class Events
     const ReknownRemovedFromCard = 'EventReknownRemovedFromCard';
     const RenownAddedToLocation = 'EventRenownAddedToLocation';
     const RenownRemovedFromLocation = 'EventRenownRemovedFromLocation';
+    const RenownMovingBetweenLocations = 'EventRenownMovingBetweenLocations';
 
     //Player Hand events
     const CardAddedToHand = 'EventCardAddedToHand';

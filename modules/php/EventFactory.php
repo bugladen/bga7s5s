@@ -84,6 +84,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownRemovedFromCard;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownMovingBetweenLocations;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
@@ -1029,6 +1030,20 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
             $event->amount = $amount;
             $event->description = $description;
             $event->isMove = $isMove;
+        }
+        return $event;
+    }
+
+    public static function createRenownMovingBetweenLocationsEvent(int $playerId, string $fromLocation, string $toLocation, int $amount, string $description = ""): EventRenownMovingBetweenLocations
+    {
+        $event = self::createEvent(Events::RenownMovingBetweenLocations);
+        if ($event instanceof EventRenownMovingBetweenLocations)
+        {
+            $event->playerId = $playerId;
+            $event->fromLocation = $fromLocation;
+            $event->toLocation = $toLocation;
+            $event->amount = $amount;
+            $event->description = $description;
         }
         return $event;
     }

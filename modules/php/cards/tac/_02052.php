@@ -148,12 +148,20 @@ class _02052 extends Scheme
                 throw new UserException($game->translate("No Renown at that location"));
             }
 
+            $batchId = $game->getNextEventBatchId();
+            $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($this->ControllerId, $location, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode());
+            $movingEvent->batchId = $batchId;
+            $game->theah->eventCheck($movingEvent);
+
             $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $location, 1, $this->getInjectCode());
+            $removeEvent->batchId = $batchId;
             $game->theah->eventCheck($removeEvent);
 
             $addEvent = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_BAZAAR, 1, $this->getInjectCode(), $isMove = true);
+            $addEvent->batchId = $batchId;
             $game->theah->eventCheck($addEvent);
 
+            $game->theah->queueEvent($movingEvent);
             $game->theah->queueEvent($removeEvent);
             $game->theah->queueEvent($addEvent);
 

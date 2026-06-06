@@ -132,17 +132,28 @@ class _01150 extends Scheme
             $location = $ids[0];
     
             $playerId = $game->getActivePlayerId();
+
+            $batchId = $game->getNextEventBatchId();
+
+            $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($playerId, $location, Game::LOCATION_CITY_FORUM, 1, $playerName);
+            $movingEvent->batchId = $batchId;
+            $movingEvent->priority = Event::HIGH_PRIORITY;
+            $game->theah->eventCheck($movingEvent);
+
             // WHY: HIGH_PRIORITY so this opponent's remove/add fires before the next opponent's
             // queued MEDIUM_PRIORITY transition. Otherwise every opponent sees pre-resolution renown
             // and can pick the same already-depleted location, driving it negative.
             $removeEvent = EventFactory::createRenownRemovedFromLocationEvent($playerId, $location, 1, $playerName);
             $removeEvent->priority = Event::HIGH_PRIORITY;
+            $removeEvent->batchId = $batchId;
             $game->theah->eventCheck($removeEvent);
 
             $addEvent = EventFactory::createRenownAddedToLocationEvent($playerId, Game::LOCATION_CITY_FORUM, 1, $playerName, $isMove = true);
             $addEvent->priority = Event::HIGH_PRIORITY;
+            $addEvent->batchId = $batchId;
             $game->theah->eventCheck($addEvent);
 
+            $game->theah->queueEvent($movingEvent);
             $game->theah->queueEvent($removeEvent);
             $game->theah->queueEvent($addEvent);
     

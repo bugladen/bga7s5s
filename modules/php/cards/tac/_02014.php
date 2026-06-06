@@ -98,11 +98,19 @@ class _02014 extends Scheme implements IHasActions
                 throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $locationName));
             }
 
+            $batchId = $game->getNextEventBatchId();
+            $movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent($this->ControllerId, $locationName, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode());
+            $movingEvent->batchId = $batchId;
+            $game->theah->eventCheck($movingEvent);
+            $game->theah->queueEvent($movingEvent);
+
             $event = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $locationName, 1, $this->getInjectCode());
+            $event->batchId = $batchId;
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
             $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, Game::LOCATION_CITY_FORUM, 1, $this->getInjectCode(), $isMove = true);
+            $event->batchId = $batchId;
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
