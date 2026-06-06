@@ -1669,10 +1669,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     displayDuelTable: function(challengeStat) {
-        const city = $('city');
         dojo.place( this.format_block( 'jstpl_duel_table', {
             challengeStatClass: (challengeStat || '').toLowerCase(),
-        }),  city, 'before');
+        }),  'city-wrapper', 'before');
         this.setupDuelScrollSync();
     },
 
