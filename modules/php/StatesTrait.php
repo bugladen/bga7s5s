@@ -2077,6 +2077,12 @@ trait StatesTrait
                 $auxScore += 20 - $leader->Wounds;
                 $this->dbSetAuxScore($playerId, $auxScore);
 
+                //If leader has been destroyed, set wounds to 100
+                if ($this->characterIsInDiscardOrLocker($leader))
+                {
+                    $leader->Wounds = 100;
+                }
+
                 if ($leader->Wounds < $lowestWounds)
                 {
                     $lowestWounds = $leader->Wounds;
