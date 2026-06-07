@@ -130,6 +130,15 @@
                 }
             },
 
+            'highDramaPhase03020': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03cd13': () => {
                 if (this.isCurrentPlayerActive()) {
                     const cardId = this.clientStateArgs && this.clientStateArgs.crabsCardId;

@@ -1359,6 +1359,16 @@ class Theah
         $this->db->deleteEventBatch($batchId);
     }
 
+    public function deleteRenownAddedToLocationEventsByBatchId(int $batchId)
+    {
+        $this->db->deleteRenownAddedToLocationEventsByBatchId($batchId);
+    }
+
+    public function deleteRenownRemovedFromLocationEventsByBatchId(int $batchId)
+    {
+        $this->db->deleteRenownRemovedFromLocationEventsByBatchId($batchId);
+    }
+
     public function deleteManeuverEvents(string $maneuverId)
     {
         $this->db->deleteManeuverEvents($maneuverId);

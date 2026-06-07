@@ -19,6 +19,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03009.php` (Follow the Thread) — **Sorcerer Strega Action that moves the performer to an adjacent location filtered by destination contents + Strega Maneuver (-1 Thrust, wound adversary).** Exemplar for "Action:" (not "City Action:") with `parent::getPerformersForAction` (home + city performers), `actFromCardWithLocations` location-chooser sub-state, and the `-1 thrust + wound` maneuver shape.
 - `modules/php/cards/faf/_03010.php` (Manipulative) — **Strega Reaction with multi-stage cross-player choice on top of the standard RiskReaction pay state.** Triggers on both `EventApproachCharacterPlayed` and `EventCharacterMustered` (filtered by `$event->fromLocation == LOCATION_APPROACH`). After the framework pays the Risk (discarded from hand), `EventRiskReactionTriggered` chains into a second `createReactionTransitionEvent` to the opposing player, who picks "return + muster different" vs "take the wound". Exemplar for "wound them unless their controller does X" on a RiskReaction (vs the SchemeCityAction shape in `_02036` Crimson Roger).
 - `modules/php/cards/faf/_03012.php` (Subtle) — **Sorcerer Strega RiskReaction that mutates `Game::CHALLENGE_STAT` mid-challenge.** Triggers on `EventCharacterIntervened`; gates on intervener's `Strega` trait. After pay, `EventRiskReactionTriggered` sets `CHALLENGE_STAT = STAT_INFLUENCE` so downstream threat calc uses the new stat. Single-stage (no cross-player choice). Exemplar for "the challenge becomes a [Stat] challenge" Reactions and for Reactions that mutate the live challenge globals rather than directly wounding/moving/drawing.
+- `modules/php/cards/faf/_03020.php` (Commanding) — **"Leader Action" target-and-move-Home + "Leader Reaction" that cancels a Renown movement keyed off `EventRenownMovingBetweenLocations`.** The Reaction `implements ICancelReaction` (required — without it, the post-pay `EventRiskReactionTriggered` is `queueEvent`'d at `MEDIUM_PRIORITY` and loses the race to the still-pending `HIGH_PRIORITY` Add/Remove events). `stackEvent` is used at every step (reaction transition, pay events) so the Reaction interleaves ahead of the pending batch. The Action uses `getLeaderByPlayerId` directly (no `RequiresPerformerSelected` — Leader is uniquely determined). Exemplar for Pattern D.3 (cancel pending high-priority batch events).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -108,6 +109,7 @@ Read each clause of the printed Text and classify it before writing code.
 | **"While [adversary/condition] …"** (combat-card cost or stat modifier on the Risk itself) | Pattern E — passive on the Risk class. Override `eventCheck` / `handleEvent` directly. See `Maneuver_01084::getManeuverFromCombatCardDiscount` for an in-Maneuver passive (combat-card cost discount). |
 | **`<b>Sorcerer …:</b>`** | The ability class (Action/Reaction/Maneuver) additionally `implements ISorcererAbility` — must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). |
 | **`<b>Strega …:</b>`** / **`<b>Mercenary …:</b>`** / **`<b>Duelist …:</b>`** | **Mechanical performer-trait gates**, NOT Sorcerer abilities. Enforce via `hasTrait("Strega")` on the chosen performer or `getDuelRoundActor()`. Do NOT `implement ISorcererAbility` for these. Can stack with Sorcerer ("Sorcerer Strega Reaction" is both). |
+| **`<b>Leader …:</b>`** | **Leader is the performer**, by mechanical restriction. Each player has at most one Leader (`getLeaderByPlayerId($playerId)`) — fetch it directly. Do **not** set `RequiresPerformerSelected = true`; there's no choice to make. For "Leader Action", `isValidTargetForAbility` resolves the Leader via the Risk's `ControllerId` instead of reading `CHOSEN_PERFORMER`. Mirror `Action_01024` (Bravos), `Action_03020` (Commanding). "Leader Reaction:" follows the same shape — the gate is "player owns a Leader at the printed location reference." |
 
 A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_01083` is a single City Action only.
 
@@ -511,6 +513,25 @@ This is single-stage so no `$stage` field is needed. Save only the ids you'll re
 
 References: `Reaction_03012` (Subtle — flips `CHALLENGE_STAT`).
 
+### Pattern D.3 — RiskReaction that cancels pending high-priority events in a batch
+
+When the printed text says "Cancel the movement" / "Cancel the [effect]" and the effect being canceled is delivered by **already-queued, high-priority events** (e.g. `EventRenownAddedToLocation` + `EventRenownRemovedFromLocation` with shared `batchId` — see `_01117`, `_01062`, `_01150` for the producer side), the naive Pattern D.2 shape will deadlock on event ordering. Wire it as:
+
+1. **`implements ICancelReaction`** on the Reaction class. The marker interface has no required methods for the cancel case (`revertCancellation` is only invoked by `Reaction_01109` Not Today against `_01140` specifically). The framework checks `instanceof ICancelReaction` in `FrameworkActionsTrait::actChooseCardForReactionPaid` and **flips both `EventRiskReactionTriggered` and `EventRiskPlayed` from `queueEvent` to `stackEvent`** for the post-pay step.
+2. **`handleEvent` on the trigger event** → gate, save `$event->batchId ?? 0` on the reaction object, **`stackEvent`** the reaction transition (not `queueEvent`) so it pre-empts the rest of the still-pending batch.
+3. **`performReaction('cancel')`** → **`stackEvent`** the pay events (`createReactionPayTransitionEvent` first, then `createEnteringPayStateEvent` — LIFO means the EnteringPayState dequeues first). Don't apply the effect here. `'decline'` → reset saved state, nothing else.
+4. **`handleEvent` on `EventRiskReactionTriggered && internalId == $this->Id`** → apply the cancel by deleting the targeted queued events, notify, `setUsed`, reset saved state.
+
+**WHY `ICancelReaction` is load-bearing here, not optional:** without it, the post-pay `EventRiskReactionTriggered` is `queueEvent`'d at `MEDIUM_PRIORITY = 3`. The companion `Added`/`Removed` events sit at `HIGH_PRIORITY = 2` (lower number = higher priority — `getNextEvent` orders by `event_priority` ASC). They dequeue and apply the Renown change *before* your trigger handler runs. With `ICancelReaction`, both post-pay events are `stackEvent`'d, which assigns `min(current priorities) - 1` — guaranteeing they pre-empt every queued high-priority event including the ones you need to delete.
+
+**WHY also `stackEvent` the reaction transition and pay events:** same priority math at every step. Anything you `queueEvent` lands at `MEDIUM_PRIORITY` (the event constructor default) and queues *behind* the `HIGH_PRIORITY` batch members. The user would never get the offer; the Renown move would resolve first. Use `stackEvent` for every event you want to interleave ahead of the pending batch.
+
+**Prefer targeted helpers over `deleteEventBatch` for batch members.** `deleteEventBatch($batchId)` is type-agnostic — fine when you genuinely want to delete every batch member, but the Pattern D.3 contract is "cancel these specific events." Add (or use) `DB::deleteXEventsByBatchId(int $batchId)` helpers (mirror `deleteRenownAddedToLocationEventsByBatchId` / `deleteRenownRemovedFromLocationEventsByBatchId`) and call them from a `Theah` pass-through. Anchor the batchId substring with a trailing semicolon — `'%batchId";i:5;%'` — so `batchId=5` doesn't false-match `batchId=50/51/…` (the bare `deleteEventBatch` has this prefix-collision; the targeted helpers should not).
+
+**`EventRenownMovingBetweenLocations` is informational only** — it has no `EventHub` handler, so canceling/deleting it does nothing on its own. The actual Renown state change is in the `Added`/`Removed` pair queued alongside it with shared `batchId`. To cancel a Renown movement, delete those two; ignore the Moving event itself (it's already been dequeued and processed by the time you reach `EventRiskReactionTriggered`, anyway).
+
+References: `Reaction_03020` (Commanding — Leader Reaction canceling Renown movement from Leader's location); the related but simpler `Reaction_01140` (Stubborn — `ICancelReaction` that cancels an `EventCardMoving` in-place via `$event->canceled = true` + saved-event re-emit on decline, no post-pay batch deletion needed).
+
 ### `EventCharacterIntervened` trigger semantics
 
 Fired by `FrameworkActionsTrait::actHighDramaChallengeActionIntervene` after the intervener replaces the defender. Field semantics for `handleEvent` use:
@@ -696,6 +717,15 @@ Event factories you'll likely need:
 - `createGainLethalEvent($actorId, Theah $theah)` — grant Lethal in a duel round.
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)` — move into the reaction's player-button state.
 
+Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_01117`, `_01062`, `_01150` for the canonical "queue Moving + Add + Removed with shared batchId" idiom):
+- `$theah->deleteRenownAddedToLocationEventsByBatchId(int $batchId)` / `deleteRenownRemovedFromLocationEventsByBatchId(int $batchId)` — pass-throughs to `DB` helpers that anchor on `'%EventRenown<X>%'` AND `'%batchId";i:{N};%'` (note trailing `;`). Prefer these over `deleteEventBatch($batchId)` when you want to cancel only the state-mutating add/remove events, not every batch member.
+
+`queueEvent` vs `stackEvent` rule of thumb:
+- `queueEvent` → priority = the event's own `priority` field (defaults to `MEDIUM_PRIORITY = 3`). The event runs after all currently-pending events with lower-priority numbers (higher actual priority).
+- `stackEvent` → priority = `min(current event_priorities) - 1`. Pre-empts every currently-pending event.
+- `getNextEvent` orders by `event_priority` ASC — **lower number dequeues first**.
+- If you need your reaction transition / pay events / cancel handler to run *before* an existing high-priority batch in the queue, `stackEvent` every step. Mixing `queueEvent` and `stackEvent` is the standard footgun behind "my cancel doesn't cancel anything" — by the time `EventRiskReactionTriggered` fires, the high-priority events have already mutated state.
+
 ## Reference Implementations
 
 | File | What it demonstrates |
@@ -715,6 +745,8 @@ Event factories you'll likely need:
 | `modules/php/cards/_7s5s/_01059.php` (Regroup) | **Simple "Move your performer to an adjacent City location" City Action.** The canonical move-to-adjacent template — uses legacy array-format state `highDramaPhase01059` (`""` default transition). |
 | `modules/php/cards/faf/_03010.php` (Manipulative) | **RiskReaction with multi-stage cross-player choice on top of the pay state (Pattern D.1).** Triggers on both `EventApproachCharacterPlayed` AND `EventCharacterMustered` (filtered by `$event->fromLocation == LOCATION_APPROACH`). After pay → `EventRiskReactionTriggered` chains a second `createReactionTransitionEvent` to the opposing player for the return-vs-wound choice. `$stage` field drives `getReactionButtonProperties()`. Reset of in-play state on return-to-Approach is handled centrally by the EventHub `EventCharacterPutIntoApproachDeck` handler. |
 | `modules/php/cards/faf/_03012.php` (Subtle) | **Sorcerer Strega RiskReaction that mutates `Game::CHALLENGE_STAT` (Pattern D.2).** Triggers on `EventCharacterIntervened` with the intervener (`$event->newTargetId`) as the trigger-named performer; gates on intervener's `Strega` trait directly (no separate search). After pay, the `EventRiskReactionTriggered` handler emits `SorcererAbilityStart`, sets `CHALLENGE_STAT = STAT_INFLUENCE`, emits `SorcererAbilityPlayed`, and `setUsed`s. No `IRiskThatTargetsCharacters` (no character chooser). No new `CHALLENGE_TYPE` constant (intervention/refusal rules unchanged). |
+| `modules/php/cards/faf/_03020.php` (Commanding) | **"Leader Action" target-and-move-Home + `ICancelReaction` RiskReaction that cancels a Renown movement (Pattern D.3).** The Action gates on `getLeaderByPlayerId` (no `RequiresPerformerSelected`), opposing-character chooser at the Leader's location, moves target to `LOCATION_PLAYER_HOME`. The Reaction triggers on `EventRenownMovingBetweenLocations` when the Leader sits at `$event->fromLocation`; `stackEvent`s the reaction transition + pay events; `implements ICancelReaction` so the post-pay `EventRiskReactionTriggered` is also stacked. The triggered handler calls the targeted helpers `deleteRenownAddedToLocationEventsByBatchId` + `deleteRenownRemovedFromLocationEventsByBatchId` (on `Theah` → `DB`) so the high-priority Add/Remove events are gone before they can fire. |
+| `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
 
