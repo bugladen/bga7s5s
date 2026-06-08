@@ -508,6 +508,7 @@ class States
                 const DUEL_END_OF_ROUND_01096 = 52901096;
                 const DUEL_END_OF_ROUND_01200 = 52901200;
                 const DUEL_END_OF_ROUND_01200_2 = 529012002;
+                const DUEL_END_OF_ROUND_03022 = 52903022;
             const DUEL_END_OF_ROUND_REACTIONS = 5291;
             const DUEL_END_OF_ROUND_PAY_FOR_REACTION = 5292;
     const DUEL_NEXT_PLAYER = 53;

@@ -245,6 +245,18 @@
                 }
             },
 
+            'duelEndOfRound_03022': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args._private.args.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.makeCardSelectable(image);
+                    });
+                    this.clientStateArgs.characterIds = args.args._private.args.characterIds;
+                }
+            },
+
             'highDramaPhase03cd03_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     card = this.cardProperties[args.args.args.cardId];

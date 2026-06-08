@@ -23,6 +23,8 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03012.php` (Subtle) — **Sorcerer Strega RiskReaction that mutates `Game::CHALLENGE_STAT` mid-challenge.** Triggers on `EventCharacterIntervened`; gates on intervener's `Strega` trait. After pay, `EventRiskReactionTriggered` sets `CHALLENGE_STAT = STAT_INFLUENCE` so downstream threat calc uses the new stat. Single-stage (no cross-player choice). Exemplar for "the challenge becomes a [Stat] challenge" Reactions and for Reactions that mutate the live challenge globals rather than directly wounding/moving/drawing.
 - `modules/php/cards/faf/_03020.php` (Commanding) — **"Leader Action" target-and-move-Home + "Leader Reaction" that cancels a Renown movement keyed off `EventRenownMovingBetweenLocations`.** The Reaction `implements ICancelReaction` (required — without it, the post-pay `EventRiskReactionTriggered` is `queueEvent`'d at `MEDIUM_PRIORITY` and loses the race to the still-pending `HIGH_PRIORITY` Add/Remove events). `stackEvent` is used at every step (reaction transition, pay events) so the Reaction interleaves ahead of the pending batch. The Action uses `getLeaderByPlayerId` directly (no `RequiresPerformerSelected` — Leader is uniquely determined). Exemplar for Pattern D.3 (cancel pending high-priority batch events).
 - `modules/php/cards/faf/_03021.php` (Cornered) — **RiskCityAction issuing a Combat challenge to a trait-filtered (Sorcerer OR Monster) opposing target, with the performer engaged as a cost and side effects on refuse/intervene.** Mints `CORNERED_CHALLENGE_TYPE` purely as a correlator so the Risk's `handleEvent` can identify its own challenge when reading `EventChallengeRejected` (engage the refuser) and `EventCharacterIntervened` (wound the intervener) — gates themselves stay normal. Exemplar for "side-effect-on-refuse/intervene → mint a CHALLENGE_TYPE" and for filtering engaged performers out (`! $p->Engaged` layered on `canChallenge()`) when the text imposes an engage cost.
+- `modules/php/cards/_7s5s/_01082.php` (A Heroic End) — **Pure-data Final Strike Maneuver** (+2 Threat + Lethal when participant dies). Track participant on `EventResolveManeuver`, react on `EventCharacterDestroyed` while `IN_DUEL`. No state transition — pure data mutation only. The baseline Final Strike shape; reach for `_03022` when the on-death effect requires a player choice.
+- `modules/php/cards/faf/_03022.php` (Overzealous) — **Final Strike Maneuver with a post-death player choice (en garde target) + conditional draw.** Same participant-tracking shape as `_01082`, but the on-death effect queues a `createTransitionEvent` into an end-of-round sub-state where the dead participant's controller picks an En Garde target. Exemplar for Pattern C.1 (post-death player choice), the `DuelLocation` capture (actor is in the locker by selection time), the `DUEL_END_OF_ROUND_NNNNN` state-family naming, and the pass-button + gate-on-pass discipline for "target if able" prompts.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -477,6 +479,124 @@ if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
 
 Note the `eventCheck($woundEvent)` call before `queueEvent` — gives prevention/redirection effects a chance to fire. Reference: `Maneuver_03009`, `Maneuver_01055` (Ranged variant), `Technique_01050` (Technique variant of the same shape).
 
+### Pattern C.1 — Final Strike maneuver (post-death effect; optionally with player choice)
+
+"Final Strike • <effect>" activates **when your participant is destroyed the round this card is played.** Two shapes:
+
+- **Pure-data on-death** (no player input): mutate threat / queue draw / fire notify. Reference `_01082` (A Heroic End — `+2 Threat` + Lethal to adversary when participant dies).
+- **On-death with player choice** (en garde a target, pick a card to discard, etc.): queue a `createTransitionEvent` from the destroyed handler into a card-specific sub-state. Reference `_03022` (Overzealous — En Garde target at the location + conditional draw if participant was Zealot/Hunter).
+
+Skeleton (player-choice variant):
+
+```php
+private int $FinalStrikeParticipantId = 0;
+private string $DuelLocation = "";   // capture at resolve time — see "Destroyed character is in the locker" below.
+
+public function handleEvent(Event $event)
+{
+    parent::handleEvent($event);
+
+    if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
+    {
+        $owner = $this->getOwningCard($event->theah);
+        $this->FinalStrikeParticipantId = $event->theah->getDuelOpponentId($event->adversaryId);
+        $participant = $event->theah->getCharacterById($this->FinalStrikeParticipantId);
+        $this->DuelLocation = $participant->Location;
+        $owner->IsUpdated = true;
+    }
+
+    if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->FinalStrikeParticipantId)
+    {
+        $game = $event->theah->game;
+        if (! $game->globals->get(Game::IN_DUEL)) return;
+
+        $character = $event->theah->getCharacterById($this->FinalStrikeParticipantId);
+        $owner = $this->getOwningCard($game->theah);
+        $playerId = $character->ControllerId;   // still valid mid-destroy — see ControllerId note below.
+
+        // ... conditional pure-data effects (draw, notify) ...
+
+        $transitionEvent = EventFactory::createTransitionEvent($playerId, $owner->Id, "NNNNN", $this->Id);
+        $event->theah->queueEvent($transitionEvent);
+    }
+
+    if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+    {
+        $this->FinalStrikeParticipantId = 0;
+        $this->DuelLocation = "";
+        $owner = $this->getOwningCard($event->theah);
+        $owner->IsUpdated = true;
+    }
+
+    if ($event instanceof EventDuelNewRound && $this->FinalStrikeParticipantId != 0)
+    {
+        $owner = $this->getOwningCard($event->theah);
+        $owner->IsUpdated = true;
+        $this->FinalStrikeParticipantId = 0;
+        $this->DuelLocation = "";
+    }
+}
+```
+
+#### Destroyed character is in the locker by selection time — capture `$DuelLocation` at resolve
+
+By the time the player makes the en-garde / discard / etc. choice, **the destroyed participant has been moved to the locker.** `$actor->Location` and `$theah->getDuelRoundActor()->Location` will return the locker location, NOT the duel location. Any `getCharactersAtLocation($actor->Location)` query that runs in `getArgsFromManeuver` / `isValidTargetForAbility` / `actFromManeuverPass` will look at the wrong location and return an empty (or wrong) target set.
+
+Capture `$participant->Location` on `EventResolveManeuver` (when the participant is still alive at the duel location), store it on the Maneuver object, and route all post-death location queries through it. Reset alongside `$FinalStrikeParticipantId` in `EventManeuverCanceled` and `EventDuelNewRound`. Mirror `_03022::DuelLocation` + `getResolutionLocation(Theah $theah)` helper.
+
+#### Mid-destroy character lookups are valid
+
+When `EventCharacterDestroyed` fires, the character has `IsDying = true` but has NOT yet been physically moved (the destroy event is queued, not applied; the move happens in the central hub handler later in the same loop). So inside your `EventCharacterDestroyed` handler:
+
+- `$theah->getCharacterById($event->characterId)` returns the character.
+- `$character->ControllerId` is still the original controller (use this to pick the player who will make the post-death choice — NOT `getActivePlayerId()`, which is the current duel actor and may be the *killer*, not the controller of the destroyed participant).
+- `$character->hasTrait(...)` works for conditional gates ("if your participant was a Zealot or Hunter").
+
+#### State naming: `DUEL_END_OF_ROUND_NNNNN`, not `DUEL_RESOLVE_MANEUVER_NNNNN`
+
+The maneuver's "resolve" phase already ran (that's where you queued the participant-tracking). The transition into the player-choice state fires from `EventCharacterDestroyed` during the **end-of-round events loop** (state `5290` `DUEL_END_OF_ROUND_EVENTS`), because that's where wound-driven destruction usually completes. Wire accordingly:
+
+- **States.php constant:** `DUEL_END_OF_ROUND_NNNNN = 52901NNN` (or `52903NNN` for faf, etc. — pattern is `5290` + zero-padded card number).
+- **`states.inc.php`:** add `"NNNNN" => States::DUEL_END_OF_ROUND_NNNNN` to the `DUEL_END_OF_ROUND_EVENTS.transitions` map (NOT to `DUEL_RESOLVE_MANEUVER_EVENTS`). If you wire it under `DUEL_RESOLVE_MANEUVER_EVENTS` you'll get a runtime `transition NNNNN is impossible at this state (5290)` error.
+- **GameState class:** `modules/php/States/<expansion>/State_duelEndOfRound_NNNNN.php`, `name: "duelEndOfRound_NNNNN"`, `transitions: ["" => States::DUEL_END_OF_ROUND_EVENTS]`. Mirror `State_duelEndOfRound_01096`.
+- **JS handlers:** all three `On*.<expansion>.js` files keyed `'duelEndOfRound_NNNNN'`. Use private args (`args.args._private.args.characterIds`) — the state should use `argsForStatePrivate`.
+
+Why end-of-round specifically: wounding during combat resolution carries the death over into `DUEL_END_OF_ROUND_EVENTS` for final processing. The transition event you queued from `EventCharacterDestroyed` is dequeued there; only states whose `transitions` map declares the transition string can accept it.
+
+#### Pass button + gate-on-pass for "target if able" prompts
+
+"En garde target character at this location" (and similar) is a do-if-able prompt — there may be no valid target (everyone at the location is already en garde, no characters at the location, etc.). Wire a Pass affordance:
+
+- **GameState class** — declare `actFromCardPass` as a second `#[PossibleAction]`:
+  ```php
+  #[PossibleAction]
+  public function actFromCardPass(): void { $this->game->actFromCardPass(); }
+  ```
+- **Maneuver** — override `actFromManeuverPass` and **throw `UserException` if valid targets exist** (player cannot pass when they have a legal choice); otherwise notify + `$game->gamestate->nextState()`:
+  ```php
+  public function actFromManeuverPass(Game $game, int $state): void
+  {
+      parent::actFromManeuverPass($game, $state);
+      if ($state == States::DUEL_END_OF_ROUND_NNNNN)
+      {
+          $location = $this->getResolutionLocation($game->theah);
+          if (count($this->getValidTargets($game->theah, $location)) > 0)
+              throw new UserException($game->translate("There are targets — you must choose one."));
+          $owner = $this->getOwningCard($game->theah);
+          $game->notify->all("message", clienttranslate('${maneuver_inject_code}: No valid target.'), [
+              "maneuver_inject_code" => $owner->getInjectCode(),
+          ]);
+          $game->gamestate->nextState();
+      }
+  }
+  ```
+- **JS `OnUpdateActionButtons`** — add the alert-color Pass button alongside the Confirm button:
+  ```js
+  this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+  ```
+
+The gate is what keeps the Pass button honest — without it, a player could skip a mandatory effect by clicking Pass. Mirror `_03022::actFromManeuverPass`.
+
 ### Cross-player maneuver sub-state (adversary picks something)
 
 When the maneuver effect requires the **opposing** controller to pick (e.g., "they discard a card from their hand"), queue a `createTransitionEvent($adversary->ControllerId, ...)` from `EventResolveManeuver`, register the new state in `states.inc.php` under the Duel resolve-maneuver transitions, and implement `actFromManeuverWithId` to validate the pick. Reference: `Maneuver_01115` (Taunt — Finesse-gated adversary-discards-a-card flow).
@@ -748,7 +868,7 @@ A Risk card that both extends `Risk` AND has Actions/Maneuvers/Reactions in sepa
 - `$theah->getCharactersAtLocation(string $location): array` — everyone at a location (defensive: filter by `isControlled()` and `ControllerId` when "opposing" is the intent).
 - `$theah->cardInCity(Card $card): bool` — true when the card is at a city location.
 - `$theah->getDuelRoundActor(): ?Character` / `getDuelRoundOpponent(): ?Character` — the round's participant + adversary.
-- `$theah->getDuelChallengerId() / getDuelDefenderId() / getDuelOpponentId(int $actorId)` — id-only accessors.
+- `$theah->getDuelChallengerId() / getDuelDefenderId() / getDuelOpponentId(int $actorId)` — id-only accessors. **All three return CHARACTER ids, not player ids.** Looking up a player from one of these requires `$theah->getCharacterById($id)->ControllerId`. Don't pass them to `getPlayerNameById($playerId)` — you'll print "0" or worse. The `challenger_id` / `defender_id` columns in the `duel` table are character primary keys (the dueling characters), not player primary keys.
 - `Game::IN_DUEL` global — true between duel start and end.
 - `Game::DUEL_GAMBLED` global — true after the actor locks in a combat card via gamble; cleared at end of round.
 - `Game::CHOSEN_PERFORMER` / `CHOSEN_TARGET` / `CHALLENGE_TYPE` / `CHALLENGE_STAT` globals — set in `handleEvent` on `EventActionTriggered` to brief the challenge sub-state machine.
@@ -762,6 +882,7 @@ Event factories you'll likely need:
 - `createCardDrawnEvent($playerId, string $reason)` — draw one card.
 - `createGainLethalEvent($actorId, Theah $theah)` — grant Lethal in a duel round.
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)` — move into the reaction's player-button state.
+- `createCardEngagedEvent($playerId, $cardId, $sourceId = 0, $abilityId = "")` vs `createCardEngardedEvent($playerId, $cardId, $sourceId = 0, $abilityId = "")` — **NOT synonyms.** In this game's vocabulary `Engaged = true` means "committed / has acted"; `Engaged = false` means "en garde / ready". `createCardEngagedEvent` sets `Engaged = true`; `createCardEngardedEvent` clears it back to `false`. When the printed text uses **"en garde" as a verb** ("En garde target character"), you want `createCardEngardedEvent` (clears the flag); valid targets are characters whose `Engaged == true` (Action_01081's `isValidTargetForAbility` returns "Character is already En Garded" when `!Engaged`). When the text says "engage" you want `createCardEngagedEvent` and valid targets are `Engaged == false`. Read each one literally — they're opposite operations.
 
 Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_01117`, `_01062`, `_01150` for the canonical "queue Moving + Add + Removed with shared batchId" idiom):
 - `$theah->deleteRenownAddedToLocationEventsByBatchId(int $batchId)` / `deleteRenownRemovedFromLocationEventsByBatchId(int $batchId)` — pass-throughs to `DB` helpers that anchor on `'%EventRenown<X>%'` AND `'%batchId";i:{N};%'` (note trailing `;`). Prefer these over `deleteEventBatch($batchId)` when you want to cancel only the state-mutating add/remove events, not every batch member.
@@ -793,6 +914,8 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/faf/_03012.php` (Subtle) | **Sorcerer Strega RiskReaction that mutates `Game::CHALLENGE_STAT` (Pattern D.2).** Triggers on `EventCharacterIntervened` with the intervener (`$event->newTargetId`) as the trigger-named performer; gates on intervener's `Strega` trait directly (no separate search). After pay, the `EventRiskReactionTriggered` handler emits `SorcererAbilityStart`, sets `CHALLENGE_STAT = STAT_INFLUENCE`, emits `SorcererAbilityPlayed`, and `setUsed`s. No `IRiskThatTargetsCharacters` (no character chooser). No new `CHALLENGE_TYPE` constant (intervention/refusal rules unchanged). |
 | `modules/php/cards/faf/_03021.php` (Cornered) | **RiskCityAction that engages performer + issues Combat challenge to opposing Sorcerer/Monster, with side effects on refuse (engage them) and intervene (wound them).** Sets a fresh `CORNERED_CHALLENGE_TYPE` purely as a correlator — gates stay normal, but the Risk's `handleEvent` reads the global to disambiguate its own challenge from baseline ones when handling `EventChallengeRejected` and `EventCharacterIntervened`. Demonstrates the "side-effect-on-refuse/intervene → mint a CHALLENGE_TYPE" expansion, and the `! Engaged` performer-filter layered on `canChallenge()` for "Engage your performer" costs. |
 | `modules/php/cards/faf/_03020.php` (Commanding) | **"Leader Action" target-and-move-Home + `ICancelReaction` RiskReaction that cancels a Renown movement (Pattern D.3).** The Action gates on `getLeaderByPlayerId` (no `RequiresPerformerSelected`), opposing-character chooser at the Leader's location, moves target to `LOCATION_PLAYER_HOME`. The Reaction triggers on `EventRenownMovingBetweenLocations` when the Leader sits at `$event->fromLocation`; `stackEvent`s the reaction transition + pay events; `implements ICancelReaction` so the post-pay `EventRiskReactionTriggered` is also stacked. The triggered handler calls the targeted helpers `deleteRenownAddedToLocationEventsByBatchId` + `deleteRenownRemovedFromLocationEventsByBatchId` (on `Theah` → `DB`) so the high-priority Add/Remove events are gone before they can fire. |
+| `modules/php/cards/_7s5s/_01082.php` (A Heroic End) | **Pure-data Final Strike Maneuver baseline.** Track participant on `EventResolveManeuver`, react on `EventCharacterDestroyed` while `IN_DUEL` to mutate threat (`createThreatModifiedEvent` with +2 threat + Lethal for the surviving side). No state transition, no player choice. Reach for `_03022` if your Final Strike requires a chooser. |
+| `modules/php/cards/faf/_03022.php` (Overzealous) | **Final Strike Maneuver with a post-death player choice (Pattern C.1).** En Garde a chosen character at the duel's location + conditional draw if participant was Zealot/Hunter. Captures `DuelLocation` on `EventResolveManeuver` (actor is in the locker by selection time); queues `createTransitionEvent` from `EventCharacterDestroyed` (not `EventResolveManeuver`); state is named `DUEL_END_OF_ROUND_03022` (52903022) and wired under `DUEL_END_OF_ROUND_EVENTS` (NOT `DUEL_RESOLVE_MANEUVER_EVENTS`); uses `createCardEngardedEvent` (the "en garde" verb makes characters NOT engaged); adds a Pass button with gate-on-pass that throws `UserException` when valid targets exist. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
@@ -820,3 +943,7 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 12. **For card-specific sub-states:** also add `OnEnteringState`/`OnUpdateActionButtons`/`OnLeavingState` handlers in the matching expansion's JS file (e.g., `modules/js/On*.faf.js`).
 13. **Side-effect-on-refuse/intervene → mint a CHALLENGE_TYPE.** Risk-class handlers reacting to `EventChallengeRejected` or `EventCharacterIntervened` cannot correlate via `$event->actionId` (no such field on either event). The challenger id is the *performer*, not stable. Set a fresh `<CARD>_CHALLENGE_TYPE` constant in `Game.php` and assign it in the Action's `EventActionTriggered` handler, then gate the Risk's handlers on `globals->get(CHALLENGE_TYPE) == <CARD>_CHALLENGE_TYPE`. Reference: `_03021` Cornered.
 14. **`canChallenge()` is `return isControlled();` — it does NOT check `Engaged`.** If the printed text imposes an engage cost on the performer ("Engage your performer …"), add `&& ! $c->Engaged` (or `|| $p->Engaged → false`) in BOTH `isAvailableToPlayer` and `getPerformersForAction`. Reference: `Action_03021`.
+15. **Final Strike with player choice (Pattern C.1):** capture `$DuelLocation = $participant->Location` on `EventResolveManeuver`, queue `createTransitionEvent` from `EventCharacterDestroyed` (not from resolve), wire the state under `DUEL_END_OF_ROUND_EVENTS` (state id `52901NNN`-style), name it `DUEL_END_OF_ROUND_NNNNN`. Route all post-death location queries through the stored `$DuelLocation` — `getDuelRoundActor()->Location` will be the locker by selection time. Reference: `_03022`.
+16. **"En garde" the verb vs "engage" the verb — opposite operations.** `createCardEngardedEvent` sets `Engaged = false` (ready / en garde); `createCardEngagedEvent` sets `Engaged = true` (committed). When the printed text says "En garde target character," the valid targets are characters whose `Engaged == true` (you're putting them back into en garde). Reference: `Action_01081`, `Maneuver_03022`.
+17. **`getDuelChallengerId()` / `getDuelDefenderId()` / `getDuelOpponentId()` return CHARACTER ids, not player ids.** Resolve to a player via `$theah->getCharacterById($id)->ControllerId`. Passing them directly to `getPlayerNameById()` prints garbage.
+18. **"Target if able" maneuvers get a Pass + gate.** Declare `actFromCardPass` as a `PossibleAction` on the GameState class, override `actFromManeuverPass` to `throw UserException` when valid targets exist, and add the alert-color Pass button in `OnUpdateActionButtons`. Without the gate, a player can silently skip a mandatory effect. Reference: `Maneuver_03022`.

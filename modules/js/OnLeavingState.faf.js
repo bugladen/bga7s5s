@@ -181,6 +181,16 @@
                 }
             },
 
+            'duelEndOfRound_03022': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.characterIds.forEach((characterId) => {
+                        card = this.cardProperties[characterId];
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                    });
+                }
+            },
+
             'highDramaPhase03cd03_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.showApproachDeckAtBottom();

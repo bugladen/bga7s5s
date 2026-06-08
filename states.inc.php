@@ -2681,6 +2681,7 @@ $machinestates = [
                         "01031" => States::DUEL_END_OF_ROUND_01031,
                         "01096" => States::DUEL_END_OF_ROUND_01096,
                         "01200" => States::DUEL_END_OF_ROUND_01200,
+                        "03022" => States::DUEL_END_OF_ROUND_03022,
                         "reaction" => States::DUEL_END_OF_ROUND_REACTIONS,
                         "pay" => States::DUEL_END_OF_ROUND_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_NEXT_PLAYER,
