@@ -180,6 +180,7 @@ class Game extends \Bga\GameFramework\Table
     final const UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
     final const AJA_CHALLENGE_TYPE = 18;
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
+    final const CORNERED_CHALLENGE_TYPE = 20;
 
     //Duel global variables
     //Duel Names

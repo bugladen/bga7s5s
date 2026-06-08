@@ -1,7 +1,9 @@
 ---
 name: create-risk
 description: Implement or finish a Risk card (modules/php/cards/<expansion>/_NNNNN.php where the class directly extends Risk). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a Risk, or when they reference a card whose class extends Risk and has unimplemented Text. Triggers on phrases like "implement this risk", "finish _NNNNN" (when it extends Risk), "wire up the maneuver", "add the city action on this risk", or natural-language descriptions of a Risk card (faction-deck combat card with Riposte/Parry/Thrust, played as a maneuver during duels, sometimes carries a City Action / Action / Reaction).
-
+context: fork
+model: haiku
+effort: low
 ---
 
 # Creating a Risk
@@ -20,6 +22,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03010.php` (Manipulative) — **Strega Reaction with multi-stage cross-player choice on top of the standard RiskReaction pay state.** Triggers on both `EventApproachCharacterPlayed` and `EventCharacterMustered` (filtered by `$event->fromLocation == LOCATION_APPROACH`). After the framework pays the Risk (discarded from hand), `EventRiskReactionTriggered` chains into a second `createReactionTransitionEvent` to the opposing player, who picks "return + muster different" vs "take the wound". Exemplar for "wound them unless their controller does X" on a RiskReaction (vs the SchemeCityAction shape in `_02036` Crimson Roger).
 - `modules/php/cards/faf/_03012.php` (Subtle) — **Sorcerer Strega RiskReaction that mutates `Game::CHALLENGE_STAT` mid-challenge.** Triggers on `EventCharacterIntervened`; gates on intervener's `Strega` trait. After pay, `EventRiskReactionTriggered` sets `CHALLENGE_STAT = STAT_INFLUENCE` so downstream threat calc uses the new stat. Single-stage (no cross-player choice). Exemplar for "the challenge becomes a [Stat] challenge" Reactions and for Reactions that mutate the live challenge globals rather than directly wounding/moving/drawing.
 - `modules/php/cards/faf/_03020.php` (Commanding) — **"Leader Action" target-and-move-Home + "Leader Reaction" that cancels a Renown movement keyed off `EventRenownMovingBetweenLocations`.** The Reaction `implements ICancelReaction` (required — without it, the post-pay `EventRiskReactionTriggered` is `queueEvent`'d at `MEDIUM_PRIORITY` and loses the race to the still-pending `HIGH_PRIORITY` Add/Remove events). `stackEvent` is used at every step (reaction transition, pay events) so the Reaction interleaves ahead of the pending batch. The Action uses `getLeaderByPlayerId` directly (no `RequiresPerformerSelected` — Leader is uniquely determined). Exemplar for Pattern D.3 (cancel pending high-priority batch events).
+- `modules/php/cards/faf/_03021.php` (Cornered) — **RiskCityAction issuing a Combat challenge to a trait-filtered (Sorcerer OR Monster) opposing target, with the performer engaged as a cost and side effects on refuse/intervene.** Mints `CORNERED_CHALLENGE_TYPE` purely as a correlator so the Risk's `handleEvent` can identify its own challenge when reading `EventChallengeRejected` (engage the refuser) and `EventCharacterIntervened` (wound the intervener) — gates themselves stay normal. Exemplar for "side-effect-on-refuse/intervene → mint a CHALLENGE_TYPE" and for filtering engaged performers out (`! $p->Engaged` layered on `canChallenge()`) when the text imposes an engage cost.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -206,15 +209,58 @@ State wiring: `"NNNNN" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` in 
 
 References: `Action_01083` (Leader-only intervention, custom challenge type), `Action_03008` (Influence-gated target).
 
-### Custom challenge type only when intervention/refusal differ
+### Custom challenge type when intervention/refusal differ OR carry side effects
 
-`Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` **only** when intervention or refusal rules differ from normal — e.g., "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene or refuse" (`AJA_CHALLENGE_TYPE`). See the existing list in `modules/php/Game.php` for the catalog.
+`Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` when **either**:
+
+1. **Intervention or refusal *gates* differ from normal** — "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene or refuse" (`AJA_CHALLENGE_TYPE`). The framework reads CHALLENGE_TYPE in `Theah::interventionCheck` to enforce these gates.
+2. **Intervention or refusal carries a side effect attached to the issuing card** — "If they refuse, engage them" + "Wound any character that intervenes" (`CORNERED_CHALLENGE_TYPE` in `_03021`). The gates themselves stay normal (anyone can refuse or intervene), but the **Risk class needs a correlator** to tell "this challenge is mine" inside its `EventChallengeRejected` / `EventCharacterIntervened` handlers.
+
+See the existing list in `modules/php/Game.php` for the catalog.
+
+#### The "actionId on challenge events" trap (do NOT do this)
+
+`EventChallengeRejected` exposes `challengerId` and `targetId` — **no `actionId`**.
+`EventCharacterIntervened` exposes `playerId`, `oldTargetId`, `newTargetId` — **no `actionId`**.
+
+A Risk class whose printed text attaches a side effect to refuse/intervene cannot gate its handler on `$event->actionId == $this->Id` — that property does not exist on either event, the comparison is always false (and may emit an undefined-property warning), and the effect silently dies.
+
+Why a Risk-class handler can't pin "this is my challenge?" off `challengerId` alone: the challenger is the *performer*, picked at play time from a pool of characters. The Risk has no stable identity in the challenger field. Two cards could legitimately have the same performer issue separate challenges in the same turn.
+
+The right correlator is a fresh `CHALLENGE_TYPE` constant set in the Action's `EventActionTriggered` handler, then read by the Risk's `handleEvent` on the challenge event:
+
+```php
+// Action_NNNNN::handleEvent on EventActionTriggered
+$event->theah->game->globals->set(Game::CHALLENGE_TYPE, Game::MY_NEW_CHALLENGE_TYPE);
+
+// _NNNNN::handleEvent on EventChallengeRejected / EventCharacterIntervened
+$game = $event->theah->game;
+if ($event instanceof EventChallengeRejected
+    && $game->globals->get(Game::CHALLENGE_TYPE) == Game::MY_NEW_CHALLENGE_TYPE)
+{
+    // ... apply side effect to $event->targetId
+}
+```
+
+Reference: `_03021` (Cornered) — `CORNERED_CHALLENGE_TYPE` is consumed for correlation only; `Theah::interventionCheck` doesn't branch on it (gates stay normal).
 
 ### "Your performer" semantics
 
 When the printed text says "Your performer issues a challenge," the framework picks the performer first via `RequiresPerformerSelected = true`. The chosen performer's id is in `$game->globals->get(Game::CHOSEN_PERFORMER)` by the time `isValidTargetForAbility` runs.
 
 Override `getPerformersForAction` to filter the candidate list (must be in city, must `canChallenge()`, must have at least one valid target). The base `RiskCityAction::getPerformersForAction` already filters to city characters; layer your predicates on top.
+
+#### `canChallenge()` does NOT check `Engaged`
+
+`Character::canChallenge()` is `return $this->isControlled();` — nothing more. Most challenge-issuing Risks (`_01083`, `_03008`) don't impose an engage cost on the performer, so the base check is sufficient.
+
+When the printed text begins with **"Engage your performer"** (or otherwise imposes Engagement as a cost on the chosen performer), an already-engaged performer cannot pay the cost and must be filtered out at both the availability and performer-list level. Layer `! $p->Engaged` on top of `canChallenge()` in **both** `isAvailableToPlayer` and `getPerformersForAction`:
+
+```php
+$characters = array_filter($characters, fn(Character $c) => $c->canChallenge() && ! $c->Engaged);
+```
+
+Reference: `Action_03021` (Cornered). The same rule applies to any non-City Action whose text engages the performer as a cost — the engage-already-engaged predicate goes wherever you'd normally just check `canChallenge()`.
 
 ### Pattern A.1 — City Action that moves a chosen character (enemy OR friendly)
 
@@ -745,6 +791,7 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/_7s5s/_01059.php` (Regroup) | **Simple "Move your performer to an adjacent City location" City Action.** The canonical move-to-adjacent template — uses legacy array-format state `highDramaPhase01059` (`""` default transition). |
 | `modules/php/cards/faf/_03010.php` (Manipulative) | **RiskReaction with multi-stage cross-player choice on top of the pay state (Pattern D.1).** Triggers on both `EventApproachCharacterPlayed` AND `EventCharacterMustered` (filtered by `$event->fromLocation == LOCATION_APPROACH`). After pay → `EventRiskReactionTriggered` chains a second `createReactionTransitionEvent` to the opposing player for the return-vs-wound choice. `$stage` field drives `getReactionButtonProperties()`. Reset of in-play state on return-to-Approach is handled centrally by the EventHub `EventCharacterPutIntoApproachDeck` handler. |
 | `modules/php/cards/faf/_03012.php` (Subtle) | **Sorcerer Strega RiskReaction that mutates `Game::CHALLENGE_STAT` (Pattern D.2).** Triggers on `EventCharacterIntervened` with the intervener (`$event->newTargetId`) as the trigger-named performer; gates on intervener's `Strega` trait directly (no separate search). After pay, the `EventRiskReactionTriggered` handler emits `SorcererAbilityStart`, sets `CHALLENGE_STAT = STAT_INFLUENCE`, emits `SorcererAbilityPlayed`, and `setUsed`s. No `IRiskThatTargetsCharacters` (no character chooser). No new `CHALLENGE_TYPE` constant (intervention/refusal rules unchanged). |
+| `modules/php/cards/faf/_03021.php` (Cornered) | **RiskCityAction that engages performer + issues Combat challenge to opposing Sorcerer/Monster, with side effects on refuse (engage them) and intervene (wound them).** Sets a fresh `CORNERED_CHALLENGE_TYPE` purely as a correlator — gates stay normal, but the Risk's `handleEvent` reads the global to disambiguate its own challenge from baseline ones when handling `EventChallengeRejected` and `EventCharacterIntervened`. Demonstrates the "side-effect-on-refuse/intervene → mint a CHALLENGE_TYPE" expansion, and the `! Engaged` performer-filter layered on `canChallenge()` for "Engage your performer" costs. |
 | `modules/php/cards/faf/_03020.php` (Commanding) | **"Leader Action" target-and-move-Home + `ICancelReaction` RiskReaction that cancels a Renown movement (Pattern D.3).** The Action gates on `getLeaderByPlayerId` (no `RequiresPerformerSelected`), opposing-character chooser at the Leader's location, moves target to `LOCATION_PLAYER_HOME`. The Reaction triggers on `EventRenownMovingBetweenLocations` when the Leader sits at `$event->fromLocation`; `stackEvent`s the reaction transition + pay events; `implements ICancelReaction` so the post-pay `EventRiskReactionTriggered` is also stacked. The triggered handler calls the targeted helpers `deleteRenownAddedToLocationEventsByBatchId` + `deleteRenownRemovedFromLocationEventsByBatchId` (on `Theah` → `DB`) so the high-priority Add/Remove events are gone before they can fire. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
@@ -771,3 +818,5 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 10. Lint touched PHP files (`php -l`) before committing.
 11. **For card-specific sub-states (GameState class):** the Action's `nextState(...)` argument must match a *named* transition key (e.g., `"locationChosen"`); the empty `""` default works only for legacy array-format states in `states.7s5s.php`.
 12. **For card-specific sub-states:** also add `OnEnteringState`/`OnUpdateActionButtons`/`OnLeavingState` handlers in the matching expansion's JS file (e.g., `modules/js/On*.faf.js`).
+13. **Side-effect-on-refuse/intervene → mint a CHALLENGE_TYPE.** Risk-class handlers reacting to `EventChallengeRejected` or `EventCharacterIntervened` cannot correlate via `$event->actionId` (no such field on either event). The challenger id is the *performer*, not stable. Set a fresh `<CARD>_CHALLENGE_TYPE` constant in `Game.php` and assign it in the Action's `EventActionTriggered` handler, then gate the Risk's handlers on `globals->get(CHALLENGE_TYPE) == <CARD>_CHALLENGE_TYPE`. Reference: `_03021` Cornered.
+14. **`canChallenge()` is `return isControlled();` — it does NOT check `Engaged`.** If the printed text imposes an engage cost on the performer ("Engage your performer …"), add `&& ! $c->Engaged` (or `|| $p->Engaged → false`) in BOTH `isAvailableToPlayer` and `getPerformersForAction`. Reference: `Action_03021`.
