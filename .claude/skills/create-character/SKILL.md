@@ -1078,6 +1078,41 @@ WHY the valid-target precondition: if no eligible mover exists, the player would
 
 For the *self-moves* analogue ("after this character moves to a new location, do X for nearby allies"), the receiver isn't a Reaction — it's a `handleEvent` on the card itself. See `_01067` Jean Urbain or `_02022` Stranahan.
 
+### After the Owner herself moves to a city location
+
+For "After <Owner> moves to a city location • Reaction: do X" (`_03025` Angeline). The trigger filter is the OPPOSITE of `Reaction_03016b` — gate on `cardId == $owner->Id`, not `!=`. The full gate set:
+
+```php
+if (! ($event instanceof EventCardMoved)) return;
+if (! $this->isAvailable()) return;
+
+$owner = $this->getOwningCharacter($event->theah);
+if ($owner === null) return;
+
+if ($event->cardId != $owner->Id) return;                       // owner herself
+if (! $event->theah->locationInCity($event->toLocation)) return; // city dest only
+
+// Valid-target precondition — read eligibility at $event->toLocation, NOT $owner->Location
+if (count($this->getEligibleTargets($event->theah, $owner, $event->toLocation)) == 0) return;
+```
+
+**Gotcha — `$owner->Location` at handleEvent time is the OLD location.** `EventCardMoved` sets `runEventHubAfterCards = true`, so the EventHub state update (which writes `$card->Location = $event->toLocation`) runs AFTER every card's `handleEvent`. Inside an `EventCardMoved` handler, `$owner->Location` is still `$event->fromLocation`. Read the destination as `$event->toLocation` for any "now that the move has happened, who else is at the new location" lookups. By the time `performReaction` runs, the move HAS resolved and `$owner->Location` is the new location — so the target-validation check there can use `$owner->Location` directly.
+
+Pattern reference: `Reaction_03025` (Angeline) — `cardId == $owner->Id` filter, `locationInCity($event->toLocation)` gate, `getEligibleTargets(..., $event->toLocation)` precondition.
+
+### Continuous Reaction — never set to Used
+
+For "After X happens, you may Y" with no per-round/per-turn/per-game cap (e.g. `_03025` Angeline's "After Angeline moves to a city location, wound an engaged opposing character"). The Reaction should fire every time the trigger event recurs. Omit the `$this->setUsed($theah, true)` call in `performReaction` — let the reaction stay available indefinitely.
+
+**Pre-commit hook gotcha.** `.githooks/pre-commit` greps for the literal string `$this->setUsed(` in every `CardReaction` subclass and fails the commit if absent. A continuous Reaction has no runtime `setUsed(true)` call, so satisfy the hook by mentioning the literal in a comment:
+
+```php
+// Continuous Reaction: intentionally do NOT call $this->setUsed(true).
+// The reaction remains available and can fire on every recurrence of the trigger.
+```
+
+The grep matches the literal inside the comment — no behavior change, hook passes. Same trick works for `$this->isAvailable(` if the reaction doesn't otherwise call it (rare; `isAvailable()` is the standard gate in `handleEvent`).
+
 ### Cancel-and-reissue Reaction — opt out of an auto-emitted event
 
 For text like "During Dusk, you may choose not to move <Owner> Home" (`_03016` Ise). The framework's `stDuskPhaseCleanup` emits a `createCardMovingEvent(..., LOCATION_PLAYER_HOME, $engage=false, $sourceId=0)` for every non-Home controlled character. The Reaction intercepts that event, asks the player, and either keeps it canceled (effect: stay) or re-queues it (effect: go home as normal).
@@ -1214,6 +1249,19 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of 
 ## Pattern E — Techniques and Maneuvers
 
 The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. The base `create-city-character` skill has the general shape; the notes below are duel-specific patterns that come up often.
+
+### Explicit `setUsed(true)` in the effect handler
+
+The base `Technique` class auto-fires `$this->setUsed($theah, true)` on `EventTechniqueActivated`, so a properly-activated technique gets marked used without explicit code. But the convention in non-trivial techniques (`Technique_01093`, `Technique_03025a`, `Technique_03025b`) is to also call it explicitly in the technique's own effect handler — either on `EventDuelCalculateTechniqueValues` (stat modifiers) or on `EventResolveTechnique` (state-transition effects):
+
+```php
+if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id) {
+    // ... apply the modifier
+    $this->setUsed($event->theah, true);   // explicit; idempotent vs the auto path
+}
+```
+
+It's idempotent vs the base class's auto-call, but cheap insurance against edge paths where the activation event might not have fired (copied techniques, cancellation/re-issue flows). Base `Technique::handleEvent` already resets `Used` on `EventDuelEnd` (because `ResetOnDuelEnd = true` by default), so the explicit `setUsed(true)` doesn't leak across duels.
 
 ### In-duel availability gate
 
@@ -1510,6 +1558,88 @@ If your state reuses an existing client action (e.g. `onMusterCardSelected`), ex
 
 For new expansion JS files (`*.<expansion>.js`), make sure the chain to the master JS files exists — `faf`, `tac`, and `_7s5s` are already chained.
 
+### City-location picker — full wiring (Technique example)
+
+For a Technique/Action that prompts "choose any city location" (`Technique_03025b` Angeline's Gambling relocation):
+
+**Backend — the technique:**
+
+```php
+public function getArgsFromTechnique(Game $game, int $state, string $stateName): array
+{
+    $args = parent::getArgsFromTechnique($game, $state, $stateName);
+    if ($state == States::DUEL_CHOOSE_TECHNIQUE_03025B) {
+        $args["locationIds"] = array_keys($game->theah->getCityLocations());  // not hardcoded
+    }
+    return $args;
+}
+
+public function actFromTechniqueWithIds(Game $game, int $state, string $stateName, array $ids): void
+{
+    parent::actFromTechniqueWithIds($game, $state, $stateName, $ids);
+    if ($state == States::DUEL_CHOOSE_TECHNIQUE_03025B) {
+        $location = $ids[0];
+        if (! array_key_exists($location, $game->theah->getCityLocations())) {
+            throw new \Bga\GameFramework\UserException($game->translate('Invalid location.'));
+        }
+        // ... queue createCardMovingEvent etc.
+    }
+}
+```
+
+WHY `$theah->getCityLocations()` and not a hardcoded array: the city has 3 locations in 2p, 4 in 3p, 5 in 4p (Ole's Inn and Governor's Garden are excluded in smaller games). Hardcoding breaks player-count adaptation. Also, the constants `Game::LOCATION_BORDELLO` / `LOCATION_CATHEDRAL` / `LOCATION_DOCKS` / `LOCATION_MARKET` / `LOCATION_OLES_INN` **do not exist** — the real constants are `LOCATION_CITY_DOCKS`, `LOCATION_CITY_FORUM`, `LOCATION_CITY_BAZAAR`, `LOCATION_CITY_OLES_INN`, `LOCATION_CITY_GOVERNORS_GARDEN`. `getCityLocations()` sidesteps both problems.
+
+**State class — the `#[PossibleAction]` must be `actFromCardWithLocations`:**
+
+```php
+#[PossibleAction]
+public function actFromCardWithLocations(string $locations): void
+{
+    $this->game->actFromCardWithLocations($locations);
+}
+```
+
+**NOT** `actFromCardWithIds`. The JS calls `onCityLocationsSelected()` → `bgaPerformAction('actFromCardWithLocations', { locations: JSON.stringify(...) })`. If the state's `#[PossibleAction]` is `actFromCardWithIds`, the framework reports "This move is not authorized now" — the action name doesn't match. The framework's `actFromCardWithLocations` then JSON-decodes the locations and forwards them as the `$ids` array into the card's `actFromCardWithIds` → `actFromTechniqueWithIds`, so the technique still receives the locations through the `$ids` parameter — only the entry-point name differs.
+
+**JS — `OnEnteringState.<expansion>.js`:**
+
+```js
+'duelChooseTechnique_03025b': () => {
+    if (this.isCurrentPlayerActive()) {
+        this.clientStateArgs.locationIds = this.gamedatas.gamestate.args.locationIds;
+        this.numberOfCityLocationsSelectable = 1;
+        this.selectedCityLocations = [];
+        this.clientStateArgs.locationIds.forEach((locationId) => {
+            const imageElement = this.getCityLocationElement(locationId);
+            this.makeCityLocationSelectable(imageElement);
+        });
+    }
+},
+```
+
+**JS — `OnUpdateActionButtons.<expansion>.js`:**
+
+```js
+'duelChooseTechnique_03025b': () => {
+    this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+    dojo.addClass('actCityLocationsSelected', 'disabled');
+},
+```
+
+**JS — `OnLeavingState.<expansion>.js` — use `resetCityLocations()`, NOT `clearCityLocationAsSelectable`:**
+
+```js
+'duelChooseTechnique_03025b': () => {
+    if (this.isCurrentPlayerActive()) {
+        this.resetCityLocations();
+        this.selectedCityLocations = [];
+        this.numberOfCityLocationsSelectable = 0;
+    }
+},
+```
+
+There is no `clearCityLocationAsSelectable` function — that's a hallucinated name. The existing helper is `resetCityLocations()` (in `modules/js/Utilities.js`), which strips `_7sfs-selectable` / `_7sfs-selected` / `_7sfs-chosen` and the pointer cursor from every active city location element (plus the player Home endcap). Every existing location-picker cleanup in `OnLeavingState.tac.js` uses it; mirror that.
+
 ## Pre-Commit Hook (relevant subset)
 
 `.githooks/pre-commit` enforces, for the files you touch when implementing a Character or Leader:
@@ -1518,7 +1648,7 @@ For new expansion JS files (`*.<expansion>.js`), make sure the chain to the mast
 |---|---|
 | `extends CardAction/RiskAction/RiskCityAction` (regex literal — does NOT match `CharacterAction` directly, but the convention still applies) | `createActionResolvedEvent()` somewhere in the class. |
 | **Forbidden in `CharacterAction` subclasses** | `$this->setUsed()` / `$this->resetPlayerPassCount()` / `$this->announceAction()` — these run centrally. |
-| `extends CardReaction/AttachmentReaction` | `$this->setUsed(` AND `$this->isAvailable(` (literal strings; the hook is grep-based). |
+| `extends CardReaction/AttachmentReaction` | `$this->setUsed(` AND `$this->isAvailable(` (literal strings; the hook is grep-based). For a Continuous Reaction (no actual `setUsed(true)` call at runtime), keep the literal in a comment so grep matches — see "Continuous Reaction" in Pattern D. |
 | `implements ISorcererAbility` | both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()`. |
 | Class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` | **Forbidden.** Split into two classes. |
 | Calls `createAttachmentEquippedEvent()` | Must also call `getRequiredAttachTargetId()`. |
@@ -1541,7 +1671,8 @@ The card class itself (`_NNNNN extends Character` / `extends Leader`) has no hoo
 ## Cross-Cutting Helpers
 
 - `$theah->cardInCity($card): bool` — true when the card is at a city location.
-- `$theah->locationInCity(string $location): bool` — true for any of the 5 city locations. Use inside an `EventCardMoved` handler (the card's `Location` field hasn't been updated yet at that point).
+- `$theah->locationInCity(string $location): bool` — true for any active city location. Use inside an `EventCardMoved` handler against `$event->toLocation` — `$owner->Location` is still the OLD location at that point because `EventCardMoved.runEventHubAfterCards = true` defers the state write until after every card's `handleEvent` runs.
+- `$theah->getCityLocations(): array` — keyed by location id. `array_keys($theah->getCityLocations())` enumerates the ACTIVE city locations (3 in 2p / 4 in 3p / 5 in 4p — Ole's Inn and Governor's Garden are excluded in smaller games). Always use this over hardcoded `LOCATION_*` arrays for "pick any city location" pickers. The actual city-location constants are `LOCATION_CITY_DOCKS`, `LOCATION_CITY_FORUM`, `LOCATION_CITY_BAZAAR`, `LOCATION_CITY_OLES_INN`, `LOCATION_CITY_GOVERNORS_GARDEN` — there is no `LOCATION_BORDELLO` / `LOCATION_CATHEDRAL` / `LOCATION_DOCKS` / `LOCATION_MARKET` (those are hallucinated names; check before using).
 - `$theah->getCharactersAtLocation(string $location, bool $includeUncontrolled = false): array` — all characters at a location (default excludes uncontrolled, which is usually what you want).
 - `$theah->getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false): array` — friendly characters at a location.
 - `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing = different controller AND same location.
@@ -1588,6 +1719,10 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/_03016.php` (Schwester Ise, Moonlit Interrogator) | **Character with a self-condition stat bonus + a cancel-and-reissue Reaction + an enemy-moved-to-me Reaction.** (1) +1 Combat while wounded: private `$WoundedCombatBonusApplied` flag, hook `EventCharacterWounded`/`EventCharacterHealed` for `characterId == $this->Id` after `parent::handleEvent` updates `$this->Wounds`, queue `createCharacterCombatModifiedEvent(±1)` only on flag transition, skip on `IsDying`/discard. (2) Dusk "keep in city" via `Reaction_03016a` — listens on `EventCardMoving` (`sourceId == 0`, `toLocation == HOME`, `TURN_PHASE == DUSK`), cancels and prompts, uses `cancelDeclinedByCardIds` to gate the Decline re-queue. (3) "After enemy moves here" via `Reaction_03016b` — `EventCardMoved` with controller/location gates, button-per-eligible-friendly, `createCardMovingEvent` to the owner's location. |
 | `modules/php/cards/faf/reactions/Reaction_03016a.php` | Canonical cancel-and-reissue Reaction. Clone + `unset($cloned->theah)` for storage; `stackEvent` for the transition; `cancelDeclinedByCardIds[] = owner.Id` on Decline so the re-queued event isn't re-caught. Same shape as in-hand `Reaction_01140` but lives on a Character in play. |
 | `modules/php/cards/faf/reactions/Reaction_03016b.php` | "After enemy moves here → pull a friendly" Reaction. Demonstrates the full `EventCardMoved` gate set (`cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, instanceof Character, `ControllerId != 0`, enemy controller), valid-target precondition (`getEligibleMovers` non-empty), and `createCardMovingEvent` for a non-self mover with `engage=false`. |
+| `modules/php/cards/faf/_03025.php` (Angeline Dèmone, Prodigal Capitaine) | **Leader with a Continuous Reaction on self-move + two Techniques (stat modifier + city-location picker).** Reaction is the OWNER-moves-to-city analogue of `Reaction_03016b` (filter inverted: `cardId == owner.Id`). Techniques split into `_03025a` (simple `EventDuelCalculateTechniqueValues` +1 Riposte) and `_03025b` (Gambling Technique with interactive city-location picker state). |
+| `modules/php/cards/faf/reactions/Reaction_03025.php` | **Owner-moves-to-city Reaction + Continuous (never-Used) pattern.** Uses `cardId == owner.Id` + `locationInCity($event->toLocation)`. **Reads target eligibility at `$event->toLocation`, not `$owner->Location`** — `EventCardMoved.runEventHubAfterCards = true` means the location field still holds the OLD value during `handleEvent`. `performReaction` omits the `setUsed(true)` call so the Reaction fires every move; the hook-required literal `$this->setUsed(` is kept inside a comment for grep compliance. |
+| `modules/php/cards/faf/techniques/Technique_03025a.php` | **Plain stat-modifier Technique with explicit `setUsed`.** `EventDuelCalculateTechniqueValues` adds +1 Riposte and calls `$this->setUsed($event->theah, true)` in the same handler. No state class, no JS wiring needed. |
+| `modules/php/cards/faf/techniques/Technique_03025b.php` | **Gambling Technique with city-location picker.** `EventResolveTechnique` queues a transition into `DUEL_CHOOSE_TECHNIQUE_03025B`; `getArgsFromTechnique` returns `array_keys($theah->getCityLocations())` (player-count-aware, no hardcoded constants); `actFromTechniqueWithIds` validates via `array_key_exists($location, $game->theah->getCityLocations())` and queues `createCardMovingEvent` for both actor and adversary. State class `State_duelChooseTechnique_03025b` exposes `actFromCardWithLocations(string $locations)` as the `#[PossibleAction]` — NOT `actFromCardWithIds`, since the JS submits via `onCityLocationsSelected → actFromCardWithLocations`. `OnLeavingState` cleanup uses `resetCityLocations()`. |
 | `modules/php/cards/faf/_03015.php` (Joern Kietelsson, Fury's Edge) | **Character with three pure-passive abilities — no Action/Reaction/Technique files.** (1) Forced self-wound on muster: hooks BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed` OR'd in one conditional, gated on `characterId == $this->Id`. (2) Phase-conditional Resolve penalty ("During Dusk, -3 Resolve"): direct `$this->ModifiedResolve` mutation on `EventDuskPhaseBegin`, restore on `EventDuskEndOfDay`, gated by a private `$DuskResolvePenaltyApplied` bool — there is no `createCharacterResolveModifiedEvent` factory. Includes an explicit destruction check (mirroring `EventHub.php:251`) because `Character::handleEvent`'s threshold check only runs inside an `EventCharacterWounded` handler. (3) Challenge-refused self-heal on `EventChallengeRejected` with `challengerId == $this->Id` — symmetric to `_01119` Nazem's challenger-side engage. |
 | `modules/php/cards/faf/techniques/Technique_03014.php` | **Attachment-OR-dueling-line trait-gated Technique that wounds the adversary.** `isAvailableToPlayer` ORs two checks: iterate `$owner->Attachments` (ids → `getCardById` → `hasTrait("Eisenfaust")`) and iterate `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)`. Effect mirrors `Technique_03004` — `EventDuelCalculateTechniqueValues` handler queues a `createCharacterBeingWoundedEvent` against `getDuelRoundOpponent()` and pushes an explanation. |
 | `modules/php/cards/_7s5s/_01069.php` (Maxime de Lafayette) | **Wound-prevention passive — own-Sorcerer scope.** Overrides `handleEvent` on `EventCharacterWounded` and skips `parent::handleEvent` to drop the wound (alternative to Kaspar's `eventCheck`-on-`EventCharacterBeingWounded` shape). Distinguishes Sorcery-trait source (auto-targets performer) from `ISorcererAbility` + `CHOSEN_PERFORMER == Maxime`. Prefer Kaspar's shape for new wound-prevention passives — it doesn't propagate the past-tense event to other listeners. |
@@ -1629,6 +1764,9 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 22. **For wound-prevention passives** ("<X>'s abilities cannot wound <Owner>" / "<Owner> ignores wounds from <Y>"): override `eventCheck` on the card class (NOT `handleEvent`) on `EventCharacterBeingWounded` and zero `$event->wounds` when the gate trips. Reasons: (a) `EventHub` only emits the past-tense `EventCharacterWounded` when `wounds > 0`, so zeroing in the *Being*-tense event also suppresses every downstream listener that keys on the past-tense event — cleaner than Maxime's skip-`parent::handleEvent` shape; (b) `eventCheck` runs before any handler, so the mutation is visible to everyone. Use `$event->abilityId == ''` as the threat-conversion signal (`StatesTrait::stDuelEndOfRound` omits the ability id when emitting threat-to-wounds — every ability emitter passes it). Use `$source->ControllerId != $this->ControllerId` for "opponent's ability" scope; use Sorcery-trait / `ISorcererAbility` + `CHOSEN_PERFORMER` for "abilities he performs" scope (Maxime). Wound-movement (heal+wound recipe) is automatically covered by the wound-block — don't add a special handler. Pattern reference: `_03014` Kaspar (zero), `_01153` Breastplate (reduce-by-one), `_01069` Maxime (alternative `handleEvent` shape — only use for "abilities he performs" scope).
 23. **For techniques gated on "equipped with X or X in dueling line":** OR two checks in `isAvailableToPlayer` — iterate `$owner->Attachments` (ids → `getCardById($id)` → `hasTrait(...)`) AND iterate `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)`. Both are inside the standard `IN_DUEL` + actor-is-owner gate. There is no `hasAttachmentWithTrait` helper — the id-then-lookup pattern is the codebase convention (`Maneuver_01054`). Pattern reference: `Technique_03014` and Pattern E's "equipped with X or X in dueling line" subsection.
 24. **For "after X musters" triggers:** the conditional MUST OR `EventCharacterMustered` AND `EventApproachCharacterPlayed`. The Approach card path emits a distinct event, so a single-event hook silently misses Approach-driven entries. Pattern reference: `_01009` Cirilo (mercenary→Brute) and `_03015` Joern (Forced self-wound). See Pattern A's "Forced muster/approach triggers" subsection.
+25. **For city-location picker states (Action or Technique):** the state's `#[PossibleAction]` MUST be `actFromCardWithLocations(string $locations)`, NOT `actFromCardWithIds(array $ids)`. The JS submits via `onCityLocationsSelected → bgaPerformAction('actFromCardWithLocations', ...)`; if the state declares `actFromCardWithIds`, you get a "This move is not authorized now" error. The framework's `actFromCardWithLocations` JSON-decodes the payload and forwards it into the card's `actFromCardWithIds → actFromTechniqueWithIds`, so the technique still receives the location strings through the `$ids` parameter — only the entry-point name differs. Source list: `array_keys($theah->getCityLocations())`. Validation: `array_key_exists($loc, $theah->getCityLocations())`. NOT hardcoded `LOCATION_*` arrays — those constants don't exist for the colloquial names (`LOCATION_BORDELLO` etc. are hallucinations; the real constants are `LOCATION_CITY_DOCKS`/`LOCATION_CITY_FORUM`/`LOCATION_CITY_BAZAAR`/`LOCATION_CITY_OLES_INN`/`LOCATION_CITY_GOVERNORS_GARDEN`). `OnLeavingState` cleanup uses `resetCityLocations()` — there is no `clearCityLocationAsSelectable` function. Pattern reference: `Technique_03025b` and JS Wiring's "City-location picker — full wiring" subsection.
+26. **For "after the Owner moves to a city location" Reactions:** the trigger filter is `cardId == $owner->Id` (OPPOSITE of `Reaction_03016b`'s enemy-moves-to-me filter). Inside the `EventCardMoved` handler, `$owner->Location` is STILL the OLD location because `EventCardMoved.runEventHubAfterCards = true` defers the state write until after every card's `handleEvent`. Read eligibility at `$event->toLocation`, not `$owner->Location`. By the time `performReaction` runs, the move has resolved and `$owner->Location` reflects the new value. Pattern reference: `Reaction_03025` (Angeline) and Pattern D's "After the Owner herself moves to a city location" subsection.
+27. **For Continuous Reactions** (Reactions that fire every time the trigger event recurs, no per-round/per-turn cap): omit the `$this->setUsed($theah, true)` runtime call. But the `.githooks/pre-commit` hook greps for the literal string `$this->setUsed(` in every `CardReaction` subclass — keep that literal alive inside an explanatory comment so the hook still passes. Pattern reference: `Reaction_03025` and Pattern D's "Continuous Reaction" subsection.
 25. **For phase-conditional Resolve modifiers** ("During <Phase>, X has ±N Resolve"): mutate `$this->ModifiedResolve` directly — there is no `createCharacterResolveModifiedEvent` factory (unlike Combat/Finesse/Influence/Panache which all have one). Gate the apply with a private bool flag so attachment-driven `ModifiedResolve` churn doesn't desync. Manually emit `createCharacterDestroyedEvent` (mirroring `EventHub.php:251`'s unequip path) if the reduction crosses the wounds-equal-resolve threshold — `Character::handleEvent`'s destruction check only runs inside `EventCharacterWounded`. Restore at `EventDuskEndOfDay` (or whichever phase-end event matches the printed scope), unconditionally on the flag — destroyed objects in the Locker are fine, and the unconditional restore guards against any hypothetical return-from-Locker path that skips the constructor. Pattern reference: `_03015` Joern and Pattern A's "Phase-conditional Resolve modifier" subsection.
 26. **For "+N [Stat] while <self-condition>" passives** (Combat/Finesse/Influence/Panache): use a flag-based recompute pattern, NOT a recompute-from-base. Hook the event(s) that toggle the condition (`EventCharacterWounded`/`EventCharacterHealed` for "while wounded", `EventCardEngaged`/`EventCardEngarded` for "while engaged", etc.) gated on `characterId == $this->Id`. Call `parent::handleEvent($event)` FIRST so the parent updates `$this->Wounds` / `Engaged` / etc.; then re-derive the boolean and queue `createCharacter<Stat>ModifiedEvent(±1)` only on flag transition. Skip if `IsDying` or `characterIsInDiscardOrLocker`. Pattern reference: `_03016` Ise (+1 Combat while wounded) and Pattern A's "Stat bonus while a self-condition holds" subsection. The flag avoids clobbering attachment-driven `ModifiedCombat` etc. **Resolve has no factory — use the `_03015` Joern direct-mutation pattern instead.**
 27. **For "During <Phase>, you may choose not to <auto-action>" Reactions** (Dusk opt-out, Dawn cleanup opt-out, etc.): listen on the *pre*-event (e.g., `EventCardMoving`) and use the `cancelDeclinedByCardIds` re-queue dance. Cancel the event in `handleEvent` (`$event->canceled = true`), clone-and-store it (with `unset($cloned->theah)`), prompt the player; "Keep" path calls `setUsed(true)` and discards the clone; "Decline" path re-queues the clone with `cancelDeclinedByCardIds[] = $owner->Id` so `handleEvent` doesn't immediately re-catch it. Gate the trigger on the auto-emitter signal — for the Dusk move-home, that's `sourceId == 0` AND `TURN_PHASE == Game::DUSK`. Use `stackEvent` (not `queueEvent`) for the transition so the prompt fires before subsequent dusk cleanup events. Pattern reference: `Reaction_03016a` (Ise, on a Character in play) and `Reaction_01140` (in-hand sibling). See Pattern D's "Cancel-and-reissue Reaction" subsection.

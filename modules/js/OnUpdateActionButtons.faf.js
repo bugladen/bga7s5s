@@ -110,6 +110,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'duelChooseTechnique_03025b': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'duelEndOfRound_03022': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
