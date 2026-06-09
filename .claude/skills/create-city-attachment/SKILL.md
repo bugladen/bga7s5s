@@ -1,6 +1,9 @@
 ---
 name: create-city-attachment
 description: Implement or finish a City Attachment (modules/php/cards/<expansion>/_NNNNN.php where the class extends CityAttachment). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a City Attachment, or when they reference a city-deck attachment whose class extends CityAttachment and has unimplemented Text. Triggers on phrases like "implement this city attachment", "finish _03cdNN" (when it extends CityAttachment), "wire up the equip wound", "the equipped character does X", or "add an Action to this attachment."
+context: fork
+model: haiku
+effort: low
 ---
 
 # Creating a City Attachment

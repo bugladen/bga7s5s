@@ -25,6 +25,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03021.php` (Cornered) — **RiskCityAction issuing a Combat challenge to a trait-filtered (Sorcerer OR Monster) opposing target, with the performer engaged as a cost and side effects on refuse/intervene.** Mints `CORNERED_CHALLENGE_TYPE` purely as a correlator so the Risk's `handleEvent` can identify its own challenge when reading `EventChallengeRejected` (engage the refuser) and `EventCharacterIntervened` (wound the intervener) — gates themselves stay normal. Exemplar for "side-effect-on-refuse/intervene → mint a CHALLENGE_TYPE" and for filtering engaged performers out (`! $p->Engaged` layered on `canChallenge()`) when the text imposes an engage cost.
 - `modules/php/cards/_7s5s/_01082.php` (A Heroic End) — **Pure-data Final Strike Maneuver** (+2 Threat + Lethal when participant dies). Track participant on `EventResolveManeuver`, react on `EventCharacterDestroyed` while `IN_DUEL`. No state transition — pure data mutation only. The baseline Final Strike shape; reach for `_03022` when the on-death effect requires a player choice.
 - `modules/php/cards/faf/_03022.php` (Overzealous) — **Final Strike Maneuver with a post-death player choice (en garde target) + conditional draw.** Same participant-tracking shape as `_01082`, but the on-death effect queues a `createTransitionEvent` into an end-of-round sub-state where the dead participant's controller picks an En Garde target. Exemplar for Pattern C.1 (post-death player choice), the `DuelLocation` capture (actor is in the locker by selection time), the `DUEL_END_OF_ROUND_NNNNN` state-family naming, and the pass-button + gate-on-pass discipline for "target if able" prompts.
+- `modules/php/cards/faf/_03023.php` (Second Wind) — **Gambling Maneuver that suppresses end-of-round threat→wound conversion and carries the threat to next round.** Intercepts `EventCharacterBeingWounded` by signature (`characterId == actor.Id && sourceId == adversary.Id` — that pairing only happens for the threat→wound conversion); zeroes `$event->wounds`, captures the original amount, adds it to `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` (which `stDuelNewRound` reads onto the next round's starting pool), and zeroes `duel_round.wounds_taken` for the same row so the UI display and `duelParticipantWoundsTaken()` cross-round aggregate stay consistent. Exemplar for Pattern C.2 (suppress end-of-round conversion ± carry-forward) and a worked example of `Maneuver_02039`'s `PENDING_*_THREAT` mechanism as the supported cross-round threat channel.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -437,6 +438,106 @@ References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
 When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`).
+
+### Pattern C.2 — Suppress end-of-round threat→wound conversion (with optional carry-forward)
+
+"Your participant's threat is not converted to wounds this round" — the **threat-to-wound conversion** happens once per round inside `StatesTrait::stDuelEndOfRound`, NOT continuously during the round. Trying to gate this off `EventDuelCalculateCombatCardStats` or anywhere mid-round is the wrong hook. Three things you have to know to wire it correctly:
+
+#### 1. The conversion mechanics
+
+`stDuelEndOfRound` (StatesTrait.php:~1414) does, in order:
+
+1. **Reads** `duel_round.ending_<actor>_threat` (plus the `<side>_threat_is_lethal` flag).
+2. **Wipes** both fields to `0` via direct SQL (StatesTrait.php:~1453) — this is critical: by the time anything else runs, the threat is *gone* from the DB row.
+3. Computes `$wounds = $threat`, possibly reduced by Restricted Hostilities (stat cap when non-lethal).
+4. **Queues** `EventCharacterBeingWounded($actor->Id, $adversary->Id, $wounds, $reason)` (StatesTrait.php:~1492).
+5. Queues `EventDuelEndOfRound`.
+
+So any maneuver that wants to suppress this conversion gets its window when `EventCharacterBeingWounded` fires.
+
+#### 2. Identifying THIS wound event
+
+`EventCharacterBeingWounded` is also fired by many other things (other wound effects, maneuvers, techniques). The conversion event has a unique signature: **`$event->characterId == actor.Id && $event->sourceId == adversary.Id`** — that pairing only happens for the end-of-round threat→wound conversion. Gate on it:
+
+```php
+if ($event instanceof EventCharacterBeingWounded && $this->IsActive)
+{
+    $theah = $event->theah;
+    $actor = $theah->getDuelRoundActor();
+    if ($actor === null || $event->characterId != $actor->Id) return;
+
+    $adversaryId = $theah->getDuelOpponentId($actor->Id);
+    if ($event->sourceId != $adversaryId) return;
+    // ... safe to suppress
+}
+```
+
+#### 3. Carrying the threat forward (`PENDING_<side>_THREAT`)
+
+If the card text rolls the suppressed threat into next round, **don't** try to keep `ending_<actor>_threat` populated — the SQL wipe (step 2 above) zeroed it before the wound event was even queued, so reading it back gives 0.
+
+The supported channel is the `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` globals. `stDuelNewRound` reads them at StatesTrait.php:~1130–1144, adds them to the next round's starting threat, and deletes them. Capture the wound amount **before** zeroing, route to the right side via `getDuelChallengerId()`:
+
+```php
+$carryOver = $event->wounds;
+if ($carryOver <= 0) return;
+$event->wounds = 0;
+
+$game = $theah->game;
+$challengerId = $theah->getDuelChallengerId();
+if ($actor->Id == $challengerId)
+{
+    $pending = $game->globals->get(Game::PENDING_CHALLENGER_THREAT, 0);
+    $game->globals->set(Game::PENDING_CHALLENGER_THREAT, $pending + $carryOver);
+}
+else
+{
+    $pending = $game->globals->get(Game::PENDING_DEFENDER_THREAT, 0);
+    $game->globals->set(Game::PENDING_DEFENDER_THREAT, $pending + $carryOver);
+}
+```
+
+Reference: `Maneuver_02039` (Add Threat — adds +1 to both sides on the next round's pool). `Maneuver_03023` (Second Wind — captures the suppressed conversion amount).
+
+#### 4. Also zero `duel_round.wounds_taken`
+
+Zeroing `$event->wounds` stops the wound from being applied to the character row, but **`duel_round.wounds_taken` was already incremented during the round** by `DB::updateRoundThreats` (DB.php:~539–552) as a running "wounds the actor is about to take" tally. If you don't reset it:
+
+- The `updateRoundThreats` notification still ships the inflated count to the client (EventHub.php:~2197, ~2223) — UI displays a wound count that never happened.
+- `Theah::duelParticipantWoundsTaken()` sums `wounds_taken` across the participant's **prior** rounds. `Maneuver_01107` reads that aggregate. With the suppression in place but the column unchanged, downstream cards see wounds that never landed.
+
+Add the row update inside the same `EventCharacterBeingWounded` branch:
+
+```php
+$duelId = $game->globals->get(Game::DUEL_ID);
+$round = $game->globals->get(Game::DUEL_ROUND);
+$game->DbQuery("UPDATE duel_round SET wounds_taken = 0 WHERE duel_id = $duelId AND round = $round");
+```
+
+#### 5. "Adversary absent" predicate
+
+When the suppression has an "unless adversary absent" gate, both of these are valid; using both is cheap and explicit:
+
+```php
+$adversary = $theah->getCharacterById($adversaryId);
+if ($theah->game->characterIsInDiscardOrLocker($adversary)
+    || $adversary->Location != $actor->Location)
+{
+    return;   // adversary absent — let wound resolve normally
+}
+```
+
+Destroyed characters have `Location` set to `"Locker-…"`/`"Discard-…"`, so the location-mismatch check subsumes the destroyed case, but `characterIsInDiscardOrLocker` is the canonical destroyed test (memory feedback) and reads cleanly.
+
+#### 6. Lethality is not preserved across the rollover
+
+There is no `PENDING_<side>_THREAT_IS_LETHAL` global. If the suppressed threat was lethal, the rolled-over threat lands non-lethal. `Maneuver_02039` has the same limitation. If a future card's text requires preserving lethality across rounds, the right move is to add the global rather than special-case it in the card.
+
+#### 7. State tracking on the Maneuver
+
+Use a `public bool $IsActive` field on the Maneuver, set on `EventResolveManeuver`, cleared on `EventManeuverCanceled` and `EventDuelEndOfRound`. Mark `$owner->IsUpdated = true` whenever you flip it so the framework persists. The `EventDuelEndOfRound` reset is needed because the maneuver instance lives on `$theah->cards` across rounds — without resetting, the next round's conversion would also be suppressed.
+
+References: `Maneuver_03023` (Second Wind — full pattern with carry-forward), `Maneuver_02039` (Add Threat — `PENDING_*_THREAT` write-only producer side).
 
 ### "You control a trait X at the duel location" gate
 
@@ -916,6 +1017,7 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/faf/_03020.php` (Commanding) | **"Leader Action" target-and-move-Home + `ICancelReaction` RiskReaction that cancels a Renown movement (Pattern D.3).** The Action gates on `getLeaderByPlayerId` (no `RequiresPerformerSelected`), opposing-character chooser at the Leader's location, moves target to `LOCATION_PLAYER_HOME`. The Reaction triggers on `EventRenownMovingBetweenLocations` when the Leader sits at `$event->fromLocation`; `stackEvent`s the reaction transition + pay events; `implements ICancelReaction` so the post-pay `EventRiskReactionTriggered` is also stacked. The triggered handler calls the targeted helpers `deleteRenownAddedToLocationEventsByBatchId` + `deleteRenownRemovedFromLocationEventsByBatchId` (on `Theah` → `DB`) so the high-priority Add/Remove events are gone before they can fire. |
 | `modules/php/cards/_7s5s/_01082.php` (A Heroic End) | **Pure-data Final Strike Maneuver baseline.** Track participant on `EventResolveManeuver`, react on `EventCharacterDestroyed` while `IN_DUEL` to mutate threat (`createThreatModifiedEvent` with +2 threat + Lethal for the surviving side). No state transition, no player choice. Reach for `_03022` if your Final Strike requires a chooser. |
 | `modules/php/cards/faf/_03022.php` (Overzealous) | **Final Strike Maneuver with a post-death player choice (Pattern C.1).** En Garde a chosen character at the duel's location + conditional draw if participant was Zealot/Hunter. Captures `DuelLocation` on `EventResolveManeuver` (actor is in the locker by selection time); queues `createTransitionEvent` from `EventCharacterDestroyed` (not `EventResolveManeuver`); state is named `DUEL_END_OF_ROUND_03022` (52903022) and wired under `DUEL_END_OF_ROUND_EVENTS` (NOT `DUEL_RESOLVE_MANEUVER_EVENTS`); uses `createCardEngardedEvent` (the "en garde" verb makes characters NOT engaged); adds a Pass button with gate-on-pass that throws `UserException` when valid targets exist. |
+| `modules/php/cards/faf/_03023.php` (Second Wind) | **Gambling Maneuver that suppresses end-of-round threat→wound conversion + carries threat forward (Pattern C.2).** City Action heals a wound on a 2+-wound performer; Maneuver intercepts `EventCharacterBeingWounded` by the unique `characterId == actor && sourceId == adversary` signature, zeroes `$event->wounds`, captures the amount into `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` so `stDuelNewRound` seeds it onto the next round, and `DbQuery`s `duel_round.wounds_taken = 0` so the UI display and `duelParticipantWoundsTaken()` cross-round aggregate match reality. Tracks state via `$IsActive`; resets on `EventManeuverCanceled` and `EventDuelEndOfRound`. Lethality is not preserved (no `PENDING_*_THREAT_IS_LETHAL` global) — same limitation as `Maneuver_02039`. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
@@ -947,3 +1049,8 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 16. **"En garde" the verb vs "engage" the verb — opposite operations.** `createCardEngardedEvent` sets `Engaged = false` (ready / en garde); `createCardEngagedEvent` sets `Engaged = true` (committed). When the printed text says "En garde target character," the valid targets are characters whose `Engaged == true` (you're putting them back into en garde). Reference: `Action_01081`, `Maneuver_03022`.
 17. **`getDuelChallengerId()` / `getDuelDefenderId()` / `getDuelOpponentId()` return CHARACTER ids, not player ids.** Resolve to a player via `$theah->getCharacterById($id)->ControllerId`. Passing them directly to `getPlayerNameById()` prints garbage.
 18. **"Target if able" maneuvers get a Pass + gate.** Declare `actFromCardPass` as a `PossibleAction` on the GameState class, override `actFromManeuverPass` to `throw UserException` when valid targets exist, and add the alert-color Pass button in `OnUpdateActionButtons`. Without the gate, a player can silently skip a mandatory effect. Reference: `Maneuver_03022`.
+19. **Threat→wound conversion suppression (Pattern C.2):** the conversion fires once, in `stDuelEndOfRound`, as a single `EventCharacterBeingWounded` whose signature is `characterId == actor.Id && sourceId == adversary.Id`. Suppress by zeroing `$event->wounds` on that match. Two non-obvious follow-ups:
+    - **Cross-round carry-forward** uses `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` (`stDuelNewRound` reads them onto the next round's starting pool). `ending_<actor>_threat` is wiped to 0 by SQL *before* the wound event is queued, so you cannot rely on the DB row preserving it.
+    - **Also zero `duel_round.wounds_taken`** via direct `DbQuery` — the column was bumped during the round and feeds both the UI display and `Theah::duelParticipantWoundsTaken()` (used by `Maneuver_01107`). Without resetting it, downstream cards see wounds that never landed.
+    - Lethality is not preserved across the rollover (no `PENDING_*_THREAT_IS_LETHAL` global). Add the global rather than special-casing the card if a future text requires it.
+    - Reference: `Maneuver_03023` (Second Wind), `Maneuver_02039` (Add Threat — producer side of `PENDING_*_THREAT`).
