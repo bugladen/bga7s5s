@@ -2026,34 +2026,33 @@ trait StatesTrait
                 "tied_players" => $playerList
             ]);
 
-            //We still have a tie. The leader with the least wounds breaks the tie
+            //We still have a tie. The leader with the least wounds breaks the tie.
+            //A destroyed leader (in discard/locker) is treated as the worst possible wounds
+            //so the aux score and live tiebreak agree.
             $lowestWounds = 1000;
             $lowestWoundsPlayer = 0;
+            $effectiveWounds = [];
 
             foreach ($influenceWinners as $playerId)
             {
                 $leader = $this->theah->getLeaderByPlayerId($playerId);
+                $wounds = $this->characterIsInDiscardOrLocker($leader) ? 100 : $leader->Wounds;
+                $effectiveWounds[$playerId] = $wounds;
 
                 $this->notifyAllPlayers("message", clienttranslate('${player_name}: ${leader_inject_code} has ${wounds} Wounds.'), [
                     "player_name" => $this->getPlayerNameById($playerId),
                     "leader_inject_code" => $leader->getInjectCode(),
-                    "wounds" => $leader->Wounds
+                    "wounds" => $wounds
                 ]);
 
                 //Formula for auxiliary score (to break ties) is 20 - wounds
                 $auxScore = $this->dbGetAuxScore($playerId);
-                $auxScore += 20 - $leader->Wounds;
+                $auxScore += 20 - $wounds;
                 $this->dbSetAuxScore($playerId, $auxScore);
 
-                //If leader has been destroyed, set wounds to 100
-                if ($this->characterIsInDiscardOrLocker($leader))
+                if ($wounds < $lowestWounds)
                 {
-                    $leader->Wounds = 100;
-                }
-
-                if ($leader->Wounds < $lowestWounds)
-                {
-                    $lowestWounds = $leader->Wounds;
+                    $lowestWounds = $wounds;
                     $lowestWoundsPlayer = $playerId;
                 }
             }
@@ -2061,8 +2060,7 @@ trait StatesTrait
             $woundsWinners = [];
             foreach ($influenceWinners as $playerId)
             {
-                $leader = $this->theah->getLeaderByPlayerId($playerId);
-                if ($leader->Wounds == $lowestWounds)
+                if ($effectiveWounds[$playerId] == $lowestWounds)
                 {
                     $woundsWinners[] = $playerId;
                 }
@@ -2073,9 +2071,21 @@ trait StatesTrait
                 $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by having their Leader have the least Wounds.'), [
                     "player_name" => $this->getPlayerNameById($lowestWoundsPlayer)
                 ]);
-            }            
+            }
+            else
+            {
+                $playerList = "";
+                foreach ($woundsWinners as $playerId)
+                    $playerList .= "<p>" . $this->getPlayerNameById($playerId);
+                $this->notifyAllPlayers("message", clienttranslate('Leaders are also tied on Wounds (${wounds}). Tied players: ${tied_players}
+                <p>The game ends in a shared victory; final standings will use the auxiliary score.'), [
+                    "wounds" => $lowestWounds,
+                    "tied_players" => $playerList
+                ]);
+            }
 
             $this->gamestate->nextState("endOfGame");
+            return;
         }
 
         $this->gamestate->nextState("next");
