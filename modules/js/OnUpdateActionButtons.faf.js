@@ -121,6 +121,11 @@
                 this.addActionButton(`btnBottom`, _('Reveal from Bottom'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'duelResolveManeuver_03024': () => {
+                this.addActionButton(`btnParry`, _('+2 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
+                this.addActionButton(`btnThrust`, _('+2 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 2}));
+            },
+
         }
 
         if ( methods[stateName] )

@@ -26,6 +26,8 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/_7s5s/_01082.php` (A Heroic End) — **Pure-data Final Strike Maneuver** (+2 Threat + Lethal when participant dies). Track participant on `EventResolveManeuver`, react on `EventCharacterDestroyed` while `IN_DUEL`. No state transition — pure data mutation only. The baseline Final Strike shape; reach for `_03022` when the on-death effect requires a player choice.
 - `modules/php/cards/faf/_03022.php` (Overzealous) — **Final Strike Maneuver with a post-death player choice (en garde target) + conditional draw.** Same participant-tracking shape as `_01082`, but the on-death effect queues a `createTransitionEvent` into an end-of-round sub-state where the dead participant's controller picks an En Garde target. Exemplar for Pattern C.1 (post-death player choice), the `DuelLocation` capture (actor is in the locker by selection time), the `DUEL_END_OF_ROUND_NNNNN` state-family naming, and the pass-button + gate-on-pass discipline for "target if able" prompts.
 - `modules/php/cards/faf/_03023.php` (Second Wind) — **Gambling Maneuver that suppresses end-of-round threat→wound conversion and carries the threat to next round.** Intercepts `EventCharacterBeingWounded` by signature (`characterId == actor.Id && sourceId == adversary.Id` — that pairing only happens for the threat→wound conversion); zeroes `$event->wounds`, captures the original amount, adds it to `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` (which `stDuelNewRound` reads onto the next round's starting pool), and zeroes `duel_round.wounds_taken` for the same row so the UI display and `duelParticipantWoundsTaken()` cross-round aggregate stay consistent. Exemplar for Pattern C.2 (suppress end-of-round conversion ± carry-forward) and a worked example of `Maneuver_02039`'s `PENDING_*_THREAT` mechanism as the supported cross-round threat channel.
+- `modules/php/cards/_7s5s/_01135.php` + `Maneuver_01135` — **Choice-at-activation Maneuver: same player picks which branch the calc applies.** "+2 Parry, or wound adversary and -2 Thrust to their next round." `EventManeuverActivated` `stackEvent`s a `createTransitionEvent` into `DUEL_RESOLVE_MANEUVER_01135`; player picks via `actFromCardWithId` ({id:1}/{id:2}); the choice sets a private boolean on the Maneuver; calc branches on the boolean. The baseline template for Pattern C.3.
+- `modules/php/cards/faf/_03024.php` + `Maneuver_03024` (Superstitious) — **Pure-calc Pattern C.3 variant with an adversary-trait gate.** "Maneuver: If the adversary is a Sorcerer or Monster • +2 Parry or +2 Thrust." `isAvailableToPlayer` reads `getDuelRoundOpponent()->hasTrait('Sorcerer'|'Monster')`. No `EventResolveManeuver` handler — both branches are pure calc, so the calc-event branch on the stored choice is the entire effect.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -580,6 +582,92 @@ if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
 
 Note the `eventCheck($woundEvent)` call before `queueEvent` — gives prevention/redirection effects a chance to fire. Reference: `Maneuver_03009`, `Maneuver_01055` (Ranged variant), `Technique_01050` (Technique variant of the same shape).
 
+### Pattern C.3 — Choice-at-activation Maneuver (same player picks how the calc applies)
+
+For "Maneuver: [gate] • +X [stat A] or +X [stat B]" (and similar "pick one of two effects" shapes where the chooser is the maneuver's own controller, not the adversary), prompt the player **at activation time** (before the calc phase) and store the choice on the Maneuver object so the calc-event branch can read it.
+
+Wire it as:
+
+1. **Private choice field** on the Maneuver (e.g., `private bool $ChooseParry = false;`). Reset it in `EventManeuverCanceled` — the maneuver instance lives on `$theah->cards` across rounds, so without reset the next activation would default to the prior choice. (For two-branch choices, also reset in `__construct` to make the default explicit.)
+2. **`EventManeuverActivated` handler** — `stackEvent` (not `queueEvent`) a `createTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)`. `stackEvent` is what makes the choice prompt fire *before* the calc-phase events.
+3. **GameState class** `State_duelResolveManeuver_NNNNN` under `modules/php/States/<expansion>/`:
+   - `id: States::DUEL_RESOLVE_MANEUVER_NNNNN` (constant value `52500000 + NNNNN`, prefix `5250` — NOT `4` or `5290`).
+   - `name: "duelResolveManeuver_NNNNN"`.
+   - `transitions: ["" => States::DUEL_RESOLVE_MANEUVER_EVENTS]` (empty default — `actFromManeuverWithId` calls `$game->gamestate->nextState()` with no arg).
+   - Possible action: `actFromCardWithId(string $id)` → `$this->game->actFromCardWithId($id)`.
+   - `zombie(int $playerId)` → `$this->game->gamestate->nextState()`.
+4. **`states.inc.php` wiring** — add `"NNNNN" => States::DUEL_RESOLVE_MANEUVER_NNNNN` to `DUEL_RESOLVE_MANEUVER_EVENTS.transitions` (NOT `HIGH_DRAMA_PLAYER_TURN_EVENTS`).
+5. **`States.php`** — `const DUEL_RESOLVE_MANEUVER_NNNNN = 525<NNNNN>;` (alphabetize within the `DUEL_RESOLVE_MANEUVER_*` block).
+6. **Override `actFromManeuverWithId(Game $game, int $state, string $stateName, int $id)`** — branch on `$state == States::DUEL_RESOLVE_MANEUVER_NNNNN`, set the choice field, mark `$owner->IsUpdated = true`, emit a `notify->all("message", ...)` so the log records which branch was picked, then `$game->gamestate->nextState()` (no arg — `""` is the default key the GameState transitions table uses).
+7. **`EventDuelCalculateManeuverValues` branch on the stored field** — if/else over the choice; each branch mutates the appropriate field (`$event->parry`, `$event->thrust`, etc.) and pushes an `$event->explanations[]` line via `$owner->getInjectCode()`.
+8. **JS `OnUpdateActionButtons.<expansion>.js`** — under `methods`, add `'duelResolveManeuver_NNNNN': () => { ... }` with one button per choice. Use `addActionButton(btnId, _('Label'), () => this.bgaPerformAction('actFromCardWithId', { id: N }))` — no confirm step, no card chooser. Mirror the buttons in `OnEnteringState`/`OnLeavingState` only if you need highlighting; the simple two-button case skips both.
+
+```php
+// Maneuver_NNNNN
+private bool $ChooseParry = false;
+
+public function handleEvent(Event $event)
+{
+    parent::handleEvent($event);
+
+    if ($event instanceof EventManeuverActivated && $event->maneuverId == $this->Id)
+    {
+        $owner = $this->getOwningCard($event->theah);
+        $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id);
+        $event->theah->stackEvent($transition);
+    }
+
+    if ($event instanceof EventDuelCalculateManeuverValues && $event->maneuverId == $this->Id)
+    {
+        $owner = $this->getOwningCard($event->theah);
+        if ($this->ChooseParry) { $event->parry += 2; $event->explanations[] = sprintf(/* … */); }
+        else                    { $event->thrust += 2; $event->explanations[] = sprintf(/* … */); }
+    }
+
+    if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+    {
+        $this->ChooseParry = false;
+        $this->getOwningCard($event->theah)->IsUpdated = true;
+    }
+}
+
+public function actFromManeuverWithId(Game $game, int $state, string $stateName, int $id): void
+{
+    parent::actFromManeuverWithId($game, $state, $stateName, $id);
+    if ($state == States::DUEL_RESOLVE_MANEUVER_NNNNN)
+    {
+        $this->ChooseParry = ($id == 1);
+        $this->getOwningCard($game->theah)->IsUpdated = true;
+        // emit notify->all("message", ...)
+    }
+    $game->gamestate->nextState();
+}
+```
+
+#### Why `EventManeuverActivated` (not `EventResolveManeuver`)
+
+`EventResolveManeuver` fires after the round's stat calc, when one-shot side effects land (wounds, draws, etc.). If the player's choice *drives the calc*, you must capture it before calc runs — that's `EventManeuverActivated`, which fires earlier in the activation sequence. Queuing a transition from `EventResolveManeuver` for a calc-driving choice lands the prompt after calc has already happened, and the choice has no effect.
+
+`EventResolveManeuver` remains the right hook for one-shot side effects that don't influence calc (wound adversary, draw, queue an end-of-round sub-state). The C.3 pattern is specifically for "the choice changes the math."
+
+#### `stackEvent`, not `queueEvent`, on the activation transition
+
+Same priority math as Pattern D.3: `queueEvent` at `MEDIUM_PRIORITY = 3` would land *behind* calc-phase events. `stackEvent` assigns `min(pending priorities) - 1`, guaranteeing the choice prompt fires first.
+
+#### Pure-calc variant: no `EventResolveManeuver` handler needed
+
+When both branches are pure stat mutations (no wound / draw / transition), skip `EventResolveManeuver` entirely. The calc-event branch on the stored choice is the entire effect. Reference: `Maneuver_03024` (both branches are +2 stat).
+
+#### Choice-with-side-effect variant: queue side effects in `actFromManeuverWithId`
+
+When one branch has a side effect (wound the adversary, draw, etc.), queue those events directly from `actFromManeuverWithId` after recording the choice — don't defer to `EventResolveManeuver`. The Maneuver is mid-activation; events queued here land at the right point in the activation sequence. Reference: `Maneuver_01135` (branch 2 queues `createCharacterBeingWoundedEvent` from `actFromManeuverWithId`).
+
+#### State-tracking discipline
+
+If the maneuver has any cross-round state beyond the choice (a `next-round` modifier, an `IsActive` flag), reset it in both `EventManeuverCanceled` AND `EventDuelEnd` (and `EventDuelEndOfRound` for "next round only" effects). The choice field itself only needs `EventManeuverCanceled` reset — the next activation will overwrite it.
+
+References: `Maneuver_01135` (template; choice gates a side-effect branch with cross-round Thrust reduction), `Maneuver_03024` (Superstitious — pure-calc Sorcerer/Monster gate variant).
+
 ### Pattern C.1 — Final Strike maneuver (post-death effect; optionally with player choice)
 
 "Final Strike • <effect>" activates **when your participant is destroyed the round this card is played.** Two shapes:
@@ -1017,6 +1105,8 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/faf/_03020.php` (Commanding) | **"Leader Action" target-and-move-Home + `ICancelReaction` RiskReaction that cancels a Renown movement (Pattern D.3).** The Action gates on `getLeaderByPlayerId` (no `RequiresPerformerSelected`), opposing-character chooser at the Leader's location, moves target to `LOCATION_PLAYER_HOME`. The Reaction triggers on `EventRenownMovingBetweenLocations` when the Leader sits at `$event->fromLocation`; `stackEvent`s the reaction transition + pay events; `implements ICancelReaction` so the post-pay `EventRiskReactionTriggered` is also stacked. The triggered handler calls the targeted helpers `deleteRenownAddedToLocationEventsByBatchId` + `deleteRenownRemovedFromLocationEventsByBatchId` (on `Theah` → `DB`) so the high-priority Add/Remove events are gone before they can fire. |
 | `modules/php/cards/_7s5s/_01082.php` (A Heroic End) | **Pure-data Final Strike Maneuver baseline.** Track participant on `EventResolveManeuver`, react on `EventCharacterDestroyed` while `IN_DUEL` to mutate threat (`createThreatModifiedEvent` with +2 threat + Lethal for the surviving side). No state transition, no player choice. Reach for `_03022` if your Final Strike requires a chooser. |
 | `modules/php/cards/faf/_03022.php` (Overzealous) | **Final Strike Maneuver with a post-death player choice (Pattern C.1).** En Garde a chosen character at the duel's location + conditional draw if participant was Zealot/Hunter. Captures `DuelLocation` on `EventResolveManeuver` (actor is in the locker by selection time); queues `createTransitionEvent` from `EventCharacterDestroyed` (not `EventResolveManeuver`); state is named `DUEL_END_OF_ROUND_03022` (52903022) and wired under `DUEL_END_OF_ROUND_EVENTS` (NOT `DUEL_RESOLVE_MANEUVER_EVENTS`); uses `createCardEngardedEvent` (the "en garde" verb makes characters NOT engaged); adds a Pass button with gate-on-pass that throws `UserException` when valid targets exist. |
+| `modules/php/cards/_7s5s/_01135.php` + `Maneuver_01135` | **Pattern C.3 template — choice-at-activation Maneuver with one branch carrying a side effect.** "+2 Parry, or wound adversary + -2 Thrust to their next round." `EventManeuverActivated` `stackEvent`s a transition to `DUEL_RESOLVE_MANEUVER_01135`; `actFromManeuverWithId` records the choice into `$ReduceThrustNextRound` and queues the wound event for branch 2. Cross-round state (`$IsActive`, `$ReduceThrustNextRound`) reset on `EventManeuverCanceled`, `EventDuelEnd`, and (for the next-round-only modifier) `EventDuelEndOfRound`. |
+| `modules/php/cards/faf/_03024.php` (Superstitious) | **Pattern C.3 pure-calc variant.** "Maneuver: If the adversary is a Sorcerer or Monster • +2 Parry or +2 Thrust." Adversary-trait gate via `getDuelRoundOpponent()->hasTrait('Sorcerer'\|'Monster')`. Stores choice in `$ChooseParry`; calc branches on it. No `EventResolveManeuver` handler — both branches are pure calc. |
 | `modules/php/cards/faf/_03023.php` (Second Wind) | **Gambling Maneuver that suppresses end-of-round threat→wound conversion + carries threat forward (Pattern C.2).** City Action heals a wound on a 2+-wound performer; Maneuver intercepts `EventCharacterBeingWounded` by the unique `characterId == actor && sourceId == adversary` signature, zeroes `$event->wounds`, captures the amount into `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` so `stDuelNewRound` seeds it onto the next round, and `DbQuery`s `duel_round.wounds_taken = 0` so the UI display and `duelParticipantWoundsTaken()` cross-round aggregate match reality. Tracks state via `$IsActive`; resets on `EventManeuverCanceled` and `EventDuelEndOfRound`. Lethality is not preserved (no `PENDING_*_THREAT_IS_LETHAL` global) — same limitation as `Maneuver_02039`. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
@@ -1049,7 +1139,8 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 16. **"En garde" the verb vs "engage" the verb — opposite operations.** `createCardEngardedEvent` sets `Engaged = false` (ready / en garde); `createCardEngagedEvent` sets `Engaged = true` (committed). When the printed text says "En garde target character," the valid targets are characters whose `Engaged == true` (you're putting them back into en garde). Reference: `Action_01081`, `Maneuver_03022`.
 17. **`getDuelChallengerId()` / `getDuelDefenderId()` / `getDuelOpponentId()` return CHARACTER ids, not player ids.** Resolve to a player via `$theah->getCharacterById($id)->ControllerId`. Passing them directly to `getPlayerNameById()` prints garbage.
 18. **"Target if able" maneuvers get a Pass + gate.** Declare `actFromCardPass` as a `PossibleAction` on the GameState class, override `actFromManeuverPass` to `throw UserException` when valid targets exist, and add the alert-color Pass button in `OnUpdateActionButtons`. Without the gate, a player can silently skip a mandatory effect. Reference: `Maneuver_03022`.
-19. **Threat→wound conversion suppression (Pattern C.2):** the conversion fires once, in `stDuelEndOfRound`, as a single `EventCharacterBeingWounded` whose signature is `characterId == actor.Id && sourceId == adversary.Id`. Suppress by zeroing `$event->wounds` on that match. Two non-obvious follow-ups:
+19. **Choice-at-activation Maneuver (Pattern C.3):** when the player picks how the calc applies ("+X stat A or +X stat B"), `stackEvent` the `createTransitionEvent` from `EventManeuverActivated` — NOT `EventResolveManeuver`, which fires after calc and lands the prompt too late. State id `52500000 + NNNNN` (prefix `5250`), state name `duelResolveManeuver_NNNNN`, wired under `DUEL_RESOLVE_MANEUVER_EVENTS.transitions`. GameState class transitions table uses `"" => DUEL_RESOLVE_MANEUVER_EVENTS` and `actFromManeuverWithId` calls `$game->gamestate->nextState()` with no arg. Reset the choice field in `EventManeuverCanceled` (the Maneuver instance persists across rounds on `$theah->cards`). Pure-calc branches → no `EventResolveManeuver` handler; side-effect branches → queue the side-effect events directly from `actFromManeuverWithId`, not from a later resolve hook. Reference: `Maneuver_01135` (side-effect branch), `Maneuver_03024` (pure-calc).
+20. **Threat→wound conversion suppression (Pattern C.2):** the conversion fires once, in `stDuelEndOfRound`, as a single `EventCharacterBeingWounded` whose signature is `characterId == actor.Id && sourceId == adversary.Id`. Suppress by zeroing `$event->wounds` on that match. Two non-obvious follow-ups:
     - **Cross-round carry-forward** uses `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` (`stDuelNewRound` reads them onto the next round's starting pool). `ending_<actor>_threat` is wiped to 0 by SQL *before* the wound event is queued, so you cannot rely on the DB row preserving it.
     - **Also zero `duel_round.wounds_taken`** via direct `DbQuery` — the column was bumped during the round and feeds both the UI display and `Theah::duelParticipantWoundsTaken()` (used by `Maneuver_01107`). Without resetting it, downstream cards see wounds that never landed.
     - Lethality is not preserved across the rollover (no `PENDING_*_THREAT_IS_LETHAL` global). Add the global rather than special-casing the card if a future text requires it.
