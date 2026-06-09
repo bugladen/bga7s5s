@@ -293,6 +293,9 @@ onUpdateActionButtons: function( stateName, args )
                 } else {
                     this.addActionButton(buttonId, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
                 }
+                if (button.disabled) {
+                    dojo.addClass(buttonId, 'disabled');
+                }
                 if (button.card) {
                     if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
                         this.createTextTooltipForRisk(button.card, buttonId);
