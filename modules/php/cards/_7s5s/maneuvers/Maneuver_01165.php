@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -10,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -93,6 +95,13 @@ class Maneuver_01165 extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
         }
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->removeCopiedTechniques($event->theah);
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
+        }
     }
 
     public function getArgsFromManeuver(Game $game, int $state, string $stateName): array
@@ -133,6 +142,11 @@ class Maneuver_01165 extends Maneuver
             $owner = $this->getOwningCard($game->theah);
             $actor = $game->theah->getDuelRoundActor();
             $technique = $game->theah->getTechniqueById($id);
+            if ($technique === null)
+            {
+                throw new UserException($game->translate("Invalid technique ID: {$id}"));
+            }
+
             $copy = clone $technique;
             $copy->setOwnerId($actor->Id);
 

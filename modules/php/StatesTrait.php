@@ -272,104 +272,89 @@ trait StatesTrait
         $this->gamestate->nextState("");
     }
 
-    public function stPlanningPhaseDetermineFirstPlayer() 
+    public function stPlanningPhaseDetermineFirstPlayer()
     {
         $sql = "SELECT player_id, player_name, selected_scheme_id as schemeId FROM player";
         $players = $this->getCollectionFromDb($sql);
 
         $highInitiative = 0;
-        $highPlayerId = 0;
-        $tiedInitiative = false;
-        $currentFirstPlayerExists = $this->globals->has(Game::FIRST_PLAYER);
+        $tiedPlayerIds = [];
 
-        //Grab the schemes by each player and determine the highest initiative
-        foreach ( $players as $playerId => $player ) 
+        // Find every player whose scheme is tied for highest initiative.
+        foreach ($players as $playerId => $player)
         {
             if ($player['schemeId'])
             {
                 $scheme = $this->theah->getCardById($player['schemeId']);
                 if ($scheme instanceof Scheme)
                 {
-                    if ($scheme->Initiative == $highInitiative) {
-                        $tiedInitiative = true;
-                    }
-                    else if ($scheme->Initiative > $highInitiative) {
+                    if ($scheme->Initiative > $highInitiative) {
                         $highInitiative = $scheme->Initiative;
-                        $highPlayerId = $playerId;
-                    }    
+                        $tiedPlayerIds = [$playerId];
+                    }
+                    else if ($scheme->Initiative == $highInitiative) {
+                        $tiedPlayerIds[] = $playerId;
+                    }
                 }
             }
         }
 
-        // If we have a clear winner with no ties, set the first player and move on.
-        if (! $tiedInitiative || count($players) == 1) {
-            $this->globals->set(Game::FIRST_PLAYER, $highPlayerId);
-            $this->globals->set(Game::CURRENT_PLAYER, $highPlayerId);
-            $turnOrders = $this->setNewPlayerOrder($highPlayerId);
+        if (empty($tiedPlayerIds)) {
+            throw new \Exception("stPlanningPhaseDetermineFirstPlayer: no player has a valid scheme");
+        }
 
-            // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
-                'player_name' => $players[$highPlayerId]['player_name'],
-                'initiative' => $highInitiative,
-                'playerId' => $highPlayerId,
-                'turnOrders' => $turnOrders,
-            ]);
-
-            $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
-            $this->theah->queueEvent($event);
-            $this->gamestate->nextState("");
+        // Clear winner with no ties.
+        if (count($tiedPlayerIds) === 1) {
+            $this->setFirstPlayerAndAnnounce(
+                $tiedPlayerIds[0],
+                $players,
+                $highInitiative,
+                clienttranslate('${player_name} has the highest initiative of ${initiative} and will be set as <span style="font-weight:bold; color:red">First Player</span>.')
+            );
             return;
         }
 
-        // If we have a tie for initiative. If first player exists, then simply move to the next player.
-        if ($currentFirstPlayerExists) {
-            //Get the current first player
-            $firstPlayerId = $this->globals->get(Game::FIRST_PLAYER);
+        // Tie for highest initiative — if a previous first player exists, rotate to the next player in turn order,
+        // regardless of whether that player is among the tied set. (Per game rules.)
+        if ($this->globals->has(Game::FIRST_PLAYER)) {
+            $nextPlayerId = $this->getPlayerAfter($this->globals->get(Game::FIRST_PLAYER));
 
-            //Find out who the next player is in order
-            $table = $this->getNextPlayerTable();
-            $nextPlayerId = $table[$firstPlayerId];
-
-            $this->globals->set(Game::FIRST_PLAYER, $nextPlayerId);
-            $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
-            $turnOrders = $this->setNewPlayerOrder($nextPlayerId);
-
-            // Notify all players of the first player.
-            $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as <span style="font-weight:bold; color:red">First Player</span>.'), [
-                'player_name' => $players[$nextPlayerId]['player_name'],
-                'initiative' => $highInitiative,
-                'playerId' => $nextPlayerId,
-                'turnOrders' => $turnOrders,
-            ]);
-
-            $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
-            $this->theah->queueEvent($event);
-            $this->gamestate->nextState("");
+            $this->setFirstPlayerAndAnnounce(
+                $nextPlayerId,
+                $players,
+                $highInitiative,
+                clienttranslate('With a tied initiative of ${initiative}, ${player_name} is the next player in order, and will be set as <span style="font-weight:bold; color:red">First Player</span>.')
+            );
             return;
         }
 
-        // If we have a tie for initiative and no first player exists, then we determine first player by random method.
-        // Extract all the player id keys from the $players array and shuffle them.
-        $size = count($players);
-        $rand = bga_rand(0, $size - 1);
-        $slice = array_slice($players, $rand, 1, true);
-        $firstPlayerId = key($slice);
-        $this->globals->set(Game::FIRST_PLAYER, $firstPlayerId);
-        $this->globals->set(Game::CURRENT_PLAYER, $firstPlayerId);
-        $turnOrders = $this->setNewPlayerOrder($firstPlayerId);
+        // Tied and no previous first player — choose randomly from the tied players.
+        $randomTiedPlayerId = $tiedPlayerIds[bga_rand(0, count($tiedPlayerIds) - 1)];
+        $this->setFirstPlayerAndAnnounce(
+            $randomTiedPlayerId,
+            $players,
+            $highInitiative,
+            clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the <span style="font-weight:bold; color:red">First Player</span>.')
+        );
+    }
 
-        // Notify all players of the first player.
-        $this->notifyAllPlayers("firstPlayer", clienttranslate('With a tied initiative of ${initiative}, and no previous First Player, ${player_name} has been chosen randomly as the <span style="font-weight:bold; color:red">First Player</span>.'), [
-            'player_name' => $players[$firstPlayerId]['player_name'],
-            'initiative' => $highInitiative,
-            'playerId' => $firstPlayerId,
+    private function setFirstPlayerAndAnnounce(int $playerId, array $players, int $initiative, string $message) : void
+    {
+        $this->globals->set(Game::FIRST_PLAYER, $playerId);
+        $this->globals->set(Game::CURRENT_PLAYER, $playerId);
+        $turnOrders = $this->setNewPlayerOrder($playerId);
+
+        $this->notifyAllPlayers("firstPlayer", $message, [
+            'player_name' => $players[$playerId]['player_name'],
+            'initiative' => $initiative,
+            'playerId' => $playerId,
             'turnOrders' => $turnOrders,
         ]);
- 
+
         $event = $this->theah->createEvent(Events::FirstPlayerDetermined);
         $this->theah->queueEvent($event);
         $this->gamestate->nextState("");
-    }   
+    }
 
     public function stPlanningPhaseResolveWhenRevealedCards()
     {
@@ -2058,23 +2043,28 @@ trait StatesTrait
                 "tied_players" => $playerList
             ]);
 
-            //We still have a tie. The leader with the least wounds breaks the tie
+            //We still have a tie. The leader with the least wounds breaks the tie.
+            //A destroyed leader (in discard/locker) is treated as the worst possible wounds
+            //so the aux score and live tiebreak agree.
             $lowestWounds = 1000;
             $lowestWoundsPlayer = 0;
+            $effectiveWounds = [];
 
             foreach ($influenceWinners as $playerId)
             {
                 $leader = $this->theah->getLeaderByPlayerId($playerId);
+                $wounds = $this->characterIsInDiscardOrLocker($leader) ? 100 : $leader->Wounds;
+                $effectiveWounds[$playerId] = $wounds;
 
                 $this->notifyAllPlayers("message", clienttranslate('${player_name}: ${leader_inject_code} has ${wounds} Wounds.'), [
                     "player_name" => $this->getPlayerNameById($playerId),
                     "leader_inject_code" => $leader->getInjectCode(),
-                    "wounds" => $leader->Wounds
+                    "wounds" => $wounds
                 ]);
 
                 //Formula for auxiliary score (to break ties) is 20 - wounds
                 $auxScore = $this->dbGetAuxScore($playerId);
-                $auxScore += 20 - $leader->Wounds;
+                $auxScore += 20 - $wounds;
                 $this->dbSetAuxScore($playerId, $auxScore);
 
                 //If leader has been destroyed, set wounds to 100
@@ -2083,9 +2073,9 @@ trait StatesTrait
                     $leader->Wounds = 100;
                 }
 
-                if ($leader->Wounds < $lowestWounds)
+                if ($wounds < $lowestWounds)
                 {
-                    $lowestWounds = $leader->Wounds;
+                    $lowestWounds = $wounds;
                     $lowestWoundsPlayer = $playerId;
                 }
             }
@@ -2093,8 +2083,7 @@ trait StatesTrait
             $woundsWinners = [];
             foreach ($influenceWinners as $playerId)
             {
-                $leader = $this->theah->getLeaderByPlayerId($playerId);
-                if ($leader->Wounds == $lowestWounds)
+                if ($effectiveWounds[$playerId] == $lowestWounds)
                 {
                     $woundsWinners[] = $playerId;
                 }
@@ -2105,9 +2094,21 @@ trait StatesTrait
                 $this->notifyAllPlayers("message", clienttranslate('${player_name} has achieved a VICTORY by having their Leader have the least Wounds.'), [
                     "player_name" => $this->getPlayerNameById($lowestWoundsPlayer)
                 ]);
-            }            
+            }
+            else
+            {
+                $playerList = "";
+                foreach ($woundsWinners as $playerId)
+                    $playerList .= "<p>" . $this->getPlayerNameById($playerId);
+                $this->notifyAllPlayers("message", clienttranslate('Leaders are also tied on Wounds (${wounds}). Tied players: ${tied_players}
+                <p>The game ends in a shared victory; final standings will use the auxiliary score.'), [
+                    "wounds" => $lowestWounds,
+                    "tied_players" => $playerList
+                ]);
+            }
 
             $this->gamestate->nextState("endOfGame");
+            return;
         }
 
         $this->gamestate->nextState("next");

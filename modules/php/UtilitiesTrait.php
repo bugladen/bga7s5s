@@ -543,7 +543,7 @@ trait UtilitiesTrait
         }
     }
 
-    function setNewPlayerOrder($firstPlayerId)
+    function setNewPlayerOrder(int $firstPlayerId)
     {
         $playerNumber = 1;
         $turnOrders = [];

@@ -119,62 +119,81 @@ class _01125 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01125)
         {
-            $location = $ids[0];
+            $location = $ids[0] ?? null;
+            $cityLocations = array_keys($game->theah->getCityLocations());
+            if (!is_string($location) || !in_array($location, $cityLocations, true)) {
+                throw new UserException($game->translate("Invalid city location."));
+            }
 
             $playerId = $game->getActivePlayerId();
             $event = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
-    
-            $game->notify->player($playerId, 'message', 
+
+            $game->notify->player($playerId, 'message',
                 clienttranslate('Private: You have chosen to place renown onto ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
                 'i18n' => ['location'],
                 "location" => $location
             ]);
-    
+
             $game->gamestate->nextState("reknownPlaced");
         }
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_2)
         {
-            $location = $ids[0];
+            $location = $ids[0] ?? null;
+            $cityLocations = array_keys($game->theah->getCityLocations());
+            if (!is_string($location) || !in_array($location, $cityLocations, true)) {
+                throw new UserException($game->translate("Invalid city location."));
+            }
+
             $playerId = $game->getActivePlayerId();
 
             //Check if the location actually has reknown to move
             $reknown = $game->getRenownForLocation($location);
-            if ($reknown <= 0) 
+            if ($reknown <= 0)
                 throw new UserException(sprintf($game->translate("%s does not have any renown to move."), $location));
-            
+
             $event = EventFactory::createRenownRemovedFromLocationEvent($playerId, $location, 1, "The Boar's Guile: Moving Renown from one Location to an adjacent location");
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
-    
-            $game->notify->player($playerId, 'message', 
+
+            $game->notify->player($playerId, 'message',
                 clienttranslate('Private: You have chosen to move renown from ${location}.  You must now choose a location to move the Renown TO.'), [
                 'i18n' => ['location'],
                 "location" => $location
             ]);
-            
+
             $game->globals->set(GAME::CHOSEN_LOCATION, $location);
-    
+
             $game->gamestate->nextState("locationChosen");
         }
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_3)
         {
-            $location = $ids[0];
+            $location = $ids[0] ?? null;
+            $source = $game->globals->get(Game::CHOSEN_LOCATION);
+            $adjacent = $game->theah->getAdjacentCityLocations($source, false);
+            $cityLocations = array_keys($game->theah->getCityLocations());
+            if (!is_string($location)
+                || !in_array($location, $cityLocations, true)
+                || !in_array($location, $adjacent, true)
+                || $location === $source)
+            {
+                throw new UserException($game->translate("Destination must be a city location adjacent to the source."));
+            }
 
             $playerId = $game->getActivePlayerId();
             $event = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
-    
-            $game->notify->player($playerId, 'message', 
+
+            $game->notify->player($playerId, 'message',
                 clienttranslate('Private: You have chosen to move renown to ${location}.  Per The Boar\'s Guile you must now choose an enemy character to target.'), [
                 'i18n' => ['location'],
                 "location" => $location
             ]);
-    
+
             $game->gamestate->nextState("");
         }
     }
@@ -185,10 +204,18 @@ class _01125 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4)
         {
-            $playerName = $game->getPlayerNameById($this->ControllerId);
             $character = $game->getCardObjectFromDb($id);
-    
-            $game->notify->all('yevgeniAdversaryChosen', 
+            $activePlayerId = $game->getActivePlayerId();
+            if (!($character instanceof Character)
+                || $character->ControllerId === 0
+                || $character->ControllerId === $activePlayerId)
+            {
+                throw new UserException($game->translate("You must choose an enemy character."));
+            }
+
+            $playerName = $game->getPlayerNameById($this->ControllerId);
+
+            $game->notify->all('yevgeniAdversaryChosen',
                 clienttranslate('${player_name} has chosen ${character_inject_code} as Yevgeni\'s Adversary.'), [
                 "player_name" => $playerName,
                 "character_inject_code" => $character->getInjectCode(),
