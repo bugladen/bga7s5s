@@ -18,6 +18,7 @@ Canonical references:
 - `modules/php/cards/faf/_03013.php` (Daniella Dietrich, Witch/Hunter) — `Leader` with a **continuous Action that tags opposing characters with a trait** (Sorcerer) for the duration of the player's turn, a **cost-reduction Reaction** (Faith/Sorcery card at -1 cost, cloned from `Reaction_01116b`), and a **Wound-then-Swap Technique** usable in BOTH challenge and duel contexts (two state classes, swap mechanics inline in `actFromTechniqueWithId`).
 - `modules/php/cards/faf/_03014.php` (Kaspar Dietrich, Iron Reforged) — `Character` with a **wound-prevention passive via `eventCheck` on `EventCharacterBeingWounded`** (opponents' abilities cannot wound or move wounds to Kaspar — threat conversion still applies) and a **Technique gated on an Eisenfaust attachment OR an Eisenfaust card in the dueling line** that wounds the adversary.
 - `modules/php/cards/faf/_03015.php` (Joern Kietelsson, Fury's Edge) — `Character` with three pure-passive abilities living entirely on the card class (no Action/Reaction/Technique files): a **Forced self-wound on muster** (must hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`), a **phase-conditional Resolve penalty** ("During Dusk, -3 Resolve" — direct `ModifiedResolve` mutation gated by a private flag because there is no `EventCharacterResolveModifiedEvent` factory), and a **challenge-refused self-heal** on `EventChallengeRejected`.
+- `modules/php/cards/faf/_03027.php` (Odette Dubois D'Arrent, Disillusioned Courtier) — `Character` with two paired button-based City Reactions: (1) `EventCharacterDestroyed` triggered "after another character at this location is destroyed" with a mandatory heal + optional adjacent-Renown-move, including the **Pass-button pattern** (early-return before `setUsed` so the daily slot survives a decline) and **no-op effect gating** (hide "Heal only" button at `Wounds == 0`); (2) `EventChallengeIssued` triggered "after a challenge is issued at this location, before choosing to intervene" pulling an adjacent Duelist — uses `EventChallengeIssued` specifically because the text says "before intervene" (`EventChallengeAccepted` fires too late).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -824,6 +825,9 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventCharacterMustered` | A character was just mustered (recruit / brute / `Action_01024` / etc.) | "Forced after X musters …" — **always pair with `EventApproachCharacterPlayed`** (see Pattern A's "Forced muster/approach triggers" subsection) |
 | `EventApproachCharacterPlayed` | A character entered play via an Approach card | Same triggers as `EventCharacterMustered`; hook the pair |
 | `EventChallengeRejected` | A challenge was refused (`$event->challengerId` issued, `$event->targetId` refused) | "When <Owner>'s challenge is refused …" / "When a challenge to <Owner> is refused …". Reference: `_03015` Joern (self-heal), `_01119` Nazem (engage the refuser). |
+| `EventChallengeIssued` | A challenge was just issued (`$event->challengerId`, `$event->defenderId`); queued by `StatesTrait::stIssueChallenge` BEFORE the intervention dispatcher state advances | "After a challenge is issued at this location, **before choosing to intervene** …" — `_03027` Odette (pull adjacent Duelist before intervention). Use this (NOT `EventChallengeAccepted`) when the text says "before intervene" — accept fires AFTER the intervention window resolves. |
+| `EventChallengeAccepted` | A challenge was accepted (post-intervention) | "After a challenge is accepted at this location …" — existing Odette `_01062` move-adjacent-renown reaction. |
+| `EventCharacterIntervened` | An intervention character was selected during a challenge | "After X intervenes …" — `Reaction_01062`. |
 | `EventPressureOccuring` | A pressure is happening at a location | "When pressuring …", `_01006` Don Constanzo |
 | `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089`. **`EventDuelEnd` fires BEFORE the dueling line is cleared** in `stDuelEnd` (the discard events are queued AFTER it), so a recount-based dueling-line effect must reset via direct inverse-event, not via re-reading the line. |
 | `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
@@ -831,7 +835,7 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
 | `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006` |
 | `EventSchemeCardRevealed` | A scheme is revealed | Leaders react via the base `Leader::handleEvent`; only override if you have card-specific logic |
-| `EventCharacterDestroyed` | A character is destroyed | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent |
+| `EventCharacterDestroyed` | A character is destroyed (`runEventHubAfterCards = true`, so the destroyed character's `.Location` is STILL set during `handleEvent` — the locker move runs AFTER all card handlers). Look up via `getCharacterById($event->characterId)` and compare `.Location == $owner->Location` for "another character at this location" triggers. | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent. "After another character at this location is destroyed …" — `_03027` Odette, `Reaction_01013`. |
 | `EventSorcererAbilityPlayed` | A sorcerer ability resolved | "After <X> performs a Sorcerer ability …" reactions, Pattern D below |
 | `EventActionResolved` | An action just resolved | "After an Action resolves …" reactions, `Reaction_01089` |
 | `EventCardMoving` / `EventCardMoved` | Pre / past tense of a card-to-location move | `Moving` is cancelable (`$event->canceled = true`) — use for opt-out Reactions (Pattern D "Cancel-and-reissue"). `Moved` is the past-tense receiver — use for "after X moves to/from this location" triggers. The Dusk auto-move emits `Moving` with `$sourceId == 0`; ability-driven moves pass a non-zero sourceId. Reference: `Reaction_03016a` (cancel), `Reaction_03016b` (react to). |
@@ -1352,6 +1356,112 @@ if (count($this->getEligibleTargets($event->theah, $owner, $event->toLocation)) 
 **Gotcha — `$owner->Location` at handleEvent time is the OLD location.** `EventCardMoved` sets `runEventHubAfterCards = true`, so the EventHub state update (which writes `$card->Location = $event->toLocation`) runs AFTER every card's `handleEvent`. Inside an `EventCardMoved` handler, `$owner->Location` is still `$event->fromLocation`. Read the destination as `$event->toLocation` for any "now that the move has happened, who else is at the new location" lookups. By the time `performReaction` runs, the move HAS resolved and `$owner->Location` is the new location — so the target-validation check there can use `$owner->Location` directly.
 
 Pattern reference: `Reaction_03025` (Angeline) — `cardId == $owner->Id` filter, `locationInCity($event->toLocation)` gate, `getEligibleTargets(..., $event->toLocation)` precondition.
+
+### Pass button — Reactions with an optional second effect
+
+For Reactions where the printed text bundles a mandatory first effect with an *optional* second effect ("X. Then, you may Y"), or where the Reaction is purely optional and the player might want to decline at the prompt without burning the daily use, **add a `'pass'` button**. Cumulative pattern across `Reaction_01062`, `Reaction_03016b`, `Reaction_03027a/b`:
+
+```php
+public function getReactionButtonProperties(Theah $theah): array
+{
+    $array = parent::getReactionButtonProperties($theah);
+    // ... per-target / per-source buttons ...
+    $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
+    return $array;
+}
+
+public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
+{
+    parent::performReaction($game, $state, $internalId, $reactionId);
+
+    if ($reactionId == 'pass')
+    {
+        $game->gamestate->nextState("done");
+        return;   // EARLY return — do NOT call setUsed; reaction stays available
+    }
+
+    // ... mandatory effect (if any) ...
+    // ... optional/branched effect ...
+
+    $this->setUsed($game->theah, true);
+    $game->gamestate->nextState("done");
+}
+```
+
+WHY a per-card `'pass'` button instead of relying on the framework's Decline:
+
+- `Reaction::performReaction` in `CardReaction.php` line 59 explicitly handles `'pass'` (and `'decline'`) by SKIPPING the `createReactionActivatedEvent` emission. So the button label "Pass" arrives in `performReaction` like any other id; the early-return-before-`setUsed` shape mirrors the framework's intent.
+- The framework's Decline button (handled by `actFromReactionPass`) is functionally similar but routes through a different code path. The `'pass'` button keeps everything in one method and makes the "do not setUsed" intent explicit.
+- For Reactions with mandatory first effect + optional second (`_03027a` heal + optional renown), the `'pass'` button means "I decline the whole reaction" — neither the heal nor the renown move runs. The button labels for the active choices (`'healOnly'`, `'moveFrom-<loc>'`) carry the mandatory effect.
+
+WHY early-return BEFORE `setUsed(true)`:
+
+- The reaction's daily-use slot is a resource. A player who declines at the prompt should NOT lose that slot — they should still be able to fire the reaction later when the trigger recurs (e.g., a second character dies at the same location later in the day).
+- Mirrors `Reaction_01062`: `if ($reactionId != "pass") { ... setUsed ... }` — Pass falls through to `nextState` without touching `setUsed`.
+
+### Hide buttons whose effect would be a no-op
+
+When a Reaction button's effect would do nothing (e.g., "Heal only" when the character has 0 wounds), hide that button from `getReactionButtonProperties` rather than letting the player click a no-op. Mirror the gate from the trigger-availability check:
+
+```php
+if ($owner->Wounds > 0)
+{
+    $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal only'), 'healOnly');
+}
+```
+
+The same discipline applies inside `performReaction` — gate the no-op effect on its precondition so you don't queue an empty event:
+
+```php
+if ($owner->Wounds > 0)
+{
+    $healEvent = EventFactory::createCharacterBeingHealedEvent(...);
+    $game->theah->queueEvent($healEvent);
+    $game->notify->all("message", ...);
+}
+```
+
+WHY skip the no-op queue: `createCharacterBeingHealedEvent` against a 0-wound character is clamped by the engine and does nothing, but it still emits a notification ("X heals a wound") that misleads the log. Skip the event entirely when there's nothing to heal.
+
+### Moving Renown between locations — three-event batch
+
+For "Move N Renown from location A to location B" (Reaction_01062, Reaction_03027a, any similar Action). Queue THREE events with a shared `batchId`:
+
+```php
+$batchId = $game->getNextEventBatchId();
+
+$movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent(
+    $owner->ControllerId, $fromLocation, $toLocation, 1, $owner->getInjectCode()
+);
+$movingEvent->batchId = $batchId;
+$game->theah->eventCheck($movingEvent);
+$game->theah->queueEvent($movingEvent);
+
+$removedEvent = EventFactory::createRenownRemovedFromLocationEvent(
+    $owner->ControllerId, $fromLocation, 1, $owner->getInjectCode()
+);
+$removedEvent->batchId = $batchId;
+$game->theah->eventCheck($removedEvent);
+$game->theah->queueEvent($removedEvent);
+
+$addedEvent = EventFactory::createRenownAddedToLocationEvent(
+    $owner->ControllerId, $toLocation, 1, $owner->getInjectCode(), $isMove = true
+);
+$addedEvent->batchId = $batchId;
+$game->theah->eventCheck($addedEvent);
+$game->theah->queueEvent($addedEvent);
+```
+
+WHY three events with `batchId`:
+
+- `EventRenownMovingBetweenLocations` is the umbrella event that other cards (and the UI animator) hook to see "renown is moving from A to B" as one logical motion.
+- `EventRenownRemovedFromLocation` + `EventRenownAddedToLocation` are the granular bookkeeping events that actually mutate the source/destination renown counts. Pass `$isMove = true` to the added-event so it knows the renown originated from another location (not a fresh add).
+- The shared `batchId` (from `$game->getNextEventBatchId()`) groups all three under one logical operation in the log/UI. Without it, the player sees three separate log lines.
+- Call `eventCheck($event)` on each before queueing — gives other cards a chance to cancel or modify (e.g., a card that prevents renown moves).
+
+Eligible source locations come from `$theah->getAdjacentCityLocations($owner->Location, $includeHome = false)` filtered by `$theah->getCityLocation($name)->Renown > 0`. Don't queue any of the three events if the source has 0 renown.
+
+Reference: `Reaction_01062` (Odette Leader's existing reaction), `Reaction_03027a` (the new Odette character's destroyed-trigger reaction).
 
 ### Continuous Reaction — never set to Used
 
@@ -1982,6 +2092,11 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/_03026.php` (Angeline Dèmone, Uneasy Ally) | **Binary location-counting passive + two-step `actFromActionWithIds` location picker + conditional step-3 target picker.** Passive recomputes Influence bonus on `EventCardMoved` / `EventCharacterMustered` / `EventApproachCharacterPlayed` / `EventCharacterDestroyed` / `EventCharacterRecruited`. **Threads the `EventCardMoved` instance into the helper** to compensate for stale DB (`runEventHubAfterCards = true` defers the location write until after `handleEvent`) — excludes a card moving OUT, looks up a card moving IN. No-op gate on `$newInfluence == $this->ModifiedInfluence` to skip same-value events. Approach handlers cover BOTH self (using `$event->playerId` as ControllerId override, since the in-memory `ControllerId` may not be propagated yet) AND other-character-approached-while-Owner-at-Home. Action uses `factionHand.setSelectionMode` for step 1 (hand discard), `actFromActionWithIds` for step 2 (adjacent city location string), and conditionally transitions to step 3 (pick opposing target to wound) only when the discarded card is a Sorcery AND opponents exist at the destination. NO `IAbilityThatTargetsCharacters` — the text says "wound an opposing character," not "target an opposing character." |
 | `modules/php/cards/faf/actions/Action_03026.php` | **Hand-discard → location-pick → conditional target-pick flow.** Step 1 (`actFromActionWithId`): validate hand card, queue `createCardDiscardedFromHandEvent($owner.ControllerId, $cardId, $owner->Id, ...)` — sourceId is `$owner->Id` (int), NOT `$this->Id` (string composite). Step 2 (`actFromActionWithIds`): treat `$ids[0]` as a location-name string, queue move, then conditionally queue a transition to step 3. Step 3 (`actFromActionWithId`): wound the picked opposing character. `getArgsFromAction` uses `array_values(array_map(...))` to keep the hand-id payload JSON-serializable as an array (not an associative object). |
 | `modules/php/cards/_7s5s/_01037.php` (Edeline Trinken) | **Per-character location-counting passive via `$adjustment` int.** Same `runEventHubAfterCards = true` timing problem as Angeline `_03026`, but for "+1 per character at this location" — the per-character shape lets each event hand-pass a `+1`/`-1` adjustment without needing to peek at the moving card's traits. Use this shape when the bonus is uniform per qualifying card; use Angeline's event-passing shape when the bonus depends on the moving card's traits/controller. |
+| `modules/php/cards/faf/_03027.php` (Odette Dubois D'Arrent, Disillusioned Courtier) | **Character with two paired button-based City Reactions — no state classes.** (1) `EventCharacterDestroyed` "after another character at this location is destroyed" — heal Odette + optional adjacent-Renown-move (mandatory-first + optional-second split). Uses `$destroyed->Location` directly (event has `runEventHubAfterCards = true`, locker move runs after handlers). Useful-effect precondition: trigger only if Odette has wounds OR adjacent renown exists. Buttons: per-source renown move, "Heal only" (gated on `Wounds > 0`), "Pass" (early-return before `setUsed`). Effect side gates the heal-event/notification on `Wounds > 0` to avoid no-op log noise. (2) `EventChallengeIssued` "after a challenge is issued at this location" — pull adjacent Duelist; fires BEFORE intervention (use `EventChallengeIssued`, NOT `EventChallengeAccepted`). |
+| `modules/php/cards/faf/reactions/Reaction_03027a.php` | **Canonical Pass-button + heal/renown-move pattern.** Demonstrates: (a) `EventCharacterDestroyed` "another character at this location" gate (`characterId != owner.Id`, `destroyed.Location == owner.Location`); (b) mandatory-first + optional-second effect split in `performReaction`; (c) Pass button with early-return BEFORE `setUsed` so the daily-use slot survives; (d) hide buttons whose effect would be a no-op (`Heal only` only shown when `Wounds > 0`); (e) three-event renown-move recipe (`createRenownMovingBetweenLocationsEvent` + `Removed` + `Added` with shared `batchId`). |
+| `modules/php/cards/faf/reactions/Reaction_03027b.php` | **Pre-intervention `EventChallengeIssued` trigger + pull-adjacent-Duelist effect.** Uses `EventChallengeIssued` (queued by `stIssueChallenge` BEFORE the intervention dispatcher) for "before choosing to intervene" — `EventChallengeAccepted` fires too late. Eligibility: controller match + `Duelist` trait + at an adjacent city location (`getAdjacentCityLocations($owner->Location, false)`). Button-per-Duelist + Pass; effect re-validates location/trait/controller before queueing `createCardMovingEvent(engage=false)`. |
+| `modules/php/cards/_7s5s/_01062.php` (Odette Dubois D'Arrent, Genteel Spy) | **Leader sibling reference for renown-move and pull-adjacent-Duelist.** The existing Odette Leader has the "move adjacent Duelist to this location" mechanic as a *City Action* (`Action_01062`, `RequiresPerformerSelected = true`) and the "move adjacent renown to this location" mechanic as a *Reaction on `EventChallengeAccepted`/`EventCharacterIntervened`*. Compare to `_03027`'s Character version, which packages both mechanics as Reactions instead. |
+| `modules/php/cards/_7s5s/reactions/Reaction_01062.php` | **Canonical Pass-button + renown-move recipe.** First implementation of the three-event renown-move batch with shared `batchId`. Sets the pattern that `Reaction_03027a` follows: per-source `moveFrom-<location>` buttons + `'pass'` button, Pass branch does NOT call `setUsed`. |
 | `modules/php/cards/_7s5s/_01153.php` (Breastplate) | **Reduce-by-one wound prevention in `eventCheck`.** Canonical `eventCheck` on `EventCharacterBeingWounded` pattern. Tracks `$hasBlockedWound` to enforce "first time this duel." Mutates `$event->wounds` rather than zeroing — adapt this shape for partial-reduction passives. |
 | `modules/php/cards/_7s5s/actions/Action_01090.php` (Yuri Pyetrovich) | **Continuous Action — user-triggered variant.** Player activates from the menu; the Action sets globals and immediately calls `$this->setUsed($event->theah, false)` so it's available again. Companion to `Action_03013`'s never-shown variant. |
 | `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
