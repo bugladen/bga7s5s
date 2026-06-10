@@ -211,6 +211,40 @@
                 }
             },
 
+            'highDramaPhase03026': () => {
+                if (this.isCurrentPlayerActive()) {
+                    var translated = dojo.string.substitute(
+                        _("(${amount} card(s) to discard)"),
+                        {
+                            amount: 1
+                        }
+                    );
+                    $('faction_hand_info').innerHTML = translated;
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
+            'highDramaPhase03026_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'highDramaPhase03026_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
             'highDramaChallengeActionResolveTechnique_03013': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

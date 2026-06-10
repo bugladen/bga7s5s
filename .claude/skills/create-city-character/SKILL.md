@@ -1,9 +1,6 @@
 ---
 name: create-city-character
 description: Implement or finish a City Character (modules/php/cards/<expansion>/_NNNNN.php where the class extends CityCharacter). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a City Character, or when they reference a city-deck character whose class extends CityCharacter and has unimplemented Text. Triggers on phrases like "implement this city character", "finish _03cdNN" (when it extends CityCharacter), "wire up the City Forced", "wire up the City Action", or natural-language descriptions of a character that lives in the city deck and is mustered out of it (Penya-style).
-context: fork
-model: haiku
-effort: low
 ---
 
 # Creating a City Character

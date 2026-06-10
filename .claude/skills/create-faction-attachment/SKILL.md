@@ -1,9 +1,6 @@
 ---
 name: create-faction-attachment
 description: Implement or finish a Faction Attachment (modules/php/cards/<expansion>/_NNNNN.php where the class extends FactionAttachment). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a Faction Attachment, or when they reference a faction-deck attachment whose class extends FactionAttachment and has unimplemented Text. Triggers on phrases like "implement this faction attachment", "finish _NNNNN" (when it extends FactionAttachment), "wire up the equip restriction", "add the City Reaction to this weapon", "the equipped Strega does X", or natural-language descriptions of a faction-deck attachment (Weapon / Attire / Hat / Tabbard / Talisman that lives in a player's faction deck and equips onto one of their characters).
-context: fork
-model: haiku
-effort: low
 ---
 
 # Creating a Faction Attachment

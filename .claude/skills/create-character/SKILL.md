@@ -1,9 +1,6 @@
 ---
 name: create-character
 description: Implement or finish a Character or Leader card (modules/php/cards/<expansion>/_NNNNN.php where the class directly extends Character or Leader). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a Character/Leader card, or when they reference a faction-deck character whose class extends Character (not CityCharacter) and has unimplemented Text. Triggers on phrases like "implement this character", "implement this leader", "finish _NNNNN" (when it extends Character or Leader), "wire up the City Action on Cesca", "wire up the Reaction on this Leader", or natural-language descriptions of a non-city-deck character (lives in a player's faction deck or is a Leader).
-context: fork
-model: haiku
-effort: low
 ---
 
 # Creating a Character or Leader
@@ -181,6 +178,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"During <Phase>, you may choose not to <auto-action on Owner>"** (opt-out of an auto-emitted event) | Pattern D Reaction listening on the *pre*-event (e.g., `EventCardMoving` for the Dusk move-home) with `sourceId == 0` (auto-emitter signal) + a phase gate (`TURN_PHASE == Game::DUSK`) + the `cancelDeclinedByCardIds` re-queue dance. Cancel the event, clone it, prompt the player; on "Keep" call `setUsed(true)`; on "Decline" re-queue the clone with `cancelDeclinedByCardIds[] = owner->Id` so the reaction doesn't immediately re-catch it. See Pattern D's "Cancel-and-reissue Reaction" subsection. Reference: `Reaction_03016a` (Ise Dusk opt-out), `Reaction_01140` (in-hand RiskReaction sibling). |
 | **"<Stat> increases by N"** / **"<Stat> is reduced by N"** | Queue `createCharacter<Stat>ModifiedEvent` (e.g., `createCharacterInfluenceModifiedEvent`). See `_01007` Aldo for renown-driven Influence modification. |
 | **"<Owner> has +N[Stat] for each X in her dueling line"** (or any duel-line-derived count) | Pattern A passive with a running `$<Stat>Bonus` field on the card. Recompute at `EventDuelEndOfRound` (the only clean boundary — there is no event fired when a card enters the dueling line; `cards->moveCard` is called directly). Reset at `EventDuelEnd` *before* the line is cleared. Gate on the owner being a duel participant (the dueling line is per-player, not per-character). See Pattern A "Dynamic stat bonuses tied to the dueling line" below. Reference: `_03004` Elena. |
+| **"While you control X at <Owner>'s location, she has +N [Stat]"** (any location-counting passive) | Pattern A passive that hooks `EventCardMoved` (and `EventCharacterMustered` / `EventApproachCharacterPlayed` / `EventCharacterDestroyed` / `EventCharacterRecruited`). **`EventCardMoved` fires BEFORE the DB location update** (`runEventHubAfterCards = true`), so `getCharactersAtLocation` returns the *pre-move* state. Either pass an explicit `+1`/`-1` adjustment (per-character count — `_01037`) or thread the event into the helper to exclude the moving-out card and look up the moving-in card (binary "any qualifying member" bonus — `_03026`). Add a no-op gate `if ($new == $this->ModifiedStat) return;` to skip same-value events. See Pattern A "Location-counting passives" below. |
 | **"Opponents' abilities cannot wound (or move wounds to) <Owner>"** / "<Owner> ignores wounds from X" | Override `eventCheck` on the card class and zero `$event->wounds` on `EventCharacterBeingWounded`. Distinguish ability-emitted wounds (non-empty `abilityId`) from threat-conversion wounds (empty `abilityId`). See Pattern A "Wound-prevention passive" below. Reference: `_03014` Kaspar (opponent's-ability scope), `_01069` Maxime (own-Sorcerer scope), `_01153` Breastplate (in-duel reduction-by-one). |
 | **`<b>Action:</b>`** / **`<b>City Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending `CharacterAction`. State class(es) + JS wiring per Pattern C. **"City Action" only differs by the `cardInCity` gate** in `isAvailableToPlayer`. |
 | **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. |
@@ -363,6 +361,90 @@ Edge cases (Elena journal `2026-05-16-01-elena-agnelli-03004-implementation.md` 
 - **Owner swapped into / out of an in-progress duel.** Not handled by the basic pattern. The next `EventDuelEndOfRound` recomputes from the player's line, which may already contain cards played by a prior duelist. Flag for QA if the text is sensitive to this; usually unimportant.
 - **Owner destroyed mid-duel.** `EventDuelEnd` still fires and resets the bonus. `ModifiedFinesse` on a discarded card doesn't affect anything else, so no special handling needed.
 
+### Location-counting passives — `EventCardMoved` fires BEFORE the DB updates
+
+For "while you control another X at <Owner>'s location, she has +N [Stat]" (Angeline Dèmone `_03026`) or any other passive that **counts who is at a location** in response to `EventCardMoved` — the DB location field hasn't been updated yet when card->handleEvent runs. `EventCardMoved` sets `runEventHubAfterCards = true`, so the EventHub's location update runs AFTER every card's `handleEvent`. A naive `getCharactersAtLocation($this->Location)` returns the *pre-move* state: the moving card is still at `fromLocation`, not at `toLocation`.
+
+01037 Edeline works around this by passing an explicit `$adjustment` int (`+1` for IN, `-1` for OUT) added to the count — fine for "+1 per character at this location" because every character contributes equally. **Binary "any qualifying member" bonuses can't use the adjustment shape** — you need to know the moving card's identity/trait/controller to decide whether to count it.
+
+Pattern (mirror `_03026` Angeline):
+
+```php
+private function updateInfluence(Theah $theah, string $location, ?EventCardMoved $moveEvent = null): void
+{
+    $characters = $location == Game::LOCATION_PLAYER_HOME
+        ? $theah->getCharactersAtHomeByPlayerId($this->ControllerId)
+        : $theah->getCharactersAtLocation($location);
+
+    $bonus = 0;
+    foreach ($characters as $character)
+    {
+        // WHY: EventCardMoved fires before DB updates — a card moving OUT of
+        // $location is still listed there. Exclude it from the count.
+        if ($moveEvent !== null
+            && $character->Id == $moveEvent->cardId
+            && $moveEvent->fromLocation == $location
+            && $moveEvent->toLocation != $location)
+        {
+            continue;
+        }
+        if ($character->Id != $this->Id
+            && $character->ControllerId == $this->ControllerId
+            && $character->hasTrait("Sorcerer"))
+        {
+            $bonus = 1;
+            break;
+        }
+    }
+
+    // WHY: Same stale-DB reason — a card moving IN isn't listed at $location yet.
+    if ($bonus == 0
+        && $moveEvent !== null
+        && $moveEvent->cardId != $this->Id
+        && $moveEvent->toLocation == $location
+        && $moveEvent->fromLocation != $location)
+    {
+        $movingCard = $theah->getCardById($moveEvent->cardId);
+        if ($movingCard !== null
+            && $movingCard->ControllerId == $this->ControllerId
+            && $movingCard->hasTrait("Sorcerer"))
+        {
+            $bonus = 1;
+        }
+    }
+
+    $newInfluence = $this->Influence + $bonus;
+    if ($newInfluence == $this->ModifiedInfluence) return;   // no-op gate
+
+    $theah->queueEvent(EventFactory::createCharacterInfluenceModifiedEvent(
+        $this->ControllerId, $this->Id,
+        $this->ModifiedInfluence, $newInfluence,
+        $this->getInjectCode()
+    ));
+}
+```
+
+In `handleEvent`, pass the event so the helper can compensate:
+
+```php
+if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
+    $this->updateInfluence($event->theah, $event->toLocation, $event);
+
+if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->toLocation == $this->Location)
+    $this->updateInfluence($event->theah, $this->Location, $event);
+
+if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->fromLocation == $this->Location)
+    $this->updateInfluence($event->theah, $this->Location, $event);
+```
+
+WHY a no-op gate (`$newInfluence == $this->ModifiedInfluence` early-return): even when the bonus value doesn't change, naive code queues a same-value `*ModifiedEvent` for every triggering event (a non-Sorcerer moving in, an opponent's character entering, etc.). The framework still processes those no-op events. The gate trims log noise and event-loop work.
+
+**Apply the same gate to `_01037`-style adjustment-int patterns** — Edeline's `updateInfluence` also benefits from skipping a same-value event. Add `if ($newInfluence == $this->ModifiedInfluence) return;` before queueing.
+
+WHY not just hook the post-tense `EventCardMoved` differently — there's no later "after DB updates" event for moves. `runEventHubAfterCards = true` puts the EventHub's write AFTER card handleEvent, period. The choice is: read stale DB and compensate, or hook `EventCharacterMustered`/`EventApproachCharacterPlayed` (which don't have the timing problem) and forgo the move trigger entirely. Card text that says "while X is at this location" needs the move trigger.
+
+Reference: `_03026` Angeline (binary bonus), `_01037` Edeline (per-character count via `$adjustment` int).
+
 ### Forced muster/approach triggers — hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`
 
 For any "after X musters" / "when X musters" / "Forced after X musters" trigger, the conditional MUST hook both events:
@@ -381,6 +463,36 @@ WHY both: the printed text says "musters" colloquially to cover every way a char
 Reference: `modules/php/cards/_7s5s/_01009.php` (Cirilo) line ~57 — the canonical OR pattern for "I added Brute to my Mercenaries when I muster or come in via Approach." `_03015` Joern uses the same pair for his self-wound Forced trigger.
 
 If the trigger is "after **another** character musters" (not self), still hook both events; only the `characterId` filter changes.
+
+**Approach also triggers Home-scoped passives — even when the Owner isn't the approached character.** For "while you control another X at <Owner>'s location" passives where Owner is at Home, an opponent's *teammate* X being approach-played to the player's Home should also recompute. Hook a second `EventApproachCharacterPlayed` branch:
+
+```php
+if ($event instanceof EventApproachCharacterPlayed
+    && $event->characterId != $this->Id
+    && $this->Location == Game::LOCATION_PLAYER_HOME
+    && $event->playerId == $this->ControllerId)
+{
+    $this->updateInfluence($event->theah, Game::LOCATION_PLAYER_HOME);
+}
+```
+
+Gate on `$event->playerId == $this->ControllerId` so the recompute only fires for Owner's controller (Home is per-player; opponent's approach doesn't change who's at *your* Home).
+
+**For the Owner's own approach, use `$event->playerId` as the controller — not `$this->ControllerId`.** When Angeline herself is the approach character, her in-memory `ControllerId` may not be propagated yet at the moment `EventApproachCharacterPlayed` fires (EventHub handler doesn't set it; recruit/muster events do). Pass `$event->playerId` as an override so `getCharactersAtHomeByPlayerId` looks up the right home:
+
+```php
+private function updateInfluence(Theah $theah, string $location, ?EventCardMoved $moveEvent = null, ?int $controllerIdOverride = null): void
+{
+    $controllerId = $controllerIdOverride ?? $this->ControllerId;
+    // ... use $controllerId in lookups instead of $this->ControllerId ...
+}
+
+// caller for own-approach:
+if ($event instanceof EventApproachCharacterPlayed && $event->characterId == $this->Id)
+    $this->updateInfluence($event->theah, Game::LOCATION_PLAYER_HOME, null, $event->playerId);
+```
+
+Reference: `_03026` Angeline.
 
 ### Phase-conditional Resolve modifier — direct `ModifiedResolve` mutation, no event factory
 
@@ -758,6 +870,147 @@ public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideI
 Per CLAUDE.md, those are run centrally in `actHighDramaInPlayActionConfirm` / `stHighDramaInPlayActionDispatch`. Calling them from a `CharacterAction` subclass causes duplicates.
 
 Still required: **call `createActionResolvedEvent()` once at the end of resolution.** (The pre-commit hook's regex doesn't directly match `extends CharacterAction` — but the call is still mandatory per CLAUDE.md and the convention in every existing CharacterAction.)
+
+### Action `$this->Id` is a STRING composite, not an int
+
+`CardAbilityTrait::setOwnerId` sets `$this->Id = "{$ownerId}_{$this->ClassId}"` — so a `CharacterAction`'s `Id` is a string like `"68_Action_03026"`, not the action's class id or an int. Passing it where an int sourceId is required will throw a type error.
+
+For event factories that take `int $sourceId` (`createCardDiscardedFromHandEvent`, `createCharacterBeingWoundedEvent`, `createCharacterBeingHealedEvent`, `createCardMovingEvent`, etc.), use **`$owner->Id`** (the character's int id), not `$this->Id`. The action's string composite id is the right value for `abilityId` parameters (which are typed `string`) and for the 4th arg to `createTransitionEvent($playerId, $sourceId, $transitionName, $internalId = "")`.
+
+```php
+$discardEvent = EventFactory::createCardDiscardedFromHandEvent(
+    $owner->ControllerId,
+    $cardId,
+    $owner->Id,             // ✓ int — character id
+    // NOT $this->Id        ✗ string — action's composite id
+    false, false, true
+);
+```
+
+### PHP arrays handed back to JS must be sequential — `array_values()`
+
+`getCardObjectsAtLocation` (DB.php:205) returns an array **keyed by card id**: `$cards[(int)$result['id']] = ...`. `array_map` preserves keys. When that array is JSON-encoded for the client, non-sequential int keys serialize as a JSON object `{12345: ..., 67890: ...}` — not an array — and `.forEach` / `.map` throws `is not a function`.
+
+Wrap any picker `ids` payload (and any helper that may return associative keys) in `array_values` before assigning to args:
+
+```php
+$args['ids'] = array_values(array_map(fn($card) => $card->Id, $hand));
+```
+
+Symptom on the JS side: `Uncaught TypeError: ids.forEach is not a function`. If you see that error and you're sure the field is set server-side, the cause is almost certainly an associative-keyed array.
+
+### Hand-card picker — use `factionHand.setSelectionMode`, NOT `highlightCardsAsSelectable`
+
+For "Discard a card from your hand" / "Reveal a card from your hand" steps where the player picks from their hand:
+
+- `highlightCardsAsSelectable(ids)` is for **in-play cards** (characters, attachments). It looks up `this.cardProperties[id]` and `$(card.divId + '_image')` — hand cards aren't in `cardProperties` under that scheme and the lookup returns `null`, throwing `Cannot read properties of null (reading 'className')`.
+- Hand cards use the dedicated `factionHand` widget. Pattern (mirror `highDramaPhase01069`):
+
+```js
+// OnEnteringState.<expansion>.js
+'highDramaPhaseNNNNN': () => {
+    if (this.isCurrentPlayerActive()) {
+        var translated = dojo.string.substitute(_("(${amount} card(s) to discard)"), { amount: 1 });
+        $('faction_hand_info').innerHTML = translated;
+        this.factionHand.setSelectionMode('single');
+    }
+},
+
+// OnUpdateActionButtons.<expansion>.js — REUSE the existing onCardDiscarded handler
+'highDramaPhaseNNNNN': () => {
+    this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardDiscarded());
+    dojo.addClass('actChooseDiscardCards', 'disabled');
+},
+
+// EventHandlers.js::onFactionCardClicked — toggle the confirm button
+'highDramaPhaseNNNNN': () => {
+    if (this.factionHand.getSelection().length > 0) dojo.removeClass('actChooseDiscardCards', 'disabled');
+    else dojo.addClass('actChooseDiscardCards', 'disabled');
+},
+
+// OnLeavingState.<expansion>.js — cleanup
+'highDramaPhaseNNNNN': () => {
+    if (this.isCurrentPlayerActive()) {
+        this.factionHand.setSelectionMode('none');
+        $('faction_hand_info').innerHTML = '';
+    }
+},
+```
+
+`onCardDiscarded` in `PlayerActions.js` already submits via `actFromCardWithId` with the selected card id, so the server-side `actFromActionWithId(int $id)` handler works as-is. Reference: `_01069` (Maxime), Angeline `_03026` step 1.
+
+### City-location picker for CharacterActions — override `actFromActionWithIds`
+
+For step-N states where the player picks a city location (the JS submits via `onCityLocationsSelected → bgaPerformAction('actFromCardWithLocations', ...)`):
+
+- The state class's `#[PossibleAction]` is **`actFromCardWithLocations(string $locations)`** (NOT `actFromCardWithId`).
+- The framework's `FrameworkActionsTrait::actFromCardWithLocations` JSON-decodes the payload and routes into `$card->actFromCardWithIds(...)` → `$action->actFromActionWithIds(Game, int, string, array)`.
+- **Override `actFromActionWithIds(array $ids)`** on the action, NOT `actFromActionWithId(int $id)`. Each entry in `$ids` is a location-name string (e.g. `"The Forums"`), not an int.
+
+Symptom of using `actFromActionWithId` instead: the framework can't dispatch the location payload to your action; the state spins waiting for an action it never receives, which presents as an "infinite loop" on the client.
+
+```php
+public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
+{
+    parent::actFromActionWithIds($game, $state, $stateName, $ids);
+
+    if ($state == States::HIGH_DRAMA_PLAYER_TURN_NNNNN_2)
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        $newLocation = $ids[0];  // string — location name
+
+        $valid = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
+        if (! in_array($newLocation, $valid))
+            throw new UserException($game->translate('Location must be adjacent.'));
+
+        // ... queue the move event with $newLocation as the string toLocation ...
+    }
+}
+
+public function getArgsFromAction(Game $game, int $state, string $stateName): array
+{
+    $args = parent::getArgsFromAction($game, $state, $stateName);
+
+    if ($state == States::HIGH_DRAMA_PLAYER_TURN_NNNNN_2)
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        $args['locationIds'] = array_values($game->theah->getAdjacentCityLocations($owner->Location, false));
+    }
+    return $args;
+}
+```
+
+The state class:
+
+```php
+#[PossibleAction]
+public function actFromCardWithLocations(string $locations): void
+{
+    $this->game->actFromCardWithLocations($locations);
+}
+```
+
+Don't add an `actBack` button on the picker unless your state also declares a `"back"` transition and a `#[PossibleAction] actBack` method — a button that submits an unhandled action will misbehave.
+
+Reference: `Action_01068` (Léontine), Angeline `_03026` step 2.
+
+### Don't add `IAbilityThatTargetsCharacters` unless the text says "target"
+
+The memory note `feedback_targets_characters_interface.md` covers the *positive* case ("if a card's Text targets a character, class must implement IAbilityThatTargetsCharacters"). The inverse also holds: text that says "wound an opposing character" / "engage a character" / "discard a character" — without the word "target" — is NOT a targeted ability and should NOT implement the interface. Other cards' "before being targeted" hooks should not see these.
+
+When you still need validation logic ("must be opposing", "must be at my location"), write a plain private helper:
+
+```php
+private function isValidWoundCandidate(Character $owner, Character $character): bool
+{
+    if ($character->ControllerId == $owner->ControllerId || $character->ControllerId == 0) return false;
+    return $character->Location == $owner->Location;
+}
+```
+
+Don't reuse the `isValidTargetForAbility` name — that name implies the interface contract.
+
+Reference: `_03026` Angeline (wounds without targeting), vs. `Action_03020` (commanding — *does* target).
 
 ### State ID encoding
 
@@ -1726,6 +1979,9 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/_03015.php` (Joern Kietelsson, Fury's Edge) | **Character with three pure-passive abilities — no Action/Reaction/Technique files.** (1) Forced self-wound on muster: hooks BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed` OR'd in one conditional, gated on `characterId == $this->Id`. (2) Phase-conditional Resolve penalty ("During Dusk, -3 Resolve"): direct `$this->ModifiedResolve` mutation on `EventDuskPhaseBegin`, restore on `EventDuskEndOfDay`, gated by a private `$DuskResolvePenaltyApplied` bool — there is no `createCharacterResolveModifiedEvent` factory. Includes an explicit destruction check (mirroring `EventHub.php:251`) because `Character::handleEvent`'s threshold check only runs inside an `EventCharacterWounded` handler. (3) Challenge-refused self-heal on `EventChallengeRejected` with `challengerId == $this->Id` — symmetric to `_01119` Nazem's challenger-side engage. |
 | `modules/php/cards/faf/techniques/Technique_03014.php` | **Attachment-OR-dueling-line trait-gated Technique that wounds the adversary.** `isAvailableToPlayer` ORs two checks: iterate `$owner->Attachments` (ids → `getCardById` → `hasTrait("Eisenfaust")`) and iterate `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $owner->ControllerId)`. Effect mirrors `Technique_03004` — `EventDuelCalculateTechniqueValues` handler queues a `createCharacterBeingWoundedEvent` against `getDuelRoundOpponent()` and pushes an explanation. |
 | `modules/php/cards/_7s5s/_01069.php` (Maxime de Lafayette) | **Wound-prevention passive — own-Sorcerer scope.** Overrides `handleEvent` on `EventCharacterWounded` and skips `parent::handleEvent` to drop the wound (alternative to Kaspar's `eventCheck`-on-`EventCharacterBeingWounded` shape). Distinguishes Sorcery-trait source (auto-targets performer) from `ISorcererAbility` + `CHOSEN_PERFORMER == Maxime`. Prefer Kaspar's shape for new wound-prevention passives — it doesn't propagate the past-tense event to other listeners. |
+| `modules/php/cards/faf/_03026.php` (Angeline Dèmone, Uneasy Ally) | **Binary location-counting passive + two-step `actFromActionWithIds` location picker + conditional step-3 target picker.** Passive recomputes Influence bonus on `EventCardMoved` / `EventCharacterMustered` / `EventApproachCharacterPlayed` / `EventCharacterDestroyed` / `EventCharacterRecruited`. **Threads the `EventCardMoved` instance into the helper** to compensate for stale DB (`runEventHubAfterCards = true` defers the location write until after `handleEvent`) — excludes a card moving OUT, looks up a card moving IN. No-op gate on `$newInfluence == $this->ModifiedInfluence` to skip same-value events. Approach handlers cover BOTH self (using `$event->playerId` as ControllerId override, since the in-memory `ControllerId` may not be propagated yet) AND other-character-approached-while-Owner-at-Home. Action uses `factionHand.setSelectionMode` for step 1 (hand discard), `actFromActionWithIds` for step 2 (adjacent city location string), and conditionally transitions to step 3 (pick opposing target to wound) only when the discarded card is a Sorcery AND opponents exist at the destination. NO `IAbilityThatTargetsCharacters` — the text says "wound an opposing character," not "target an opposing character." |
+| `modules/php/cards/faf/actions/Action_03026.php` | **Hand-discard → location-pick → conditional target-pick flow.** Step 1 (`actFromActionWithId`): validate hand card, queue `createCardDiscardedFromHandEvent($owner.ControllerId, $cardId, $owner->Id, ...)` — sourceId is `$owner->Id` (int), NOT `$this->Id` (string composite). Step 2 (`actFromActionWithIds`): treat `$ids[0]` as a location-name string, queue move, then conditionally queue a transition to step 3. Step 3 (`actFromActionWithId`): wound the picked opposing character. `getArgsFromAction` uses `array_values(array_map(...))` to keep the hand-id payload JSON-serializable as an array (not an associative object). |
+| `modules/php/cards/_7s5s/_01037.php` (Edeline Trinken) | **Per-character location-counting passive via `$adjustment` int.** Same `runEventHubAfterCards = true` timing problem as Angeline `_03026`, but for "+1 per character at this location" — the per-character shape lets each event hand-pass a `+1`/`-1` adjustment without needing to peek at the moving card's traits. Use this shape when the bonus is uniform per qualifying card; use Angeline's event-passing shape when the bonus depends on the moving card's traits/controller. |
 | `modules/php/cards/_7s5s/_01153.php` (Breastplate) | **Reduce-by-one wound prevention in `eventCheck`.** Canonical `eventCheck` on `EventCharacterBeingWounded` pattern. Tracks `$hasBlockedWound` to enforce "first time this duel." Mutates `$event->wounds` rather than zeroing — adapt this shape for partial-reduction passives. |
 | `modules/php/cards/_7s5s/actions/Action_01090.php` (Yuri Pyetrovich) | **Continuous Action — user-triggered variant.** Player activates from the menu; the Action sets globals and immediately calls `$this->setUsed($event->theah, false)` so it's available again. Companion to `Action_03013`'s never-shown variant. |
 | `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
@@ -1771,4 +2027,10 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 26. **For "+N [Stat] while <self-condition>" passives** (Combat/Finesse/Influence/Panache): use a flag-based recompute pattern, NOT a recompute-from-base. Hook the event(s) that toggle the condition (`EventCharacterWounded`/`EventCharacterHealed` for "while wounded", `EventCardEngaged`/`EventCardEngarded` for "while engaged", etc.) gated on `characterId == $this->Id`. Call `parent::handleEvent($event)` FIRST so the parent updates `$this->Wounds` / `Engaged` / etc.; then re-derive the boolean and queue `createCharacter<Stat>ModifiedEvent(±1)` only on flag transition. Skip if `IsDying` or `characterIsInDiscardOrLocker`. Pattern reference: `_03016` Ise (+1 Combat while wounded) and Pattern A's "Stat bonus while a self-condition holds" subsection. The flag avoids clobbering attachment-driven `ModifiedCombat` etc. **Resolve has no factory — use the `_03015` Joern direct-mutation pattern instead.**
 27. **For "During <Phase>, you may choose not to <auto-action>" Reactions** (Dusk opt-out, Dawn cleanup opt-out, etc.): listen on the *pre*-event (e.g., `EventCardMoving`) and use the `cancelDeclinedByCardIds` re-queue dance. Cancel the event in `handleEvent` (`$event->canceled = true`), clone-and-store it (with `unset($cloned->theah)`), prompt the player; "Keep" path calls `setUsed(true)` and discards the clone; "Decline" path re-queues the clone with `cancelDeclinedByCardIds[] = $owner->Id` so `handleEvent` doesn't immediately re-catch it. Gate the trigger on the auto-emitter signal — for the Dusk move-home, that's `sourceId == 0` AND `TURN_PHASE == Game::DUSK`. Use `stackEvent` (not `queueEvent`) for the transition so the prompt fires before subsequent dusk cleanup events. Pattern reference: `Reaction_03016a` (Ise, on a Character in play) and `Reaction_01140` (in-hand sibling). See Pattern D's "Cancel-and-reissue Reaction" subsection.
 28. **For "Reaction: After <enemy/X> character moves to this location" triggers:** listen on `EventCardMoved` (past-tense, the move has committed). Required gates in order: `isAvailable()`, `cardInCity($owner)` (enemies can't enter your Home), `event.cardId != $owner->Id` (skip the owner's self-moves), `event.toLocation == $owner->Location`, `getCardById` returns a Character, `ControllerId != 0`, and the enemy/friendly controller check that matches the text. ALWAYS include a valid-effect-target precondition (`count($eligibleEffectTargets) > 0`) before queuing the transition, or the player gets a useless prompt. To MOVE another character to the owner's location, queue `createCardMovingEvent($mover.ControllerId, $mover.Id, $mover.Location, $owner.Location, $engage=false, $owner->Id, $this->Id)` — there's no pull/teleport helper, the standard move event handles all bookkeeping. Pattern reference: `Reaction_03016b` (Ise). For the *self-moves* analogue ("after this character moves to a new location"), the receiver is a `handleEvent` on the card itself — see `_01067` Jean Urbain / `_02022` Stranahan.
-29. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), and the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here decisions in detail.
+29. **For location-counting passives** ("while you control X at <Owner>'s location"): hook `EventCardMoved` AND `EventCharacterMustered` AND `EventApproachCharacterPlayed` AND `EventCharacterDestroyed` AND `EventCharacterRecruited`. **`EventCardMoved` has `runEventHubAfterCards = true`** so the DB location field is stale during `handleEvent` — either pass an `$adjustment` int (per-character count, `_01037` Edeline) or pass the `EventCardMoved` instance into the helper and exclude moving-out + look up moving-in (binary bonus, `_03026` Angeline). For approach-played triggers, hook a SECOND branch for "another character is approached while Owner is at Home" (gate on `$event->playerId == $this->ControllerId`); in the Owner's-own-approach branch use `$event->playerId` as the controller — `$this->ControllerId` may not be propagated yet. Add a no-op gate (`if ($new == $this->ModifiedStat) return;`) to skip same-value events. See Pattern A "Location-counting passives".
+30. **For event factory calls from inside an Action class**: an Action's `$this->Id` is a STRING composite (`"{ownerId}_{ClassName}"`, set in `CardAbilityTrait::setOwnerId`). Use `$owner->Id` (int) for any `int $sourceId` parameter — `createCardDiscardedFromHandEvent`, `createCharacterBeingWoundedEvent`, `createCharacterBeingHealedEvent`, `createCardMovingEvent`. `$this->Id` is correct for `string $abilityId` parameters and the 4th `internalId` arg of `createTransitionEvent`.
+31. **For arrays handed to JS via `getArgsFromAction`**: `getCardObjectsAtLocation` returns an array keyed by card id. `array_map` preserves keys, and a non-sequentially-keyed array JSON-encodes as an object — `.forEach` / `.map` throws on the client. Wrap in `array_values(array_map(...))`. Symptom: `Uncaught TypeError: ids.forEach is not a function`.
+32. **For hand-card picker states** (discard from hand, reveal from hand): use `factionHand.setSelectionMode('single')` + `onCardDiscarded` (reusable from `PlayerActions.js`). DO NOT use `highlightCardsAsSelectable` — that's for in-play cards in `cardProperties`; hand cards aren't there and the lookup returns `null` (symptom: `Cannot read properties of null (reading 'className')`). See Pattern C "Hand-card picker".
+33. **For city-location picker states on a CharacterAction**: the state's `#[PossibleAction]` is `actFromCardWithLocations(string $locations)`, and the action overrides **`actFromActionWithIds(array $ids)`** — NOT `actFromActionWithId(int $id)`. Each `$ids[N]` entry is a location-name STRING, not an int. Symptom of overriding the wrong method: the state spins waiting for an action that never arrives (presents as an infinite loop). See Pattern C "City-location picker for CharacterActions".
+34. **For `IAbilityThatTargetsCharacters`**: implement ONLY when the card text says "target". "Wound an opposing character" / "engage a character" / "destroy a character" without the word "target" is NOT a targeted ability — don't add the interface. Use a plain private helper (e.g., `isValidWoundCandidate`) for validation; don't reuse the `isValidTargetForAbility` name. See Pattern C "Don't add `IAbilityThatTargetsCharacters` unless the text says 'target'".
+35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), and the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here decisions in detail.

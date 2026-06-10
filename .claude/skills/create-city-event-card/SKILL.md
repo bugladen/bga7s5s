@@ -1,9 +1,6 @@
 ---
 name: create-city-event-card
 description: Implement or finish a City Event Card (modules/php/cards/faf/_03cdNN.php and similar). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a City Event Card, or when they reference a card whose class extends CityEventCard and has unimplemented Text. Triggers on phrases like "implement this city event", "finish _03cdNN", "wire up the Forced ability", or "add a City Action to this event card."
-context: fork
-model: haiku
-effort: low
 ---
 
 # Creating a City Event Card

@@ -139,6 +139,31 @@
                 }
             },
 
+            'highDramaPhase03026': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase03026_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase03026_3': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03cd13': () => {
                 if (this.isCurrentPlayerActive()) {
                     const cardId = this.clientStateArgs && this.clientStateArgs.crabsCardId;
