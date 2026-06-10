@@ -28,19 +28,26 @@ class Action_01083 extends RiskCityAction implements IAbilityThatTargetsCharacte
             return false;
         }
 
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => $character->canChallenge());
-        foreach ($characters as $character)
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        $performers = array_values(array_filter($performers, fn(Character $character) => $character->canChallenge()));
+
+        $charactersThatCanChallenge = [];
+        foreach ($performers as $performer)
         {
-            $adversaries = $theah->getCharactersAtLocation($character->Location);
-            $adversaries = array_filter($adversaries, fn($adversary) => $adversary->isControlled() && $adversary->ControllerId != $playerId);
-            if (count($adversaries) > 0)
+            $opponents = $theah->getCharactersAtLocation($performer->Location);
+            $opponents = array_filter($opponents, fn(Character $opponent) => $opponent->isControlled() && $opponent->isNotControlledByPlayer($playerId));
+            if (count($opponents) > 0)
             {
-                return true;
+                $charactersThatCanChallenge[] = $performer;
             }
         }
 
-        return false;
+        return $charactersThatCanChallenge;
     }
 
     public function isValidTargetForAbility(Game $game, Character $character): array
@@ -48,7 +55,7 @@ class Action_01083 extends RiskCityAction implements IAbilityThatTargetsCharacte
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
 
-        if ($character->ControllerId == $performer->ControllerId)
+        if (! $character->isControlled() || $character->ControllerId == $performer->ControllerId)
         {
             return [false, $game->translate("You cannot challenge a character that is controlled by you.")];
         }
