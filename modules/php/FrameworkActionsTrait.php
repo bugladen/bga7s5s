@@ -298,6 +298,23 @@ trait FrameworkActionsTrait
     public function actHighDramaMoveActionDestinationChosen(string $locations)
     {
         $location = json_decode($locations, true)[0];
+
+        $this->theah->buildCity();
+        $locationCheck = $this->theah->getCityLocation($location);
+        if ($locationCheck === null)
+        {
+            throw new UserException(sprintf($this->translate("Location %s does not exist."), $location));
+        }
+
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performer = $this->theah->getCharacterById($performerId);
+
+        $adjacentLocations = $this->theah->getAdjacentCityLocations($performer->Location);
+        if (!in_array($location, $adjacentLocations))
+        {
+            throw new UserException(sprintf($this->translate("Location %s is not an adjacent location to Performer."), $location));
+        }
+
         $playerName = $this->getActivePlayerName();
 
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
