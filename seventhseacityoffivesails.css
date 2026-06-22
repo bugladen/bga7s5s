@@ -80,6 +80,7 @@ body {
     padding: 10px;
     background: #f0f0f0;
     font-size: 16px;
+    color: black;
 }
 
 ._7sfs-deck-picker-custom-textarea {
@@ -90,6 +91,10 @@ body {
     border: none;
     padding: 10px;
     color: black;
+}
+
+html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
+    color: whitesmoke;
 }
 
 ._7sfs-deck-picker-custom-textarea::placeholder {
