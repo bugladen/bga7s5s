@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -38,6 +39,11 @@ class Reaction_01202 extends AttachmentReaction
         return $array;
     }
 
+    private function isValidCharacter(Character $character): bool
+    {
+        return ! $character instanceof Leader && ! $character->hasTrait("Mercenary") && ! $character->hasTrait("Brute");
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -49,7 +55,7 @@ class Reaction_01202 extends AttachmentReaction
             {
                 $owningCharacter = $this->getOwningCharacter($event->theah);
                 $dyingCharacter = $event->theah->getCharacterById($event->characterId);
-                if ($owningCharacter->ControllerId == $dyingCharacter->ControllerId && ! $dyingCharacter instanceof Leader && ! $dyingCharacter->hasTrait("Mercenary"))
+                if ($owningCharacter->ControllerId == $dyingCharacter->ControllerId && $this->isValidCharacter($dyingCharacter))
                 {
                     $this->SavedCharacterId = $dyingCharacter->Id;
                     $objectOfWonder = $this->getOwningCard($event->theah);
