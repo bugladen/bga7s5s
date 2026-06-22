@@ -404,6 +404,7 @@ body {
 
     font-size:24pt;
     text-align:center;
+    color: black;
 }
 ._7sfs-card-reknown-chip {
     position: absolute;
@@ -965,7 +966,7 @@ body {
 }
 
 ._7sfs-modified-stat-value {
-    color: yellow;
+    color: yellow !important;
     text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
 }
 
@@ -976,6 +977,7 @@ body {
     font-size: 12pt;
     vertical-align: top;
     width:10px;
+    color: black;
 }
 ._7sfs-attachment-combat-value {
     font-size:12pt;
@@ -1004,6 +1006,7 @@ body {
 
     font-size: 12pt;
     vertical-align: top;
+    color: black;
 }
 ._7sfs-attachment-finesse-value {
     font-size:12pt;
@@ -1034,6 +1037,7 @@ body {
 ._7sfs-card-influence-value {
     margin-left: 2px;
     font-size: 12pt;
+    color: black;
 }
 ._7sfs-attachment-influence-value {
     margin-left: 2px;
@@ -1060,6 +1064,7 @@ body {
     margin-left: 2px;
     font-size: 12pt;
     vertical-align: top;
+    color: black;
 }
 
 ._7sfs-scheme-panache-box {
@@ -1083,6 +1088,7 @@ body {
     margin-left: 2px;
     font-size: 12pt;
     vertical-align: top;
+    color: black;
 }
 
 ._7sfs-scheme-player-color {
