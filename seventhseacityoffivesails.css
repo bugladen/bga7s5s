@@ -1829,6 +1829,11 @@ body {
     -webkit-touch-callout: none;
 }
 
+/* Dark theme override */
+html[data-theme="dark"] ._7sfs-log_tooltip {
+    background-color: #808080;
+}
+
 ._7sfs-help-card {
     width: 30px;
     border: solid 1px black;
@@ -1986,4 +1991,9 @@ body {
     background: #c9a87c !important;
     border: 3px solid gold;
     border-radius: 8px;
+}
+
+
+html[data-theme="dark"] ._7sfs-hand {
+    background-color: transparent !important;
 }
