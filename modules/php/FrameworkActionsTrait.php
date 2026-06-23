@@ -298,6 +298,10 @@ trait FrameworkActionsTrait
     public function actHighDramaMoveActionDestinationChosen(string $locations)
     {
         $location = json_decode($locations, true)[0];
+        if ($location == null)
+        {
+            throw new UserException($this->translate("Location is not valid."));
+        }
 
         $this->theah->buildCity();
         $locationCheck = $this->theah->getCityLocation($location);
