@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -24,6 +25,7 @@ class Reaction_01014 extends CardReaction
     private ?EventCharacterBeingWounded $characterWoundedEvent = null;
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
+    private ?EventCharacterIntervened $characterIntervenedEvent = null;
     private ?EventCharacterTargeted $characterTargetedEvent = null;
     private bool $isChallenger = false;
     private ?string $savedAbilityId = null;
@@ -451,6 +453,45 @@ class Reaction_01014 extends CardReaction
                 }
             }
         }
+
+        if ($event instanceof EventCharacterIntervened && $this->isAvailable() && !$event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner->Id == $event->newTargetId)
+            {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
+                if ($this->thugsInHand($event->theah))
+                {
+                    $this->characterIntervenedEvent = clone $event;
+                    unset($this->characterIntervenedEvent->theah);
+                    $this->inHandThug = true;                    
+                    $owner->IsUpdated = true;
+
+                    $event->canceled = true;
+
+                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionTransitionEvent);
+                }
+                else if ($this->thugsInPlay($event->theah))
+                {
+                    $this->characterIntervenedEvent = clone $event;
+                    unset($this->characterIntervenedEvent->theah);
+                    $this->inPlayThug = true;
+                    $owner->IsUpdated = true;                        
+
+                    $event->canceled = true;
+
+                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionTransitionEvent);
+                }
+            }
+        }
     }
 
     private function releaseEvent(Game $game, int $characterId)
@@ -513,6 +554,22 @@ class Reaction_01014 extends CardReaction
             $this->isChallenger = false;
             $this->challengeIssuedEvent = null;
         }
+
+        if ($this->characterIntervenedEvent)
+        {
+            $owner = $this->getOwningCharacter($game->theah);
+            $owner->removeCondition(Game::DUEL_DEFENDER);
+
+            $thug = $game->theah->getCharacterById($characterId);
+            $thug->addCondition(Game::DUEL_DEFENDER);
+    
+            $game->globals->set(GAME::CHOSEN_TARGET, $thug->Id);
+
+            $this->characterIntervenedEvent->oldTargetId = $owner->Id;
+            $this->characterIntervenedEvent->newTargetId = $thug->Id;
+            $game->theah->queueEvent($this->characterIntervenedEvent);
+            $this->characterIntervenedEvent = null;
+        }
     }
 
     private function cancelEvents(Game $game): void
@@ -525,6 +582,7 @@ class Reaction_01014 extends CardReaction
         $this->characterTargetedEvent = null;
         $this->isChallenger = false;
         $this->challengeIssuedEvent = null;
+        $this->characterIntervenedEvent = null;
         $game->globals->set(Game::CHALLENGE_CANCELLED, true);
     }
 
@@ -578,6 +636,11 @@ class Reaction_01014 extends CardReaction
                         ]);
                         $this->cancelEvents($game);
                     }
+                }
+                else if ($this->characterIntervenedEvent)
+                {
+                    $this->releaseEvent($game, $characterId);
+                    $thugWasTargeted = true;
                 }
                 else
                 {
