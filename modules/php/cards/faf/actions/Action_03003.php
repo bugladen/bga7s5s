@@ -204,14 +204,14 @@ class Action_03003 extends CharacterAction implements IAbilityThatTargetsCharact
      * WHY engaged Thugs are eligible: card text doesn't say "Engage your Thug"
      * — the Thug just "issues a Combat challenge". An already-engaged Thug
      * has effectively already paid the engagement cost so it can still
-     * perform this action. `canChallenge()` covers the hard-ban cases (e.g.
+     * perform this action. `canChallenge($theah)` covers the hard-ban cases (e.g.
      * Sigurd Ulfsen's permanent "cannot challenge"); engagement is handled
      * separately in step 2 of the action.
      */
     private function getAvailableThugs(Theah $theah, Character $don): array
     {
         $atLocation = $theah->getCharactersAtLocationByPlayerId($don->Location, $don->ControllerId);
-        $thugs = array_filter($atLocation, fn($c) => $c->hasTrait("Thug") && $c->canChallenge());
+        $thugs = array_filter($atLocation, fn($c) => $c->hasTrait("Thug") && $c->canChallenge($theah));
         return array_values($thugs);
     }
 }

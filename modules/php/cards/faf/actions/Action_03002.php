@@ -36,7 +36,7 @@ class Action_03002 extends CharacterAction implements IAbilityThatTargetsCharact
             return false;
         }
 
-        if (! $aja->canChallenge() || $aja->Engaged)
+        if (! $aja->canChallenge($theah) || $aja->Engaged)
         {
             return false;
         }

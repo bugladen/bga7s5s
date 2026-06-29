@@ -29,7 +29,7 @@ class Action_03008 extends RiskCityAction implements IAbilityThatTargetsCharacte
         }
 
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        $performers = array_filter($performers, fn($character) => $character->canChallenge());
+        $performers = array_filter($performers, fn($character) => $character->canChallenge($theah));
 
         foreach ($performers as $performer)
         {
@@ -46,7 +46,7 @@ class Action_03008 extends RiskCityAction implements IAbilityThatTargetsCharacte
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
         $performers = array_values(array_filter($performers, function (Character $performer) use ($theah) {
-            if (! $performer->canChallenge())
+            if (! $performer->canChallenge($theah))
             {
                 return false;
             }
