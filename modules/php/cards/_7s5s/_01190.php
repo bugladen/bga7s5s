@@ -45,7 +45,7 @@ class _01190 extends CityCharacter
         $this->resetCard();
     }
 
-    public function canChallenge(): bool
+    public function canChallenge(Theah $theah): bool
     {
         return false;
     }

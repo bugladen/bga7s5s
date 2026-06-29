@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01178 extends CityCharacter  
 {
@@ -47,9 +48,9 @@ class _01178 extends CityCharacter
         $this->AbilityUsed = false;
     }
 
-    public function canChallenge(): bool
+    public function canChallenge(Theah $theah): bool
     {
-        if (!parent::canChallenge())
+        if (!parent::canChallenge($theah))
             return false;
 
         return ! $this->Engaged || ! $this->AbilityUsed;

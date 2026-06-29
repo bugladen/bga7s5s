@@ -41,6 +41,9 @@ class Technique_01193 extends Technique
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $this->ReduceAdversaryThrust = true;
+            $attachment = $this->getOwningCard($event->theah);
+            if ($attachment instanceof Attachment)
+                $attachment->IsUpdated = true;
         }
 
         if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)

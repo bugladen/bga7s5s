@@ -30,7 +30,7 @@ class Action_02028 extends RiskAction implements IAbilityThatTargetsCharacters
 
         $diplomats = $theah->getCharactersInCityWithOpposingCharacters($playerId);
         $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat"));
-        $diplomats = array_filter($diplomats, fn($c) => $c->canChallenge() && ! $c->DashedInfluence);
+        $diplomats = array_filter($diplomats, fn($c) => $c->canChallenge($theah) && ! $c->DashedInfluence);
 
         foreach ($diplomats as $diplomat)
         {
@@ -49,7 +49,7 @@ class Action_02028 extends RiskAction implements IAbilityThatTargetsCharacters
     {
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
         $performers = array_filter($performers, fn($c) => $c->hasTrait("Diplomat"));
-        $performers = array_filter($performers, fn($c) => $c->canChallenge() && ! $c->DashedInfluence);
+        $performers = array_filter($performers, fn($c) => $c->canChallenge($theah) && ! $c->DashedInfluence);
         return array_values($performers);
     }
 

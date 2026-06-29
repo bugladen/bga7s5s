@@ -86,6 +86,8 @@ class _01064 extends Character implements IHasActions
                 $this->getInjectCode()
             );
 
+            $this->ModifiedCombat = $this->ModifiedCombat - 1;
+
             $game->theah->queueEvent($event);
         }
         else if ($opponentHasMore && !$this->hasBonus)
@@ -100,6 +102,8 @@ class _01064 extends Character implements IHasActions
                 $this->ModifiedCombat + 1,
                 $this->getInjectCode()
             );
+            
+            $this->ModifiedCombat = $this->ModifiedCombat + 1;
 
             $game->theah->queueEvent($event);
         }

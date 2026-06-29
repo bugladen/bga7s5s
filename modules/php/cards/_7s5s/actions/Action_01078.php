@@ -26,7 +26,7 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
     {
         // Get enemy characters in the city
         $characters = $theah->getCharactersInPlay();
-        $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId) && $theah->cardInCity($character) && $character->canChallenge());
+        $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId) && $theah->cardInCity($character) && $character->canChallenge($theah));
 
         //Filter characters that have a friendly character opposing them
         $qualifiedCharacters = [];
@@ -78,7 +78,7 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
             return [false, $game->translate("Target must be in the city.")];
         }
 
-        if ( ! $character->canChallenge())
+        if ( ! $character->canChallenge($theah))
         {
             return [false, $game->translate("Target cannot challenge.")];
         }

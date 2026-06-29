@@ -29,14 +29,14 @@ class Action_01131 extends RiskAction implements IAbilityThatTargetsCharacters
         }
 
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_filter($performers, fn($performer) => $performer->canChallenge() && count($performer->Attachments) == 0);
+        $performers = array_filter($performers, fn($performer) => $performer->canChallenge($theah) && count($performer->Attachments) == 0);
         return count($performers) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_filter($performers, fn($performer) => $performer->canChallenge() && count($performer->Attachments) == 0);
+        $performers = array_filter($performers, fn($performer) => $performer->canChallenge($theah) && count($performer->Attachments) == 0);
 
         return array_values($performers);
     }

@@ -1239,11 +1239,11 @@ class Theah
         {
             if ($character instanceof _01178)
             {
-                if (! $character->canChallenge()) continue;
+                if (! $character->canChallenge($this)) continue;
             }
             else
             {
-                if ( ! $character->canChallenge() || $character->Engaged) continue;
+                if ( ! $character->canChallenge($this) || $character->Engaged) continue;
             }
 
             $otherCharacters = $this->getCharactersAtLocation($character->Location);

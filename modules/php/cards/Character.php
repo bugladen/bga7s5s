@@ -70,7 +70,7 @@ abstract class Character extends Card implements IHasTechniques
         $this->ModifiedInfluence = $this->Influence;
     }
 
-    public function canChallenge(): bool
+    public function canChallenge(Theah $theah): bool
     {
         return $this->isControlled();
     }

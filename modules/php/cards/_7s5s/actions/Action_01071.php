@@ -33,7 +33,7 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
         }
 
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait("Musketeer") && $character->canChallenge());
+        $characters = array_filter($characters, fn($character) => $character->hasTrait("Musketeer") && $character->canChallenge($theah));
 
         return count($characters) > 0;
     }
@@ -42,7 +42,7 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
 
-        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Musketeer") && $performer->canChallenge());
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Musketeer") && $performer->canChallenge($theah));
 
         return $performers;
     }

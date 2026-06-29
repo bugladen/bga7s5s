@@ -298,6 +298,27 @@ trait FrameworkActionsTrait
     public function actHighDramaMoveActionDestinationChosen(string $locations)
     {
         $location = json_decode($locations, true)[0];
+        if ($location == null)
+        {
+            throw new UserException($this->translate("Location is not valid."));
+        }
+
+        $this->theah->buildCity();
+        $locationCheck = $this->theah->getCityLocation($location);
+        if ($locationCheck === null)
+        {
+            throw new UserException(sprintf($this->translate("Location %s does not exist."), $location));
+        }
+
+        $performerId = $this->globals->get(GAME::CHOSEN_CARD);
+        $performer = $this->theah->getCharacterById($performerId);
+
+        $adjacentLocations = $this->theah->getAdjacentCityLocations($performer->Location);
+        if (!in_array($location, $adjacentLocations))
+        {
+            throw new UserException(sprintf($this->translate("Location %s is not an adjacent location to Performer."), $location));
+        }
+
         $playerName = $this->getActivePlayerName();
 
         $cardId = $this->globals->get(GAME::CHOSEN_CARD);
@@ -1133,16 +1154,16 @@ trait FrameworkActionsTrait
         //Special case for Carmella Vanessa Slavaggi
         if ($performer instanceof _01178)
         {
-            if (! $performer->canChallenge())
+            if (! $performer->canChallenge($this->theah))
             {
-                throw new \BgaUserException(clienttranslate("Performer cannot Challenge."));
+                throw new UserException(clienttranslate("Performer cannot Challenge."));
             }
         }
         else
         {
-            if (! $performer->canChallenge() || $performer->Engaged)
+            if (! $performer->canChallenge($this->theah) || $performer->Engaged)
             {
-                throw new \BgaUserException(clienttranslate("Performer cannot Challenge."));
+                throw new UserException(clienttranslate("Performer cannot Challenge."));
             }
         }
 

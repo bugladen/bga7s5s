@@ -31,7 +31,7 @@ html {
 .tippy-box[data-animation=fade][data-state=hidden]{opacity:0}[data-tippy-root]{max-width:calc(100vw - 10px)}.tippy-box{position:relative;background-color:#333;color:#fff;border-radius:4px;font-size:14px;line-height:1.4;white-space:normal;outline:0;transition-property:transform,visibility,opacity}.tippy-box[data-placement^=top]>.tippy-arrow{bottom:0}.tippy-box[data-placement^=top]>.tippy-arrow:before{bottom:-7px;left:0;border-width:8px 8px 0;border-top-color:initial;transform-origin:center top}.tippy-box[data-placement^=bottom]>.tippy-arrow{top:0}.tippy-box[data-placement^=bottom]>.tippy-arrow:before{top:-7px;left:0;border-width:0 8px 8px;border-bottom-color:initial;transform-origin:center bottom}.tippy-box[data-placement^=left]>.tippy-arrow{right:0}.tippy-box[data-placement^=left]>.tippy-arrow:before{border-width:8px 0 8px 8px;border-left-color:initial;right:-7px;transform-origin:center left}.tippy-box[data-placement^=right]>.tippy-arrow{left:0}.tippy-box[data-placement^=right]>.tippy-arrow:before{left:-7px;border-width:8px 8px 8px 0;border-right-color:initial;transform-origin:center right}.tippy-box[data-inertia][data-state=visible]{transition-timing-function:cubic-bezier(.54,1.5,.38,1.11)}.tippy-arrow{width:16px;height:16px;color:#333}.tippy-arrow:before{content:"";position:absolute;border-color:transparent;border-style:solid}.tippy-content{position:relative;padding:5px 9px;z-index:1}
 
 body {
-    background-color: rgba(57, 135, 201, 0.9);
+    background-color: rgba(57, 135, 201, 0.9) !important;
 }
 
 ._7sfs-deck-picker-container {
@@ -80,6 +80,7 @@ body {
     padding: 10px;
     background: #f0f0f0;
     font-size: 16px;
+    color: black;
 }
 
 ._7sfs-deck-picker-custom-textarea {
@@ -89,6 +90,14 @@ body {
     box-sizing: border-box;
     border: none;
     padding: 10px;
+    color: black;
+}
+
+html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
+    color: whitesmoke;
+}
+
+.duel {
     color: black;
 }
 
@@ -404,6 +413,7 @@ body {
 
     font-size:24pt;
     text-align:center;
+    color: black;
 }
 ._7sfs-card-reknown-chip {
     position: absolute;
@@ -984,7 +994,7 @@ body {
 }
 
 ._7sfs-modified-stat-value {
-    color: yellow;
+    color: yellow !important;
     text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
 }
 
@@ -995,6 +1005,7 @@ body {
     font-size: 12pt;
     vertical-align: top;
     width:10px;
+    color: black;
 }
 ._7sfs-attachment-combat-value {
     font-size:12pt;
@@ -1023,6 +1034,7 @@ body {
 
     font-size: 12pt;
     vertical-align: top;
+    color: black;
 }
 ._7sfs-attachment-finesse-value {
     font-size:12pt;
@@ -1053,6 +1065,7 @@ body {
 ._7sfs-card-influence-value {
     margin-left: 2px;
     font-size: 12pt;
+    color: black;
 }
 ._7sfs-attachment-influence-value {
     margin-left: 2px;
@@ -1079,6 +1092,7 @@ body {
     margin-left: 2px;
     font-size: 12pt;
     vertical-align: top;
+    color: black;
 }
 
 ._7sfs-scheme-panache-box {
@@ -1102,6 +1116,7 @@ body {
     margin-left: 2px;
     font-size: 12pt;
     vertical-align: top;
+    color: black;
 }
 
 ._7sfs-scheme-player-color {
@@ -1848,6 +1863,11 @@ body {
     -webkit-touch-callout: none;
 }
 
+/* Dark theme override */
+html[data-theme="dark"] ._7sfs-log_tooltip {
+    background-color: #808080;
+}
+
 ._7sfs-help-card {
     width: 30px;
     border: solid 1px black;
@@ -2005,4 +2025,9 @@ body {
     background: #c9a87c !important;
     border: 3px solid gold;
     border-radius: 8px;
+}
+
+
+html[data-theme="dark"] ._7sfs-hand {
+    background-color: transparent !important;
 }

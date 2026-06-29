@@ -29,7 +29,7 @@ class Action_02049 extends RiskCityAction implements IAbilityThatTargetsCharacte
         }
 
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => $character->canChallenge());
+        $characters = array_filter($characters, fn($character) => $character->canChallenge($theah));
 
         foreach ($characters as $character)
         {

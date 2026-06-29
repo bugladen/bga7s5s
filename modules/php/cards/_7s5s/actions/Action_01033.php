@@ -35,7 +35,7 @@ class Action_01033 extends RiskAction implements IAbilityThatTargetsCharacters
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = (array_filter($performers, fn($performer) => $performer->canChallenge()));
+        $performers = (array_filter($performers, fn($performer) => $performer->canChallenge($theah)));
         $performers = array_values(array_filter($performers, fn($performer) => ! $performer->DashedInfluence));
         return $performers;
     }

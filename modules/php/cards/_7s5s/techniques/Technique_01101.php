@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
@@ -55,7 +56,7 @@ class Technique_01101 extends Technique
         if ($event instanceof EventDuelEndOfRound && $this->IsActivated)
         {
             $owningCharacter = $this->getOwningCharacter($event->theah);
-            if ($owningCharacter->Id != $event->actorId)
+            if ($owningCharacter !== null && $owningCharacter->Id != $event->actorId)
             {
                 $this->IsActivated = false;
                 $owner = $this->getOwningCard($event->theah);
@@ -76,6 +77,13 @@ class Technique_01101 extends Technique
             $owner = $this->getOwningCard($event->theah);
             $owner->IsUpdated = true;
         }
+
+        if ($event instanceof EventAttachmentUnequipped && $event->attachmentId == $this->OwnerId && $this->IsActivated)
+        {
+            $this->IsActivated = false;
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
+        }
     }
 
     public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, Array &$explanations): int
@@ -83,9 +91,18 @@ class Technique_01101 extends Technique
         $count = parent::getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
         if ($this->IsActivated)
         {
-            $owner = $this->getOwningCard($theah);
-            $count -= 1;
-            $explanations[] = sprintf($theah->game->translate("%s: -1."), $owner->getInjectCode());
+            // WHY: Card text scopes the -1 to "the adversary" — not any gambler.
+            // After resolving the technique the state machine returns to
+            // DUEL_CHOOSE_ACTION, so the equipped character can still pick
+            // Gamble in the same round. Without this gate, the technique
+            // would cancel out its own attachment's +1 passive on that gamble.
+            $owningCharacter = $this->getOwningCharacter($theah);
+            if ($owningCharacter !== null && $actor->Id != $owningCharacter->Id)
+            {
+                $owner = $this->getOwningCard($theah);
+                $count -= 1;
+                $explanations[] = sprintf($theah->game->translate("%s: -1 (adversary's next round)."), $owner->getInjectCode());
+            }
         }
         return $count;
     }
