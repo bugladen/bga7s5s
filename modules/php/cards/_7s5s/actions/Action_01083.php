@@ -34,7 +34,7 @@ class Action_01083 extends RiskCityAction implements IAbilityThatTargetsCharacte
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn(Character $character) => $character->canChallenge()));
+        $performers = array_values(array_filter($performers, fn(Character $character) => $character->canChallenge($theah)));
 
         $charactersThatCanChallenge = [];
         foreach ($performers as $performer)

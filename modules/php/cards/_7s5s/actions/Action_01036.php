@@ -33,11 +33,11 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCharact
 
         $characters = $theah->getCharactersAtLocation($daniella->Location);
 
-        $mercenaries = array_filter($characters, function($character) use ($daniella) {
+        $mercenaries = array_filter($characters, function($character) use ($daniella, $theah) {
             if ($character->ControllerId != $daniella->ControllerId) return false;
             if (!$character->hasTrait("Mercenary", $daniella)) return false;
-            if ($character instanceof _01178) return $character->canChallenge();
-            return $character->canChallenge();
+            if ($character instanceof _01178) return $character->canChallenge($theah);
+            return $character->canChallenge($theah);
         });
         if (count($mercenaries) == 0)
             return false;
@@ -53,11 +53,11 @@ class Action_01036 extends CharacterAction implements IAbilityThatTargetsCharact
     {
         $daniella = $this->getOwningCharacter($theah);
         $performers = $theah->getCharactersAtLocation($daniella->Location);
-        $performers = array_filter($performers, function($performer) use ($daniella) {
+        $performers = array_filter($performers, function($performer) use ($daniella, $theah) {
             if ($performer->ControllerId != $daniella->ControllerId) return false;
             if (!$performer->hasTrait("Mercenary", $daniella)) return false;
-            if ($performer instanceof _01178) return $performer->canChallenge();
-            return $performer->canChallenge();
+            if ($performer instanceof _01178) return $performer->canChallenge($theah);
+            return $performer->canChallenge($theah);
         });
 
         return $performers;

@@ -1154,16 +1154,16 @@ trait FrameworkActionsTrait
         //Special case for Carmella Vanessa Slavaggi
         if ($performer instanceof _01178)
         {
-            if (! $performer->canChallenge())
+            if (! $performer->canChallenge($this->theah))
             {
-                throw new \BgaUserException(clienttranslate("Performer cannot Challenge."));
+                throw new UserException(clienttranslate("Performer cannot Challenge."));
             }
         }
         else
         {
-            if (! $performer->canChallenge() || $performer->Engaged)
+            if (! $performer->canChallenge($this->theah) || $performer->Engaged)
             {
-                throw new \BgaUserException(clienttranslate("Performer cannot Challenge."));
+                throw new UserException(clienttranslate("Performer cannot Challenge."));
             }
         }
 

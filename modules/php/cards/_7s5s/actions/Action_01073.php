@@ -38,7 +38,7 @@ class Action_01073 extends AttachmentAction implements IAbilityThatTargetsCharac
             return false;
         }
 
-        if (! $owner->canChallenge() || $owner->Engaged)
+        if (! $owner->canChallenge($theah) || $owner->Engaged)
         {
             return false;
         }

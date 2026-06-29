@@ -534,11 +534,11 @@ trait ArgumentsTrait
             //Special case for Carmella Vanessa Slavaggi
             if ($character instanceof _01178)
             {
-                if (! $character->canChallenge()) continue;
+                if (! $character->canChallenge($this->theah)) continue;
             }
             else
             {
-                if (! $character->canChallenge() || $character->Engaged) continue;
+                if (! $character->canChallenge($this->theah) || $character->Engaged) continue;
             }
 
             $opponents = $this->theah->getCharactersAtLocation($character->Location);

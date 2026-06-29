@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02013;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _02013 extends Character implements IHasActions
 {
@@ -46,6 +47,19 @@ class _02013 extends Character implements IHasActions
         $this->Actions = [
             new Action_02013(),
         ];
+    }
+
+    public function canChallenge(Theah $theah): bool
+    {
+        if (!parent::canChallenge($theah))
+            return false;
+
+        $characters = $theah->getCharactersAtLocation($this->Location);
+        $characters = array_filter($characters, fn($character) => 
+            $character->isNotControlledByPlayer($this->ControllerId) && 
+            ($character->hasTrait("Villain") || $character->hasTrait("Sorcerer") || $character->hasTrait("Monster")));
+        
+        return count($characters) > 0;
     }
 
     public function eventCheck(Event $event)

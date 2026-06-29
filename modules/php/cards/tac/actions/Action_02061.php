@@ -30,7 +30,7 @@ class Action_02061 extends RiskCityAction implements IAbilityThatTargetsCharacte
         }
 
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $duelists = array_filter($characters, fn($c) => $c->hasTrait("Duelist") && !$c->Engaged && $c->canChallenge());
+        $duelists = array_filter($characters, fn($c) => $c->hasTrait("Duelist") && !$c->Engaged && $c->canChallenge($theah));
 
         foreach ($duelists as $duelist)
         {
@@ -48,7 +48,7 @@ class Action_02061 extends RiskCityAction implements IAbilityThatTargetsCharacte
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $duelists = array_values(array_filter($performers, fn($c) => $c->hasTrait("Duelist") && !$c->Engaged && $c->canChallenge()));
+        $duelists = array_values(array_filter($performers, fn($c) => $c->hasTrait("Duelist") && !$c->Engaged && $c->canChallenge($theah)));
 
         $eligible = [];
         foreach ($duelists as $duelist)
