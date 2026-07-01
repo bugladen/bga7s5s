@@ -37,7 +37,7 @@ class Reaction_02050 extends RiskReaction
         $characters = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
         foreach ($characters as $character)
         {
-            if ($character->Location != $this->TriggeredLocation && $character->Location != '')
+            if ($character->Location != $this->TriggeredLocation && $character->Location != '' && $character->canPressure(Game::STAT_INFLUENCE))
             {
                 $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Pressure %s with %s'), $character->Location, $character->Name), "pressure-$character->Id");
             }
@@ -62,7 +62,7 @@ class Reaction_02050 extends RiskReaction
                 $hasValidPerformer = false;
                 foreach ($characters as $character)
                 {
-                    if ($character->Location != $event->location && $character->Location != '')
+                    if ($character->Location != $event->location && $character->Location != '' && $character->canPressure(Game::STAT_INFLUENCE))
                     {
                         $hasValidPerformer = true;
                         break;
