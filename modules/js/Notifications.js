@@ -373,8 +373,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = this.cardProperties[args.characterId];
         if (card)
         {
-            //Remove the trait from the card
-            card.traits = card.traits.filter(trait => trait !== args.trait);
+            //Find the first instance of the trait and remove it
+            const index = card.traits.indexOf(args.trait);
+            if (index !== -1)
+            {
+                card.traits.splice(index, 1);
+            }
             this.createTooltipForCard(card);
         }
     },
