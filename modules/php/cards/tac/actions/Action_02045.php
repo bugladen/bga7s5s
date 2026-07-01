@@ -35,7 +35,7 @@ class Action_02045 extends SchemeCityAction implements ISorcererAbility
         }
 
         $characters = $theah->getCharactersAtLocationByPlayerId($owner->ChosenLocation, $playerId);
-        $sorcerers = array_filter($characters, fn($c) => $c->hasTrait("Sorcerer"));
+        $sorcerers = array_filter($characters, fn($c) => $c->hasTrait("Sorcerer") && $c->canPressure(Game::STAT_INFLUENCE));
 
         return array_values($sorcerers);
     }
