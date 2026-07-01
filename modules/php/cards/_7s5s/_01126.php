@@ -57,17 +57,15 @@ class _01126 extends Scheme
     {
         parent::eventCheck($event);
 
-        if ($event instanceof EventRenownAddedToLocation) 
+        if ($event instanceof EventRenownAddedToLocation && $event->location == $this->ChosenLocation)
         {
-            if ($event->location == $this->ChosenLocation)
-                throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));    
+            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));    
         }
 
         //We have to allow the reknown to be removed by the scheme itself
-        if ($event instanceof EventRenownRemovedFromLocation && $event->source != $this->Name) 
+        if ($event instanceof EventRenownRemovedFromLocation && $event->location == $this->ChosenLocation && $event->source != $this->getInjectCode()) 
         {
-            if ($event->location == $this->ChosenLocation)
-                throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be removed from its location.")));    
+            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be removed from its location.")));    
         }
 
         if ($event instanceof EventLocationClaimed && $event->location == $this->ChosenLocation)
