@@ -10,9 +10,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -77,6 +79,14 @@ class Maneuver_01051 extends Maneuver implements IAbilityThatTargetsCharacters
             $this->characterToPreventWoundsFrom = 0;
             $owner->IsUpdated = true;
         }        
+
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $this->CharacterCurrentlyTakingWounds = 0;
+            $this->characterToPreventWoundsFrom = 0;
+            $owner->IsUpdated = true;
+        }
     }
 
     public function getArgsFromManeuver(Game $game, int $state, string $stateName): array
@@ -159,6 +169,10 @@ class Maneuver_01051 extends Maneuver implements IAbilityThatTargetsCharacters
 
         // If activate, substitute the character that is taking wounds
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->characterToPreventWoundsFrom)
+        {
+            $event->characterId = $this->CharacterCurrentlyTakingWounds;
+        }
+        if ($event instanceof EventCharacterBeingWounded && $event->characterId == $this->characterToPreventWoundsFrom)
         {
             $event->characterId = $this->CharacterCurrentlyTakingWounds;
         }
