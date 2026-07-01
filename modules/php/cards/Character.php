@@ -80,9 +80,19 @@ abstract class Character extends Card implements IHasTechniques
         return $this->isControlled();
     }
 
-    public function canPressure(): bool
+    public function canPressure(String $stat): bool
     {
-        return ! $this->DashedInfluence;
+        switch ($stat)
+        {
+            case Game::STAT_INFLUENCE:
+                return ! $this->DashedInfluence;
+            case Game::STAT_FINESSE:
+                return ! $this->DashedFinesse;
+            case Game::STAT_COMBAT:
+                return ! $this->DashedCombat;
+            default:
+                return true;
+        }
     }
 
     public function hasWhenRevealedEffect() : bool
