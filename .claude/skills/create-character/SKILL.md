@@ -19,6 +19,7 @@ Canonical references:
 - `modules/php/cards/faf/_03014.php` (Kaspar Dietrich, Iron Reforged) — `Character` with a **wound-prevention passive via `eventCheck` on `EventCharacterBeingWounded`** (opponents' abilities cannot wound or move wounds to Kaspar — threat conversion still applies) and a **Technique gated on an Eisenfaust attachment OR an Eisenfaust card in the dueling line** that wounds the adversary.
 - `modules/php/cards/faf/_03015.php` (Joern Kietelsson, Fury's Edge) — `Character` with three pure-passive abilities living entirely on the card class (no Action/Reaction/Technique files): a **Forced self-wound on muster** (must hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`), a **phase-conditional Resolve penalty** ("During Dusk, -3 Resolve" — direct `ModifiedResolve` mutation gated by a private flag because there is no `EventCharacterResolveModifiedEvent` factory), and a **challenge-refused self-heal** on `EventChallengeRejected`.
 - `modules/php/cards/faf/_03027.php` (Odette Dubois D'Arrent, Disillusioned Courtier) — `Character` with two paired button-based City Reactions: (1) `EventCharacterDestroyed` triggered "after another character at this location is destroyed" with a mandatory heal + optional adjacent-Renown-move, including the **Pass-button pattern** (early-return before `setUsed` so the daily slot survives a decline) and **no-op effect gating** (hide "Heal only" button at `Wounds == 0`); (2) `EventChallengeIssued` triggered "after a challenge is issued at this location, before choosing to intervene" pulling an adjacent Duelist — uses `EventChallengeIssued` specifically because the text says "before intervene" (`EventChallengeAccepted` fires too late).
+- `modules/php/cards/faf/_03028.php` (Térence Rois, Pompous Perveyor) — `Character` combining three card-local patterns with **no state classes / no JS**: (1) **stat-specific challenge ban** — `eventCheck` on `EventChallengeIssued` when `CHALLENGE_STAT == STAT_COMBAT` only (NOT a `canChallenge()` override — Terence can still issue Finesse/Influence challenges); (2) **duel-scoped stat replacement** — "set [Combat] as equal to [Influence]" while participating in a duel at a named city location (`$DuelCombatEqualsInfluenceApplied` flag + stored `$CombatBeforeDuelOverride`, apply on `EventDuelStarted`/swap events, clear on `EventDuelEnd`, re-sync on `EventCharacterInfluenceModified`/`EventCharacterCombatModified`); (3) **City Reaction on third-party equip** — `Reaction_03028` listens on `EventAttachmentEquipped` when *any* character equips at `Game::LOCATION_CITY_BAZAAR` while the owner is also in the city there (NOT gated on `characterId == owner.Id` — compare `Reaction_01039` Philip, which only fires on self-equip).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -168,7 +169,8 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | Card phrase | Pattern |
 |---|---|
 | **Stat printed as a dash (`—`)** | Set the matching `Dashed<Stat> = true;` flag + numeric stat to `0`. |
-| **"<Name> cannot intervene/challenge/pressure"** | Override the predicate AND `eventCheck`. See "Pattern A — Hard ban" in the `create-city-character` skill — the implementation is identical. |
+| **"<Name> cannot intervene/challenge/pressure"** (all types) | Override the predicate AND `eventCheck`. See "Pattern A — Hard ban" in the `create-city-character` skill — the implementation is identical. |
+| **"<Name> cannot issue [Combat] challenges"** (stat-specific ban) | **`eventCheck` only** — do NOT override `canChallenge()` to `false`. The character may still issue Finesse/Influence challenges via card actions; default `canChallenge()` (`isControlled`) must stay true for those performer lists. Gate `EventChallengeIssued` on `challengerId == $this->Id` AND `globals->get(CHALLENGE_STAT) == STAT_COMBAT`. Basic Challenge always uses Combat (`FrameworkActionsTrait::actHighDramaChallengeActionStart`), so the issue-time backstop blocks it; the character may still appear in the Basic Challenge performer list until chosen (acceptable UX). Reference: `_03028` Térence (ban Combat), `_02013` Wilhelm (inverse — *only* Combat). |
 | **"When <X> happens, <passive thing>"** (no player choice) | Override `handleEvent`. Gate on event type + identity + location/scope. See Pattern A below. |
 | **"At the end of Dawn"** / **"At the beginning of Dawn"** | `handleEvent` on `EventPhaseDawnEnding` / `EventPhaseDawnBeginning`. See Pattern A below. |
 | **"At/During <phase>"** broadly | One of the phase events: `EventNewDay`, `EventPhaseDawnBeginning`, `EventPhaseDawnEnding`, `EventDuskPhaseBegin`, `EventDuskPhaseEnd`, `EventDuskEndOfDay`, `EventPressureOccuring`, `EventDuelStarted`, etc. See "Phase / lifecycle events" below. |
@@ -176,6 +178,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"During <Phase>, <Owner> has -N Resolve"** (or any phase-conditional **Resolve** modifier) | There is no `createCharacterResolveModifiedEvent` factory — Resolve is not on the event-driven stat list. Directly mutate `$this->ModifiedResolve` on the phase-begin event, gated by a private bool flag (because attachments also mutate `ModifiedResolve` independently), and restore on the phase-end event. Manually emit `createCharacterDestroyedEvent` if the reduction crosses the wounds-equal-resolve threshold (the engine's destruction check only runs inside an `EventCharacterWounded` handler). See Pattern A "Phase-conditional Resolve modifier" below. Reference: `_03015` Joern. **For Combat/Finesse/Influence/Panache, use the matching `createCharacter<Stat>ModifiedEvent` factory instead** — they're event-driven the way Resolve isn't. |
 | **"When <Owner>'s challenge is refused, <effect>"** / **"When a challenge to <Owner> is refused …"** | `handleEvent` on `EventChallengeRejected`. Fields: `$event->challengerId` (the one who issued), `$event->targetId` (the one who refused). Identity gate matches whichever role the text names. Reference: `_03015` Joern (challenger side, self-heal), `_01119` Nazem (challenger side, engage the refuser). |
 | **"<Owner> has +N [Stat] while wounded"** (or any "while <condition-on-self>" stat bonus) | Pattern A passive with a private bool flag (e.g., `$WoundedCombatBonusApplied`). Hook `EventCharacterWounded` AND `EventCharacterHealed` with `characterId == $this->Id`, call `parent::handleEvent` first (so `$this->Wounds` is up-to-date), then re-derive the boolean and queue `createCharacter<Stat>ModifiedEvent(±1)` only on flag transition. Skip if `IsDying` or in discard/locker. See Pattern A "Stat bonus while a self-condition holds" below. Reference: `_03016` Ise. |
+| **"Set [StatA] as equal to [StatB]"** while a scoped condition holds (e.g., "while participating in a duel at [The Grand Bazaar]") | Pattern A passive with a **replacement** flag + stored pre-override snapshot — NOT the ±1 delta pattern. Apply on condition start (`EventDuelStarted` + location/participant gates, plus `EventDefenderSwapped`/`EventChallengerSwapped` for mid-duel entry/exit), clear on condition end (`EventDuelEnd`), re-sync target stat whenever source stat changes (`EventCharacterInfluenceModified` → update Combat) or external sources mutate the target stat away from the link (`EventCharacterCombatModified` with `NewCombat != ModifiedInfluence`). Store `$CombatBeforeDuelOverride` at apply-time; restore that snapshot on clear (NOT recompute-from-base — attachments may change mid-condition). See Pattern A "Set one stat equal to another while a scoped condition holds" below. Reference: `_03028` Térence. |
 | **"During <Phase>, you may choose not to <auto-action on Owner>"** (opt-out of an auto-emitted event) | Pattern D Reaction listening on the *pre*-event (e.g., `EventCardMoving` for the Dusk move-home) with `sourceId == 0` (auto-emitter signal) + a phase gate (`TURN_PHASE == Game::DUSK`) + the `cancelDeclinedByCardIds` re-queue dance. Cancel the event, clone it, prompt the player; on "Keep" call `setUsed(true)`; on "Decline" re-queue the clone with `cancelDeclinedByCardIds[] = owner->Id` so the reaction doesn't immediately re-catch it. See Pattern D's "Cancel-and-reissue Reaction" subsection. Reference: `Reaction_03016a` (Ise Dusk opt-out), `Reaction_01140` (in-hand RiskReaction sibling). |
 | **"<Stat> increases by N"** / **"<Stat> is reduced by N"** | Queue `createCharacter<Stat>ModifiedEvent` (e.g., `createCharacterInfluenceModifiedEvent`). See `_01007` Aldo for renown-driven Influence modification. |
 | **"<Owner> has +N[Stat] for each X in her dueling line"** (or any duel-line-derived count) | Pattern A passive with a running `$<Stat>Bonus` field on the card. Recompute at `EventDuelEndOfRound` (the only clean boundary — there is no event fired when a card enters the dueling line; `cards->moveCard` is called directly). Reset at `EventDuelEnd` *before* the line is cleared. Gate on the owner being a duel participant (the dueling line is per-player, not per-character). See Pattern A "Dynamic stat bonuses tied to the dueling line" below. Reference: `_03004` Elena. |
@@ -189,6 +192,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"Move another character you control to this location"** (effect) | Queue `createCardMovingEvent($character.ControllerId, $character.Id, $character.Location, $owner.Location, $engage, $owner.Id, $this->Id)` for the chosen mover. Eligible movers = `getCharactersInPlayByPlayerId($owner.ControllerId)` minus the owner herself minus characters already at her location. Don't use any pull/teleport helper — there isn't one; the standard move event handles all the bookkeeping. Reference: `Reaction_03016b` (other character to here), `Reaction_01039` (move self to adjacent). |
 | **"Reaction: … at -N cost"** / **"… pay N Wealth"** | Pattern D Reaction with **in-reaction click-to-pay** wealth tracking. Don't use `PAY_STATE_PLAY_BRUTE` — it's tied to the player-turn state cycle. See Pattern D's "Reactions that need to pay a wealth cost" subsection. Reference: `Reaction_03003`. |
 | **"Reaction: Put a different X into play from your hand or discard pile"** | Pattern D Reaction. Filter eligibles separately from `LOCATION_HAND` and `getPlayerDiscardDeckName(...)`, exclude the just-destroyed card by id. `createCharacterMusteredEvent` does the actual move; `createCardRemovedFromPlayerDiscardPileEvent` is notification-only (fire it before the muster so JS clients sync correctly). Reference: `Reaction_03003`, `Action_01024` (Bravos). |
+| **"Reaction: After a character equips an attachment at [location]"** | Pattern D Reaction on `EventAttachmentEquipped`. Gate: `cardInCity($owner)`, `$owner->Location == <named location>`, equipping `$character->Location == <named location>`, skip `$attachment->FakeAttachment`. Trigger is **any character** equipping there — do NOT gate on `$event->characterId == $owner->Id` unless the text names the owner ("After Philip equips …"). Contrast: `Reaction_01039` (Philip self-equip → move self). Draw/move/etc. effects use Draw/Pass or Pass-only buttons per Pattern D. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01146a` (scheme owner equips Weapon). |
 | **`<b>Sorcerer …</b>`** (Sorcerer Action / Sorcerer Reaction) | The Action/Reaction class additionally `implements ISorcererAbility`. **Must** call `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces). See `Action_01076` and `Reaction_02001`. |
 | **`<b>Technique:</b>` / `<b>Maneuver:</b>`** | The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. See Pattern E. |
 | **`<b>Gambling Technique:</b>`** | Same as Technique, but `isAvailableToPlayer` additionally gates on `Game::DUEL_GAMBLED` (actor gambled for their combat card this round). See Pattern E. |
@@ -699,6 +703,91 @@ Adapting for other stats / conditions:
 
 For non-wound conditions (e.g., "while engaged"), swap the trigger event (`EventCardEngaged` / `EventCardEngarded`) and the `$shouldHaveBonus` predicate. Same flag discipline.
 
+### Set one stat equal to another while a scoped condition holds — replacement flag + snapshot restore
+
+For text like "While Térence is participating in a duel at [The Grand Bazaar], set his [Combat] as equal to his [Influence]" (`_03028` Térence). This is **not** the ±1 delta pattern from "has +N while wounded" — the printed text replaces the target stat with the current value of the source stat, and the link is **dynamic** (if Influence changes during the duel, Combat must follow).
+
+Pattern (mirror `_03028` Térence):
+
+```php
+public bool $DuelCombatEqualsInfluenceApplied = false;
+public ?int $CombatBeforeDuelOverride = null;
+
+// Apply on condition start:
+private function applyCombatEqualsInfluence(Theah $theah): void
+{
+    if ($this->ControllerId == 0) return;
+    if ($theah->game->characterIsInDiscardOrLocker($this)) return;
+    if ($this->Location != Game::LOCATION_CITY_BAZAAR) return;   // scope gate from card text
+
+    if (! $this->DuelCombatEqualsInfluenceApplied)
+    {
+        $this->CombatBeforeDuelOverride = $this->ModifiedCombat;   // snapshot ONCE
+        $this->DuelCombatEqualsInfluenceApplied = true;
+        $this->IsUpdated = true;
+    }
+    $this->syncCombatToInfluence($theah);
+}
+
+private function syncCombatToInfluence(Theah $theah): void
+{
+    if (! $this->DuelCombatEqualsInfluenceApplied) return;
+    $targetCombat = $this->ModifiedInfluence;
+    if ($this->ModifiedCombat == $targetCombat) return;
+    $theah->queueEvent(EventFactory::createCharacterCombatModifiedEvent(
+        $this->ControllerId, $this->Id,
+        $this->ModifiedCombat, $targetCombat,
+        $this->getInjectCode()
+    ));
+}
+
+// Clear on condition end:
+private function clearCombatEqualsInfluence(Theah $theah): void
+{
+    if (! $this->DuelCombatEqualsInfluenceApplied) return;
+    $restoreCombat = $this->CombatBeforeDuelOverride ?? $this->Combat;
+    if ($this->ModifiedCombat != $restoreCombat)
+    {
+        $theah->queueEvent(EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId, $this->Id,
+            $this->ModifiedCombat, $restoreCombat,
+            $this->getInjectCode()
+        ));
+    }
+    $this->DuelCombatEqualsInfluenceApplied = false;
+    $this->CombatBeforeDuelOverride = null;
+    $this->IsUpdated = true;
+}
+```
+
+Lifecycle hooks:
+- **`EventDuelStarted`** — apply when `$this->Id` is `challengerId` or `defenderId` AND `$this->Location` matches the named city location (`Game::LOCATION_CITY_BAZAAR` for `[The Grand Bazaar]`).
+- **`EventDuelEnd`** — clear unconditionally when the flag is set.
+- **`EventDefenderSwapped` / `EventChallengerSwapped`** — apply when `$this->Id` becomes the new participant (with location gate); clear when `$this->Id` was the old participant. Same swap discipline as `_01089` Soline.
+- **`EventCharacterInfluenceModified`** with `$event->CharacterId == $this->Id` — re-sync while flag is set (Influence is the source stat).
+- **`EventCharacterCombatModified`** with `$event->CharacterId == $this->Id` — if override active and `$event->NewCombat != $this->ModifiedInfluence`, re-sync (external Combat buffs don't stick during the override).
+
+WHY snapshot restore instead of recompute-from-base:
+
+- Attachments may equip mid-duel and change the "natural" Combat independently of this override. The snapshot taken at apply-time is the correct undo target on `EventDuelEnd`. Recomputing `Combat + sum(attachment modifiers)` at clear-time risks drift if the override itself was the last thing that touched `ModifiedCombat`.
+
+WHY NOT the Ise ±1 flag pattern:
+
+- "Set equal to" is a **replacement**, not a fixed delta. If Influence is 2 and Combat is 0, the event sets Combat **to 2**, not **+2**. If Influence later becomes 3, Combat must become 3 — a running `$BonusApplied` ±1 counter can't express that.
+
+WHY `EventCharacterCombatModified` re-sync uses `$event->NewCombat`:
+
+- `EventCharacterCombatModified` has `runEventHubAfterCards = false` — EventHub applies `ModifiedCombat = NewCombat` **before** card `handleEvent` runs (`Theah::runEvents` order). By the time the card handler fires, `$this->ModifiedCombat` already reflects the external change; comparing `$event->NewCombat != $this->ModifiedInfluence` detects drift from the link.
+
+Named city location constants (real ones in `Game.php`):
+- `[The Grand Bazaar]` → `Game::LOCATION_CITY_BAZAAR`
+- `[The Docks]` → `Game::LOCATION_CITY_DOCKS`
+- `[The City Forum]` / `[The Forums]` → `Game::LOCATION_CITY_FORUM`
+- `[Ole's Inn]` → `Game::LOCATION_CITY_OLES_INN`
+- `[The Governor's Garden]` → `Game::LOCATION_CITY_GOVERNORS_GARDEN`
+
+Reference: `_03028` Térence, `_01089` Soline (duel boundary + swap discipline — but Soline modifies *adversaries*, Térence modifies *self*).
+
 ### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
 
 For text like "While using your abilities, characters opposing <Owner> may be considered <Trait>" (Daniella Dietrich `_03013`): the trait must light up on *opposing* characters, not on the owner. The Uwe Zimmerman `_01043` `hasTrait` override pattern is the WRONG fit — that pattern lights up the *receiver* of `hasTrait`, so it only works when the card being considered is the card whose `hasTrait` was overridden. For the opposing-direction case, mirror the Wilhelm Dünst `Action_02013` pattern instead: **mutate the opposing characters' `ModifiedTraits` directly via `addTrait` / `removeTrait`**, keep a tracked set of the ids you tagged, and untag at the scope boundary.
@@ -830,6 +919,8 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventCharacterIntervened` | An intervention character was selected during a challenge | "After X intervenes …" — `Reaction_01062`. |
 | `EventPressureOccuring` | A pressure is happening at a location | "When pressuring …", `_01006` Don Constanzo |
 | `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089`. **`EventDuelEnd` fires BEFORE the dueling line is cleared** in `stDuelEnd` (the discard events are queued AFTER it), so a recount-based dueling-line effect must reset via direct inverse-event, not via re-reading the line. |
+| `EventCharacterCombatModified` / `EventCharacterInfluenceModified` | A character's modified stat changed (`$event->CharacterId`, `$event->OldCombat`/`NewCombat` or `OldInfluence`/`NewInfluence`) | Re-sync a "set [StatA] equal to [StatB]" link when the source stat changes, or re-apply the link when an external effect mutates the target stat during the override. EventHub applies the new stat **before** card `handleEvent` runs (`runEventHubAfterCards = false`). Reference: `_03028` Térence. |
+| `EventAttachmentEquipped` | An attachment was equipped (`$event->characterId`, `$event->attachmentId`; `$event->asAction` distinguishes action-equip vs passive) | "After a character equips an attachment at [location] …" City Reactions. Look up equipping character via `getCharacterById($event->characterId)` and compare `.Location` to the named city constant. Skip `$attachment->FakeAttachment`. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01039` (owner self-equip only). |
 | `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
 | `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel | "+X to combat card stats", `_01116` Yevgeni |
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
@@ -1334,6 +1425,38 @@ WHY `ControllerId == 0` skip: uncontrolled characters (mercenaries in transit, c
 WHY the valid-target precondition: if no eligible mover exists, the player would get a useless prompt they could only Pass. The general Pattern D rule (skill section "Trigger gates") applies here verbatim.
 
 For the *self-moves* analogue ("after this character moves to a new location, do X for nearby allies"), the receiver isn't a Reaction — it's a `handleEvent` on the card itself. See `_01067` Jean Urbain or `_02022` Stranahan.
+
+### After a character equips an attachment at a location
+
+For "City Reaction: After a character equips an attachment at [The Grand Bazaar] • Draw a card" (`_03028` Térence). Listen on `EventAttachmentEquipped`. Required gates:
+
+```php
+if (! ($event instanceof EventAttachmentEquipped)) return;
+if (! $this->isAvailable()) return;
+
+$owner = $this->getOwningCharacter($event->theah);
+if ($owner === null) return;
+if ($event->theah->game->characterIsInDiscardOrLocker($owner)) return;
+if (! $event->theah->cardInCity($owner)) return;                    // City Reaction
+if ($owner->Location != Game::LOCATION_CITY_BAZAAR) return;          // owner must be at the named location
+
+$attachment = $event->theah->getAttachmentById($event->attachmentId);
+if ($attachment === null || $attachment->FakeAttachment) return;
+
+$character = $event->theah->getCharacterById($event->characterId);
+if ($character === null) return;
+if ($character->Location != Game::LOCATION_CITY_BAZAAR) return;      // equip happened at the named location
+```
+
+WHY **not** gate on `$event->characterId == $owner->Id`:
+
+- Card text says "a character" — any character equipping at that location triggers the reaction while the owner is present. `Reaction_01039` (Philip) is the self-only analogue: it gates on `$event->characterId == $philip->Id`.
+
+WHY skip `FakeAttachment`:
+
+- Fake attachments are bookkeeping placeholders, not real equips. Same skip as `Reaction_01039`.
+
+Button shape: Draw/Pass (`Reaction_03028`, `Reaction_01146a`). Pass early-returns before `setUsed`.
 
 ### After the Owner herself moves to a city location
 
@@ -2093,12 +2216,15 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/actions/Action_03026.php` | **Hand-discard → location-pick → conditional target-pick flow.** Step 1 (`actFromActionWithId`): validate hand card, queue `createCardDiscardedFromHandEvent($owner.ControllerId, $cardId, $owner->Id, ...)` — sourceId is `$owner->Id` (int), NOT `$this->Id` (string composite). Step 2 (`actFromActionWithIds`): treat `$ids[0]` as a location-name string, queue move, then conditionally queue a transition to step 3. Step 3 (`actFromActionWithId`): wound the picked opposing character. `getArgsFromAction` uses `array_values(array_map(...))` to keep the hand-id payload JSON-serializable as an array (not an associative object). |
 | `modules/php/cards/_7s5s/_01037.php` (Edeline Trinken) | **Per-character location-counting passive via `$adjustment` int.** Same `runEventHubAfterCards = true` timing problem as Angeline `_03026`, but for "+1 per character at this location" — the per-character shape lets each event hand-pass a `+1`/`-1` adjustment without needing to peek at the moving card's traits. Use this shape when the bonus is uniform per qualifying card; use Angeline's event-passing shape when the bonus depends on the moving card's traits/controller. |
 | `modules/php/cards/faf/_03027.php` (Odette Dubois D'Arrent, Disillusioned Courtier) | **Character with two paired button-based City Reactions — no state classes.** (1) `EventCharacterDestroyed` "after another character at this location is destroyed" — heal Odette + optional adjacent-Renown-move (mandatory-first + optional-second split). Uses `$destroyed->Location` directly (event has `runEventHubAfterCards = true`, locker move runs after handlers). Useful-effect precondition: trigger only if Odette has wounds OR adjacent renown exists. Buttons: per-source renown move, "Heal only" (gated on `Wounds > 0`), "Pass" (early-return before `setUsed`). Effect side gates the heal-event/notification on `Wounds > 0` to avoid no-op log noise. (2) `EventChallengeIssued` "after a challenge is issued at this location" — pull adjacent Duelist; fires BEFORE intervention (use `EventChallengeIssued`, NOT `EventChallengeAccepted`). |
+| `modules/php/cards/faf/_03028.php` (Térence Rois, Pompous Perveyor) | **Character with stat-specific challenge ban + duel-scoped stat replacement + third-party equip Reaction — all card-local, no states/JS.** (1) Combat-challenge ban via `eventCheck` only (`CHALLENGE_STAT == STAT_COMBAT`); `canChallenge()` left default so Finesse/Influence action performers still work. (2) "Set Combat equal to Influence while dueling at Grand Bazaar": `$DuelCombatEqualsInfluenceApplied` + `$CombatBeforeDuelOverride` snapshot; apply on `EventDuelStarted`/swap, clear on `EventDuelEnd`, re-sync on `EventCharacterInfluenceModified`/`EventCharacterCombatModified`. (3) `Reaction_03028` on `EventAttachmentEquipped` — any character equips at `LOCATION_CITY_BAZAAR` while Terence is in city there. |
+| `modules/php/cards/faf/reactions/Reaction_03028.php` | **Canonical "after any character equips at named location" City Reaction.** Demonstrates: (a) owner + equipping character both gated on the same `Game::LOCATION_*` constant; (b) NOT gated on `characterId == owner.Id` (contrast `Reaction_01039` self-equip); (c) `FakeAttachment` skip; (d) Draw/Pass with Pass before `setUsed`. |
 | `modules/php/cards/faf/reactions/Reaction_03027a.php` | **Canonical Pass-button + heal/renown-move pattern.** Demonstrates: (a) `EventCharacterDestroyed` "another character at this location" gate (`characterId != owner.Id`, `destroyed.Location == owner.Location`); (b) mandatory-first + optional-second effect split in `performReaction`; (c) Pass button with early-return BEFORE `setUsed` so the daily-use slot survives; (d) hide buttons whose effect would be a no-op (`Heal only` only shown when `Wounds > 0`); (e) three-event renown-move recipe (`createRenownMovingBetweenLocationsEvent` + `Removed` + `Added` with shared `batchId`). |
 | `modules/php/cards/faf/reactions/Reaction_03027b.php` | **Pre-intervention `EventChallengeIssued` trigger + pull-adjacent-Duelist effect.** Uses `EventChallengeIssued` (queued by `stIssueChallenge` BEFORE the intervention dispatcher) for "before choosing to intervene" — `EventChallengeAccepted` fires too late. Eligibility: controller match + `Duelist` trait + at an adjacent city location (`getAdjacentCityLocations($owner->Location, false)`). Button-per-Duelist + Pass; effect re-validates location/trait/controller before queueing `createCardMovingEvent(engage=false)`. |
 | `modules/php/cards/_7s5s/_01062.php` (Odette Dubois D'Arrent, Genteel Spy) | **Leader sibling reference for renown-move and pull-adjacent-Duelist.** The existing Odette Leader has the "move adjacent Duelist to this location" mechanic as a *City Action* (`Action_01062`, `RequiresPerformerSelected = true`) and the "move adjacent renown to this location" mechanic as a *Reaction on `EventChallengeAccepted`/`EventCharacterIntervened`*. Compare to `_03027`'s Character version, which packages both mechanics as Reactions instead. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01062.php` | **Canonical Pass-button + renown-move recipe.** First implementation of the three-event renown-move batch with shared `batchId`. Sets the pattern that `Reaction_03027a` follows: per-source `moveFrom-<location>` buttons + `'pass'` button, Pass branch does NOT call `setUsed`. |
 | `modules/php/cards/_7s5s/_01153.php` (Breastplate) | **Reduce-by-one wound prevention in `eventCheck`.** Canonical `eventCheck` on `EventCharacterBeingWounded` pattern. Tracks `$hasBlockedWound` to enforce "first time this duel." Mutates `$event->wounds` rather than zeroing — adapt this shape for partial-reduction passives. |
 | `modules/php/cards/_7s5s/actions/Action_01090.php` (Yuri Pyetrovich) | **Continuous Action — user-triggered variant.** Player activates from the menu; the Action sets globals and immediately calls `$this->setUsed($event->theah, false)` so it's available again. Companion to `Action_03013`'s never-shown variant. |
+| `modules/php/cards/tac/_02013.php` (Wilhelm Dünst) | **Stat-specific challenge restriction (inverse of Térence).** `eventCheck` on `EventChallengeIssued` when `challengerId == $this->Id` AND `CHALLENGE_STAT != STAT_COMBAT` throws — Wilhelm may *only* issue Combat challenges. Also custom `canChallenge()` filtering valid Combat targets. Compare to `_03028` Térence (cannot issue Combat — `eventCheck` only, no `canChallenge` override). |
 | `modules/php/cards/tac/actions/Action_02013.php` (Wilhelm Dünst) | Pattern F with a discard-as-cost step plus the standard challenge transition. Reference for `doCost` / `doEffect` separation when the cost isn't just engagement. |
 | `modules/php/cards/_7s5s/techniques/Technique_GainLethal.php` | Generic two-pipeline Gain Lethal helper — handles both `EventGenerateChallengeThreat` (city) and `EventDuelCalculateTechniqueValues` (duel). |
 | `modules/php/cards/_7s5s/techniques/Technique_01049.php` | Engagement-as-cost Gain Lethal technique; handles both pipelines, demonstrates `IRangedAbility` integration. |
@@ -2148,4 +2274,7 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 32. **For hand-card picker states** (discard from hand, reveal from hand): use `factionHand.setSelectionMode('single')` + `onCardDiscarded` (reusable from `PlayerActions.js`). DO NOT use `highlightCardsAsSelectable` — that's for in-play cards in `cardProperties`; hand cards aren't there and the lookup returns `null` (symptom: `Cannot read properties of null (reading 'className')`). See Pattern C "Hand-card picker".
 33. **For city-location picker states on a CharacterAction**: the state's `#[PossibleAction]` is `actFromCardWithLocations(string $locations)`, and the action overrides **`actFromActionWithIds(array $ids)`** — NOT `actFromActionWithId(int $id)`. Each `$ids[N]` entry is a location-name STRING, not an int. Symptom of overriding the wrong method: the state spins waiting for an action that never arrives (presents as an infinite loop). See Pattern C "City-location picker for CharacterActions".
 34. **For `IAbilityThatTargetsCharacters`**: implement ONLY when the card text says "target". "Wound an opposing character" / "engage a character" / "destroy a character" without the word "target" is NOT a targeted ability — don't add the interface. Use a plain private helper (e.g., `isValidWoundCandidate`) for validation; don't reuse the `isValidTargetForAbility` name. See Pattern C "Don't add `IAbilityThatTargetsCharacters` unless the text says 'target'".
-35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), and the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here decisions in detail.
+35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one. Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`), the Odette journal (`2026-06-10-02-odette-dubois-darrent-03027-implementation.md`), and the Térence journal (`2026-07-01-03-terence-rois-03028-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here / stat-specific-challenge-ban / set-stat-equal-while-dueling / third-party-equip-at-location decisions in detail.
+36. **For stat-specific challenge bans** ("cannot issue [Combat] challenges" / "may only issue [Combat] challenges"): use `eventCheck` on `EventChallengeIssued` gated on `challengerId == $this->Id` AND `CHALLENGE_STAT`. Do NOT override `canChallenge()` to `false` unless the ban covers **all** challenge types — a partial ban must leave `canChallenge()` at default so Finesse/Influence action performers still include the character. Basic Challenge always sets `CHALLENGE_STAT = STAT_COMBAT` in `actHighDramaChallengeActionStart`, so the `eventCheck` backstop blocks Basic Challenge at issue time even if the character appears in the performer list. Pattern reference: `_03028` Térence (ban Combat), `_02013` Wilhelm (only Combat).
+37. **For "set [StatA] as equal to [StatB]" while a scoped condition holds** (duel at named location, etc.): use a replacement flag + snapshot restore — NOT the Ise ±1 delta pattern. Store pre-override target stat at apply-time; restore snapshot on clear; re-sync on source-stat changes and on external target-stat mutations during the override. Hook duel boundaries + swap events like `_01089` Soline. Named locations use `Game::LOCATION_CITY_*` constants. Pattern reference: `_03028` Térence and Pattern A's "Set one stat equal to another while a scoped condition holds" subsection.
+38. **For "Reaction: After a character equips an attachment at [location]"**: listen on `EventAttachmentEquipped`. Gate both `$owner->Location` and equipping `$character->Location` on the named `Game::LOCATION_CITY_*` constant; `cardInCity($owner)` for City Reactions; skip `FakeAttachment`. Only gate on `$event->characterId == $owner->Id` when the text names the owner ("After Philip equips …"). Pattern reference: `Reaction_03028` (any character), `Reaction_01039` (self only).
