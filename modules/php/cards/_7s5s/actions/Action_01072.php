@@ -21,6 +21,7 @@ class Action_01072 extends CardAction
         parent::__construct();
 
         $this->Name = clienttranslate("Pressure Location with Non-Mercenaries");
+        $this->RequiresPerformerSelected = true;
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -30,18 +31,27 @@ class Action_01072 extends CardAction
             return false;
         }
 
-        $leader = $theah->getLeaderByPlayerId($playerId);
-        return ! $leader->Engaged && $theah->cardInCity($leader);
+        if ($this->RequiresPerformerSelected)
+        {
+            $owner = $this->getOwningCard($theah);
+            $leaders = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
+            $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader") && $leader->canPressure(Game::STAT_INFLUENCE));
+            return count($leaders) > 0;
+        }
+        else
+        {
+            //Regression: Remove once all games have started after release date
+            $leader = $theah->getLeaderByPlayerId($playerId);
+            return ! $leader->Engaged && $theah->cardInCity($leader);
+        }
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = parent::getPerformersForAction($playerId, $theah);
-
-        $leader = $theah->getLeaderByPlayerId($playerId);
-        $performers += [$leader];
-
-        return $performers;
+        $owner = $this->getOwningCard($theah);
+        $leaders = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
+        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader") && $leader->canPressure(Game::STAT_INFLUENCE));
+        return array_values($leaders);
     }
 
     public function handleEvent(Event $event)
@@ -51,7 +61,16 @@ class Action_01072 extends CardAction
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $game = $event->theah->game;
-            $leader = $event->theah->getLeaderByPlayerId($event->playerId);
+            if ($this->RequiresPerformerSelected)
+            {
+                $leaderId = $game->globals->get(Game::CHOSEN_PERFORMER);
+                $leader = $event->theah->getCharacterById($leaderId);
+            }
+            else
+            {
+                //Regression: Remove once all games have started after release date
+                $leader = $event->theah->getLeaderByPlayerId($event->playerId);
+            }
 
             $scheme = $this->getOwningCard($event->theah);
 

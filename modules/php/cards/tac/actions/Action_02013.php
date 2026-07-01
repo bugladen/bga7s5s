@@ -48,6 +48,12 @@ class Action_02013 extends CharacterAction implements IAbilityThatTargetsCharact
             return false;
         }
 
+        $wilhelm = $this->getOwningCard($theah);
+        if ($wilhelm->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return false;
+        }
+
         $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
         if (count($hand) == 0)
         {
@@ -56,7 +62,19 @@ class Action_02013 extends CharacterAction implements IAbilityThatTargetsCharact
 
         $qualifyingCards = array_filter($hand, fn($card) => $card->hasTrait("Relic") || $card->hasTrait("Faith"));
 
-        return count($qualifyingCards) > 0;
+        if (count($qualifyingCards) == 0)
+        {
+            return false;
+        }
+
+        $characters = $theah->getCharactersAtLocation($wilhelm->Location);
+        $characters = array_filter($characters, fn($character) => $character->isNotControlledByPlayer($playerId));
+        if (count($characters) == 0)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function handleEvent(Event $event)

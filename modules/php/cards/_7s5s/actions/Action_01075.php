@@ -32,6 +32,11 @@ class Action_01075 extends AttachmentAction
             return false;
         }
 
+        if ( ! $owner->canPressure(Game::STAT_INFLUENCE))
+        {
+            return false;
+        }
+
         if (! $theah->cardInCity($owner))
         {
             return false;

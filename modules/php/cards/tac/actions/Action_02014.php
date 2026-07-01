@@ -31,7 +31,7 @@ class Action_02014 extends CardAction
 
         $owner = $this->getOwningCard($theah);
         $leaders = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
-        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader"));
+        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader") && $leader->canPressure(Game::STAT_COMBAT));
 
         return count($leaders) > 0;
     }
@@ -40,7 +40,7 @@ class Action_02014 extends CardAction
     {
         $owner = $this->getOwningCard($theah);
         $leaders = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
-        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader"));
+        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader") && $leader->canPressure(Game::STAT_COMBAT));
         return array_values($leaders);
     }
 

@@ -23,7 +23,6 @@ class State_highDramaPhase01064_2 extends GameState
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Guillén de Murrieta') . clienttranslate(': ${you} must choose a location to move Renown from: '),
             transitions: [
-                "back" => States::HIGH_DRAMA_PLAYER_TURN_01064,
                 "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
@@ -37,12 +36,6 @@ class State_highDramaPhase01064_2 extends GameState
     } 
 
     #[PossibleAction]
-    public function actBack(): void
-    {
-        $this->game->actBack();
-    }
-
-    #[PossibleAction]
     public function actFromCardWithLocations(string $locations): void
     {
         $this->game->actFromCardWithLocations($locations);
@@ -50,7 +43,7 @@ class State_highDramaPhase01064_2 extends GameState
 
     public function zombie(int $playerId): void
     {
-        $this->game->actBack();
+        $this->game->gamestate->nextState("locationChosen");
     }
 
 }

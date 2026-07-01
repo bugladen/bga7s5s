@@ -29,7 +29,7 @@ class Action_02035 extends SchemeCityAction
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_filter($performers, fn($c) => $c->hasTrait("Scoundrel"));
+        $performers = array_filter($performers, fn($c) => $c->hasTrait("Scoundrel") && $c->canPressure(Game::STAT_FINESSE));
         $performers = array_filter($performers, function ($c) use ($theah) {
             $loc = $theah->getCityLocation($c->Location);
             return $loc !== null && $loc->Renown > 0;

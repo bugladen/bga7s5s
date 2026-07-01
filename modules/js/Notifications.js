@@ -376,8 +376,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = this.cardProperties[args.characterId];
         if (card)
         {
-            //Remove the trait from the card
-            card.traits = card.traits.filter(trait => trait !== args.trait);
+            //Find the first instance of the trait and remove it
+            const index = card.traits.indexOf(args.trait);
+            if (index !== -1)
+            {
+                card.traits.splice(index, 1);
+            }
             this.createTooltipForCard(card);
         }
     },
@@ -603,15 +607,28 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
 
             //Destroy attachment element
-            dojo.destroy(attachment.divId);
+            if (attachment.divId)
+            {
+                dojo.destroy(attachment.divId);
+            }
 
             //Destroy old character element
             dojo.destroy(character.divId);
 
-            //Create the new attachment element    
-            this.createCard(attachment.divId, attachment, placeholderId);
+            // WHY: Unequip-then-discard flows (e.g. Breastplate _01153) queue
+            // cardDiscardedFromPlay immediately after attachmentUnequipped. Recreating
+            // the attachment DOM between those notifications is unnecessary, and
+            // crashes if cardDiscardedFromPlay already ran (same cardProperties
+            // object, divId nulled) or if args.card replaced client state without
+            // a divId. Flows that leave the attachment in play (e.g. Technique_02055)
+            // still recreate here because location is not yet Player Discard.
+            if (attachment.location !== this.LOCATION_PLAYER_DISCARD)
+            {
+                const divId = attachment.divId ?? this.createCardId(attachment, attachment.location);
+                this.createCard(divId, attachment, placeholderId);
+            }
 
-            //Create the new character element    
+            //Create the new character element
             this.createCard(character.divId, character, placeholderId);
 
             //Destroy the placeholder

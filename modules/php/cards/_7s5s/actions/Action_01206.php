@@ -32,6 +32,11 @@ class Action_01206 extends AttachmentAction
             return false;
         }
 
+        if ( ! $owner->canPressure(Game::STAT_INFLUENCE))
+        {
+            return false;
+        }
+
         $coat = $this->getOwningAttachment($theah);
         return ! $coat->Engaged;
     }

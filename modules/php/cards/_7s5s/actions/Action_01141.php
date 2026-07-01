@@ -28,12 +28,15 @@ class Action_01141 extends RiskAction
         }
 
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
+        $performers = array_filter($performers, fn($character) => $character->canPressure(Game::STAT_COMBAT));
         return count($performers) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        return $theah->getCharactersInCityByPlayerId($playerId);
+        $performers = $theah->getCharactersInCityByPlayerId($playerId);
+        $performers = array_filter($performers, fn($character) => $character->canPressure(Game::STAT_COMBAT));
+        return array_values($performers);
     }
 
     public function handleEvent(Event $event)

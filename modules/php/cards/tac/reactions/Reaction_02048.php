@@ -23,7 +23,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_02048 extends RiskReaction
 {
     private int $RiskSourceId = 0;
-    private int $PerformerId = 0;
     private string $Location = '';
     private bool $PressureSucceeded = false;
     private bool $skipNextEvent = false;
@@ -44,20 +43,14 @@ class Reaction_02048 extends RiskReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose a performer to pressure with Combat and cancel the effects of the opponent\'s risk: ');
+        return parent::getReactionDescription($theah) . sprintf($theah->game->translate('${you} may pressure %s with Combat and cancel the effects of the opponent\'s risk: '), $this->Location);
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        $owner = $this->getOwningCard($theah);
-        $characters = $theah->getCharactersAtLocationByPlayerId($this->Location, $owner->ControllerId);
-        foreach ($characters as $character)
-        {
-            $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Pressure %s with %s'), $this->Location, $character->Name), "pressure-$character->Id");
-        }
-
+        $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Pressure %s'), $this->Location), "pressure");
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
 
         return $array;
@@ -134,6 +127,7 @@ class Reaction_02048 extends RiskReaction
             {
                 $target = $event->theah->getCharacterById($event->targetId);
                 if ($target && $target->ControllerId == $owner->ControllerId
+                    && $event->theah->cardInCity($target)
                     && $this->isFromOpponentRiskThatTargetsCharacters($event, $event->sourceId, $owner->ControllerId))
                 {
                     $this->RiskSourceId = $event->sourceId;
@@ -158,6 +152,7 @@ class Reaction_02048 extends RiskReaction
             {
                 $target = $event->theah->getCharacterById($event->cardId);
                 if ($target && $target->ControllerId == $owner->ControllerId
+                    && $event->theah->cardInCity($target)
                     && $this->isFromOpponentRiskThatTargetsCharacters($event, $event->sourceId, $owner->ControllerId))
                 {
                     $this->RiskSourceId = $event->sourceId;
@@ -182,6 +177,7 @@ class Reaction_02048 extends RiskReaction
             {
                 $target = $event->theah->getCharacterById($event->cardId);
                 if ($target && $target->ControllerId == $owner->ControllerId
+                    && $event->theah->cardInCity($target)
                     && $this->isFromOpponentRiskThatTargetsCharacters($event, $event->sourceId, $owner->ControllerId))
                 {
                     $this->RiskSourceId = $event->sourceId;
@@ -206,6 +202,7 @@ class Reaction_02048 extends RiskReaction
             {
                 $target = $event->theah->getCharacterById($event->characterId);
                 if ($target && $target->ControllerId == $owner->ControllerId
+                    && $event->theah->cardInCity($target)
                     && $this->isFromOpponentRiskThatTargetsCharacters($event, $event->sourceId, $owner->ControllerId))
                 {
                     $this->RiskSourceId = $event->sourceId;
@@ -230,6 +227,7 @@ class Reaction_02048 extends RiskReaction
             {
                 $defender = $event->theah->getCharacterById($event->defenderId);
                 if ($defender && $defender->ControllerId == $owner->ControllerId
+                    && $event->theah->cardInCity($defender)
                     && $this->isFromOpponentRiskThatTargetsCharacters($event, $event->sourceId, $owner->ControllerId))
                 {
                     $this->RiskSourceId = $event->sourceId;
@@ -254,6 +252,7 @@ class Reaction_02048 extends RiskReaction
             {
                 $target = $event->theah->getCharacterById($event->characterId);
                 if ($target && $target->ControllerId == $owner->ControllerId
+                    && $event->theah->cardInCity($target)
                     && $this->isFromOpponentRiskThatTargetsCharacters($event, $event->sourceId, $owner->ControllerId))
                 {
                     $this->RiskSourceId = $event->sourceId;
@@ -276,11 +275,12 @@ class Reaction_02048 extends RiskReaction
         {
             $game = $event->theah->game;
             $owner = $this->getOwningCard($event->theah);
-            $performer = $event->theah->getCharacterById($this->PerformerId);
 
+            $game->globals->set(Game::CHOSEN_PERFORMER, 0);
+            $game->globals->set(Game::PRESSURING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
-            $pressureStats = $game->theah->getPressureStats($performer, $this->Location, Game::STAT_COMBAT);
-            $pressureEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, $performer->Id, $this->Location, $pressureStats);
+            $pressureStats = $game->theah->getPressureStats(null, $this->Location, Game::STAT_COMBAT);
+            $pressureEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, 0, $this->Location, $pressureStats);
             $game->theah->queueEvent($pressureEvent);
 
             $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used the Reaction to Pressure ${location_name} with Combat'), [
@@ -290,9 +290,9 @@ class Reaction_02048 extends RiskReaction
                 'location_name' => $this->Location,
             ]);
 
-            [$success, $totals, $difference] = $game->pressureLocation($owner->ControllerId, $performer, $this->Location, Game::STAT_COMBAT);
+            [$success, $totals, $difference] = $game->pressureLocation($owner->ControllerId, null, $this->Location, Game::STAT_COMBAT);
 
-            $pressuredEvent = EventFactory::createLocationPressuredEvent($owner->ControllerId, $performer->Id, $this->Location, Game::STAT_COMBAT, $success, $totals, $difference);
+            $pressuredEvent = EventFactory::createLocationPressuredEvent($owner->ControllerId, 0, $this->Location, Game::STAT_COMBAT, $success, $totals, $difference);
             $pressuredEvent->abilityId = $this->Id;
             $game->theah->queueEvent($pressuredEvent);
 
@@ -334,7 +334,6 @@ class Reaction_02048 extends RiskReaction
         {
             $owner = $this->getOwningCard($event->theah);
             $this->RiskSourceId = 0;
-            $this->PerformerId = 0;
             $this->Location = '';
             $this->PressureSucceeded = false;
             $this->clearSavedEvents();
@@ -416,9 +415,6 @@ class Reaction_02048 extends RiskReaction
 
         if ($reactionId != 'decline')
         {
-            $characterId = (int) str_replace("pressure-", "", $reactionId);
-            $this->PerformerId = $characterId;
-
             $owner = $this->getOwningCard($game->theah);
             $owner->IsUpdated = true;
 
