@@ -36,7 +36,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
         }
 
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => ! $character->Engaged);
+        $characters = array_filter($characters, fn($character) => ! $character->Engaged && $character->canPressure());
 
         return count($characters) > 0;
     }
@@ -44,7 +44,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($character) => ! $character->Engaged));
+        $performers = array_values(array_filter($performers, fn($character) => ! $character->Engaged && $character->canPressure()));
         
         return array_values($performers);
     }

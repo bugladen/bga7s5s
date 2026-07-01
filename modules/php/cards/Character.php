@@ -80,6 +80,11 @@ abstract class Character extends Card implements IHasTechniques
         return $this->isControlled();
     }
 
+    public function canPressure(): bool
+    {
+        return ! $this->DashedInfluence;
+    }
+
     public function hasWhenRevealedEffect() : bool
     {
         return false;
