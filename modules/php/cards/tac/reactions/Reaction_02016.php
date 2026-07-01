@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -24,6 +25,7 @@ class Reaction_02016 extends AttachmentReaction
     private ?EventCharacterBeingWounded $characterWoundedEvent = null;
     private ?EventCharacterBeingHealed $characterHealedEvent = null;
     private ?EventChallengeIssued $challengeIssuedEvent = null;
+    private ?EventCharacterIntervened $characterIntervenedEvent = null;
     private ?EventCharacterTargeted $characterTargetedEvent = null;
     private bool $isChallenger = false;
     private ?string $savedAbilityId = null;
@@ -304,6 +306,41 @@ class Reaction_02016 extends AttachmentReaction
                 $event->theah->queueEvent($reactionTransitionEvent);
             }
         }
+
+        if ($event instanceof EventCharacterIntervened && $this->isAvailable() && !$event->canceled)
+        {
+            if (! $this->ownerIsAttached($event->theah))
+            {
+                return;
+            }
+
+            $owner = $this->getOwningAttachment($event->theah);
+            $owningCharacter = $this->getOwningCharacter($event->theah);
+            if ($owningCharacter->Id == $event->newTargetId)
+            {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
+                $charactersAtLocation = $event->theah->getCharactersAtLocationByPlayerId($owningCharacter->Location, $owningCharacter->ControllerId);
+                $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->Id != $owningCharacter->Id);
+                if (count($charactersAtLocation) > 0)
+                {
+                    $this->characterIntervenedEvent = clone $event;
+                    unset($this->characterIntervenedEvent->theah);
+                    $this->targetCharacterId = $owningCharacter->Id;
+                    $owner->IsUpdated = true;
+
+                    $event->canceled = true;
+
+                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->queueEvent($reactionTransitionEvent);
+                }
+            }
+        }
     }
 
     private function releaseEvent(Game $game, int $characterId)
@@ -366,6 +403,22 @@ class Reaction_02016 extends AttachmentReaction
             $this->isChallenger = false;
             $this->challengeIssuedEvent = null;
         }
+
+        if ($this->characterIntervenedEvent)
+        {
+            $owningCharacter = $this->getOwningCharacter($game->theah);
+            $owningCharacter->removeCondition(Game::DUEL_DEFENDER);
+
+            $performer = $game->theah->getCharacterById($characterId);
+            $performer->addCondition(Game::DUEL_DEFENDER);
+
+            $game->globals->set(GAME::CHOSEN_TARGET, $performer->Id);
+
+            $this->characterIntervenedEvent->oldTargetId = $owningCharacter->Id;
+            $this->characterIntervenedEvent->newTargetId = $performer->Id;
+            $game->theah->queueEvent($this->characterIntervenedEvent);
+            $this->characterIntervenedEvent = null;
+        }
     }
 
     private function loadAbility(Theah $theah): ?IAbilityThatTargetsCharacters
@@ -401,6 +454,7 @@ class Reaction_02016 extends AttachmentReaction
         $this->characterTargetedEvent = null;
         $this->isChallenger = false;
         $this->challengeIssuedEvent = null;
+        $this->characterIntervenedEvent = null;
         $game->globals->set(Game::CHALLENGE_CANCELLED, true);
     }
 
@@ -439,7 +493,18 @@ class Reaction_02016 extends AttachmentReaction
                     $this->cancelEvents($game);
                 }
             }
+            else if ($this->characterIntervenedEvent)
+            {
+                $this->releaseEvent($game, $characterId);
+            }
 
+            $this->setUsed($game->theah, true);
+        }
+        else if ($this->characterIntervenedEvent)
+        {
+            $owningCharacter = $this->getOwningCharacter($game->theah);
+            $this->releaseEvent($game, $owningCharacter->Id);
+            $this->skipNextEvent = true;
             $this->setUsed($game->theah, true);
         }
 
