@@ -33,7 +33,7 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
         }
 
         $characters = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $characters = array_filter($characters, fn($character) => ! $character->Engaged);
+        $characters = array_filter($characters, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE));
         $characters = array_filter($characters, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega"));
 
         return count($characters) > 0;
@@ -42,7 +42,7 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_filter($performers, fn($character) => ! $character->Engaged);
+        $performers = array_filter($performers, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE));
         $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega")));
         return $performers;
     }
