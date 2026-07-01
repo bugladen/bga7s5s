@@ -46,43 +46,6 @@ class _01153 extends FactionAttachment
         $this->hasBlockedWound = false;
     }
 
-    public function eventCheck(Event $event)
-    {
-        parent::eventCheck($event);
-
-        if ($event instanceof EventCharacterBeingWounded && $event->characterId == $this->AttachedToId)
-        {
-            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
-            if ($inDuel)
-            {
-                $actor = $event->theah->getDuelRoundActor();
-                if ($actor === null)
-                {
-                    return;
-                }
-                $adversaryId = $event->theah->getDuelOpponentId($actor->Id);
-                if (($this->AttachedToId == $adversaryId || $this->AttachedToId == $actor->Id) && ! $this->hasBlockedWound)
-                {
-                    $oldWounds = $event->wounds;
-                    $event->wounds--;
-                    if ($event->wounds < 0)
-                    {
-                        $event->wounds = 0;
-                    }
-        
-                    $event->theah->game->notifyAllPlayers("message", clienttranslate('${card_inject_code} blocked a wound. Wounds went from ${oldWounds} to ${newWounds}'), [
-                        "card_inject_code" => $this->getInjectCode(),
-                        "oldWounds" => $oldWounds,
-                        "newWounds" => $event->wounds,
-                    ]);
-        
-                    $this->hasBlockedWound = true;
-                    $this->IsUpdated = true;
-                }
-            }
-        }
-    }
-
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -97,6 +60,32 @@ class _01153 extends FactionAttachment
             $this->IsUpdated = true;
         }
 
+        if ($event instanceof EventCharacterBeingWounded && $event->characterId == $this->AttachedToId)
+        {
+            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
+            if ($inDuel)
+            {
+                if (! $this->hasBlockedWound)
+                {
+                    $oldWounds = $event->wounds;
+                    $event->wounds--;
+                    if ($event->wounds < 0)
+                    {
+                        $event->wounds = 0;
+                    }
+        
+                    $event->theah->game->notify->all("message", clienttranslate('${card_inject_code} blocked a wound. Wounds went from ${oldWounds} to ${newWounds}'), [
+                        "card_inject_code" => $this->getInjectCode(),
+                        "oldWounds" => $oldWounds,
+                        "newWounds" => $event->wounds,
+                    ]);
+        
+                    $this->hasBlockedWound = true;
+                    $this->IsUpdated = true;
+                }
+            }
+        }
+
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->AttachedToId)
         {
            if ($event->wounds > 0) 
@@ -109,7 +98,7 @@ class _01153 extends FactionAttachment
                 $detachEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $event->characterId, $this->Id);
                 $event->theah->queueEvent($detachEvent);
 
-                $destroyEvent = EventFactory::createCardDiscardedFromPlayEvent($this->OwnerId, $this->Id, $this->Location, $this->Id, $asEffect = true);
+                $destroyEvent = EventFactory::createCardDiscardedFromPlayEvent($this->ControllerId, $this->Id, $this->Location, $this->Id, $asEffect = true);
                 $event->theah->queueEvent($destroyEvent);
            }
         }
