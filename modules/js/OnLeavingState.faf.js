@@ -31,6 +31,10 @@
                 this.resetCityLocations();
             },
 
+            'planningPhaseResolveSchemes_03030': () => {
+                this.resetCityLocations();
+            },
+
             'highDramaPhase03cd01': () => {
                 if (this.isCurrentPlayerActive())
                 {
@@ -85,6 +89,24 @@
                 if (this.isCurrentPlayerActive())
                 {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase03030': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.diplomatId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase03030_2': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.duelistId);
                     this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }

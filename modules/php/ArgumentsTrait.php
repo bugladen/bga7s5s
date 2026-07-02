@@ -647,6 +647,10 @@ trait ArgumentsTrait
         {
             $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->ModifiedFinesse >= 3);
         }
+        else if ($challengeType == Game::SWORN_SWORDS_CHALLENGE_TYPE)
+        {
+            $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->hasTrait("Duelist"));
+        }
 
         return [
             "performerId" => $performerId,

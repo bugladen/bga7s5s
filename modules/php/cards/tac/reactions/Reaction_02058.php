@@ -53,7 +53,12 @@ class Reaction_02058 extends RiskReaction
         $challengeType = $theah->game->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE)
         {
-            $validPerformers = array_filter($validPerformers, fn($c) => $c instanceof Leader);
+            $validPerformers = array_filter($validPerformers, fn($c) => $c->hasTrait("Leader"));
+            $validPerformers = array_values($validPerformers);
+        }
+        else if ($challengeType == Game::SWORN_SWORDS_CHALLENGE_TYPE)
+        {
+            $validPerformers = array_filter($validPerformers, fn($c) => $c->hasTrait("Duelist"));
             $validPerformers = array_values($validPerformers);
         }
 

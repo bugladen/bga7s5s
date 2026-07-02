@@ -54,6 +54,16 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_03030': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 2;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'highDramaPhase03cd01': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -150,6 +160,28 @@
                     this.numberOfCardsSelectable = 1;
                     this.highlightCharacterChosen(args.args.args.performerId);
                     this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase03030': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.diplomatId);
+                    this.clientStateArgs.diplomatId = args.args.args.diplomatId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase03030_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.duelistId);
+                    this.clientStateArgs.duelistId = args.args.args.duelistId;
 
                     this.clientStateArgs.ids = args.args.args.ids;
                     this.highlightCardsAsSelectable(args.args.args.ids);

@@ -1759,6 +1759,10 @@ class Theah
         if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE && ! $character instanceof Leader) {
             throw new UserException($this->game->translate("Legendary Reputation: Only Leaders can Intervene"));
         }
+        else if ($challengeType == Game::SWORN_SWORDS_CHALLENGE_TYPE && ! $character->hasTrait("Duelist"))
+        {
+            throw new UserException($this->game->translate("Sworn Swords: Only Duelists can Intervene"));
+        }
         else if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE)
         {
             throw new UserException($this->game->translate("Valeri Mikhailov: No Characters can Intervene."));

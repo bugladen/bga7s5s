@@ -17,6 +17,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/tac/_02046.php` (Winter's Wind) / `modules/php/cards/tac/_02052.php` (Gutter Full of Roses) — **New GameState-class pattern** for the resolve sub-state. Use this pattern for new schemes.
 - `modules/php/cards/faf/_03005.php` (No Mercy) — **Resolve = Renown + pick-trait-filtered-card-from-discard, AND a Reaction.** Uses the new GameState class pattern. Reaction triggers on `EventChallengeRejected` when a Red Hand character (controlled by the scheme owner) had its challenge refused; stored location is then claimed.
 - `modules/php/cards/faf/_03029.php` (Hour of Blood) — **Trivial Renown resolve + Sorcerer City Action with choose-one Porté move branches.** Three High Drama action sub-states (`03029` → `03029_2` → optional `03029_3`). Reference when a scheme action has "Choose one: Either … or …" before character/location picks.
+- `modules/php/cards/faf/_03030.php` (Sworn Swords) — **Two-different-locations resolve + Diplomat City Action where performer (Diplomat) and challenger (Duelist) are different characters.** Two HD sub-states (`03030` → `03030_2`) then standard challenge flow. Custom `CHALLENGE_TYPE` for "Only Duelists may intervene" + `EventGenerateChallengeThreat` bonus on accept.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -92,8 +93,11 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"Choose one: <i>Either</i> … <i>or</i> …" on a City Action** (scheme or character) | **Pattern D — branch-first multi-step High Drama action.** State 1 = button pick (`actFromCardWithId` with ids 1/2); state 2 = character pick; state 3 = location pick only if one branch needs it. Persist the chosen branch on the **action object** (`public int $MoveMode` + `$owner->IsUpdated = true`). Do NOT use `Game::CHOSEN_TARGET` for branch state — the challenge framework owns that global. Use `Game::CHOSEN_CARD` to pass the chosen character between steps 2→3 when a later location pick is needed. Reference: `_03029`, `Reaction_03cd18` (same branch UX, but reactions use `$stage` + `createReactionTransitionEvent`, not HD sub-states). |
 | **"Move your character at any location to your performer's location"** | Porté-style pull: `getCharactersInPlayByPlayerId($playerId)` filtered to `Location != $performer->Location` (includes Home). Single-mode cards can use one state like `Action_01085`. Reference: `Action_01068`, `Action_01085`. |
 | **"Move your character at your performer's location to any location"** | Porté-style push: characters at `$performer->Location`, destinations = all `getCityLocations()` names + `Game::LOCATION_PLAYER_HOME` (if not already Home), excluding current location. Reference: `Action_01093` (Maya "any location"), `Action_01068`. |
+| **"Engage your performer • Your \<trait\> at this location issues a [Combat] challenge"** | **Pattern E — split performer and challenger.** Framework performer pick (trait-gated Diplomat/etc.) → engage performer → HD sub-state pick challenger at that location → sub-state pick target → challenge. `CHOSEN_CARD` preserves performer id; `CHOSEN_PERFORMER` becomes challenger for challenge framework. Reference: `_03030` (Diplomat + Duelist), character parallel `Action_03003` (Thug issues challenge). |
+| **"Only \<trait\>s may intervene"** on a challenge | Add a new `Game::…_CHALLENGE_TYPE` constant. Enforce in **`Theah::interventionCheck`**, **`ArgumentsTrait`** (intervene-picker `ids`), and **`Reaction_02058`** (adjacent external intervene) — same trio as `LEGENDARY_REPUTATION_CHALLENGE_TYPE` / `AJA_CHALLENGE_TYPE`. Reference: `_03030` (`SWORN_SWORDS_CHALLENGE_TYPE`, Duelist gate). |
+| **"If the challenge is accepted, add a threat to your participant"** | Listen on `EventGenerateChallengeThreat` in the action class; bump `$event->actorThreat` only (not adversary). Fires on accept/intervene path when threat is generated, not on refuse. Reference: `Action_03030` (+1 actor), contrast `Action_02061` (+1 both). |
 
-A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action.
+A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat.
 
 ## Pattern A — Resolve via `EventResolveScheme`
 
@@ -745,6 +749,43 @@ createActionResolvedEvent(...)
 
 **Character targeting validation:** even when picks go through sub-states (not the challenge target UI), implement `isValidTargetForAbility(Game $game, Character $character): array` and call it from `actFromActionWithId` — JS can be tampered with.
 
+### Pattern E — Engage performer, different character issues challenge
+
+Use when the printed text separates **who engages** (performer) from **who issues the challenge** (another character at the same location). Reference: `_03030` (Diplomat engages, Duelist challenges), `Action_03003` on Don Constanzo (Thug challenges — no framework performer pick).
+
+**Flow (`_03030` shape):**
+
+1. `RequiresPerformerSelected = true`. `getPerformersForAction` filters performer trait **and** full action legality (see below).
+2. `EventActionTriggered`: validate performer → `createCardEngagedEvent` for performer if not engaged → `Game::CHOSEN_CARD = $performerId` (preserve while challenger takes over `CHOSEN_PERFORMER`) → `createTransitionEvent(..., "NNNNN")`.
+3. HD state `NNNNN`: pick challenger (e.g. Duelist at performer's location) → `CHOSEN_PERFORMER = $challengerId` → `nextState("…Chosen")`.
+4. HD state `NNNNN_2`: pick opposing target → set `CHALLENGE_STAT` / custom `CHALLENGE_TYPE` → `createTransitionEvent(..., "NNNNN_2")` where `"NNNNN_2"` maps to `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE` in `states.inc.php` (same as `03003_2`).
+
+**`getPerformersForAction` must encode full legality for the performer picker** — not just the trait gate. For `_03030`, each Diplomat must pass ALL of:
+
+- `hasTrait("Diplomat")` and `!Engaged` (card says "Engage your performer")
+- at least one eligible challenger at `$performer->Location` (e.g. Duelist with `canChallenge($theah)`)
+- at least one opposing character at `$performer->Location`
+
+`isAvailableToPlayer` should be `return count($this->getPerformersForAction($playerId, $theah)) > 0` so availability matches the picker.
+
+**Engagement:** only engage the printed performer. Do **not** rely on `stIssueChallenge`'s auto-engage for the challenger — register a custom `CHALLENGE_TYPE` excluded from that list (same idea as `DON_CONSTANZO_CHALLENGE_TYPE`).
+
+**Challenger eligibility:** if the card doesn't say "unengaged \<trait\>", allow already-engaged challengers when `canChallenge($theah)` permits (see `Action_03003` Thug comment).
+
+### Custom `CHALLENGE_TYPE` for intervention gates
+
+When the text restricts who may intervene (or refuse — see `create-risk` skill), add `final const …_CHALLENGE_TYPE = N` in `Game.php` and enforce in all three places that filter intervene UI/server checks:
+
+| Location | Role |
+|---|---|
+| `Theah::interventionCheck` | Server-side reject on illegal intervene click |
+| `ArgumentsTrait` (intervene args) | Filter `ids` so UI only shows legal interveners |
+| `Reaction_02058::getValidPerformers` | Adjacent external-intervene reaction respects the same gate |
+
+Reference: `LEGENDARY_REPUTATION_CHALLENGE_TYPE` (Leaders only), `AJA_CHALLENGE_TYPE` (3+ Finesse), `SWORN_SWORDS_CHALLENGE_TYPE` (Duelists only on `_03030`).
+
+**Accept-time threat bonus:** handle in the action's `handleEvent` on `EventGenerateChallengeThreat` when `$challengeType` matches — increment `$event->actorThreat` for "your participant" only.
+
 ## Walkthrough: implementing `_03005` (No Mercy)
 
 A concrete worked example combining most patterns above. Card text:
@@ -787,6 +828,26 @@ Card text:
 
 Full implementation: `modules/php/cards/faf/_03029.php`, `modules/php/cards/faf/actions/Action_03029.php`, `modules/php/States/faf/State_highDramaPhase03029{,_2,_3}.php`.
 
+## Walkthrough: implementing `_03030` (Sworn Swords)
+
+Card text:
+
+> Add a Renown to two different locations.
+> **Diplomat City Action:** Engage your performer • Your **Duelist** at this location issues a [Combat] challenge to target opposing character. Only **Duelists** may intervene. If the challenge is accepted, add a threat to your participant.
+
+1. **Constructor.** `initializeFaction('Montaigne')`, `Initiative = 36`, `PanacheModifier = 0`, Traits = Oathsworn + Challenge. Register `IHasActions` + `ActionTrait` + `new Action_03030()`.
+2. **Resolve.** Same as `_03006`: `EventResolveScheme` notifies, then `createTransitionEvent($playerId, $this->Id, "03030")` with `MEDIUM_PRIORITY`. Planning state uses `actCityLocationsForReknownSelected` + `numberOfCityLocationsSelectable = 2` in JS. Transition key `"03030"` lives under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` — distinct from the HD action's `"03030"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` (same card number, different maps).
+3. **Action class.** `Action_03030 extends SchemeCityAction implements IAbilityThatTargetsCharacters`. `RequiresPerformerSelected = true`.
+4. **`getPerformersForAction`.** Filter Diplomats who are `!Engaged`, have ≥1 eligible Duelist at their location (`hasTrait("Duelist") && canChallenge`), AND have ≥1 opposing character at that location. `isAvailableToPlayer` = `count(getPerformersForAction) > 0`.
+5. **`EventActionTriggered`.** Engage Diplomat → `CHOSEN_CARD = $diplomatId` → transition `"03030"`.
+6. **Two HD sub-states.**
+   - `03030`: pick Duelist → `CHOSEN_PERFORMER = $duelistId` → `duelistChosen` → state 2.
+   - `03030_2`: pick target → set `SWORN_SWORDS_CHALLENGE_TYPE` + `STAT_COMBAT` → transition `"03030_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE`.
+7. **`SWORN_SWORDS_CHALLENGE_TYPE = 21`.** Gate Duelist-only intervene in `Theah::interventionCheck`, `ArgumentsTrait`, `Reaction_02058`. `EventGenerateChallengeThreat`: `actorThreat += 1`.
+8. **JS (faf).** Planning: copy `_03006` location picker. HD: copy `_03003` character picker (highlight Diplomat on step 1, Duelist on step 2).
+
+Full implementation: `modules/php/cards/faf/_03030.php`, `modules/php/cards/faf/actions/Action_03030.php`, `modules/php/States/faf/State_planningPhaseResolveSchemes03030.php`, `State_highDramaPhase03030{,_2}.php`.
+
 ## Style / Memory Notes
 
 - `getActivePlayerName()` is deprecated — use `$game->getPlayerNameById($id)`.
@@ -803,6 +864,7 @@ Full implementation: `modules/php/cards/faf/_03029.php`, `modules/php/cards/faf/
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
 - **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
+- **Windows line endings:** PHP files in this repo use single CRLF (`\r\n`). Agent-written files sometimes land as `\r\r\n` (double carriage return), which displays as a blank line after every line. After writing scheme/action PHP, verify against a sibling file (e.g. hex dump or line count). Fix with: `$content -replace "`r`r`n", "`r`n"` in PowerShell. Match existing files — do not convert LF-only.
 
 ## Cross-Cutting Helpers
 
@@ -856,6 +918,11 @@ Event factories you'll likely need:
 | `modules/php/States/faf/State_highDramaPhase03029.php` | HD action state 1: branch buttons via `actFromCardWithId`. |
 | `modules/php/States/faf/State_highDramaPhase03029_2.php` | HD action state 2: character pick with `actBack`. |
 | `modules/php/States/faf/State_highDramaPhase03029_3.php` | HD action state 3: location pick (`actFromCardWithLocations`) with `actBack`. |
+| `modules/php/cards/faf/_03030.php` (Sworn Swords) | **Two-different-locations resolve + Diplomat/Duelist split-performer Combat challenge.** Planning + HD both use transition key `"03030"` in their respective maps. |
+| `modules/php/cards/faf/actions/Action_03030.php` | Pattern E: engage Diplomat, Duelist challenges. `getPerformersForAction` checks Duelist + opponent at location. `SWORN_SWORDS_CHALLENGE_TYPE`, `EventGenerateChallengeThreat` +1 actor. |
+| `modules/php/States/faf/State_planningPhaseResolveSchemes03030.php` | Two-location planning resolve (same shape as `03006`). |
+| `modules/php/States/faf/State_highDramaPhase03030.php` | HD state 1: Duelist pick after Diplomat engaged. |
+| `modules/php/States/faf/State_highDramaPhase03030_2.php` | HD state 2: opposing target pick → challenge technique flow. |
 
 ## When You Finish
 
@@ -872,10 +939,12 @@ Event factories you'll likely need:
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` check on the chosen performer). NOT a Sorcerer ability.
    - Both can stack.
 10. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions. **Player's own choose-one on a City Action** during High Drama *does* use HD sub-states — don't route that through reaction `$stage`.
-11. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
-12. Pre-commit hook checks on every file:
+11. **`getPerformersForAction` on trait-gated scheme actions** must filter to performers for whom the *entire* action is legal (eligible secondary character at location, opposing targets present, etc.) — not just `hasTrait(...)`. `isAvailableToPlayer` should delegate to that filtered list.
+12. **Custom `CHALLENGE_TYPE` for intervention gates** needs all three: `Theah::interventionCheck`, `ArgumentsTrait` intervene args, `Reaction_02058` (if adjacent external intervene exists in your expansion).
+13. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
+14. Pre-commit hook checks on every file:
     - **Reaction subclass:** `$this->setUsed(` AND `$this->isAvailable(` literal strings present.
     - **SchemeCityAction subclass:** `createActionResolvedEvent()` called.
     - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
     - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
-13. Lint touched PHP files (`php -l`) before committing.
+15. Lint touched PHP files (`php -l`) before committing. On Windows, verify line endings are single CRLF (not `\r\r\n`).
