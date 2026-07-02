@@ -16,6 +16,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/tac/_02014.php` (Kaspar's Occupation) — **Scheme with a City Action.** Two-option resolve (add OR move Renown).
 - `modules/php/cards/tac/_02046.php` (Winter's Wind) / `modules/php/cards/tac/_02052.php` (Gutter Full of Roses) — **New GameState-class pattern** for the resolve sub-state. Use this pattern for new schemes.
 - `modules/php/cards/faf/_03005.php` (No Mercy) — **Resolve = Renown + pick-trait-filtered-card-from-discard, AND a Reaction.** Uses the new GameState class pattern. Reaction triggers on `EventChallengeRejected` when a Red Hand character (controlled by the scheme owner) had its challenge refused; stored location is then claimed.
+- `modules/php/cards/faf/_03029.php` (Hour of Blood) — **Trivial Renown resolve + Sorcerer City Action with choose-one Porté move branches.** Three High Drama action sub-states (`03029` → `03029_2` → optional `03029_3`). Reference when a scheme action has "Choose one: Either … or …" before character/location picks.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -86,10 +87,13 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **`<b>City Action:</b>`** / **`<b>Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending the right action base (`SchemeCityAction` if it's a City Action on a scheme — see action-base table below). The Action lives next to the scheme, not on the scheme class itself. |
 | **`<b>City Reaction:</b>` / `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Pre-commit hook enforces `setUsed`/`isAvailable` literal calls. Reference: `_02004` (City Reaction), `_03005` (Reaction), `_03006` (multi-stage Reaction). |
 | **`<b>Strega Reaction:</b>`** / **`<b>Mercenary City Action:</b>`** / **`<b>Diplomat …:</b>`** / **`<b>Musketeer …:</b>`** | Trait-prefixed keywords are **mechanical performer-trait gates**, NOT Sorcerer abilities. The chosen performer must have that trait (enforce via `hasTrait("Strega")` etc.). Do NOT `implement ISorcererAbility` for these. Reference: `_03006` (Premonition's Strega Reaction enforces the gate via `findStregaPerformerAtLocation`). |
-| **`<b>Sorcerer City Action:</b>` / `<b>Sorcerer Reaction:</b>`** | Mechanical "Sorcerer" keyword — class additionally `implements ISorcererAbility`, must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). Can stack with trait gates: "Sorcerer Strega …" is both. Reference: `Reaction_02001` (Andriana). |
+| **`<b>Sorcerer City Action:</b>` / `<b>Sorcerer Reaction:</b>`** | Mechanical "Sorcerer" keyword — class additionally `implements ISorcererAbility`, must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). Can stack with trait gates: "Sorcerer Strega …" is both. Reference: `Reaction_02001` (Andriana), `Action_03029` (scheme Sorcerer City Action). |
 | **`<b>Forced:</b>`** | Override `handleEvent` directly on the scheme class. No Action/Reaction/State files. Reference: `_02052`'s Forced clause (`EventCharacterDestroyed` at Bazaar during duel). |
+| **"Choose one: <i>Either</i> … <i>or</i> …" on a City Action** (scheme or character) | **Pattern D — branch-first multi-step High Drama action.** State 1 = button pick (`actFromCardWithId` with ids 1/2); state 2 = character pick; state 3 = location pick only if one branch needs it. Persist the chosen branch on the **action object** (`public int $MoveMode` + `$owner->IsUpdated = true`). Do NOT use `Game::CHOSEN_TARGET` for branch state — the challenge framework owns that global. Use `Game::CHOSEN_CARD` to pass the chosen character between steps 2→3 when a later location pick is needed. Reference: `_03029`, `Reaction_03cd18` (same branch UX, but reactions use `$stage` + `createReactionTransitionEvent`, not HD sub-states). |
+| **"Move your character at any location to your performer's location"** | Porté-style pull: `getCharactersInPlayByPlayerId($playerId)` filtered to `Location != $performer->Location` (includes Home). Single-mode cards can use one state like `Action_01085`. Reference: `Action_01068`, `Action_01085`. |
+| **"Move your character at your performer's location to any location"** | Porté-style push: characters at `$performer->Location`, destinations = all `getCityLocations()` names + `Game::LOCATION_PLAYER_HOME` (if not already Home), excluding current location. Reference: `Action_01093` (Maya "any location"), `Action_01068`. |
 
-A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action.
+A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action.
 
 ## Pattern A — Resolve via `EventResolveScheme`
 
@@ -707,7 +711,39 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 Pre-commit hook: `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`.
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`.
+
+### High Drama action sub-states (City Action / Sorcerer City Action)
+
+Planning resolve sub-states use `PLANNING_PHASE_RESOLVE_SCHEMES_*` (`26<NNNNN>`) and `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`. **Scheme actions played during High Drama use a different map:**
+
+| Piece | Where |
+|---|---|
+| State constant | `States::HIGH_DRAMA_PLAYER_TURN_<NNNNN>` = `40<NNNNN>` (append `2`, `3` for follow-on steps) |
+| Transition map | `states.inc.php` → `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions` — keys like `"03029"`, `"03029_2"`, `"03029_3"` |
+| State class | `modules/php/States/<expansion>/State_highDramaPhase<NNNNN>.php` (name: `highDramaPhase<NNNNN>`) |
+| Action logic | `actions/Action_NNNNN.php` — `handleEvent` on `EventActionTriggered` queues `createTransitionEvent($playerId, $owner->Id, "NNNNN", $this->Id)` |
+| JS | Same triple as resolve states, but in `OnEnteringState.<expansion>.js` etc. under `highDramaPhase<NNNNN>` keys |
+
+**Performer-required actions:** set `$this->RequiresPerformerSelected = true` on the action. The framework sets `Game::CHOSEN_PERFORMER` before your first sub-state runs.
+
+**Multi-step with Back:** middle/final states expose `#[PossibleAction] actBack()` and a `"back"` transition to the prior state; JS adds `<` calling `actBack`. Reference: `State_highDramaPhase03029_2`, `State_highDramaPhase03cd01_2`.
+
+**Sorcerer performer gate on a scheme City Action:** override `getPerformersForAction` to filter `hasTrait("Sorcerer")`. In `isAvailableToPlayer`, loop performers and return true only if at least one has a legal target for at least one printed branch — don't gate availability on a single fixed performer.
+
+**`SchemeCityAction` availability:** the base `SchemeAction` requires the scheme owner card at `LOCATION_PLAYER_HOME`. That is correct for normal schemes (they land in discard after Planning resolve and actions fire from there). Only override `isAvailableToPlayer` like `_02045` when the scheme is **placed on a city location** and the action keys off that placement.
+
+**Sorcerer wound + move event order** (matches Porté on characters):
+
+```php
+createSorcererAbilityStartEvent(...)
+createCharacterBeingWoundedEvent($performer->Id, ...)  // "Wound your performer"
+createCardMovingEvent(...)
+createSorcererAbilityPlayedEvent(...)
+createActionResolvedEvent(...)
+```
+
+**Character targeting validation:** even when picks go through sub-states (not the challenge target UI), implement `isValidTargetForAbility(Game $game, Character $character): array` and call it from `actFromActionWithId` — JS can be tampered with.
 
 ## Walkthrough: implementing `_03005` (No Mercy)
 
@@ -729,6 +765,28 @@ A concrete worked example combining most patterns above. Card text:
 
 Full implementation lives at `modules/php/cards/faf/_03005.php`, `modules/php/cards/faf/reactions/Reaction_03005.php`, `modules/php/States/faf/State_planningPhaseResolveSchemes03005.php`.
 
+## Walkthrough: implementing `_03029` (Hour of Blood)
+
+Card text:
+
+> Add a Renown to [City Forum] and [City Docks]
+> **Sorcerer City Action:** Wound your performer • Choose one: *Either* move your character at any location to your performer's location, *or* move your character at your performer's location to any location.
+
+1. **Constructor.** `initializeFaction('Montaigne')`, `Initiative = 71`, `PanacheModifier = 0`, Traits = Sorcery + Porté. Register `IHasActions` + `ActionTrait` + `new Action_03029()`.
+2. **Resolve.** `EventResolveScheme` queues two `createRenownAddedToLocationEvent` (Forum + Docks). No sub-state — both destinations are fixed.
+3. **Action class.** `Action_03029 extends SchemeCityAction implements ISorcererAbility`. `RequiresPerformerSelected = true`. `getPerformersForAction` filters Sorcerer trait. `isAvailableToPlayer` checks each Sorcerer performer for option A and/or B legality.
+4. **Branch persistence.** `public int $MoveMode` on the action (values 1 = to performer, 2 = from performer). Set in state 1, read in state 2 args filtering, clear after resolve. `$owner->IsUpdated = true` when mutating.
+5. **Three HD sub-states.**
+   - `03029`: buttons for each available branch (`optionToPerformerAvailable` / `optionFromPerformerAvailable` in args). `actFromCardWithId(1|2)` → `nextState("optionChosen")`.
+   - `03029_2`: character picker filtered by `$MoveMode`. Option A resolves here (wound + move + sorcerer events + `createActionResolvedEvent`). Option B stores `Game::CHOSEN_CARD` → `nextState("characterChosen")`.
+   - `03029_3`: location picker (city + Home via `makeHomeEndcapMarkerSelectable` in JS). `actFromActionWithIds` → resolve.
+6. **State constants.** `HIGH_DRAMA_PLAYER_TURN_03029 = 403029`, `_03029_2 = 4030292`, `_03029_3 = 4030293`.
+7. **Transitions.** `"03029"`, `"03029_2"`, `"03029_3"` in `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. State 2/3 include `"back"` transitions.
+8. **JS (faf).** State 1: conditional action buttons (not card selection). State 2: `highlightCardsAsSelectable` + Confirm + Back. State 3: city locations + Home + Confirm + Back. Highlight performer (and chosen character on step 3).
+9. **Pre-commit.** `createActionResolvedEvent()` in resolve path; both sorcerer start/played events in `resolveMove()`.
+
+Full implementation: `modules/php/cards/faf/_03029.php`, `modules/php/cards/faf/actions/Action_03029.php`, `modules/php/States/faf/State_highDramaPhase03029{,_2,_3}.php`.
+
 ## Style / Memory Notes
 
 - `getActivePlayerName()` is deprecated — use `$game->getPlayerNameById($id)`.
@@ -739,7 +797,8 @@ Full implementation lives at `modules/php/cards/faf/_03005.php`, `modules/php/ca
   - Action:         `...\cards\<expansion>\actions`
   - Reaction:       `...\cards\<expansion>\reactions`
   - State class:    `Bga\Games\SeventhSeaCityOfFiveSails\States\<expansion>`
-- **State ID convention:** `26<NNNNN>` for scheme resolve states. Don't engineer around hypothetical CD-card collisions — `2603005` is the right ID for scheme `_03005`, even though `_03cd05` exists. (Memory feedback.)
+- **State ID convention:** `26<NNNNN>` for Planning resolve sub-states; `40<NNNNN>` for High Drama action sub-states (`HIGH_DRAMA_PLAYER_TURN_<NNNNN>`). Don't engineer around hypothetical CD-card collisions — `2603005` is the right ID for scheme `_03005`, even though `_03cd05` exists. (Memory feedback.)
+- **Two transition tables:** resolve picks → `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`; action picks → `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Don't register HD action states under the planning map.
 - **"Opposing"** means BOTH different controller AND same location.
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
@@ -792,25 +851,31 @@ Event factories you'll likely need:
 | `modules/php/cards/faf/reactions/Reaction_03006.php` | Multi-stage button-driven Reaction with `$stage` field, cross-player reaction transitions (opponent becomes active for hand-picking), `IAbilityThatTargetsCharacters` multi-event listening with `sourceId=0` BasicChallengeAction fallback. |
 | `modules/php/cards/tac/reactions/Reaction_02004.php` | Scheme reaction with adjacent-character target picker; captures the pressured location. |
 | `modules/php/States/faf/State_planningPhaseResolveSchemes03005.php` | Reference for the new GameState-class shape, `#[PossibleAction]` methods, and inline `zombie()`. |
+| `modules/php/cards/faf/_03029.php` (Hour of Blood) | **Trivial dual Renown resolve + branched Sorcerer City Action.** No planning sub-state; three HD action sub-states for choose-one Porté moves. |
+| `modules/php/cards/faf/actions/Action_03029.php` | `SchemeCityAction` + `ISorcererAbility`. `$MoveMode` branch persistence, `isValidTargetForAbility`, Sorcerer performer filter, Porté move pools. |
+| `modules/php/States/faf/State_highDramaPhase03029.php` | HD action state 1: branch buttons via `actFromCardWithId`. |
+| `modules/php/States/faf/State_highDramaPhase03029_2.php` | HD action state 2: character pick with `actBack`. |
+| `modules/php/States/faf/State_highDramaPhase03029_3.php` | HD action state 3: location pick (`actFromCardWithLocations`) with `actBack`. |
 
 ## When You Finish
 
 1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Resolve / When-Revealed / Forced / City Action / Reaction). The Renown/Initiative numbers go on the constructor and are not a "pattern."
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN, `Initiative` is set, `PanacheModifier` is set (often 0 or ±1), all Traits exist in `TraitNames::$TraitsJson`.
-3. For every player-choice resolve sub-state, ensure all three of: the GameState class in `modules/php/States/<expansion>/`, the constant in `States.php` (`26<NNNNN>`), and the transition entry in `states.inc.php` under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`.
-4. Don't add a `ZombieTrait.php` case when using the GameState class pattern — the state's own `zombie()` method handles it.
-5. JS triple: `OnEnteringState.<expansion>.js` (chooser setup) + `OnUpdateActionButtons.<expansion>.js` (Confirm + Pass) + `OnLeavingState.<expansion>.js` (cleanup).
-6. Scheme reactions live through High Drama via `Theah::buildCity()` populating `$this->cards` from discard piles. Don't add "is the scheme still in play" guards.
-7. Capture event-time context onto the reaction as a `private` property; clear it in `performReaction`. Use `$owner->IsUpdated = true` to persist.
-8. **Parse keyword(s) literally** before picking interfaces:
+3. For every player-choice **Planning resolve** sub-state, ensure all three of: the GameState class in `modules/php/States/<expansion>/`, the constant in `States.php` (`26<NNNNN>`), and the transition entry in `states.inc.php` under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`.
+4. For every player-choice **High Drama action** sub-state on the scheme, same three pieces but constant `40<NNNNN>` and transitions under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Action file owns `handleEvent`/`getArgsFromAction`/`actFromAction*` — not the scheme class (unless legacy inline pattern).
+5. Don't add a `ZombieTrait.php` case when using the GameState class pattern — the state's own `zombie()` method handles it.
+6. JS triple: `OnEnteringState.<expansion>.js` (chooser setup) + `OnUpdateActionButtons.<expansion>.js` (Confirm + Pass/Back) + `OnLeavingState.<expansion>.js` (cleanup). HD action states use `highDramaPhase<NNNNN>` keys, not `planningPhaseResolveSchemes_<NNNNN>`.
+7. Scheme reactions live through High Drama via `Theah::buildCity()` populating `$this->cards` from discard piles. Don't add "is the scheme still in play" guards.
+8. Capture event-time context onto the reaction as a `private` property; clear it in `performReaction`. Use `$owner->IsUpdated = true` to persist. For **action branch state** (choose-one Either/Or), persist on the action object (`$MoveMode`, etc.) — not `CHOSEN_TARGET`.
+9. **Parse keyword(s) literally** before picking interfaces:
    - "Sorcerer …" → `implements ISorcererAbility` + emit start/played events.
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` check on the chosen performer). NOT a Sorcerer ability.
    - Both can stack.
-9. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions.
-10. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
-11. Pre-commit hook checks on every file:
+10. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions. **Player's own choose-one on a City Action** during High Drama *does* use HD sub-states — don't route that through reaction `$stage`.
+11. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
+12. Pre-commit hook checks on every file:
     - **Reaction subclass:** `$this->setUsed(` AND `$this->isAvailable(` literal strings present.
     - **SchemeCityAction subclass:** `createActionResolvedEvent()` called.
     - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
     - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
-12. Lint touched PHP files (`php -l`) before committing.
+13. Lint touched PHP files (`php -l`) before committing.

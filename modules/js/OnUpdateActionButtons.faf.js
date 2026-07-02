@@ -109,6 +109,27 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase03029': () => {
+                if (args.args.optionToPerformerAvailable) {
+                    this.addActionButton('actMoveToPerformer', _('Move character to performer\'s location'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                }
+                if (args.args.optionFromPerformerAvailable) {
+                    this.addActionButton('actMoveFromPerformer', _('Move character from performer\'s location'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+                }
+            },
+
+            'highDramaPhase03029_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase03029_3': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase03cd03_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Muster'), () => this.onMusterCardSelected());
                 dojo.addClass('actChooseCardSelected', 'disabled');

@@ -245,6 +245,44 @@
                 }
             },
 
+            'highDramaPhase03029': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'highDramaPhase03029_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.characterIds = args.args.args.characterIds;
+                    this.highlightCardsAsSelectable(args.args.args.characterIds);
+                }
+            },
+
+            'highDramaPhase03029_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        if (locationId == this.LOCATION_PLAYER_HOME) {
+                            this.makeHomeEndcapMarkerSelectable();
+                        } else {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
+                    });
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.highlightCharacterChosen(args.args.args.characterId);
+                    this.clientStateArgs.characterId = args.args.args.characterId;
+                }
+            },
+
             'highDramaChallengeActionResolveTechnique_03013': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
