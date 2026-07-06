@@ -1728,6 +1728,8 @@ trait StatesTrait
         }
         else
         {
+            $this->globals->delete(Game::EXTRA_ACTION_PERFORMER);
+
             $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
             $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
 

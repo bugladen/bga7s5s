@@ -12,6 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -971,4 +972,39 @@ trait UtilitiesTrait
         return false;
     }
 
+    public function getExtraActionPerformerId(): ?int
+    {
+        $id = (int) $this->globals->get(Game::EXTRA_ACTION_PERFORMER, 0);
+
+        return $id > 0 ? $id : null;
+    }
+
+    public function mustPerformExtraAction(): bool
+    {
+        return $this->getExtraActionPerformerId() !== null;
+    }
+
+    public function assertIsExtraActionPerformer(int $characterId): void
+    {
+        $lockedId = $this->getExtraActionPerformerId();
+        if ($lockedId !== null && $lockedId !== $characterId)
+        {
+            throw new UserException($this->translate("You must perform this action with the same character."));
+        }
+    }
+
+    /**
+     * @param int[] $performerIds
+     * @return int[]
+     */
+    public function filterPerformerIdsForExtraAction(array $performerIds): array
+    {
+        $lockedId = $this->getExtraActionPerformerId();
+        if ($lockedId === null)
+        {
+            return $performerIds;
+        }
+
+        return in_array($lockedId, $performerIds, true) ? [$lockedId] : [];
+    }
 }

@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\DB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -1287,6 +1288,135 @@ class Theah
         }
         
         return count($charactersThatCanClaim) > 0;
+    }
+
+    public function characterCanMove(Character $character): bool
+    {
+        return ! $character->Engaged;
+    }
+
+    public function characterCanRecruit(Character $character): bool
+    {
+        if (! $this->cardInCity($character))
+        {
+            return false;
+        }
+
+        $charactersAtLocation = $this->getCharactersAtLocation($character->Location, true);
+        $mercenariesAtLocation = array_filter(
+            $charactersAtLocation,
+            fn($c) => ! $c->isControlled() && $c->hasTrait("Mercenary")
+        );
+
+        return count($mercenariesAtLocation) > 0;
+    }
+
+    public function characterCanEquip(Character $character): bool
+    {
+        if ($this->cardInCity($character))
+        {
+            $attachmentsAtLocation = $this->getAvailableAttachmentsAtLocation($character->Location);
+            if (count($attachmentsAtLocation) > 0)
+            {
+                return true;
+            }
+        }
+
+        return $this->game->handHasAttachments($character->ControllerId);
+    }
+
+    public function characterCanBasicChallenge(Character $character): bool
+    {
+        if (! $this->cardInCity($character))
+        {
+            return false;
+        }
+
+        if ($character instanceof _01178)
+        {
+            if (! $character->canChallenge($this))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (! $character->canChallenge($this) || $character->Engaged)
+            {
+                return false;
+            }
+        }
+
+        $otherCharacters = $this->getCharactersAtLocation($character->Location);
+        $otherCharacters = array_filter(
+            $otherCharacters,
+            fn($otherCharacter) => $otherCharacter->isNotControlledByPlayer($character->ControllerId)
+        );
+
+        return count($otherCharacters) > 0;
+    }
+
+    public function characterCanBasicClaim(Character $character): bool
+    {
+        return $this->cardInCity($character)
+            && ! $character->Engaged
+            && ! $character->DashedInfluence;
+    }
+
+    public function actionAvailableToPerformer($action, int $playerId, int $performerId): bool
+    {
+        if (! $action->isAvailableToPlayer($playerId, $this))
+        {
+            return false;
+        }
+
+        if ($action instanceof CharacterAction)
+        {
+            return (int) $action->OwnerId === $performerId;
+        }
+
+        if (method_exists($action, 'getPerformersForAction'))
+        {
+            foreach ($action->getPerformersForAction($playerId, $this) as $performer)
+            {
+                if ($performer->Id === $performerId)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    public function playerHasInPlayActionsForPerformer(int $playerId, int $performerId): bool
+    {
+        foreach ($this->getInPlayActionsAvailableToPlayer($playerId) as $actionItem)
+        {
+            $action = $this->getInPlayActionById($actionItem['id']);
+            if ($action !== null && $this->actionAvailableToPerformer($action, $playerId, $performerId))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function playerHasInHandActionsForPerformer(int $playerId, int $performerId): bool
+    {
+        foreach ($this->getInHandActionIdsAvailableToPlayer($playerId) as $actionItem)
+        {
+            $action = $this->getInHandActionById($actionItem['id']);
+            if ($action !== null && $this->actionAvailableToPerformer($action, $playerId, $performerId))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function playerHasInPlayActions($playerId): bool

@@ -25,6 +25,8 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03023.php` (Second Wind) — **Gambling Maneuver that suppresses end-of-round threat→wound conversion and carries the threat to next round.** Intercepts `EventCharacterBeingWounded` by signature (`characterId == actor.Id && sourceId == adversary.Id` — that pairing only happens for the threat→wound conversion); zeroes `$event->wounds`, captures the original amount, adds it to `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` (which `stDuelNewRound` reads onto the next round's starting pool), and zeroes `duel_round.wounds_taken` for the same row so the UI display and `duelParticipantWoundsTaken()` cross-round aggregate stay consistent. Exemplar for Pattern C.2 (suppress end-of-round conversion ± carry-forward) and a worked example of `Maneuver_02039`'s `PENDING_*_THREAT` mechanism as the supported cross-round threat channel.
 - `modules/php/cards/_7s5s/_01135.php` + `Maneuver_01135` — **Choice-at-activation Maneuver: same player picks which branch the calc applies.** "+2 Parry, or wound adversary and -2 Thrust to their next round." `EventManeuverActivated` `stackEvent`s a `createTransitionEvent` into `DUEL_RESOLVE_MANEUVER_01135`; player picks via `actFromCardWithId` ({id:1}/{id:2}); the choice sets a private boolean on the Maneuver; calc branches on the boolean. The baseline template for Pattern C.3.
 - `modules/php/cards/faf/_03024.php` + `Maneuver_03024` (Superstitious) — **Pure-calc Pattern C.3 variant with an adversary-trait gate.** "Maneuver: If the adversary is a Sorcerer or Monster • +2 Parry or +2 Thrust." `isAvailableToPlayer` reads `getDuelRoundOpponent()->hasTrait('Sorcerer'|'Monster')`. No `EventResolveManeuver` handler — both branches are pure calc, so the calc-event branch on the stored choice is the entire effect.
+- `modules/php/cards/faf/_03031.php` (Altruistic) — **RiskReaction that intercepts wound/move/engage effect events and redirects them to another of your characters at the same location (Pattern D.4).** Adapted from `Reaction_02016` (Cross of the Martyrs) clone-cancel-reemit, but effect-based (not "targets") and with Risk pay deferred to `EventRiskReactionTriggered`. "Performer at that location" = `getCharactersAtLocationByPlayerId` excluding the character currently being affected. `isValidTargetForAbility` only when the source ability implements `IAbilityThatTargetsCharacters` ("if they are able"); otherwise `releaseEvent` directly.
+- `modules/php/cards/faf/_03032.php` (Bloody Entrance) — **Sorcerer City Action: wound your performer, move them to any location, then grant a mandatory follow-up action locked to that same performer (Pattern A.2).** Uses `EXTRA_ACTIONS` + new `EXTRA_ACTION_PERFORMER` framework globals. Destination pool matches `Action_03029`'s "any location" helper (all city locations + Home if not already there). Pairs with `State_highDramaPhase03032` (GameState location chooser, same JS shape as `03009`).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -111,10 +113,12 @@ Read each clause of the printed Text and classify it before writing code.
 | **`<b>Action:</b>`** (no "City") | Pattern B — `RiskAction`. Defaults to requiring the Risk in hand (`Card::Location == LOCATION_HAND`); override `overrideInHandCheck` only when the card text implies otherwise. **Performer pool is home + city** — do NOT filter to city characters even when the effect implies city (e.g. "move to an adjacent location"). The keyword "City" in the heading is mechanical: if absent, home performers are eligible too. |
 | **`<b>Maneuver:</b>`** / **`<b>Duelist Maneuver:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern C — `Maneuver` subclass in `cards/<expansion>/maneuvers/Maneuver_NNNNN.php`. Trait-prefixed Maneuvers add an `isAvailable` gate (`hasTrait` or `DUEL_GAMBLED`). |
 | **`<b>Reaction:</b>`** | Pattern D — `RiskReaction`. Pre-commit hook requires hand-only guard (`Location == Game::LOCATION_HAND`) + `setUsed`/`isAvailable` literal calls. |
+| **"When an opponent's ability would wound/move/engage your character"** (no "target" wording) | Pattern D.4 — effect-event redirect `RiskReaction`. Intercept `EventCharacterBeingWounded` / `EventCardMoving` / `EventCardEngaged` (± `EventCharacterIntervened` for duel intervention). Gate on opponent source, not `IAbilityThatTargetsCharacters`. See `Reaction_03031`. |
 | **"While [adversary/condition] …"** (combat-card cost or stat modifier on the Risk itself) | Pattern E — passive on the Risk class. Override `eventCheck` / `handleEvent` directly. See `Maneuver_01084::getManeuverFromCombatCardDiscount` for an in-Maneuver passive (combat-card cost discount). |
 | **`<b>Sorcerer …:</b>`** | The ability class (Action/Reaction/Maneuver) additionally `implements ISorcererAbility` — must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). |
 | **`<b>Strega …:</b>`** / **`<b>Mercenary …:</b>`** / **`<b>Duelist …:</b>`** | **Mechanical performer-trait gates**, NOT Sorcerer abilities. Enforce via `hasTrait("Strega")` on the chosen performer or `getDuelRoundActor()`. Do NOT `implement ISorcererAbility` for these. Can stack with Sorcerer ("Sorcerer Strega Reaction" is both). |
 | **`<b>Leader …:</b>`** | **Leader is the performer**, by mechanical restriction. Each player has at most one Leader (`getLeaderByPlayerId($playerId)`) — fetch it directly. Do **not** set `RequiresPerformerSelected = true`; there's no choice to make. For "Leader Action", `isValidTargetForAbility` resolves the Leader via the Risk's `ControllerId` instead of reading `CHOSEN_PERFORMER`. Mirror `Action_01024` (Bravos), `Action_03020` (Commanding). "Leader Reaction:" follows the same shape — the gate is "player owns a Leader at the printed location reference." |
+| **"… then they may perform another action"** with *(It must be performed and they must be the performer of the action)* | Pattern A.2 — grant `EXTRA_ACTIONS = 1` **and** set `EXTRA_ACTION_PERFORMER` to the wound/move performer's id. Framework enforces same character + no Pass. See `_03032`. Do **not** rely on `EXTRA_ACTIONS` alone — it only keeps the same *player* on turn. |
 
 A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_01083` is a single City Action only.
 
@@ -278,6 +282,46 @@ For City Actions like "Target an adjacent enemy character • Move them …" (`_
 5. **`actFromActionWithId`** validates via `isValidTargetForAbility`, queues `createCardMovingEvent(...)` + `createActionResolvedEvent(...)`, then `$game->gamestate->nextState("targetChosen")`.
 
 The card-specific sub-state is needed (you can't use the shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`) because no challenge is being issued — the shared chooser drives the challenge flow.
+
+### Pattern A.2 — Wound your performer • Move them to any location • Mandatory extra action (same performer)
+
+For City Actions like "Wound your performer • Move them to any location, then they may perform another action" with the italic *(It must be performed and they must be the performer of the action)* — see `_03032` Bloody Entrance.
+
+**Action shape** (`RiskCityAction implements ISorcererAbility` when Sorcerer-prefixed):
+
+1. **`RequiresPerformerSelected = true`**. Filter performers in `getPerformersForAction`: Sorcerer trait (when text says Sorcerer) + at least one valid destination.
+2. **Destination list** — all city location names + `LOCATION_PLAYER_HOME` if the performer is not already at Home. Exclude the performer's current location. Copy `Action_03029::getValidDestinationLocations` / `Action_03032` — this is the "any location" pool, **not** `getAdjacentCityLocations`.
+3. **Sub-state** — location chooser GameState (`State_highDramaPhaseNNNNN`), same wiring as Pattern B.1 / `03009`: `actFromCardWithLocations` → `actFromActionWithIds`, named transition `"locationChosen"`.
+4. **Effect order in `actFromActionWithIds`:**
+   - `createSorcererAbilityStartEvent` (if Sorcerer)
+   - `createCharacterBeingWoundedEvent` on the performer — call `$theah->eventCheck($woundEvent)` before `queueEvent`
+   - `createCardMovingEvent` for the performer — call `$theah->eventCheck($moveEvent)` before `queueEvent`
+   - `createSorcererAbilityPlayedEvent` (if Sorcerer)
+   - **Grant follow-up turn:**
+     ```php
+     $game->globals->set(Game::EXTRA_ACTIONS, 1);
+     $game->globals->set(Game::EXTRA_ACTION_PERFORMER, $performer->Id);
+     ```
+   - `createActionResolvedEvent` + `nextState("locationChosen")`
+
+**WHY two globals:** `EXTRA_ACTIONS` is consumed in `stNextPlayer` to keep the same *player* active. `CHOSEN_PERFORMER` is wiped at the start of every `stNextPlayer` along with other action globals — it cannot carry the lock across the extra-action boundary. `EXTRA_ACTION_PERFORMER` survives until the turn actually advances to the next player (cleared in the `else` branch of `stNextPlayer` when `EXTRA_ACTIONS == 0`).
+
+**Framework enforcement** (already wired — do not reimplement per card):
+
+| Layer | What it does |
+|---|---|
+| `Game::getExtraActionPerformerId()` / `mustPerformExtraAction()` / `assertIsExtraActionPerformer()` / `filterPerformerIdsForExtraAction()` | Helpers on `Game.php` |
+| `Theah::characterCanMove/Recruit/Equip/BasicChallenge/BasicClaim()` | Single-character versions of the basic-action availability checks |
+| `Theah::actionAvailableToPerformer()` / `playerHasInPlayActionsForPerformer()` / `playerHasInHandActionsForPerformer()` | Filter card actions to those the locked character can perform |
+| `ArgumentsTrait::argPlayerTurn()` | When locked: `mustPerformAction=true`, recompute each `can*` for that character, hide brutes |
+| All performer-chooser args | `filterPerformerIdsForExtraAction()` → only the locked id |
+| All `actHighDrama*PerformerChosen` | `assertIsExtraActionPerformer($id)` |
+| `actHighDramaPass()` | throws when `mustPerformExtraAction()` |
+| `OnUpdateActionButtons.js` | hides Pass when `args._private.mustPerformAction` |
+
+**Card-side only:** set both globals when the effect resolves. No additional framework edits needed for future cards that reuse this pattern.
+
+Prior art for `EXTRA_ACTIONS` without performer lock: `Action_01090`, `Action_01139`, `Action_01154`, `Action_01124`, `Action_03013` — those grant extra actions where any character (or pass) is fine.
 
 ### Common precondition predicates
 
@@ -830,7 +874,7 @@ Pre-commit hook requirements on RiskReaction:
 - Literal `Location == Game::LOCATION_HAND` somewhere in the file (substring `grep` — `!=` does **not** satisfy it; structure your in-hand guard with the `==` form, e.g. `if (! ($owner->Location == Game::LOCATION_HAND)) return;`).
 - Literal `$this->setUsed(` and `$this->isAvailable(` somewhere in the file.
 
-References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1).
+References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1), `Reaction_03031` (effect-event redirect after pay — see Pattern D.4; structural cousin of `Reaction_02016` on attachments).
 
 ### Pattern D.1 — Multi-stage cross-player RiskReaction with pay
 
@@ -884,6 +928,97 @@ When the printed text says "Cancel the movement" / "Cancel the [effect]" and the
 
 References: `Reaction_03020` (Commanding — Leader Reaction canceling Renown movement from Leader's location); the related but simpler `Reaction_01140` (Stubborn — `ICancelReaction` that cancels an `EventCardMoving` in-place via `$event->canceled = true` + saved-event re-emit on decline, no post-pay batch deletion needed).
 
+### Pattern D.4 — RiskReaction that redirects wound/move/engage effects to another character
+
+When the printed text says an **opponent's ability would wound, move, or engage your character** and a **performer at that location** suffers the effect instead, wire a clone-cancel-reemit redirect adapted from `Reaction_02016` (Cross of the Martyrs / Diplomatic Impunity) but as a **`RiskReaction`** with effect-based triggers.
+
+**Do not copy 02016's trigger gate blindly.** `Reaction_02016` is an `AttachmentReaction` for "redirect a **targeted** ability" — its `shouldReactToEvent` requires `IAbilityThatTargetsCharacters`. Card text that names **effects** ("would wound, move, or engage") and never says "target" must intercept the **effect events themselves**, including abilities that never implement `IAbilityThatTargetsCharacters` (maneuvers, forced wounds, engage-without-chooser, etc.).
+
+#### Trigger events (map printed verbs → events)
+
+| Printed verb | Event | Target id field |
+|---|---|---|
+| wound | `EventCharacterBeingWounded` | `$event->characterId` |
+| move | `EventCardMoving` | `$event->cardId` |
+| engage | `EventCardEngaged` | `$event->cardId` |
+
+Add `EventCharacterIntervened` when duel intervention should be redirectable (copy 02016's intervene branch: your character is `$event->newTargetId`, swap `DUEL_DEFENDER` in `releaseEvent`). **Do not** wire heal / `EventCharacterTargeted` / challenge-issued / engarde unless the printed text names those verbs — 02016's broader event set is for general "redirect targeted ability" attachments.
+
+#### Gate shape
+
+```php
+private function shouldReactToEvent(Theah $theah, int $sourceId, string $abilityId, ?int $targetCharacterId): bool
+{
+    $owner = $this->getOwningCard($theah);
+    if ($owner === null) return false;
+    if (! $this->isOpponentAbility($theah, $sourceId, $abilityId, $owner->ControllerId)) return false;
+
+    $target = $theah->getCharacterById($targetCharacterId);
+    if ($target === null || $target->ControllerId != $owner->ControllerId) return false;
+
+    // "Performer at that location" — another of your characters at the same spot
+    $others = $theah->getCharactersAtLocationByPlayerId($target->Location, $owner->ControllerId);
+    $others = array_filter($others, fn($c) => $c->Id != $target->Id);
+    if (count($others) === 0) return false;
+
+    $this->savedSourceId = $sourceId;
+    $this->savedAbilityId = $abilityId;
+    return true;
+}
+
+private function isOpponentAbility(Theah $theah, int $sourceId, string $abilityId, int $ownerPlayerId): bool
+{
+    $source = $theah->getCardById($sourceId);
+    if ($source) {
+        return $source->ControllerId != $ownerPlayerId && $source->ControllerId != 0;
+    }
+    $action = $theah->getInPlayActionById($abilityId);
+    if ($action && $action instanceof ICardAbility) {
+        $owningCard = $action->getOwningCard($theah);
+        return $owningCard !== null
+            && $owningCard->ControllerId != $ownerPlayerId
+            && $owningCard->ControllerId != 0;
+    }
+    return false;
+}
+```
+
+**WHY `isOpponentAbility` checks both `sourceId` and in-play action owner:** wound/move/engage events carry `$event->sourceId` (the card that queued the effect) and `$event->abilityId`. Maneuvers and other non-targeting abilities may have no `IAbilityThatTargetsCharacters` implementation but still emit these events with valid source/ability ids.
+
+#### "Performer at that location"
+
+Same mechanical meaning as Hexenjagd (`Reaction_01053`): `getCharactersAtLocationByPlayerId($target->Location, $owner->ControllerId)`, **excluding** the character currently being wounded/moved/engaged. The player picks which other character takes the hit via `redirect-{id}` buttons in `getReactionButtonProperties()`. No `IRiskThatTargetsCharacters` on the Risk class — the Reaction's button UI is the chooser.
+
+#### Clone-cancel-reemit flow (Risk pay split)
+
+1. **`handleEvent` on trigger** — clone the pending event, `$event->canceled = true`, save `$targetCharacterId`, `queueEvent(createReactionTransitionEvent(...))`. Hand guard: `if (! ($owner->Location == Game::LOCATION_HAND)) return;`
+2. **`performReaction('redirect-{id}')`** — queue pay only (`createEnteringPayStateEvent(PAY_STATE_IN_HAND_REACTION)` + `createReactionPayTransitionEvent`). **Do not** `releaseEvent` or `setUsed` here.
+3. **`handleEvent` on `EventRiskReactionTriggered && internalId == $this->Id`** — notify, then redirect:
+   - If `loadAbility()` returns `IAbilityThatTargetsCharacters` → `isValidTargetForAbility` enforces "(If they are able)"; invalid → cancel + message.
+   - **Else** → `releaseEvent($characterId)` directly (non-targeting abilities).
+   - `setUsed` here (Risk is already in discard from pay).
+4. **`performReaction('decline')`** — mirror 02016: only re-`releaseEvent` to the original target for `EventCharacterIntervened` (with `$skipNextEvent = true`); other saved events stay canceled.
+
+`releaseEvent()` mutates the cloned event's target field (`characterId` / `cardId`) and re-queues it. For intervention, also swap `DUEL_DEFENDER` and set `CHOSEN_TARGET` — copy verbatim from `Reaction_02016`.
+
+**WHY defer `releaseEvent` to `EventRiskReactionTriggered`:** same discipline as Pattern D.2 — the Risk must be paid before the redirect lands; framework cancel-reactions during pay should not re-emit a redirected event if the Risk is declined mid-pay.
+
+**Do not copy 02016's wound-on-redirect** unless the card text says so — Cross of the Martyrs wounds the redirect target 1; Altruistic does not.
+
+#### 02016 (AttachmentReaction) vs 03031 (RiskReaction) — when to use which pattern
+
+| | `Reaction_02016` (attachment) | `Reaction_03031` (Risk) |
+|---|---|---|
+| Base | `AttachmentReaction` — equipped character is the protected target | `RiskReaction` — any of your characters; Risk in hand is the cost |
+| Trigger gate | Requires `IAbilityThatTargetsCharacters` | Opponent source only (`isOpponentAbility`) |
+| Event breadth | wound/move/engage/heal/targeted/challenge/intervene | Narrow to printed verbs (+ intervene if needed) |
+| Resolution | `performReaction` resolves inline (no pay) | Pay in `performReaction`; redirect in `EventRiskReactionTriggered` |
+| Owner lookup | `getOwningCharacter` / `getOwningAttachment` | `getOwningCard` (the Risk) |
+
+Reach for `Reaction_01014` (Vittoria — Thug-only redirect) or `Reaction_02016` when adapting attachment reactions; reach for `Reaction_03031` when porting that shape to a hand-paid Risk with effect-based wording.
+
+References: `Reaction_03031` (Altruistic), `Reaction_02016` (structural template on attachments), `Reaction_01053` (Hexenjagd — "performer at that location" chooser semantics on a Risk).
+
 ### `EventCharacterIntervened` trigger semantics
 
 Fired by `FrameworkActionsTrait::actHighDramaChallengeActionIntervene` after the intervener replaces the defender. Field semantics for `handleEvent` use:
@@ -903,6 +1038,7 @@ When the printed text references a character by role ("When **your performer** i
 Compare:
 - `Reaction_03010` (Manipulative) — "Strega Reaction" with no role-named performer in the trigger. The Reaction searches `getCharactersInPlayByPlayerId(owner->ControllerId)` for any Strega.
 - `Reaction_03012` (Subtle) — "Sorcerer Strega Reaction: When **your performer** intervenes." The intervener (from `$event->newTargetId`) IS the performer; the Strega gate checks `$intervener->hasTrait("Strega")` directly. No separate search.
+- `Reaction_03031` (Altruistic) — "Your **performer at that location** suffers those effects instead." Here "performer" means **another of your characters at the affected character's location** (`getCharactersAtLocationByPlayerId`, excluding the character being wounded/moved/engaged). The player picks which one via redirect buttons — same pool semantics as Hexenjagd's wound-performer chooser (`Reaction_01053`), not a search for a trait-bearing role elsewhere on the board.
 
 This matters for `ISorcererAbility`'s `createSorcererAbilityStartEvent($performerId)` arg — pass the trigger-named character's id, not a generic "any Strega I control."
 
@@ -1058,6 +1194,8 @@ A Risk card that both extends `Risk` AND has Actions/Maneuvers/Reactions in sepa
 - `Game::IN_DUEL` global — true between duel start and end.
 - `Game::DUEL_GAMBLED` global — true after the actor locks in a combat card via gamble; cleared at end of round.
 - `Game::CHOSEN_PERFORMER` / `CHOSEN_TARGET` / `CHALLENGE_TYPE` / `CHALLENGE_STAT` globals — set in `handleEvent` on `EventActionTriggered` to brief the challenge sub-state machine.
+- `Game::EXTRA_ACTIONS` — integer counter read in `stNextPlayer`. When `> 0`, the current player takes another turn instead of advancing. Decremented each time `stNextPlayer` runs. Set by cards that grant "an extra action" (e.g., `Action_01090`, `Action_03013`). **Alone, this only keeps the same player — not the same performer.**
+- `Game::EXTRA_ACTION_PERFORMER` — character id paired with `EXTRA_ACTIONS` when the follow-up action must be performed by a specific character and Pass is forbidden. Set alongside `EXTRA_ACTIONS = 1`; cleared when the turn actually ends (next player). Framework helpers on `Game.php` + enforcement in `ArgumentsTrait`, `FrameworkActionsTrait`, `Theah`. Pattern A.2 reference: `_03032`.
 - `$character->canChallenge(): bool` — true when the character can initiate a challenge (not engaged, in city, not Brute-locked, etc.).
 - `$character->ModifiedInfluence` / `ModifiedFinesse` / `ModifiedCombat` / `ModifiedResolve` — live stats.
 - `$this->getInjectCode(): string` — inline-styled card name for notifications.
@@ -1105,6 +1243,8 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/_7s5s/_01135.php` + `Maneuver_01135` | **Pattern C.3 template — choice-at-activation Maneuver with one branch carrying a side effect.** "+2 Parry, or wound adversary + -2 Thrust to their next round." `EventManeuverActivated` `stackEvent`s a transition to `DUEL_RESOLVE_MANEUVER_01135`; `actFromManeuverWithId` records the choice into `$ReduceThrustNextRound` and queues the wound event for branch 2. Cross-round state (`$IsActive`, `$ReduceThrustNextRound`) reset on `EventManeuverCanceled`, `EventDuelEnd`, and (for the next-round-only modifier) `EventDuelEndOfRound`. |
 | `modules/php/cards/faf/_03024.php` (Superstitious) | **Pattern C.3 pure-calc variant.** "Maneuver: If the adversary is a Sorcerer or Monster • +2 Parry or +2 Thrust." Adversary-trait gate via `getDuelRoundOpponent()->hasTrait('Sorcerer'\|'Monster')`. Stores choice in `$ChooseParry`; calc branches on it. No `EventResolveManeuver` handler — both branches are pure calc. |
 | `modules/php/cards/faf/_03023.php` (Second Wind) | **Gambling Maneuver that suppresses end-of-round threat→wound conversion + carries threat forward (Pattern C.2).** City Action heals a wound on a 2+-wound performer; Maneuver intercepts `EventCharacterBeingWounded` by the unique `characterId == actor && sourceId == adversary` signature, zeroes `$event->wounds`, captures the amount into `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` so `stDuelNewRound` seeds it onto the next round, and `DbQuery`s `duel_round.wounds_taken = 0` so the UI display and `duelParticipantWoundsTaken()` cross-round aggregate match reality. Tracks state via `$IsActive`; resets on `EventManeuverCanceled` and `EventDuelEndOfRound`. Lethality is not preserved (no `PENDING_*_THREAT_IS_LETHAL` global) — same limitation as `Maneuver_02039`. |
+| `modules/php/cards/faf/_03031.php` (Altruistic) | **Effect-event redirect RiskReaction (Pattern D.4).** Intercepts opponent wound/move/engage on your character; player picks another of their characters at that location to suffer the effect instead. Clone-cancel-reemit from `Reaction_02016` with Risk pay deferred to `EventRiskReactionTriggered`. Trigger gates on `isOpponentAbility`, not `IAbilityThatTargetsCharacters`. `isValidTargetForAbility` only when the source ability implements that interface ("if they are able"); non-targeting abilities redirect unconditionally. No wound-on-redirect (unlike 02016). |
+| `modules/php/cards/faf/_03032.php` (Bloody Entrance) | **Sorcerer City Action: wound performer + move to any location + mandatory extra action locked to same performer (Pattern A.2).** `RiskCityAction` + `ISorcererAbility`; Sorcerer-gated performers; destination pool = all city locations + Home (see `Action_03029` MOVE_FROM_PERFORMER helper). Sets `EXTRA_ACTIONS = 1` and `EXTRA_ACTION_PERFORMER = $performer->Id`. Pairs with `State_highDramaPhase03032` (location chooser, `"locationChosen"` transition — same JS trio as `03009`). Framework enforces locked performer + no Pass via `Game::EXTRA_ACTION_PERFORMER` helpers. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
@@ -1142,3 +1282,5 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
     - **Also zero `duel_round.wounds_taken`** via direct `DbQuery` — the column was bumped during the round and feeds both the UI display and `Theah::duelParticipantWoundsTaken()` (used by `Maneuver_01107`). Without resetting it, downstream cards see wounds that never landed.
     - Lethality is not preserved across the rollover (no `PENDING_*_THREAT_IS_LETHAL` global). Add the global rather than special-casing the card if a future text requires it.
     - Reference: `Maneuver_03023` (Second Wind), `Maneuver_02039` (Add Threat — producer side of `PENDING_*_THREAT`).
+21. **Effect-event redirect RiskReaction (Pattern D.4):** when text says opponent ability "would wound/move/engage" (not "targets"), gate on effect events + `isOpponentAbility` — do **not** require `IAbilityThatTargetsCharacters` at trigger time. Defer `releaseEvent` to `EventRiskReactionTriggered` after pay. Apply `isValidTargetForAbility` only when `loadAbility()` returns `IAbilityThatTargetsCharacters`; otherwise redirect unconditionally. "Performer at that location" = `getCharactersAtLocationByPlayerId` excluding the affected character. Structural template: `Reaction_02016` on attachments → `Reaction_03031` on Risks. Do not copy 02016's wound-on-redirect unless the card says so.
+22. **Mandatory extra action locked to same performer (Pattern A.2):** when italic text says the follow-up action must be performed and the same character must be the performer, set **both** `Game::EXTRA_ACTIONS = 1` and `Game::EXTRA_ACTION_PERFORMER = $performer->Id` at effect resolution. Do **not** use `EXTRA_ACTIONS` alone — it only repeats the player's turn. Do **not** stash the lock in `CHOSEN_PERFORMER` — `stNextPlayer` deletes it. Framework enforcement is centralized; card code only sets the two globals. "Any location" destination pool = all `getCityLocations()` names + Home if not already there (not adjacent-only). Wound + move both need `eventCheck` before `queueEvent`. Reference: `_03032`, `Action_03029::getValidDestinationLocations`.

@@ -221,6 +221,21 @@
                 }
             },
 
+            'highDramaPhase03032': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    card = this.cardProperties[args.args.args.performerId];
+                    const image = $(`${card.divId}_image`);
+                    dojo.addClass(image, '_7sfs-chosen');
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
             'highDramaPhase03011': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

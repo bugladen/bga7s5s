@@ -50,6 +50,11 @@ trait FrameworkActionsTrait
 
     public function actHighDramaPass(): void
     {
+        if ($this->mustPerformExtraAction())
+        {
+            throw new UserException(clienttranslate("You must perform an action with the designated character."));
+        }
+
         $playerId = $this->getActivePlayerId();
 
         $event = $this->theah->createEvent(Events::HighDramaPhasePlayerPassed);
@@ -280,7 +285,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanMove($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("Moving is not allowed right now."));
+            throw new UserException(clienttranslate("Moving is not allowed right now."));
         }
 
         $this->gamestate->nextState("moveActionStart");
@@ -288,6 +293,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaMoveActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $character = $this->getCardObjectFromDb($id);
 
         $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
@@ -345,7 +352,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanRecruit($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("Recruiting is not allowed right now."));
+            throw new UserException(clienttranslate("Recruiting is not allowed right now."));
         }
 
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
@@ -355,6 +362,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaRecruitActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $performer = $this->theah->getCharacterById($id);
@@ -489,7 +498,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if (!$this->handHasAttachments($playerId) && !$this->theah->playerCanEquip($playerId)) {
-            throw new \BgaUserException(clienttranslate("Equipping is not allowed right now."));
+            throw new UserException(clienttranslate("Equipping is not allowed right now."));
         }
 
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
@@ -498,6 +507,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaEquipActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $performer = $this->theah->getCharacterById($id);
@@ -741,7 +752,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanBasicClaim($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("Claim Action is not allowed right now."));
+            throw new UserException(clienttranslate("Claim Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("claimActionStart");
@@ -749,6 +760,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaClaimActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $activePlayerId = $this->getActivePlayerId();
         $this->theah->buildCity();
 
@@ -800,11 +813,11 @@ trait FrameworkActionsTrait
         $action = $this->theah->getInPlayActionById($actionId);
 
         if ($action == null) {
-            throw new \BgaUserException(clienttranslate("Action not found."));
+            throw new UserException(clienttranslate("Action not found."));
         }
 
         if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
-            throw new \BgaUserException(clienttranslate("Action is not available to player."));
+            throw new UserException(clienttranslate("Action is not available to player."));
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
@@ -814,6 +827,11 @@ trait FrameworkActionsTrait
         // This can of course be overrident by the specific card
         if ($action instanceof CharacterAction)
             $this->globals->set(GAME::CHOSEN_PERFORMER, $action->OwnerId);
+
+        if ($action instanceof CharacterAction)
+        {
+            $this->assertIsExtraActionPerformer($action->OwnerId);
+        }
 
         $this->gamestate->nextState("actionChosen");
     }
@@ -852,6 +870,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaInPlayActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $this->theah->buildCity();
         $performer = $this->getCardObjectFromDb($id);
         if ($performer == null) 
@@ -868,7 +888,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         if ($this->theah->playerHasInHandActions($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("In-Hand Action is not allowed right now."));
+            throw new UserException(clienttranslate("In-Hand Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("inHandActionStart");
@@ -881,11 +901,25 @@ trait FrameworkActionsTrait
 
         $action = $this->theah->getInHandActionById($actionId);
         if ($action == null) {
-            throw new \BgaUserException(clienttranslate("Action not found."));
+            throw new UserException(clienttranslate("Action not found."));
         }
 
         if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
-            throw new \BgaUserException(clienttranslate("Action is not available to player."));
+            throw new UserException(clienttranslate("Action is not available to player."));
+        }
+
+        $lockedPerformerId = $this->getExtraActionPerformerId();
+        if ($lockedPerformerId !== null)
+        {
+            if (! $this->theah->actionAvailableToPerformer($action, $player_id, $lockedPerformerId))
+            {
+                throw new UserException(clienttranslate("Action is not available to the designated character."));
+            }
+
+            if (! $action->RequiresPerformerSelected)
+            {
+                $this->globals->set(GAME::CHOSEN_PERFORMER, $lockedPerformerId);
+            }
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
@@ -907,6 +941,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaInHandActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
@@ -1146,6 +1182,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaChallengeActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $activePlayerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 

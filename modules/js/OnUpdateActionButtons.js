@@ -94,7 +94,8 @@ onUpdateActionButtons: function( stateName, args )
             if (args._private.hasBrutes)
                 this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
                         
-            this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
+            if (! args._private.mustPerformAction)
+                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
         },
 
         'highDramaMoveActionChoosePerformer': () => {

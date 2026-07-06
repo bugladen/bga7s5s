@@ -48,6 +48,10 @@ Mirrored 02016: only re-releases on decline for `EventCharacterIntervened` (with
 
 Not in StarterDecks yet (grep found no 03031 entry).
 
+## Skill update (2026-07-06)
+
+Captured learnings in `create-risk` skill as **Pattern D.4** — effect-event redirect RiskReaction, canonical ref `_03031`, comparison table vs `Reaction_02016`, `isOpponentAbility` helper, performer-at-location semantics, pay-deferral discipline.
+
 ## Feelings
 
 Straightforward port once the Risk pay split was clear. The 02016 file is long but the structure is well-trodden. Slightly uneasy about decline-not-releasing for wound/move/engage — might be 02016 bug — but intentionally matched per user direction.

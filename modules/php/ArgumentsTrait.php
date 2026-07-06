@@ -70,6 +70,29 @@ trait ArgumentsTrait
     {
         $this->theah->buildCity();
         $playerId = (int)$this->getActivePlayerId();
+        $lockedPerformerId = $this->getExtraActionPerformerId();
+
+        if ($lockedPerformerId !== null)
+        {
+            $performer = $this->theah->getCharacterById($lockedPerformerId);
+
+            return [
+                '_private' => [
+                    'active' => [
+                        'mustPerformAction' => true,
+                        'lockedPerformerId' => $lockedPerformerId,
+                        'canChallenge' => $performer !== null && $this->theah->characterCanBasicChallenge($performer),
+                        'canClaim' => $performer !== null && $this->theah->characterCanBasicClaim($performer),
+                        'canEquip' => $performer !== null && $this->theah->characterCanEquip($performer),
+                        'canMove' => $performer !== null && $this->theah->characterCanMove($performer),
+                        'canRecruit' => $performer !== null && $this->theah->characterCanRecruit($performer),
+                        'hasInPlayActions' => $this->theah->playerHasInPlayActionsForPerformer($playerId, $lockedPerformerId),
+                        'hasInHandActions' => $this->theah->playerHasInHandActionsForPerformer($playerId, $lockedPerformerId),
+                        'hasBrutes' => false,
+                    ]
+                ]
+            ];
+        }
 
         return [
             '_private' => [
@@ -99,6 +122,7 @@ trait ArgumentsTrait
 
         //Select only the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $characters);
+        $characterIds = $this->filterPerformerIdsForExtraAction($characterIds);
 
         return [
             "ids" => $characterIds
@@ -139,7 +163,7 @@ trait ArgumentsTrait
         }
 
         return [
-            "ids" => array_map(fn($character) => $character->Id, $charactersThatCanReruit)
+            "ids" => $this->filterPerformerIdsForExtraAction(array_map(fn($character) => $character->Id, $charactersThatCanReruit))
         ];
 
     }
@@ -235,6 +259,7 @@ trait ArgumentsTrait
 
         //Select only the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $charactersThatCanEquip);
+        $characterIds = $this->filterPerformerIdsForExtraAction($characterIds);
 
         return [
             "_private" => [
@@ -359,6 +384,7 @@ trait ArgumentsTrait
 
         //Select the Ids of the characters
         $characterIds = array_map(function($character) { return $character->Id; }, $characters);
+        $characterIds = $this->filterPerformerIdsForExtraAction($characterIds);
 
         return [
             "ids" => $characterIds
@@ -368,10 +394,27 @@ trait ArgumentsTrait
     public function argsHighDramaInPlayActionChooseAction(): array
     {
         $this->theah->buildCity();
+        $playerId = (int) $this->getActivePlayerId();
+        $actions = $this->theah->getInPlayActionsAvailableToPlayer($playerId);
+        $lockedPerformerId = $this->getExtraActionPerformerId();
+
+        if ($lockedPerformerId !== null)
+        {
+            $actions = array_values(array_filter(
+                $actions,
+                function (array $actionItem) use ($playerId, $lockedPerformerId) {
+                    $action = $this->theah->getInPlayActionById($actionItem['id']);
+
+                    return $action !== null
+                        && $this->theah->actionAvailableToPerformer($action, $playerId, $lockedPerformerId);
+                }
+            ));
+        }
+
         return [
             "_private" => [
                 "active" => [
-                    "actions" => $this->theah->getInPlayActionsAvailableToPlayer($this->getActivePlayerId())
+                    "actions" => $actions
                 ]
             ]
         ];
@@ -412,6 +455,7 @@ trait ArgumentsTrait
         
         //Select the Ids of the performers
         $performerIds = array_map(function($performer) { return $performer->Id; }, $performers);
+        $performerIds = $this->filterPerformerIdsForExtraAction($performerIds);
 
         return [
             "ids" => $performerIds,
@@ -423,12 +467,38 @@ trait ArgumentsTrait
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
+        $actions = $this->theah->getInHandActionIdsAvailableToPlayer($playerId);
+        $cardIds = $this->theah->getInHandActionCardIdsAvailableToPlayer($playerId);
+        $lockedPerformerId = $this->getExtraActionPerformerId();
+
+        if ($lockedPerformerId !== null)
+        {
+            $actions = array_values(array_filter(
+                $actions,
+                function (array $actionItem) use ($playerId, $lockedPerformerId) {
+                    $action = $this->theah->getInHandActionById($actionItem['id']);
+
+                    return $action !== null
+                        && $this->theah->actionAvailableToPerformer($action, $playerId, $lockedPerformerId);
+                }
+            ));
+            $cardIds = [];
+            foreach ($actions as $actionItem)
+            {
+                $action = $this->theah->getInHandActionById($actionItem['id']);
+                if ($action !== null)
+                {
+                    $cardIds[] = $action->getOwningCard($this->theah)->Id;
+                }
+            }
+            $cardIds = array_values(array_unique($cardIds));
+        }
 
         return [
             "_private" => [
                 "active" => [
-                    "actions" => $this->theah->getInHandActionIdsAvailableToPlayer($playerId),
-                    "ids" => $this->theah->getInHandActionCardIdsAvailableToPlayer($playerId),
+                    "actions" => $actions,
+                    "ids" => $cardIds,
                 ]
             ]
         ];
@@ -447,6 +517,7 @@ trait ArgumentsTrait
         
         //Select the Ids of the performers
         $performerIds = array_map(fn($performer) => $performer->Id, $performers);
+        $performerIds = $this->filterPerformerIdsForExtraAction($performerIds);
 
         $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
 
@@ -551,6 +622,7 @@ trait ArgumentsTrait
         
         //Select the Ids of the characters
         $characterIds = array_map(fn($character) => $character->Id, $charactersThatCanChallenge);
+        $characterIds = $this->filterPerformerIdsForExtraAction($characterIds);
 
         return [
             "ids" => $characterIds

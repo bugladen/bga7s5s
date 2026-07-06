@@ -72,6 +72,7 @@ class Game extends \Bga\GameFramework\Table
     final const PASS_COUNT = "passCount";
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
     final const EXTRA_ACTIONS = "extraActions";
+    final const EXTRA_ACTION_PERFORMER = "extraActionPerformer";
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = "overrideAsNotFirstPlayer";
     final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
     final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";
