@@ -47,9 +47,6 @@ class Action_01176 extends RiskAction implements IAbilityThatTargetsCharacters
 
         if ($action->Id == $this->Id)
         {
-            $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $theah->getCharacterById($performerId);
-    
             if ($performer && ($performer->hasTrait("Hero") || $performer->hasTrait("Scoundrel")))
             {
                 $discount += 1;
