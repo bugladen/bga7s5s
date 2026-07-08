@@ -108,7 +108,7 @@ class Reaction_01116b extends CardReaction
         if ($this->IsActive && $action->OwnerId == $this->DiscountedCardId)
         {
             $owner = $this->getOwningCard($theah);
-            if ($owner->ControllerId == $performer->ControllerId)
+            if ($owner && $performer && $owner->ControllerId == $performer->ControllerId)
             {
                 $discount += 1;
                 $explanations[] = sprintf($theah->game->translate("%s: -1 because Reaction is active."), $owner->getInjectCode());
