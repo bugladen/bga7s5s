@@ -2433,6 +2433,7 @@ $machinestates = [
                         "03024" => States::DUEL_RESOLVE_MANEUVER_03024,
                         "03035" => States::DUEL_RESOLVE_MANEUVER_03035,
                         "03035_2" => States::DUEL_RESOLVE_MANEUVER_03035_2,
+                        "03036" => States::DUEL_RESOLVE_MANEUVER_03036,
                         "reaction" => States::DUEL_RESOLVE_MANEUVER_REACTIONS,
                         "pay" => States::DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,

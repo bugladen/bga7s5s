@@ -207,6 +207,11 @@
                 this.addActionButton(`btnThrust`, _('+2 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 2}));
             },
 
+            'duelResolveManeuver_03036': () => {
+                this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
         }
 
         if ( methods[stateName] )

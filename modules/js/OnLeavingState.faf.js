@@ -201,6 +201,13 @@
                 }
             },
 
+            'duelResolveManeuver_03036': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
             'highDramaPhase03020': () => {
                 if (this.isCurrentPlayerActive())
                 {

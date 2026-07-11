@@ -289,6 +289,13 @@
                 }
             },
 
+            'duelResolveManeuver_03036': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
             'highDramaPhase03020': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

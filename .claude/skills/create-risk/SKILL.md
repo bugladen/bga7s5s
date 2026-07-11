@@ -30,6 +30,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03033.php` (Glorious) — **Forced on the Risk class (Pattern E.1) + pure-resolve Gambling Maneuver.** Forced: after your adversary is destroyed while this card is in your dueling line, heal your participant. Maneuver: `DUEL_GAMBLED` + `ModifiedInfluence >=` adversary → wound adversary (no calc branch). Exemplar for "adversary destroyed / dueling line" Forced, equal-or-greater Influence gates (`>=` vs `_03008`'s strict `>` for "more than"), and wound-only Gambling Maneuvers.
 - `modules/php/cards/faf/_03034.php` (La Voix des Sans Voix) — **Diplomat City Action: engage performer • En garde another character you control at this location • then that character may heal a wound / if they do not, draw a card (Pattern A.3).** Trait-gated Diplomat + `!Engaged` engage cost; friendly same-location Engaged targets; engage resolves on `EventActionTriggered` before the chooser; second state is `{id:1}` heal / `{id:2}` draw (auto-draw when `Wounds == 0`). Exemplar for Diplomat City Actions, same-location friendly En Garde, and "may X / if they do not, Y" same-player branch choice.
 - `modules/php/cards/faf/_03035.php` (Loyal) — **Pressure +1 RiskReaction (Pattern D.2.1) + multi-step C.3 Maneuver (wound other character • +1 Riposte or +2 Thrust).** Reaction triggers on `EventPressureOccuring`, gates on more non-Mercenaries than each opponent at that location, mints `LOYAL_PRESSURE_TYPE` + `LOYAL_PLAYER_ID` after pay; `pressureLocation()` adds +1. Maneuver: character chooser then Riposte/Thrust buttons; **every** intermediate transition must `stackEvent` or calc races ahead of the choice. Exemplar for pressure-total Reactions and multi-step choice-at-activation Maneuvers.
+- `modules/php/cards/faf/_03036.php` (Valroux Exemplar) — **Finesse-gated combat-card cost discount + Duelist Maneuver that scales Riposte off the dueling line and conditionally forces an adversary hand discard (Pattern C.4).** Discount via `getManeuverFromCombatCardDiscount` when `ModifiedFinesse >` adversary. Maneuver: `+1 Riposte` per other dueling-line card (`01166` count); if ≥3 other cards, adversary discards (skip transition when hand empty). Exemplar for composing discount + line-count calc + conditional cross-player discard on one Maneuver.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -117,7 +118,7 @@ Read each clause of the printed Text and classify it before writing code.
 | **`<b>Maneuver:</b>`** / **`<b>Duelist Maneuver:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern C — `Maneuver` subclass in `cards/<expansion>/maneuvers/Maneuver_NNNNN.php`. Trait-prefixed Maneuvers add an `isAvailable` gate (`hasTrait` or `DUEL_GAMBLED`). |
 | **`<b>Reaction:</b>`** | Pattern D — `RiskReaction`. Pre-commit hook requires hand-only guard (`Location == Game::LOCATION_HAND`) + `setUsed`/`isAvailable` literal calls. |
 | **"When an opponent's ability would wound/move/engage your character"** (no "target" wording) | Pattern D.4 — effect-event redirect `RiskReaction`. Intercept `EventCharacterBeingWounded` / `EventCardMoving` / `EventCardEngaged` (± `EventCharacterIntervened` for duel intervention). Gate on opponent source, not `IAbilityThatTargetsCharacters`. See `Reaction_03031`. |
-| **"While [adversary/condition] …"** (combat-card cost or stat modifier on the Risk itself) | Pattern E — passive on the Risk class. Override `eventCheck` / `handleEvent` directly. See `Maneuver_01084::getManeuverFromCombatCardDiscount` for an in-Maneuver passive (combat-card cost discount). |
+| **"While [adversary/condition] …"** / **"If your participant has more [Stat] … this card has -1 cost"** (combat-card cost or stat modifier) | Pattern E — cost discounts via `getManeuverFromCombatCardDiscount` on the Maneuver (`_01084`, `_03036`); other always-on effects may override `handleEvent` on the Risk class. |
 | **`<b>Forced:</b>`** (no player choice; fires automatically) | Pattern E.1 — `handleEvent` on the **Risk class itself**, not a separate Action/Reaction/Maneuver file. Common gates: `Location == LOCATION_DUELING_LINE`, `IN_DUEL`, destroyed character is your adversary. See `_03033` (Glorious), `_01102` (Unfortunate). |
 | **`<b>Sorcerer …:</b>`** | The ability class (Action/Reaction/Maneuver) additionally `implements ISorcererAbility` — must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). |
 | **`<b>Strega …:</b>`** / **`<b>Mercenary …:</b>`** / **`<b>Diplomat …:</b>`** / **`<b>Duelist …:</b>`** | **Mechanical performer-trait gates**, NOT Sorcerer abilities. Enforce via `hasTrait("Diplomat")` (etc.) on the chosen performer or `getDuelRoundActor()`. Do NOT `implement ISorcererAbility` for these. Can stack with Sorcerer ("Sorcerer Strega Reaction" is both). |
@@ -126,8 +127,10 @@ Read each clause of the printed Text and classify it before writing code.
 | **"Engage your performer • En garde another character you control … Then, that character may heal … If they do not, draw"** | Pattern A.3 — Diplomat (or other trait) City Action: engage cost + same-location friendly Engaged target + may-heal / else-draw branch. See `_03034`. |
 | **"When a pressure occurs … Add +1 to your total for the pressure"** | Pattern D.2.1 — RiskReaction on `EventPressureOccuring`; mint a new `PRESSURE_TYPE` binary flag + player-id global; apply in `pressureLocation()`. Do **not** reuse `PRESSURE_BONUS` (Pack Tactics / Influence-only). See `_03035`. |
 | **"Wound your other character at this location • +X [stat A] or +Y [stat B]"** | Pattern C.3 multi-step — character chooser state, then choice buttons; `stackEvent` **every** step until the calc-driving choice is recorded. See `_03035`. |
+| **"+X [stat] for each other card in your dueling line"** (± **"If you have N or more other cards … adversary discards"**) | Pattern C.4 — count other cards at `LOCATION_DUELING_LINE` for the controller in calc; optional resolve-time discard transition when count ≥ N. See `_03036`, `Maneuver_01166`. |
+| **"If your participant has more [Stat] than the adversary, this card has -1 cost"** | Pattern E via Maneuver — `getManeuverFromCombatCardDiscount` with Modified-stat comparison (not a separate Passive file). See `_03036`, `_01084`. |
 
-A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_03033` has both a Forced (on the Risk class) and a Gambling Maneuver. `_03034` is a single Diplomat City Action (Pattern A.3). `_03035` has both a pressure Reaction and a multi-step C.3 Maneuver. `_01083` is a single City Action only.
+A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_03033` has both a Forced (on the Risk class) and a Gambling Maneuver. `_03034` is a single Diplomat City Action (Pattern A.3). `_03035` has both a pressure Reaction and a multi-step C.3 Maneuver. `_03036` composes a Finesse cost discount with a Duelist C.4 Maneuver (line-count Riposte + conditional discard). `_01083` is a single City Action only.
 
 ## Pattern A — City Action (`RiskCityAction`)
 
@@ -522,7 +525,34 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound, no calc).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound, no calc).
+
+### Pattern C.4 — "+X [stat] for each other card in your dueling line" (± conditional adversary discard)
+
+"Other cards in your dueling line" means every card at `Game::LOCATION_DUELING_LINE` for the Risk's controller **except this combat card itself**. By calc/resolve time the card is already in the line, so you must exclude it:
+
+```php
+$owner = $this->getOwningCard($event->theah);
+$cards = $event->theah->getCardObjectsAtLocation(Game::LOCATION_DUELING_LINE, $owner->ControllerId);
+unset($cards[$owner->Id]);
+$count = count($cards);
+$event->riposte += $count;   // or parry / thrust per the printed text
+```
+
+Pure scaling (no side effect) needs only the `EventDuelCalculateManeuverValues` branch — see `Maneuver_01166` (+1 Parry per other card). Skip the explanation line when `$count == 0` to avoid "adds 0 …" noise.
+
+**Conditional "If you have N or more other cards … the adversary discards a card":** keep the calc branch unconditional (0 other cards → +0 is fine). In `EventResolveManeuver`, gate the discard transition on `$count >= N`. Also skip when the adversary's hand is empty:
+
+```php
+$hand = $event->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $adversary->ControllerId);
+if (count($hand) == 0) return;
+```
+
+**WHY empty-hand skip at resolve, not `isAvailableToPlayer`:** the discard is an *extra* clause on a maneuver the player still wants for the Riposte scaling. Putting the hand check on availability (as `Maneuver_01108a` does when discard *is* the whole effect) would hide the maneuver entirely when the adversary has no cards. Resolve-time skip avoids a stuck activeplayer chooser without suppressing the useful calc.
+
+Adversary hand-pick discard does **not** need `IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters` — those mark character choosers. Wire the sub-state like `Maneuver_01115` (JS: `factionHand.setSelectionMode('single')`, Confirm via `onCardDiscarded()`, enable Confirm in `EventHandlers.js` on selection).
+
+References: `Maneuver_01166` (pure line-count calc), `Maneuver_03036` (Duelist + Riposte scaling + ≥3 discard), `Maneuver_01115` / `Maneuver_01108a` (discard chooser / hand-gated availability when discard is the only effect).
 
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
@@ -910,7 +940,9 @@ The gate is what keeps the Pass button honest — without it, a player could ski
 
 ### Cross-player maneuver sub-state (adversary picks something)
 
-When the maneuver effect requires the **opposing** controller to pick (e.g., "they discard a card from their hand"), queue a `createTransitionEvent($adversary->ControllerId, ...)` from `EventResolveManeuver`, register the new state in `states.inc.php` under the Duel resolve-maneuver transitions, and implement `actFromManeuverWithId` to validate the pick. Reference: `Maneuver_01115` (Taunt — Finesse-gated adversary-discards-a-card flow).
+When the maneuver effect requires the **opposing** controller to pick (e.g., "they discard a card from their hand"), queue a `createTransitionEvent($adversary->ControllerId, ...)` from `EventResolveManeuver`, register the new state in `states.inc.php` under the Duel resolve-maneuver transitions, and implement `actFromManeuverWithId` to validate the pick. Reference: `Maneuver_01115` (Taunt — Finesse-gated adversary-discards-a-card flow), `Maneuver_03036` (line-count-gated discard — Pattern C.4).
+
+**Empty hand:** never enter the chooser with zero hand cards. If discard is the *only* effect, gate `isAvailableToPlayer` on `count(hand) > 0` (`Maneuver_01108a`). If discard is conditional on top of a still-useful calc (C.4), skip the transition at resolve instead — see Pattern C.4.
 
 ## Pattern D — Reaction (`RiskReaction`)
 
@@ -1194,7 +1226,14 @@ class _NNNNN extends Risk
 }
 ```
 
-References: `Maneuver_01084::getManeuverFromCombatCardDiscount` (-1 cost when adversary engaged — note this is on the *Maneuver*, not the Risk class, because the discount applies only when this card is being played as a maneuver).
+Combat-card cost discounts ("this card has -1 cost when …") live on the **Maneuver** via `getManeuverFromCombatCardDiscount`, not on the Risk class — the discount applies only when this card is being played as a combat-card maneuver. Gate on `$owner->Id == $combatCard->Id` so copied/other cards do not inherit it. Common predicates:
+
+| Printed condition | Gate |
+|---|---|
+| "While the adversary is engaged" | `$adversary->Engaged` — `Maneuver_01084` |
+| "If your participant has more [Finesse] than the adversary" | `$actor->ModifiedFinesse > $adversary->ModifiedFinesse` — `Maneuver_03036` |
+
+Use Modified stats and parse the comparison literally (`>` vs `>=`). Push a translated explanation into `$explanations` when the discount applies.
 
 ### Pattern E.1 — Forced on the Risk class (no player choice)
 
@@ -1398,11 +1437,12 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/faf/_03033.php` (Glorious) | **Forced on Risk class (Pattern E.1) + pure-resolve Gambling Maneuver.** Forced: `EventCharacterDestroyed` + `LOCATION_DUELING_LINE` + `IN_DUEL` + destroyed is controller's adversary → heal participant (only if wounded and still in play). Maneuver: `DUEL_GAMBLED` + `ModifiedInfluence >=` adversary + adversary not discarded/locker → wound on `EventResolveManeuver` (no calc). Demonstrates equal-or-greater (`>=`) vs `_03008`'s "more than" (`>`), and that Forced with no chooser stays on the Risk — no Forced ability file. |
 | `modules/php/cards/faf/_03034.php` (La Voix des Sans Voix) | **Diplomat City Action: engage performer + En garde another controlled character at this location + may heal / else draw (Pattern A.3).** Diplomat + `!Engaged` performer gate; friendly same-location Engaged targets (`createCardEngardedEvent`); engage on `EventActionTriggered` before chooser; auto-draw when `Wounds == 0`; heal/draw second state uses `{id:1}`/`{id:2}` labeled buttons (not Pass). Pairs with `State_highDramaPhase03034` + `_2`. |
 | `modules/php/cards/faf/_03035.php` (Loyal) | **Pressure +1 RiskReaction (Pattern D.2.1) + multi-step C.3 Maneuver.** Reaction: `EventPressureOccuring` + more non-Mercenaries than each opponent → after pay set `LOYAL_PRESSURE_TYPE` / `LOYAL_PLAYER_ID`; `pressureLocation()` adds +1 (any pressure type — do not reuse `PRESSURE_BONUS`). Maneuver: wound other controlled character at duel location • +1 Riposte or +2 Thrust. Two states (chooser then buttons); **`stackEvent` every intermediate transition** or pending `EventDuelCalculateManeuverValues` races ahead of the choice — do not re-emit calc. `IRiskThatTargetsCharacters` on Risk; `IAbilityThatTargetsCharacters` on Maneuver. |
+| `modules/php/cards/faf/_03036.php` (Valroux Exemplar) | **Finesse cost discount + Duelist Pattern C.4 Maneuver.** `getManeuverFromCombatCardDiscount` when `ModifiedFinesse >` adversary. Maneuver: Duelist gate; `+1 Riposte` per other dueling-line card (`unset($cards[$owner->Id])`); if ≥3 other cards and adversary hand non-empty, `queueEvent` discard transition to adversary controller (`01115` JS hand-pick). Empty-hand skip at resolve (not `isAvailable`) so Riposte scaling stays offerable. No `IRiskThatTargetsCharacters` (hand discard, not character chooser). No sticky Maneuver state → `EventManeuverCanceled handler not needed`. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
 
-1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Forced / Passive / A.2 / A.3 / C.3 multi-step / D.2.1). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern."
+1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Forced / Passive / A.2 / A.3 / C.3 multi-step / C.4 dueling-line count / D.2.1). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern."
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN, `WealthCost` is set, combat stats match the printed card (set `DashedX = true` for printed-dashed stats), all Traits exist in `TraitNames::$TraitsJson`.
 3. Mark `implements IRiskThatTargetsCharacters` on the Risk class when any of its abilities targets a character. The interface marker lives on the Risk class itself, not the Action/Reaction/Maneuver.
 4. Each Action/Maneuver/Reaction is its own file in the corresponding subdirectory (`actions/`, `maneuvers/`, `reactions/`). Create the subdirectory if the expansion doesn't have one yet.
@@ -1442,3 +1482,4 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 25. **Diplomat (etc.) City Action engage + En garde friendly + may heal/draw (Pattern A.3):** trait-gate the performer; filter `!Engaged` for the engage cost; pay engage on `EventActionTriggered` before the target chooser when a chooser follows; En Garde targets = other controlled characters at the same location with `Engaged == true`; after engarde, if `Wounds == 0` auto-resolve the "if they do not" branch (draw), else a second state with labeled `{id:1}`/`{id:2}` buttons for heal vs draw — not Pass when the alternate is a positive effect. Reference: `_03034`, `Action_02051`, `Action_01049_2`.
 26. **Pressure +1 RiskReaction (Pattern D.2.1):** trigger on `EventPressureOccuring`; apply after pay via a new binary `PRESSURE_TYPE` flag + player-id global; add +1 in `pressureLocation()` outside the per-stat loop (any pressure type). Do **not** reuse `PRESSURE_BONUS` (Pack Tactics / Influence-only). Clean up the player-id global with the other pressure globals. Reference: `Reaction_03035`, `_02044`, `Reaction_02019`.
 27. **Wound-other-character cost + Riposte/Thrust choice (multi-step C.3):** gate availability on another controlled character at the duel location; state 1 = friendly chooser; **`stackEvent`** to state 2; state 2 = buttons + queue wound from `actFromManeuverWithId`; calc branches on stored flag. Mark `IRiskThatTargetsCharacters` on the Risk. Reference: `Maneuver_03035`.
+28. **Dueling-line count ± conditional adversary discard (Pattern C.4):** count `LOCATION_DUELING_LINE` for the controller and `unset($cards[$owner->Id])` — the combat card is already in the line. Pure scaling → calc only (`Maneuver_01166`). Conditional discard on count ≥ N → `EventResolveManeuver`; skip transition if adversary hand empty (do **not** hide the whole maneuver via `isAvailable` when the calc is still useful). Hand discard does not need `IRiskThatTargetsCharacters`. Cost discount clauses ("this card has -1 cost when …") use `getManeuverFromCombatCardDiscount` on the Maneuver with Modified-stat / Engaged predicates. Reference: `Maneuver_03036`, `Maneuver_01166`, `Maneuver_01084`, `Maneuver_01115`.
