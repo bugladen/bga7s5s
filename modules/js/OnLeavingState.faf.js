@@ -183,6 +183,24 @@
                 }
             },
 
+            'duelResolveManeuver_03035': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'duelResolveManeuver_03035_2': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.targetId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03020': () => {
                 if (this.isCurrentPlayerActive())
                 {

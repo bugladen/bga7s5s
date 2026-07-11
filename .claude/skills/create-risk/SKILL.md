@@ -29,6 +29,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03032.php` (Bloody Entrance) — **Sorcerer City Action: wound your performer, move them to any location, then grant a mandatory follow-up action locked to that same performer (Pattern A.2).** Uses `EXTRA_ACTIONS` + new `EXTRA_ACTION_PERFORMER` framework globals. Destination pool matches `Action_03029`'s "any location" helper (all city locations + Home if not already there). Pairs with `State_highDramaPhase03032` (GameState location chooser, same JS shape as `03009`).
 - `modules/php/cards/faf/_03033.php` (Glorious) — **Forced on the Risk class (Pattern E.1) + pure-resolve Gambling Maneuver.** Forced: after your adversary is destroyed while this card is in your dueling line, heal your participant. Maneuver: `DUEL_GAMBLED` + `ModifiedInfluence >=` adversary → wound adversary (no calc branch). Exemplar for "adversary destroyed / dueling line" Forced, equal-or-greater Influence gates (`>=` vs `_03008`'s strict `>` for "more than"), and wound-only Gambling Maneuvers.
 - `modules/php/cards/faf/_03034.php` (La Voix des Sans Voix) — **Diplomat City Action: engage performer • En garde another character you control at this location • then that character may heal a wound / if they do not, draw a card (Pattern A.3).** Trait-gated Diplomat + `!Engaged` engage cost; friendly same-location Engaged targets; engage resolves on `EventActionTriggered` before the chooser; second state is `{id:1}` heal / `{id:2}` draw (auto-draw when `Wounds == 0`). Exemplar for Diplomat City Actions, same-location friendly En Garde, and "may X / if they do not, Y" same-player branch choice.
+- `modules/php/cards/faf/_03035.php` (Loyal) — **Pressure +1 RiskReaction (Pattern D.2.1) + multi-step C.3 Maneuver (wound other character • +1 Riposte or +2 Thrust).** Reaction triggers on `EventPressureOccuring`, gates on more non-Mercenaries than each opponent at that location, mints `LOYAL_PRESSURE_TYPE` + `LOYAL_PLAYER_ID` after pay; `pressureLocation()` adds +1. Maneuver: character chooser then Riposte/Thrust buttons; **every** intermediate transition must `stackEvent` or calc races ahead of the choice. Exemplar for pressure-total Reactions and multi-step choice-at-activation Maneuvers.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -123,8 +124,10 @@ Read each clause of the printed Text and classify it before writing code.
 | **`<b>Leader …:</b>`** | **Leader is the performer**, by mechanical restriction. Each player has at most one Leader (`getLeaderByPlayerId($playerId)`) — fetch it directly. Do **not** set `RequiresPerformerSelected = true`; there's no choice to make. For "Leader Action", `isValidTargetForAbility` resolves the Leader via the Risk's `ControllerId` instead of reading `CHOSEN_PERFORMER`. Mirror `Action_01024` (Bravos), `Action_03020` (Commanding). "Leader Reaction:" follows the same shape — the gate is "player owns a Leader at the printed location reference." |
 | **"… then they may perform another action"** with *(It must be performed and they must be the performer of the action)* | Pattern A.2 — grant `EXTRA_ACTIONS = 1` **and** set `EXTRA_ACTION_PERFORMER` to the wound/move performer's id. Framework enforces same character + no Pass. See `_03032`. Do **not** rely on `EXTRA_ACTIONS` alone — it only keeps the same *player* on turn. |
 | **"Engage your performer • En garde another character you control … Then, that character may heal … If they do not, draw"** | Pattern A.3 — Diplomat (or other trait) City Action: engage cost + same-location friendly Engaged target + may-heal / else-draw branch. See `_03034`. |
+| **"When a pressure occurs … Add +1 to your total for the pressure"** | Pattern D.2.1 — RiskReaction on `EventPressureOccuring`; mint a new `PRESSURE_TYPE` binary flag + player-id global; apply in `pressureLocation()`. Do **not** reuse `PRESSURE_BONUS` (Pack Tactics / Influence-only). See `_03035`. |
+| **"Wound your other character at this location • +X [stat A] or +Y [stat B]"** | Pattern C.3 multi-step — character chooser state, then choice buttons; `stackEvent` **every** step until the calc-driving choice is recorded. See `_03035`. |
 
-A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_03033` has both a Forced (on the Risk class) and a Gambling Maneuver. `_03034` is a single Diplomat City Action (Pattern A.3). `_01083` is a single City Action only.
+A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_03033` has both a Forced (on the Risk class) and a Gambling Maneuver. `_03034` is a single Diplomat City Action (Pattern A.3). `_03035` has both a pressure Reaction and a multi-step C.3 Maneuver. `_01083` is a single City Action only.
 
 ## Pattern A — City Action (`RiskCityAction`)
 
@@ -757,6 +760,10 @@ public function actFromManeuverWithId(Game $game, int $state, string $stateName,
 
 Same priority math as Pattern D.3: `queueEvent` at `MEDIUM_PRIORITY = 3` would land *behind* calc-phase events. `stackEvent` assigns `min(pending priorities) - 1`, guaranteeing the choice prompt fires first.
 
+**Multi-step C.3 (character chooser → then Riposte/Thrust buttons, etc.):** `stResolveManeuverFromCombatCard` queues Activate → Resolve → Calculate **up front**. The first `stackEvent` from `EventManeuverActivated` correctly pre-empts that pending calc. But when state 1 finishes and transitions to state 2, **that second transition must also `stackEvent`** — `queueEvent("NNNNN_2")` lands *behind* the still-pending `EventDuelCalculateManeuverValues`, so calc runs with the default choice flag and the later button press looks like "stats never updated."
+
+Do **not** "fix" this by re-emitting `EventDuelCalculateManeuverValues` after the choice. Fix the ordering: `stackEvent` every intermediate transition until the calc-driving choice is stored. After the final choice, `nextState()` resumes EVENTS and the original pending calc reads the stored flag.
+
 #### Pure-calc variant: no `EventResolveManeuver` handler needed
 
 When both branches are pure stat mutations (no wound / draw / transition), skip `EventResolveManeuver` entirely. The calc-event branch on the stored choice is the entire effect. Reference: `Maneuver_03024` (both branches are +2 stat).
@@ -765,11 +772,23 @@ When both branches are pure stat mutations (no wound / draw / transition), skip 
 
 When one branch has a side effect (wound the adversary, draw, etc.), queue those events directly from `actFromManeuverWithId` after recording the choice — don't defer to `EventResolveManeuver`. The Maneuver is mid-activation; events queued here land at the right point in the activation sequence. Reference: `Maneuver_01135` (branch 2 queues `createCharacterBeingWoundedEvent` from `actFromManeuverWithId`).
 
+#### Wound-your-other-character cost + choice (multi-step C.3)
+
+"Maneuver: Wound your other character at this location • +1 Riposte or +2 Thrust" (and similar cost • or-choice shapes):
+
+1. **`isAvailableToPlayer`** — at least one other character you control at `$actor->Location` (`getCharactersAtLocationByPlayerId`, exclude actor).
+2. **State 1** (`duelResolveManeuver_NNNNN`) — friendly character chooser (`IAbilityThatTargetsCharacters` on the Maneuver; `IRiskThatTargetsCharacters` on the Risk). JS: `highlightCardsAsSelectable` + confirm, same shape as `highDramaPhase03034` / `duelResolveManeuver_01051`.
+3. **State 1 → 2** — save `$WoundTargetId`, **`stackEvent`** transition `"NNNNN_2"` (not `queueEvent`).
+4. **State 2** (`duelResolveManeuver_NNNNN_2`) — Riposte/Thrust (or Parry/Thrust) buttons. On choice: set the calc flag, queue the wound via `createCharacterBeingWoundedEvent` + `eventCheck`, `nextState()`.
+5. **Calc** — `EventDuelCalculateManeuverValues` branches on the stored flag (same as single-step C.3).
+
+Reference: `Maneuver_03035` (Loyal).
+
 #### State-tracking discipline
 
-If the maneuver has any cross-round state beyond the choice (a `next-round` modifier, an `IsActive` flag), reset it in both `EventManeuverCanceled` AND `EventDuelEnd` (and `EventDuelEndOfRound` for "next round only" effects). The choice field itself only needs `EventManeuverCanceled` reset — the next activation will overwrite it.
+If the maneuver has any cross-round state beyond the choice (a `next-round` modifier, an `IsActive` flag), reset it in both `EventManeuverCanceled` AND `EventDuelEnd` (and `EventDuelEndOfRound` for "next round only" effects). The choice field itself only needs `EventManeuverCanceled` reset — the next activation will overwrite it. Multi-step: also clear `$WoundTargetId` (etc.) on cancel.
 
-References: `Maneuver_01135` (template; choice gates a side-effect branch with cross-round Thrust reduction), `Maneuver_03024` (Superstitious — pure-calc Sorcerer/Monster gate variant).
+References: `Maneuver_01135` (template; choice gates a side-effect branch with cross-round Thrust reduction), `Maneuver_03024` (Superstitious — pure-calc Sorcerer/Monster gate variant), `Maneuver_03035` (Loyal — multi-step wound cost + Riposte/Thrust choice).
 
 ### Pattern C.1 — Final Strike maneuver (post-death effect; optionally with player choice)
 
@@ -970,6 +989,34 @@ When the RiskReaction's effect is a single-shot global mutation (flip `CHALLENGE
 This is single-stage so no `$stage` field is needed. Save only the ids you'll reference inside `EventRiskReactionTriggered` (e.g., `intervenerId` for the Sorcerer event's `performerId`).
 
 References: `Reaction_03012` (Subtle — flips `CHALLENGE_STAT`).
+
+### Pattern D.2.1 — Pressure-total RiskReaction ("Add +1 to your total for the pressure")
+
+When the printed text says **When a pressure occurs … Add +1 to your total for the pressure** (optionally gated on board position / character counts), wire Pattern D.2 against `EventPressureOccuring`, then apply the bonus inside `UtilitiesTrait::pressureLocation()` — the same channel Solomonia (`_02044`) and Trial of Faith (`Reaction_02019`) use.
+
+1. **Trigger** — `EventPressureOccuring && isAvailable()`, hand guard `Location == Game::LOCATION_HAND`, plus any printed gate (e.g. Loyal: count non-Mercenary controlled characters at `$event->location`; owner's count must be strictly `>` each other controller's count at that location — players with 0 non-Mercs there count as 0).
+2. **Pay** — standard `performReaction('use')` → `EnteringPayState` + `ReactionPayTransition`.
+3. **Effect in `EventRiskReactionTriggered`** — `setGlobalFlag(PRESSURE_TYPE, <NEW>_PRESSURE_TYPE)` and `globals->set(<NEW>_PLAYER_ID, $owner->ControllerId)` (or a card-id global if you need to look up the controller later, like `SOLOMONIA_ID`). `setUsed`. Notify.
+4. **`pressureLocation()` branch** — outside the `foreach ($pressureStats)` loop (so it applies once to "the pressure," not once per pressure type / not Influence-only):
+
+```php
+if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::<NEW>_PRESSURE_TYPE))
+{
+    $playerId = $this->globals->get(Game::<NEW>_PLAYER_ID, 0);
+    if ($playerId && isset($playerInfluences[$playerId]))
+    {
+        $playerInfluences[$playerId]['influence'] += 1;
+    }
+}
+```
+
+5. **Cleanup** — delete the player-id global wherever `PRESSURE_BONUS` / `PRESSURE_TYPE` are reset (`StatesTrait` post-pressure cleanup).
+
+**Do not reuse `Game::PRESSURE_BONUS`.** That global is only read under `PACK_TACTICS_PRESSURE_TYPE` and only when the pressure stat is Influence (`Action_01028`). Loyal-style "+1 to your total for the pressure" is any pressure type and any reacting player — mint the next binary flag (`8192`, `16384`, … after `USSURAN_INTRIGUE_PRESSURE_TYPE = 4096`) plus a dedicated player-id global.
+
+**WHY defer to `EventRiskReactionTriggered`:** same as D.2 — cancel-during-pay must not leave a dangling pressure flag.
+
+References: `Reaction_03035` (Loyal), `_02044` (Solomonia — passive auto-flag on `EventPressureOccuring`, no pay), `Reaction_02019` (Trial of Faith — RiskReaction that sets `TRIAL_OF_FAITH_PRESSURE_TYPE`).
 
 ### Pattern D.3 — RiskReaction that cancels pending high-priority events in a batch
 
@@ -1350,11 +1397,12 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/faf/_03032.php` (Bloody Entrance) | **Sorcerer City Action: wound performer + move to any location + mandatory extra action locked to same performer (Pattern A.2).** `RiskCityAction` + `ISorcererAbility`; Sorcerer-gated performers; destination pool = all city locations + Home (see `Action_03029` MOVE_FROM_PERFORMER helper). Sets `EXTRA_ACTIONS = 1` and `EXTRA_ACTION_PERFORMER = $performer->Id`. Pairs with `State_highDramaPhase03032` (location chooser, `"locationChosen"` transition — same JS trio as `03009`). Framework enforces locked performer + no Pass via `Game::EXTRA_ACTION_PERFORMER` helpers. |
 | `modules/php/cards/faf/_03033.php` (Glorious) | **Forced on Risk class (Pattern E.1) + pure-resolve Gambling Maneuver.** Forced: `EventCharacterDestroyed` + `LOCATION_DUELING_LINE` + `IN_DUEL` + destroyed is controller's adversary → heal participant (only if wounded and still in play). Maneuver: `DUEL_GAMBLED` + `ModifiedInfluence >=` adversary + adversary not discarded/locker → wound on `EventResolveManeuver` (no calc). Demonstrates equal-or-greater (`>=`) vs `_03008`'s "more than" (`>`), and that Forced with no chooser stays on the Risk — no Forced ability file. |
 | `modules/php/cards/faf/_03034.php` (La Voix des Sans Voix) | **Diplomat City Action: engage performer + En garde another controlled character at this location + may heal / else draw (Pattern A.3).** Diplomat + `!Engaged` performer gate; friendly same-location Engaged targets (`createCardEngardedEvent`); engage on `EventActionTriggered` before chooser; auto-draw when `Wounds == 0`; heal/draw second state uses `{id:1}`/`{id:2}` labeled buttons (not Pass). Pairs with `State_highDramaPhase03034` + `_2`. |
+| `modules/php/cards/faf/_03035.php` (Loyal) | **Pressure +1 RiskReaction (Pattern D.2.1) + multi-step C.3 Maneuver.** Reaction: `EventPressureOccuring` + more non-Mercenaries than each opponent → after pay set `LOYAL_PRESSURE_TYPE` / `LOYAL_PLAYER_ID`; `pressureLocation()` adds +1 (any pressure type — do not reuse `PRESSURE_BONUS`). Maneuver: wound other controlled character at duel location • +1 Riposte or +2 Thrust. Two states (chooser then buttons); **`stackEvent` every intermediate transition** or pending `EventDuelCalculateManeuverValues` races ahead of the choice — do not re-emit calc. `IRiskThatTargetsCharacters` on Risk; `IAbilityThatTargetsCharacters` on Maneuver. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
 
-1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Forced / Passive / A.2 / A.3). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern."
+1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Forced / Passive / A.2 / A.3 / C.3 multi-step / D.2.1). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern."
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN, `WealthCost` is set, combat stats match the printed card (set `DashedX = true` for printed-dashed stats), all Traits exist in `TraitNames::$TraitsJson`.
 3. Mark `implements IRiskThatTargetsCharacters` on the Risk class when any of its abilities targets a character. The interface marker lives on the Risk class itself, not the Action/Reaction/Maneuver.
 4. Each Action/Maneuver/Reaction is its own file in the corresponding subdirectory (`actions/`, `maneuvers/`, `reactions/`). Create the subdirectory if the expansion doesn't have one yet.
@@ -1381,7 +1429,7 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 16. **"En garde" the verb vs "engage" the verb — opposite operations.** `createCardEngardedEvent` sets `Engaged = false` (ready / en garde); `createCardEngagedEvent` sets `Engaged = true` (committed). When the printed text says "En garde target character," the valid targets are characters whose `Engaged == true` (you're putting them back into en garde). Reference: `Action_01081`, `Action_02051`, `Action_03034`, `Maneuver_03022`.
 17. **`getDuelChallengerId()` / `getDuelDefenderId()` / `getDuelOpponentId()` return CHARACTER ids, not player ids.** Resolve to a player via `$theah->getCharacterById($id)->ControllerId`. Passing them directly to `getPlayerNameById()` prints garbage.
 18. **"Target if able" maneuvers get a Pass + gate.** Declare `actFromCardPass` as a `PossibleAction` on the GameState class, override `actFromManeuverPass` to `throw UserException` when valid targets exist, and add the alert-color Pass button in `OnUpdateActionButtons`. Without the gate, a player can silently skip a mandatory effect. Reference: `Maneuver_03022`.
-19. **Choice-at-activation Maneuver (Pattern C.3):** when the player picks how the calc applies ("+X stat A or +X stat B"), `stackEvent` the `createTransitionEvent` from `EventManeuverActivated` — NOT `EventResolveManeuver`, which fires after calc and lands the prompt too late. State id `52500000 + NNNNN` (prefix `5250`), state name `duelResolveManeuver_NNNNN`, wired under `DUEL_RESOLVE_MANEUVER_EVENTS.transitions`. GameState class transitions table uses `"" => DUEL_RESOLVE_MANEUVER_EVENTS` and `actFromManeuverWithId` calls `$game->gamestate->nextState()` with no arg. Reset the choice field in `EventManeuverCanceled` (the Maneuver instance persists across rounds on `$theah->cards`). Pure-calc branches → no `EventResolveManeuver` handler; side-effect branches → queue the side-effect events directly from `actFromManeuverWithId`, not from a later resolve hook. Reference: `Maneuver_01135` (side-effect branch), `Maneuver_03024` (pure-calc).
+19. **Choice-at-activation Maneuver (Pattern C.3):** when the player picks how the calc applies ("+X stat A or +X stat B"), `stackEvent` the `createTransitionEvent` from `EventManeuverActivated` — NOT `EventResolveManeuver`, which fires after calc and lands the prompt too late. State id `52500000 + NNNNN` (prefix `5250`), state name `duelResolveManeuver_NNNNN`, wired under `DUEL_RESOLVE_MANEUVER_EVENTS.transitions`. GameState class transitions table uses `"" => DUEL_RESOLVE_MANEUVER_EVENTS` and `actFromManeuverWithId` calls `$game->gamestate->nextState()` with no arg. Reset the choice field in `EventManeuverCanceled` (the Maneuver instance persists across rounds on `$theah->cards`). Pure-calc branches → no `EventResolveManeuver` handler; side-effect branches → queue the side-effect events directly from `actFromManeuverWithId`, not from a later resolve hook. **Multi-step (chooser then buttons):** `stackEvent` *every* intermediate transition until the calc-driving choice is recorded — `queueEvent` on step 2 races behind the still-pending `EventDuelCalculateManeuverValues` from `stResolveManeuverFromCombatCard`. Do **not** re-emit calc after the choice; fix ordering instead. Reference: `Maneuver_01135` (side-effect branch), `Maneuver_03024` (pure-calc), `Maneuver_03035` (multi-step wound cost + Riposte/Thrust).
 20. **Threat→wound conversion suppression (Pattern C.2):** the conversion fires once, in `stDuelEndOfRound`, as a single `EventCharacterBeingWounded` whose signature is `characterId == actor.Id && sourceId == adversary.Id`. Suppress by zeroing `$event->wounds` on that match. Two non-obvious follow-ups:
     - **Cross-round carry-forward** uses `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` (`stDuelNewRound` reads them onto the next round's starting pool). `ending_<actor>_threat` is wiped to 0 by SQL *before* the wound event is queued, so you cannot rely on the DB row preserving it.
     - **Also zero `duel_round.wounds_taken`** via direct `DbQuery` — the column was bumped during the round and feeds both the UI display and `Theah::duelParticipantWoundsTaken()` (used by `Maneuver_01107`). Without resetting it, downstream cards see wounds that never landed.
@@ -1392,3 +1440,5 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 23. **Forced on the Risk class (Pattern E.1):** Forced with no player choice stays on `_NNNNN::handleEvent` — do not create a Forced ability file. For "after your adversary is destroyed, if this card is in your dueling line": gate on `EventCharacterDestroyed` + `LOCATION_DUELING_LINE` + `IN_DUEL`, then resolve the survivor via challenger/defender ids (not round actor/opponent). Heal only if participant is in play and `Wounds > 0`. Reference: `_03033`, `_01102`, `_02052` (lookup shape).
 24. **Pure-resolve Maneuver (wound/draw/move only):** skip `EventDuelCalculateManeuverValues`; implement only `EventResolveManeuver`. Keep the `EventManeuverCanceled handler not needed` comment. Gate wound-adversary availability on `! characterIsInDiscardOrLocker($adversary)`. `eventCheck` before `queueEvent` for wounds. Reference: `Maneuver_03033`, `Maneuver_01055`.
 25. **Diplomat (etc.) City Action engage + En garde friendly + may heal/draw (Pattern A.3):** trait-gate the performer; filter `!Engaged` for the engage cost; pay engage on `EventActionTriggered` before the target chooser when a chooser follows; En Garde targets = other controlled characters at the same location with `Engaged == true`; after engarde, if `Wounds == 0` auto-resolve the "if they do not" branch (draw), else a second state with labeled `{id:1}`/`{id:2}` buttons for heal vs draw — not Pass when the alternate is a positive effect. Reference: `_03034`, `Action_02051`, `Action_01049_2`.
+26. **Pressure +1 RiskReaction (Pattern D.2.1):** trigger on `EventPressureOccuring`; apply after pay via a new binary `PRESSURE_TYPE` flag + player-id global; add +1 in `pressureLocation()` outside the per-stat loop (any pressure type). Do **not** reuse `PRESSURE_BONUS` (Pack Tactics / Influence-only). Clean up the player-id global with the other pressure globals. Reference: `Reaction_03035`, `_02044`, `Reaction_02019`.
+27. **Wound-other-character cost + Riposte/Thrust choice (multi-step C.3):** gate availability on another controlled character at the duel location; state 1 = friendly chooser; **`stackEvent`** to state 2; state 2 = buttons + queue wound from `actFromManeuverWithId`; calc branches on stored flag. Mark `IRiskThatTargetsCharacters` on the Risk. Reference: `Maneuver_03035`.

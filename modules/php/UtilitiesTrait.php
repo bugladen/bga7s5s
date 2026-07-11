@@ -683,6 +683,16 @@ trait UtilitiesTrait
             }
         }
 
+        //If Loyal Reaction was used, add +1 to that player's total for the pressure
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::LOYAL_PRESSURE_TYPE))
+        {
+            $loyalPlayerId = $this->globals->get(Game::LOYAL_PLAYER_ID, 0);
+            if ($loyalPlayerId && isset($playerInfluences[$loyalPlayerId]))
+            {
+                $playerInfluences[$loyalPlayerId]['influence'] += 1;
+            }
+        }
+
         //Get the player with the most influence
         $maxInfluence = 0;
         $maxPlayerId = 0;

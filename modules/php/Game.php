@@ -129,7 +129,9 @@ class Game extends \Bga\GameFramework\Table
     final const CASTILLIAN_CAPER_PRESSURE_TYPE = 1024;
     final const SOLOMONIA_PRESSURE_TYPE = 2048;
     final const USSURAN_INTRIGUE_PRESSURE_TYPE = 4096;
+    final const LOYAL_PRESSURE_TYPE = 8192;
     final const SOLOMONIA_ID = "solomoniaId";
+    final const LOYAL_PLAYER_ID = "loyalPlayerId";
 
     //Player action global variables
     //Delete these in stNextPlayer
