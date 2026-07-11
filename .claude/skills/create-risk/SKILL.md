@@ -27,6 +27,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03024.php` + `Maneuver_03024` (Superstitious) — **Pure-calc Pattern C.3 variant with an adversary-trait gate.** "Maneuver: If the adversary is a Sorcerer or Monster • +2 Parry or +2 Thrust." `isAvailableToPlayer` reads `getDuelRoundOpponent()->hasTrait('Sorcerer'|'Monster')`. No `EventResolveManeuver` handler — both branches are pure calc, so the calc-event branch on the stored choice is the entire effect.
 - `modules/php/cards/faf/_03031.php` (Altruistic) — **RiskReaction that intercepts wound/move/engage effect events and redirects them to another of your characters at the same location (Pattern D.4).** Adapted from `Reaction_02016` (Cross of the Martyrs) clone-cancel-reemit, but effect-based (not "targets") and with Risk pay deferred to `EventRiskReactionTriggered`. "Performer at that location" = `getCharactersAtLocationByPlayerId` excluding the character currently being affected. `isValidTargetForAbility` only when the source ability implements `IAbilityThatTargetsCharacters` ("if they are able"); otherwise `releaseEvent` directly.
 - `modules/php/cards/faf/_03032.php` (Bloody Entrance) — **Sorcerer City Action: wound your performer, move them to any location, then grant a mandatory follow-up action locked to that same performer (Pattern A.2).** Uses `EXTRA_ACTIONS` + new `EXTRA_ACTION_PERFORMER` framework globals. Destination pool matches `Action_03029`'s "any location" helper (all city locations + Home if not already there). Pairs with `State_highDramaPhase03032` (GameState location chooser, same JS shape as `03009`).
+- `modules/php/cards/faf/_03033.php` (Glorious) — **Forced on the Risk class (Pattern E.1) + pure-resolve Gambling Maneuver.** Forced: after your adversary is destroyed while this card is in your dueling line, heal your participant. Maneuver: `DUEL_GAMBLED` + `ModifiedInfluence >=` adversary → wound adversary (no calc branch). Exemplar for "adversary destroyed / dueling line" Forced, equal-or-greater Influence gates (`>=` vs `_03008`'s strict `>` for "more than"), and wound-only Gambling Maneuvers.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -115,12 +116,13 @@ Read each clause of the printed Text and classify it before writing code.
 | **`<b>Reaction:</b>`** | Pattern D — `RiskReaction`. Pre-commit hook requires hand-only guard (`Location == Game::LOCATION_HAND`) + `setUsed`/`isAvailable` literal calls. |
 | **"When an opponent's ability would wound/move/engage your character"** (no "target" wording) | Pattern D.4 — effect-event redirect `RiskReaction`. Intercept `EventCharacterBeingWounded` / `EventCardMoving` / `EventCardEngaged` (± `EventCharacterIntervened` for duel intervention). Gate on opponent source, not `IAbilityThatTargetsCharacters`. See `Reaction_03031`. |
 | **"While [adversary/condition] …"** (combat-card cost or stat modifier on the Risk itself) | Pattern E — passive on the Risk class. Override `eventCheck` / `handleEvent` directly. See `Maneuver_01084::getManeuverFromCombatCardDiscount` for an in-Maneuver passive (combat-card cost discount). |
+| **`<b>Forced:</b>`** (no player choice; fires automatically) | Pattern E.1 — `handleEvent` on the **Risk class itself**, not a separate Action/Reaction/Maneuver file. Common gates: `Location == LOCATION_DUELING_LINE`, `IN_DUEL`, destroyed character is your adversary. See `_03033` (Glorious), `_01102` (Unfortunate). |
 | **`<b>Sorcerer …:</b>`** | The ability class (Action/Reaction/Maneuver) additionally `implements ISorcererAbility` — must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). |
 | **`<b>Strega …:</b>`** / **`<b>Mercenary …:</b>`** / **`<b>Duelist …:</b>`** | **Mechanical performer-trait gates**, NOT Sorcerer abilities. Enforce via `hasTrait("Strega")` on the chosen performer or `getDuelRoundActor()`. Do NOT `implement ISorcererAbility` for these. Can stack with Sorcerer ("Sorcerer Strega Reaction" is both). |
 | **`<b>Leader …:</b>`** | **Leader is the performer**, by mechanical restriction. Each player has at most one Leader (`getLeaderByPlayerId($playerId)`) — fetch it directly. Do **not** set `RequiresPerformerSelected = true`; there's no choice to make. For "Leader Action", `isValidTargetForAbility` resolves the Leader via the Risk's `ControllerId` instead of reading `CHOSEN_PERFORMER`. Mirror `Action_01024` (Bravos), `Action_03020` (Commanding). "Leader Reaction:" follows the same shape — the gate is "player owns a Leader at the printed location reference." |
 | **"… then they may perform another action"** with *(It must be performed and they must be the performer of the action)* | Pattern A.2 — grant `EXTRA_ACTIONS = 1` **and** set `EXTRA_ACTION_PERFORMER` to the wound/move performer's id. Framework enforces same character + no Pass. See `_03032`. Do **not** rely on `EXTRA_ACTIONS` alone — it only keeps the same *player* on turn. |
 
-A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_01083` is a single City Action only.
+A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_03033` has both a Forced (on the Risk class) and a Gambling Maneuver. `_01083` is a single City Action only.
 
 ## Pattern A — City Action (`RiskCityAction`)
 
@@ -452,15 +454,27 @@ if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false)) return false;
 
 `Game::DUEL_GAMBLED` is set true in `FrameworkActionsTrait::actChooseGambleCard` when the gambled combat card is locked in, and cleared in `stDoneRound`. See `Technique_03002` (Aja) for the same gate on the Technique side.
 
-### "If your participant has more <Stat> than the adversary" gate
+### "If your participant has more / equal or greater <Stat> than the adversary" gate
+
+Parse the printed comparison literally — the operator is part of the card text:
+
+| Card phrase | Operator |
+|---|---|
+| "more … than" / "greater … than" | `>` |
+| "equal or greater … than" / "equal or lower … than" (on the *target*) | `>=` / `<=` |
 
 ```php
 $actor = $theah->getDuelRoundActor();
 $adversary = $theah->getDuelRoundOpponent();
+// "more Influence than" → strict >
 return $actor->ModifiedInfluence > $adversary->ModifiedInfluence;
+// "equal or greater Influence than" → >=
+return $actor->ModifiedInfluence >= $adversary->ModifiedInfluence;
 ```
 
-Use **modified** stats (`ModifiedInfluence`, `ModifiedFinesse`, etc.), not the printed base — the comparison must honor live modifiers. Reference: `Maneuver_01115` (Finesse comparison), `Maneuver_03008` (Influence comparison).
+Use **modified** stats (`ModifiedInfluence`, `ModifiedFinesse`, etc.), not the printed base — the comparison must honor live modifiers. Reference: `Maneuver_01115` (Finesse comparison), `Maneuver_03008` ("more" → `>`), `Maneuver_03033` ("equal or greater" → `>=`), `Technique_01196` (equal-or-greater Combat+Influence).
+
+When the resolve effect wounds the adversary, also gate availability on `! $theah->game->characterIsInDiscardOrLocker($adversary)` so the maneuver is not offered against an already-destroyed opponent.
 
 ### Adding Riposte/Parry/Thrust during calc
 
@@ -476,11 +490,30 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "you control a trait X at the duel location" predicate + pure `+1 Riposte` in calc, no Resolve handler).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound, no calc).
 
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
 When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`).
+
+### Pure-resolve maneuvers (no calc branch)
+
+When the maneuver has **only** a one-shot side effect (wound adversary, draw, move Home, …) and no Riposte/Parry/Thrust change, implement **only** `EventResolveManeuver` and skip `EventDuelCalculateManeuverValues`. Still include the `// EventManeuverCanceled handler not needed` comment. Call `$theah->eventCheck($woundEvent)` before `queueEvent` for wound effects.
+
+```php
+if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
+{
+    $owner = $this->getOwningCard($event->theah);
+    $adversary = $event->theah->getDuelRoundOpponent();
+    $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+        $adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id
+    );
+    $event->theah->eventCheck($woundEvent);
+    $event->theah->queueEvent($woundEvent);
+}
+```
+
+Reference: `Maneuver_03033` (Glorious — Gambling + Influence ≥ → wound), `Maneuver_01055` (Ranged Weapon → wound), `Maneuver_01033` (Influence > → move adversary Home).
 
 ### Pattern C.2 — Suppress end-of-round threat→wound conversion (with optional carry-forward)
 
@@ -1087,6 +1120,47 @@ class _NNNNN extends Risk
 
 References: `Maneuver_01084::getManeuverFromCombatCardDiscount` (-1 cost when adversary engaged — note this is on the *Maneuver*, not the Risk class, because the discount applies only when this card is being played as a maneuver).
 
+### Pattern E.1 — Forced on the Risk class (no player choice)
+
+`<b>Forced:</b>` abilities with no chooser belong on the Risk's `handleEvent`, not a separate ability class. There is no Forced base class and no sub-state. Common shape for duel-line Forced effects:
+
+**"After your adversary is destroyed, if this card is in your dueling line • …"**
+
+Gate chain (all required):
+
+1. `EventCharacterDestroyed`
+2. `$this->Location == Game::LOCATION_DUELING_LINE`
+3. `$game->globals->get(Game::IN_DUEL)` is truthy
+4. Destroyed character is the **adversary of this card's controller** — not merely "someone in the duel"
+
+Participant / winner lookup (same shape as `_02052` Gutter Full of Roses, scoped to `$this->ControllerId`):
+
+```php
+$challengerId = $theah->getDuelChallengerId();
+$defenderId = $theah->getDuelDefenderId();
+$destroyedId = $event->characterId;
+
+$participantId = null;
+if ($destroyedId == $defenderId
+    && $theah->getCharacterById($challengerId)->ControllerId == $this->ControllerId)
+{
+    $participantId = $challengerId;
+}
+elseif ($destroyedId == $challengerId
+    && $theah->getCharacterById($defenderId)->ControllerId == $this->ControllerId)
+{
+    $participantId = $defenderId;
+}
+```
+
+**WHY not use `getDuelRoundActor()` / `getDuelRoundOpponent()` here:** those are round-relative. At destroy time the current round's actor may not be the surviving participant you need. Challenger/defender ids are stable for the whole duel.
+
+**Heal discipline** (when the Forced effect heals): only queue `createCharacterBeingHealedEvent` when the participant is not in discard/locker **and** `$participant->Wounds > 0`. Mirror `Maneuver_01052`. Notify before queueing.
+
+**WHY on the Risk class:** Forced with no player input is a passive — `_01102` (Unfortunate: Forced equip from dueling line at end of round) is the same shape. Do not invent a `Forced_NNNNN` ability file.
+
+References: `_03033` (Glorious — heal on adversary destroyed), `_01102` (Unfortunate — equip from dueling line), `_02052` (scheme Forced for "any player's adversary destroyed" — same challenger/defender lookup, different scope).
+
 ## State Wiring (`states.inc.php`)
 
 For Pattern A City Actions, add a transition entry under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Most Risk City Actions that issue challenges use the shared chooser:
@@ -1245,11 +1319,12 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/faf/_03023.php` (Second Wind) | **Gambling Maneuver that suppresses end-of-round threat→wound conversion + carries threat forward (Pattern C.2).** City Action heals a wound on a 2+-wound performer; Maneuver intercepts `EventCharacterBeingWounded` by the unique `characterId == actor && sourceId == adversary` signature, zeroes `$event->wounds`, captures the amount into `PENDING_CHALLENGER_THREAT` / `PENDING_DEFENDER_THREAT` so `stDuelNewRound` seeds it onto the next round, and `DbQuery`s `duel_round.wounds_taken = 0` so the UI display and `duelParticipantWoundsTaken()` cross-round aggregate match reality. Tracks state via `$IsActive`; resets on `EventManeuverCanceled` and `EventDuelEndOfRound`. Lethality is not preserved (no `PENDING_*_THREAT_IS_LETHAL` global) — same limitation as `Maneuver_02039`. |
 | `modules/php/cards/faf/_03031.php` (Altruistic) | **Effect-event redirect RiskReaction (Pattern D.4).** Intercepts opponent wound/move/engage on your character; player picks another of their characters at that location to suffer the effect instead. Clone-cancel-reemit from `Reaction_02016` with Risk pay deferred to `EventRiskReactionTriggered`. Trigger gates on `isOpponentAbility`, not `IAbilityThatTargetsCharacters`. `isValidTargetForAbility` only when the source ability implements that interface ("if they are able"); non-targeting abilities redirect unconditionally. No wound-on-redirect (unlike 02016). |
 | `modules/php/cards/faf/_03032.php` (Bloody Entrance) | **Sorcerer City Action: wound performer + move to any location + mandatory extra action locked to same performer (Pattern A.2).** `RiskCityAction` + `ISorcererAbility`; Sorcerer-gated performers; destination pool = all city locations + Home (see `Action_03029` MOVE_FROM_PERFORMER helper). Sets `EXTRA_ACTIONS = 1` and `EXTRA_ACTION_PERFORMER = $performer->Id`. Pairs with `State_highDramaPhase03032` (location chooser, `"locationChosen"` transition — same JS trio as `03009`). Framework enforces locked performer + no Pass via `Game::EXTRA_ACTION_PERFORMER` helpers. |
+| `modules/php/cards/faf/_03033.php` (Glorious) | **Forced on Risk class (Pattern E.1) + pure-resolve Gambling Maneuver.** Forced: `EventCharacterDestroyed` + `LOCATION_DUELING_LINE` + `IN_DUEL` + destroyed is controller's adversary → heal participant (only if wounded and still in play). Maneuver: `DUEL_GAMBLED` + `ModifiedInfluence >=` adversary + adversary not discarded/locker → wound on `EventResolveManeuver` (no calc). Demonstrates equal-or-greater (`>=`) vs `_03008`'s "more than" (`>`), and that Forced with no chooser stays on the Risk — no Forced ability file. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
 
-1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Passive). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern."
+1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Forced / Passive). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern."
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN, `WealthCost` is set, combat stats match the printed card (set `DashedX = true` for printed-dashed stats), all Traits exist in `TraitNames::$TraitsJson`.
 3. Mark `implements IRiskThatTargetsCharacters` on the Risk class when any of its abilities targets a character. The interface marker lives on the Risk class itself, not the Action/Reaction/Maneuver.
 4. Each Action/Maneuver/Reaction is its own file in the corresponding subdirectory (`actions/`, `maneuvers/`, `reactions/`). Create the subdirectory if the expansion doesn't have one yet.
@@ -1259,7 +1334,7 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
    - "Strega …" / "Mercenary …" / "Diplomat …" / "Duelist …" / "Gambling …" → performer-trait or duel-state gate. NOT a Sorcerer ability.
    - Both can stack.
    - **"City Action:" vs "Action:"** — only the "City" prefix restricts performers to city characters. A plain "Action:" admits home performers too, even when the effect *implies* city movement. Don't pre-filter to `getCharactersInCityByPlayerId(...)`; start from `parent::getPerformersForAction(...)`.
-7. **Use Modified stats** (`ModifiedInfluence`, `ModifiedFinesse`, …) for in-duel and in-city comparisons.
+7. **Use Modified stats** (`ModifiedInfluence`, `ModifiedFinesse`, …) for in-duel and in-city comparisons. Parse comparison wording literally: "more than" → `>`, "equal or greater" → `>=`, "equal or lower" → `<=`. Do not copy `_03008`'s strict `>` onto a card that says equal-or-greater (`_03033`).
 8. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
 9. Pre-commit hook checks on every file:
    - **RiskCityAction / RiskAction subclass:** `createActionResolvedEvent` literal string present (real call or comment).
@@ -1284,3 +1359,5 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
     - Reference: `Maneuver_03023` (Second Wind), `Maneuver_02039` (Add Threat — producer side of `PENDING_*_THREAT`).
 21. **Effect-event redirect RiskReaction (Pattern D.4):** when text says opponent ability "would wound/move/engage" (not "targets"), gate on effect events + `isOpponentAbility` — do **not** require `IAbilityThatTargetsCharacters` at trigger time. Defer `releaseEvent` to `EventRiskReactionTriggered` after pay. Apply `isValidTargetForAbility` only when `loadAbility()` returns `IAbilityThatTargetsCharacters`; otherwise redirect unconditionally. "Performer at that location" = `getCharactersAtLocationByPlayerId` excluding the affected character. Structural template: `Reaction_02016` on attachments → `Reaction_03031` on Risks. Do not copy 02016's wound-on-redirect unless the card says so.
 22. **Mandatory extra action locked to same performer (Pattern A.2):** when italic text says the follow-up action must be performed and the same character must be the performer, set **both** `Game::EXTRA_ACTIONS = 1` and `Game::EXTRA_ACTION_PERFORMER = $performer->Id` at effect resolution. Do **not** use `EXTRA_ACTIONS` alone — it only repeats the player's turn. Do **not** stash the lock in `CHOSEN_PERFORMER` — `stNextPlayer` deletes it. Framework enforcement is centralized; card code only sets the two globals. "Any location" destination pool = all `getCityLocations()` names + Home if not already there (not adjacent-only). Wound + move both need `eventCheck` before `queueEvent`. Reference: `_03032`, `Action_03029::getValidDestinationLocations`.
+23. **Forced on the Risk class (Pattern E.1):** Forced with no player choice stays on `_NNNNN::handleEvent` — do not create a Forced ability file. For "after your adversary is destroyed, if this card is in your dueling line": gate on `EventCharacterDestroyed` + `LOCATION_DUELING_LINE` + `IN_DUEL`, then resolve the survivor via challenger/defender ids (not round actor/opponent). Heal only if participant is in play and `Wounds > 0`. Reference: `_03033`, `_01102`, `_02052` (lookup shape).
+24. **Pure-resolve Maneuver (wound/draw/move only):** skip `EventDuelCalculateManeuverValues`; implement only `EventResolveManeuver`. Keep the `EventManeuverCanceled handler not needed` comment. Gate wound-adversary availability on `! characterIsInDiscardOrLocker($adversary)`. `eventCheck` before `queueEvent` for wounds. Reference: `Maneuver_03033`, `Maneuver_01055`.
