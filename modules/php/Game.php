@@ -185,6 +185,7 @@ class Game extends \Bga\GameFramework\Table
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CORNERED_CHALLENGE_TYPE = 20;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
+    final const SANJAY_CHALLENGE_TYPE = 22;
 
     //Duel global variables
     //Duel Names
