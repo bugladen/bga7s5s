@@ -109,6 +109,16 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase03034': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase03034_2': () => {
+                this.addActionButton(`actHeal`, _('Heal a Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actDraw`, _('Draw a Card'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'highDramaPhase03020': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
