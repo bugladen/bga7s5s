@@ -21,6 +21,7 @@ Canonical references:
 - `modules/php/cards/faf/_03027.php` (Odette Dubois D'Arrent, Disillusioned Courtier) — `Character` with two paired button-based City Reactions: (1) `EventCharacterDestroyed` triggered "after another character at this location is destroyed" with a mandatory heal + optional adjacent-Renown-move, including the **Pass-button pattern** (early-return before `setUsed` so the daily slot survives a decline) and **no-op effect gating** (hide "Heal only" button at `Wounds == 0`); (2) `EventChallengeIssued` triggered "after a challenge is issued at this location, before choosing to intervene" pulling an adjacent Duelist — uses `EventChallengeIssued` specifically because the text says "before intervene" (`EventChallengeAccepted` fires too late).
 - `modules/php/cards/faf/_03028.php` (Térence Rois, Pompous Perveyor) — `Character` combining three card-local patterns with **no state classes / no JS**: (1) **stat-specific challenge ban** — `eventCheck` on `EventChallengeIssued` when `CHALLENGE_STAT == STAT_COMBAT` only (NOT a `canChallenge()` override — Terence can still issue Finesse/Influence challenges); (2) **duel-scoped stat replacement** — "set [Combat] as equal to [Influence]" while participating in a duel at a named city location (`$DuelCombatEqualsInfluenceApplied` flag + stored `$CombatBeforeDuelOverride`, apply on `EventDuelStarted`/swap events, clear on `EventDuelEnd`, re-sync on `EventCharacterInfluenceModified`/`EventCharacterCombatModified`); (3) **City Reaction on third-party equip** — `Reaction_03028` listens on `EventAttachmentEquipped` when *any* character equips at `Game::LOCATION_CITY_BAZAAR` while the owner is also in the city there (NOT gated on `characterId == owner.Id` — compare `Reaction_01039` Philip, which only fires on self-equip).
 - `modules/php/cards/faf/_03037.php` (Sanjay, Daring Tomcat) — `Leader` with (1) **gambled-only combat-card Riposte bonus** via `EventDuelCalculateCombatCardStats` gated on `$event->gambled` (not every combat card — contrast Yevgeni), (2) **button Reaction on challenge refused** that Collects Renown from his location (`Removed` + `PlayerGains`), (3) **City Action that issues an Influence challenge without engaging** — `SANJAY_CHALLENGE_TYPE` kept out of auto-engage and **no** `createCardEngagedEvent` (not Don Constanzo's conditional-engage). Hand-size filter: only opposing characters whose controller has fewer cards in hand.
+- `modules/php/cards/faf/_03038.php` (Damya Kahina, Sea Serpent) — `Character` with **two City Actions** as `Action_03038a` / `Action_03038b`: (1) **Draw then discard** — queue `createCardDrawnEvent` on `EventActionTriggered` before transitioning to a `factionHand` discard picker; (2) **Move equipped character → destroy attachment → draw cost+1** — character picker (no `IAbilityThatTargetsCharacters` — text lacks "target"), move with `engage=false`, then Adelheide-style attachment **button** picker; destroy via unequip + `createCardDiscardedFromPlayEvent`; draw `WealthCost + 1`.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -188,6 +189,10 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"While you control X at <Owner>'s location, she has +N [Stat]"** (any location-counting passive) | Pattern A passive that hooks `EventCardMoved` (and `EventCharacterMustered` / `EventApproachCharacterPlayed` / `EventCharacterDestroyed` / `EventCharacterRecruited`). **`EventCardMoved` fires BEFORE the DB location update** (`runEventHubAfterCards = true`), so `getCharactersAtLocation` returns the *pre-move* state. Either pass an explicit `+1`/`-1` adjustment (per-character count — `_01037`) or thread the event into the helper to exclude the moving-out card and look up the moving-in card (binary "any qualifying member" bonus — `_03026`). Add a no-op gate `if ($new == $this->ModifiedStat) return;` to skip same-value events. See Pattern A "Location-counting passives" below. |
 | **"Opponents' abilities cannot wound (or move wounds to) <Owner>"** / "<Owner> ignores wounds from X" | Override `eventCheck` on the card class and zero `$event->wounds` on `EventCharacterBeingWounded`. Distinguish ability-emitted wounds (non-empty `abilityId`) from threat-conversion wounds (empty `abilityId`). See Pattern A "Wound-prevention passive" below. Reference: `_03014` Kaspar (opponent's-ability scope), `_01069` Maxime (own-Sorcerer scope), `_01153` Breastplate (in-duel reduction-by-one). |
 | **`<b>Action:</b>`** / **`<b>City Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending `CharacterAction`. State class(es) + JS wiring per Pattern C. **"City Action" only differs by the `cardInCity` gate** in `isAvailableToPlayer`. |
+| **Two (or more) distinct City Actions / Actions on one card** | Split into separate classes `Action_NNNNNa`, `Action_NNNNNb`, … each with its own Name, availability, states, and transition keys (`"NNNNNa"`, `"NNNNNb"`). Wire all in `$this->Actions = [...]`. State IDs append `1`/`2` (e.g. `4030381` / `4030382`); a multi-step **b** uses `40303822` for step 2. Reference: `_03038` Damya, `_01095` Patricia. |
+| **"Draw a card. Then, discard a card."** | Queue `createCardDrawnEvent` in `EventActionTriggered` **before** `createTransitionEvent` into the discard state — printed order is Draw → Discard, and the client needs the drawn card in `factionHand` before the picker. Hand picker = Pattern C `factionHand` (not `highlightCardsAsSelectable`). Availability: `cardInCity` + player will have ≥1 hand card after draw (hand nonempty **OR** faction deck + discard nonempty — empty-everything hangs the discard state). Reference: `Action_03038a`. |
+| **"Your equipped character moves to this location. Then, destroy their attachment to draw …"** | Two-step Pattern C. "Equipped" = your character with ≥1 non-`FakeAttachment`. Strict "moves to" → exclude characters already at the owner's location (and thus the owner herself when she is there). No "target" in text → **no** `IAbilityThatTargetsCharacters`. Move with `engage=false` when Engage is not printed. Attachment step: button list (Adelheide `01194`), not board highlight. Destroy = unequip + `createCardDiscardedFromPlayEvent`; capture `WealthCost` **before** destroy; then queue `WealthCost + 1` draws. Parenthetical "must be destroyed to draw" → no Pass on the attachment step. Reference: `Action_03038b`. |
+| **"Destroy [an] attachment"** (effect, any context) | Canonical recipe: `createAttachmentUnequippedEvent` → `eventCheck` → queue; then `createCardDiscardedFromPlayEvent(..., $asEffect = true)`. Do **not** invent `createAttachmentDestroyedEvent` — it does not exist. Reference: `Action_01174`, `Maneuver_01142`, `Action_03038b`. |
 | **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. **Engagement is a trichotomy** — do not assume "no Engage printed" means Don Constanzo conditional-engage; some actions never engage (Sanjay `_03037`). |
 | **"… If their controller has fewer cards in hand than you, …"** (hand-size gate on targets) | Filter opposing targets (and `isAvailableToPlayer`) by comparing `count($game->getGameDeckObject()->getPlayerHand($controllerId))`. Prefer filtering at availability so the action never offers a dead pick. Reference: `Action_03037` Sanjay. |
 | **"Your <Trait> at this location issues a challenge"** (performer ≠ owner) | Two-step Pattern F: step 1 picks the *performer*, step 2 picks the target at the *performer's* location. Engagement follows the trichotomy (Don Constanzo = conditional engage; never-engages variants emit no engage). See Pattern F's "Performer ≠ action owner" subsection. Reference: `Action_03003`. |
@@ -1059,7 +1064,99 @@ For "Discard a card from your hand" / "Reveal a card from your hand" steps where
 },
 ```
 
-`onCardDiscarded` in `PlayerActions.js` already submits via `actFromCardWithId` with the selected card id, so the server-side `actFromActionWithId(int $id)` handler works as-is. Reference: `_01069` (Maxime), Angeline `_03026` step 1.
+`onCardDiscarded` in `PlayerActions.js` already submits via `actFromCardWithId` with the selected card id, so the server-side `actFromActionWithId(int $id)` handler works as-is. Reference: `_01069` (Maxime), Angeline `_03026` step 1, Damya `Action_03038a`.
+
+### Draw-then-discard — queue the draw on `EventActionTriggered`
+
+For **"Draw a card. Then, discard a card."** (Damya `Action_03038a`):
+
+```php
+if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
+{
+    $owner = $this->getOwningCharacter($event->theah);
+
+    $drawEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
+    $event->theah->queueEvent($drawEvent);
+
+    $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "NNNNNa", $this->Id);
+    $event->theah->queueEvent($transition);
+}
+```
+
+WHY draw before the discard state: printed order is Draw → Discard; events process before the client enters the picker, so the drawn card is already in `factionHand`. Do **not** draw only after the player confirms discard.
+
+Availability must guarantee a discardable card after the draw:
+
+```php
+$hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
+if (count($hand) > 0) return true;  // (after cardInCity etc.)
+
+$deck = $theah->game->getGameDeckObject();
+$faction = $theah->game->getPlayerFactionDeckName($playerId);
+$discard = $theah->game->getPlayerDiscardDeckName($playerId);
+return $deck->countCardsInLocation($faction) + $deck->countCardsInLocation($discard) > 0;
+```
+
+Empty hand + empty deck + empty discard → action unavailable (otherwise the discard state hangs).
+
+### Multiple Actions on one card — `Action_NNNNNa` / `Action_NNNNNb`
+
+When Text has two separate `<b>City Action:</b>` (or Action) clauses, **do not** cram both into one class. Split:
+
+- `Action_NNNNNa.php` / `Action_NNNNNb.php` — each with its own `$this->Name`, `isAvailableToPlayer`, states, transition key
+- Card constructor: `$this->Actions = [ new Action_NNNNNa(), new Action_NNNNNb() ];`
+- Transition keys and state names: `"03038a"` / `"03038b"` / `"03038b_2"`; JS state names `highDramaPhase03038a` etc.
+- State IDs: append digit for which action — `HIGH_DRAMA_PLAYER_TURN_03038a = 4030381`, `…_03038b = 4030382`, `…_03038b_2 = 40303822` (same scheme as `01152a`/`01152b` = `4011521`/`4011522`)
+
+Reference: `_03038` Damya, `_01095` Patricia (`Action_01095a` / `Action_01095b`).
+
+### Destroy an attachment — unequip + discard-from-play
+
+There is **no** `createAttachmentDestroyedEvent`. Destroy means:
+
+```php
+$unequipEvent = EventFactory::createAttachmentUnequippedEvent(
+    $attachment->ControllerId, $attachment->AttachedToId, $attachment->Id
+);
+$game->theah->eventCheck($unequipEvent);
+$game->theah->queueEvent($unequipEvent);
+
+$discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
+    $attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true
+);
+$game->theah->queueEvent($discardEvent);
+```
+
+If the effect draws cards equal to printed cost (+N), **read `$attachment->WealthCost` before queueing destroy** — after unequip/discard the card is no longer a reliable in-play cost source. Cost `0` → still draw `0 + 1 = 1` when the text says "plus one."
+
+Skip `$attachment->FakeAttachment` when building destroy/equip eligibility lists (Boons, Burdens, etc. are not real equipment).
+
+### Attachment picker — button list, not board highlight
+
+For "choose one of this character's attachments" steps (Damya step 2, Adelheide `01194` step 1), pass `attachments` as `[['id' => …, 'name' => …], …]` from `getArgsFromAction` and render buttons:
+
+```js
+// OnUpdateActionButtons — note args.args.attachments (not args.args.args)
+'highDramaPhaseNNNNN_2': () => {
+    args.args.attachments.forEach((attachment) => {
+        this.addActionButton(
+            `actChooseAttachment-${attachment.id}`,
+            attachment.name,
+            () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id})
+        );
+    });
+},
+```
+
+WHY buttons over `highlightCardsAsSelectable`: equipped attachment art is small/stacked; buttons are the established UX. `OnEnteringState` still highlights the owner / moved character as `_7sfs-chosen` context. Each button click submits immediately — no separate Confirm.
+
+### "Equipped character moves to this location" eligibility
+
+- Controllers match; ≥1 destroyable (non-fake) attachment.
+- **Exclude characters already at the owner's location** when the text says "moves to this location" — same spirit as pull-to-here movers in `Reaction_03016b`. That also excludes the owner herself while she is at "this location."
+- Move: `createCardMovingEvent(..., $engage = false, ...)` when Engage is not printed.
+- Store mover id in `Game::CHOSEN_TARGET` for the destroy step; clear it when the action finishes.
+- No "target" in text → no `IAbilityThatTargetsCharacters`; use private helpers (`isEligibleMover`, `getDestroyableAttachments`).
 
 ### City-location picker for CharacterActions — override `actFromActionWithIds`
 
@@ -1132,7 +1229,7 @@ private function isValidWoundCandidate(Character $owner, Character $character): 
 
 Don't reuse the `isValidTargetForAbility` name — that name implies the interface contract.
 
-Reference: `_03026` Angeline (wounds without targeting), vs. `Action_03020` (commanding — *does* target).
+Reference: `_03026` Angeline (wounds without targeting), `Action_03038b` Damya ("Your equipped character moves" without "target"), vs. `Action_03020` (commanding — *does* target).
 
 ### State ID encoding
 
@@ -1144,6 +1241,12 @@ For regular Character cards (not city deck), use `4` + the 5-digit `CardNumber` 
 - `_03001` (Cesca del Rosso) step 1: `HIGH_DRAMA_PLAYER_TURN_03001 = 403001`
 - `_03001` step 2: `HIGH_DRAMA_PLAYER_TURN_03001_2 = 4030012`
 
+When one card has **multiple Action classes** (`a`/`b`), append a digit for which action, then the step suffix:
+
+- `_03038a` discard: `HIGH_DRAMA_PLAYER_TURN_03038a = 4030381`
+- `_03038b` step 1 / 2: `4030382` / `40303822`
+- Same idea as `_01152a` / `_01152b` = `4011521` / `4011522`
+
 **Don't engineer around hypothetical city-deck-card collisions.** Memory `feedback_state_id_encoding.md`: the user prefers the simple `4` + cardId scheme. If a future CD card wants the same number, that collision gets resolved then.
 
 ### `states.inc.php` transition-name mapping
@@ -1154,11 +1257,11 @@ When you call `EventFactory::createTransitionEvent($playerId, $cardId, $transiti
 "03001"   => States::HIGH_DRAMA_PLAYER_TURN_03001,        // entered from EventActionTriggered
 ```
 
-**Do NOT blindly add `"03001_2"`** unless your action's `handleEvent` actually calls `createTransitionEvent($playerId, $cardId, "03001_2", ...)`. The step 1 → step 2 jump normally happens via `$game->gamestate->nextState("stregaChosen")` using the state's own `transitions` array — not via the lookup table.
+**Do NOT blindly add `"03001_2"`** unless your action actually calls `createTransitionEvent($playerId, $cardId, "03001_2", ...)`. The step 1 → step 2 jump **sometimes** happens via `$game->gamestate->nextState("stregaChosen")` using only the state's own `transitions` array — in that case the lookup table does not need `"03001_2"`.
 
-The only existing card that legitimately uses a `<card>_2` transition-event name is `Action_03cd03` (Chance Meeting), which rotates through opponents by queueing transitions directly into the muster state. If your card doesn't have a similar "queue into a later state from outside the normal flow" pattern, don't add the `_2` entry. (`"03cd01_2"` is in the file too — but it's dead code; lifted by copy-paste and never actually consulted.)
+**Do add `"NNNNN_2"` (etc.) when you queue `createTransitionEvent` into a later step** — common for multi-step actions that `nextState` back to `HIGH_DRAMA_PLAYER_TURN_EVENTS` so the event queue can process a move/discard/draw before entering step 2. Examples: Angeline `"03026_2"` / `"03026_3"`, Damya `"03038b_2"`, challenge actions `"NNNNN_2"` → technique-available (Pattern F).
 
-**Exception: "issue a challenge" actions DO need a `<card>_2` entry.** See Pattern F — those actions cross from player-turn states into the challenge sub-state machine via `createTransitionEvent("<card>_2", ...)`, so the lookup table is actually consulted.
+**Exception reminder: "issue a challenge" actions ALWAYS need a `<card>_2` entry.** See Pattern F — those actions cross from player-turn states into the challenge sub-state machine via `createTransitionEvent("<card>_2", ...)`.
 
 ### Named transitions, and the `""` (empty) transition rule
 
@@ -1189,6 +1292,8 @@ When the zombie path is the only escape hatch besides the success path (typical 
 | `Action_02010` | Two-step "move wound from character A to character B"; the heal+wound recipe. |
 | `Action_03001` | Two-step "move wound from your Strega to opposing non-Leader"; the heal+wound recipe applied to a Leader's City Action. |
 | `Action_01035` | Engage-as-cost + reveal-from-city-deck-until-Mercenary action on a Leader. |
+| `Action_03038a` | Draw-then-discard City Action — draw queued on `EventActionTriggered`, then `factionHand` discard picker. |
+| `Action_03038b` | Move equipped character (`engage=false`) → attachment button destroy → draw `WealthCost + 1`. Dual-action `a`/`b` sibling of `Action_03038a`. |
 
 ### Move-a-wound recipe
 
@@ -2256,6 +2361,11 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/_03037.php` (Sanjay, Daring Tomcat) | **Leader with gambled-only Riposte passive + challenge-refused Collect Renown Reaction + never-engages Influence City Action.** (1) `EventDuelCalculateCombatCardStats` with `$event->gambled` gate (contrast Yevgeni's ungated +1 Thrust). (2) `Reaction_03037` on `EventChallengeRejected` — Collect = `RenownRemovedFromLocation` + `PlayerGainsReknown`; Renown > 0 precondition. (3) `Action_03037` Pattern F with `SANJAY_CHALLENGE_TYPE` out of auto-engage and **no** engage event — exemplar for engagement trichotomy case (c). Hand-size target filter via `getGameDeckObject()->getPlayerHand`. |
 | `modules/php/cards/faf/actions/Action_03037.php` | **Never-engages Pattern F + hand-size target filter.** Sets `STAT_INFLUENCE` + `SANJAY_CHALLENGE_TYPE`; transitions `"03037_2"` into challenge machine. No `createCardEngagedEvent`. Filters opposing targets to those whose controller's hand size is strictly less than Sanjay's controller. |
 | `modules/php/cards/faf/reactions/Reaction_03037.php` | **Challenge-refused Collect Renown Reaction.** `challengerId == owner.Id`; location Renown > 0 gate; Collect/Pass buttons; Collect queues remove-from-location + player-gains. |
+| `modules/php/cards/faf/_03038.php` (Damya Kahina, Sea Serpent) | **Character with two City Actions (`a`/`b`).** (1) Draw-then-discard — draw on `EventActionTriggered` before `factionHand` discard picker. (2) Move equipped character → destroy attachment → draw `WealthCost + 1`. Exemplar for dual-action split, destroy-attachment recipe, and attachment button picker. |
+| `modules/php/cards/faf/actions/Action_03038a.php` | **Draw-then-discard City Action.** Queues `createCardDrawnEvent` then `"03038a"` transition; discard via `createCardDiscardedFromHandEvent`; availability requires a post-draw discardable card (hand or deck/discard). |
+| `modules/php/cards/faf/actions/Action_03038b.php` | **Move + destroy attachment + draw.** Character picker (no `IAbilityThatTargetsCharacters`); `engage=false` move; Adelheide-style attachment buttons; unequip + `createCardDiscardedFromPlayEvent`; capture cost before destroy; `WealthCost + 1` draws. Excludes same-location / FakeAttachment. |
+| `modules/php/cards/_7s5s/actions/Action_01174.php` | **Canonical attachment destroy recipe** (unequip + discard-from-play) used by Damya and many maneuvers/techniques. |
+| `modules/php/cards/_7s5s/actions/Action_01194.php` | **Attachment button picker UX** — `args.attachments` → one `addActionButton` per attachment submitting `actFromCardWithId`. Damya step 2 mirrors this. |
 | `modules/php/cards/faf/reactions/Reaction_03028.php` | **Canonical "after any character equips at named location" City Reaction.** Demonstrates: (a) owner + equipping character both gated on the same `Game::LOCATION_*` constant; (b) NOT gated on `characterId == owner.Id` (contrast `Reaction_01039` self-equip); (c) `FakeAttachment` skip; (d) Draw/Pass with Pass before `setUsed`. |
 | `modules/php/cards/faf/reactions/Reaction_03027a.php` | **Canonical Pass-button + heal/renown-move pattern.** Demonstrates: (a) `EventCharacterDestroyed` "another character at this location" gate (`characterId != owner.Id`, `destroyed.Location == owner.Location`); (b) mandatory-first + optional-second effect split in `performReaction`; (c) Pass button with early-return BEFORE `setUsed` so the daily-use slot survives; (d) hide buttons whose effect would be a no-op (`Heal only` only shown when `Wounds > 0`); (e) three-event renown-move recipe (`createRenownMovingBetweenLocationsEvent` + `Removed` + `Added` with shared `batchId`). |
 | `modules/php/cards/faf/reactions/Reaction_03027b.php` | **Pre-intervention `EventChallengeIssued` trigger + pull-adjacent-Duelist effect.** Uses `EventChallengeIssued` (queued by `stIssueChallenge` BEFORE the intervention dispatcher) for "before choosing to intervene" — `EventChallengeAccepted` fires too late. Eligibility: controller match + `Duelist` trait + at an adjacent city location (`getAdjacentCityLocations($owner->Location, false)`). Button-per-Duelist + Pass; effect re-validates location/trait/controller before queueing `createCardMovingEvent(engage=false)`. |
@@ -2280,8 +2390,8 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 2. For a Leader, confirm: `"Leader"` is in `Traits`, `CrewCap` and `Panache` are set, no `initializeFaction` call (the framework sets this from player faction selection).
 3. For a regular Character, confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN.
 4. Every new state class needs all three: the class file in `modules/php/States/<expansion>/`, the constant in `States.php`, and the transition entry in `states.inc.php`'s `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`.
-5. Only add `"<card>_2"` to `states.inc.php` if you actually call `EventFactory::createTransitionEvent(..., "<card>_2", ...)` somewhere — that lookup table is **only** consulted by `createTransitionEvent`, not by `nextState`. The step 1 → step 2 jump uses `nextState("...")` via the state's own transitions array. Most multi-step actions need only the step-1 entry.
-6. State ID convention: `4` + 5-digit `CardNumber` for step 1; append `2`/`3`/`4` for subsequent steps. Don't engineer a separate prefix to dodge hypothetical CD-card collisions (per user feedback memory).
+5. Only add `"<card>_2"` to `states.inc.php` if you actually call `EventFactory::createTransitionEvent(..., "<card>_2", ...)` somewhere — that lookup table is **only** consulted by `createTransitionEvent`, not by `nextState`. Some multi-step actions jump step 1 → step 2 solely via `nextState("...")` on the state's own transitions (step-1 entry only). **Others** `nextState` back to `HIGH_DRAMA_PLAYER_TURN_EVENTS` so the queue can process a move/draw/discard, then `createTransitionEvent("NNNNN_2")` re-enters step 2 — those **do** need the `_2` (and `_3`, …) lookup entries (Angeline `"03026_2"`, Damya `"03038b_2"`, Pattern F challenge `"NNNNN_2"`).
+6. State ID convention: `4` + 5-digit `CardNumber` for step 1; append `2`/`3`/`4` for subsequent steps. For dual Action classes (`a`/`b`), append which-action digit first (`4030381` / `4030382` / `40303822` for Damya). Don't engineer a separate prefix to dodge hypothetical CD-card collisions (per user feedback memory).
 7. Every new state needs JS wiring in `OnEnteringState.<expansion>.js` AND `OnUpdateActionButtons.<expansion>.js`. Add `OnLeavingState.<expansion>.js` reset if you set selection modes or styling. Add to `PlayerActions.js` if you reuse a client action.
 8. If you minted a new global, clear it in the matching cleanup state (or defensively at turn boundaries).
 9. Mentally run pre-commit hook checks on every file you touched. Especially: `createActionResolvedEvent` in the action, no `setUsed`/`resetPlayerPassCount`/`announceAction` in the `CharacterAction` subclass, `$this->setUsed(` and `$this->isAvailable(` literal strings present in every `CardReaction` subclass, and `createSorcererAbilityStartEvent`/`createSorcererAbilityPlayedEvent` if implementing `ISorcererAbility`.
@@ -2312,10 +2422,14 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 31. **For arrays handed to JS via `getArgsFromAction`**: `getCardObjectsAtLocation` returns an array keyed by card id. `array_map` preserves keys, and a non-sequentially-keyed array JSON-encodes as an object — `.forEach` / `.map` throws on the client. Wrap in `array_values(array_map(...))`. Symptom: `Uncaught TypeError: ids.forEach is not a function`.
 32. **For hand-card picker states** (discard from hand, reveal from hand): use `factionHand.setSelectionMode('single')` + `onCardDiscarded` (reusable from `PlayerActions.js`). DO NOT use `highlightCardsAsSelectable` — that's for in-play cards in `cardProperties`; hand cards aren't there and the lookup returns `null` (symptom: `Cannot read properties of null (reading 'className')`). See Pattern C "Hand-card picker".
 33. **For city-location picker states on a CharacterAction**: the state's `#[PossibleAction]` is `actFromCardWithLocations(string $locations)`, and the action overrides **`actFromActionWithIds(array $ids)`** — NOT `actFromActionWithId(int $id)`. Each `$ids[N]` entry is a location-name STRING, not an int. Symptom of overriding the wrong method: the state spins waiting for an action that never arrives (presents as an infinite loop). See Pattern C "City-location picker for CharacterActions".
-34. **For `IAbilityThatTargetsCharacters`**: implement ONLY when the card text says "target". "Wound an opposing character" / "engage a character" / "destroy a character" without the word "target" is NOT a targeted ability — don't add the interface. Use a plain private helper (e.g., `isValidWoundCandidate`) for validation; don't reuse the `isValidTargetForAbility` name. See Pattern C "Don't add `IAbilityThatTargetsCharacters` unless the text says 'target'".
-35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one, **and which engagement trichotomy case applies** (Engage printed / conditional engage / never engages). Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`), the Odette journal (`2026-06-10-02-odette-dubois-darrent-03027-implementation.md`), the Térence journal (`2026-07-01-03-terence-rois-03028-implementation.md`), and the Sanjay journal (`2026-07-11-07-sanjay-03037-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here / stat-specific-challenge-ban / set-stat-equal-while-dueling / third-party-equip-at-location / gambled-combat-card-passive / never-engages-challenge / Collect-Renown-on-refuse decisions in detail.
+34. **For `IAbilityThatTargetsCharacters`**: implement ONLY when the card text says "target". "Wound an opposing character" / "engage a character" / "destroy a character" / "Your equipped character moves …" without the word "target" is NOT a targeted ability — don't add the interface. Use a plain private helper (e.g., `isValidWoundCandidate`, `isEligibleMover`) for validation; don't reuse the `isValidTargetForAbility` name. See Pattern C "Don't add `IAbilityThatTargetsCharacters` unless the text says 'target'". References: `_03026` Angeline, `Action_03038b` Damya.
+35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one, **and which engagement trichotomy case applies** (Engage printed / conditional engage / never engages). Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`), the Odette journal (`2026-06-10-02-odette-dubois-darrent-03027-implementation.md`), the Térence journal (`2026-07-01-03-terence-rois-03028-implementation.md`), the Sanjay journal (`2026-07-11-07-sanjay-03037-implementation.md`), and the Damya journal (`2026-07-11-09-damya-kahina-03038-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here / stat-specific-challenge-ban / set-stat-equal-while-dueling / third-party-equip-at-location / gambled-combat-card-passive / never-engages-challenge / Collect-Renown-on-refuse / dual-City-Action-a-b / draw-then-discard / destroy-attachment-to-draw decisions in detail.
 36. **For stat-specific challenge bans** ("cannot issue [Combat] challenges" / "may only issue [Combat] challenges"): use `eventCheck` on `EventChallengeIssued` gated on `challengerId == $this->Id` AND `CHALLENGE_STAT`. Do NOT override `canChallenge()` to `false` unless the ban covers **all** challenge types — a partial ban must leave `canChallenge()` at default so Finesse/Influence action performers still include the character. Basic Challenge always sets `CHALLENGE_STAT = STAT_COMBAT` in `actHighDramaChallengeActionStart`, so the `eventCheck` backstop blocks Basic Challenge at issue time even if the character appears in the performer list. Pattern reference: `_03028` Térence (ban Combat), `_02013` Wilhelm (only Combat).
 37. **For "set [StatA] as equal to [StatB]" while a scoped condition holds** (duel at named location, etc.): use a replacement flag + snapshot restore — NOT the Ise ±1 delta pattern. Store pre-override target stat at apply-time; restore snapshot on clear; re-sync on source-stat changes and on external target-stat mutations during the override. Hook duel boundaries + swap events like `_01089` Soline. Named locations use `Game::LOCATION_CITY_*` constants. Pattern reference: `_03028` Térence and Pattern A's "Set one stat equal to another while a scoped condition holds" subsection.
 38. **For "Reaction: After a character equips an attachment at [location]"**: listen on `EventAttachmentEquipped`. Gate both `$owner->Location` and equipping `$character->Location` on the named `Game::LOCATION_CITY_*` constant; `cardInCity($owner)` for City Reactions; skip `FakeAttachment`. Only gate on `$event->characterId == $owner->Id` when the text names the owner ("After Philip equips …"). Pattern reference: `Reaction_03028` (any character), `Reaction_01039` (self only).
 39. **For "gambled combat cards have +N[Stat]" passives:** gate `EventDuelCalculateCombatCardStats` on `actorId == $this->Id` **AND** `$event->gambled`. Use `$event->addRiposte`/`addParry`/`addThrust`. Do NOT use `Game::DUEL_GAMBLED` for this passive — that global is for Gambling Technique availability. Pattern reference: `_03037` Sanjay (gambled-only) vs `_01116` Yevgeni (every combat card).
 40. **For "Collect a Renown from [location]" effects:** queue `createRenownRemovedFromLocationEvent` then `createPlayerGainsReknownEvent`. Gate the Reaction prompt (or Action availability) on `getCityLocation(...)->Renown > 0`. Pattern reference: `Reaction_03037` Sanjay.
+41. **For two (or more) City Actions / Actions on one card:** split into `Action_NNNNNa` / `Action_NNNNNb` with separate Names, availability, states, and transition keys (`"NNNNNa"`, `"NNNNNb"`). State IDs: `4` + cardNumber + action digit (+ step suffix). Pattern reference: `_03038` Damya, `_01095` Patricia. See Pattern C "Multiple Actions on one card".
+42. **For "Draw a card. Then, discard a card.":** queue `createCardDrawnEvent` on `EventActionTriggered` **before** the discard-state transition so the drawn card is in hand for `factionHand`. Gate availability on post-draw discardability (hand nonempty OR faction deck+discard nonempty). Pattern reference: `Action_03038a`. See Pattern C "Draw-then-discard".
+43. **For "destroy [an] attachment" effects:** use unequip + `createCardDiscardedFromPlayEvent` — there is no `createAttachmentDestroyedEvent`. Capture `WealthCost` before destroy if you draw equal to printed cost. Skip `FakeAttachment`. Pattern reference: `Action_01174`, `Action_03038b`. See Pattern C "Destroy an attachment".
+44. **For "Your equipped character moves to this location …":** equipped = ≥1 non-fake attachment; exclude characters already at the owner's location when the text says "moves to"; move with `engage=false` if Engage is not printed; attachment step uses button list (Adelheide `01194`), not board highlight; no `IAbilityThatTargetsCharacters` without the word "target". Pattern reference: `Action_03038b`.
