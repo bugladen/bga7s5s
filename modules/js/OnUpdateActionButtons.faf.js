@@ -202,6 +202,11 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'duelChooseTechnique_03039': () => {
+                this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             'duelEndOfRound_03022': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

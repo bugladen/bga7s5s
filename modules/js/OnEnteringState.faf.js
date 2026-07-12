@@ -469,6 +469,13 @@
                 }
             },
 
+            'duelChooseTechnique_03039': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
             'duelEndOfRound_03022': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

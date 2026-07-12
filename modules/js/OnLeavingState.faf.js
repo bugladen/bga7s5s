@@ -352,6 +352,13 @@
                 }
             },
 
+            'duelChooseTechnique_03039': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
             'duelEndOfRound_03022': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.clientStateArgs.characterIds.forEach((characterId) => {
