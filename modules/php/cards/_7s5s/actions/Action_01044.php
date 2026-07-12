@@ -37,11 +37,10 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = parent::getPerformersForAction($playerId, $theah);
-
-        $performers += $this->getAvailablePerformers($playerId, $theah);
-
-        return $performers;
+        // WHY: Do not merge with parent::getPerformersForAction. SchemeCityAction returns
+        // every city character (numeric keys). `$performers += filtered` keeps those keys
+        // and ignores the filtered list, so performers with no unengaged attachment appear.
+        return $this->getAvailablePerformers($playerId, $theah);
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
