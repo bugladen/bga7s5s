@@ -154,7 +154,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     overflow: hidden;
 }
 
-._7sfs-deck-picker-banner-image::after {
+._7sfs-deck-picker-banner-image::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -165,7 +165,22 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    transform: translate(calc(-50% - 220px), -50%) rotate(-20deg);
+    transform: translate(calc(-50% - 215px), calc(-50% + 60px)) rotate(-20deg);
+    pointer-events: none;
+}
+
+._7sfs-deck-picker-banner-image::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60%;
+    height: 60%;
+    background-image: url('img/deckpicker/faf.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: translate(calc(-50% - 200px), calc(-50% + 15px)) rotate(-15deg);
     pointer-events: none;
 }
 
