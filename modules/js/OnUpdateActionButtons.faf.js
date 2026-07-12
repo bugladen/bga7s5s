@@ -140,6 +140,16 @@
                 });
             },
 
+            'highDramaPhase03040': () => {
+                if (args.args.canClaim) {
+                    this.addActionButton(`actClaim`, _('Claim Location'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                }
+                if (args.args.ids && args.args.ids.length > 0) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Engage'), () => this.onChooseInPlayCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
             'highDramaPhase03020': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

@@ -210,6 +210,17 @@
                 }
             },
 
+            'highDramaPhase03040': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03034_2': () => {
                 if (this.isCurrentPlayerActive())
                 {
