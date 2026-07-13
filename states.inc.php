@@ -719,6 +719,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01098" => States::PLANNING_PHASE_END_01098,
+                "03041" => States::PLANNING_PHASE_END_03041,
                 "reaction" => States::PLANNING_PHASE_END_REACTIONS,
                 "pay" => States::PLANNING_PHASE_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_BEGINNING,

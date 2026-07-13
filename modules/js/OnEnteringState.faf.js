@@ -64,6 +64,21 @@
                 }
             },
 
+            'planningPhaseEnd_03041': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const amount = args.args.args.cardsToDiscard;
+                    this.clientStateArgs.cardsToDiscard = amount;
+                    var translated = dojo.string.substitute(
+                        _("(${amount} card(s) to discard)"),
+                        {
+                            amount: amount
+                        }
+                    );
+                    $('faction_hand_info').innerHTML = translated;
+                    this.factionHand.setSelectionMode('multiple');
+                }
+            },
+
             'highDramaPhase03cd01': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

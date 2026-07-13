@@ -36,6 +36,11 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'planningPhaseEnd_03041': () => {
+                this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsDiscarded());
+                dojo.addClass('actChooseDiscardCards', 'disabled');
+            },
+
             'highDramaPhase03cd01': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

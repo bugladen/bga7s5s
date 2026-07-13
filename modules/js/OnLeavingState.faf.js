@@ -35,6 +35,15 @@
                 this.resetCityLocations();
             },
 
+            'planningPhaseEnd_03041': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03cd01': () => {
                 if (this.isCurrentPlayerActive())
                 {

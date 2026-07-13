@@ -18,6 +18,8 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03005.php` (No Mercy) — **Resolve = Renown + pick-trait-filtered-card-from-discard, AND a Reaction.** Uses the new GameState class pattern. Reaction triggers on `EventChallengeRejected` when a Red Hand character (controlled by the scheme owner) had its challenge refused; stored location is then claimed.
 - `modules/php/cards/faf/_03029.php` (Hour of Blood) — **Trivial Renown resolve + Sorcerer City Action with choose-one Porté move branches.** Three High Drama action sub-states (`03029` → `03029_2` → optional `03029_3`). Reference when a scheme action has "Choose one: Either … or …" before character/location picks.
 - `modules/php/cards/faf/_03030.php` (Sworn Swords) — **Two-different-locations resolve + Diplomat City Action where performer (Diplomat) and challenger (Duelist) are different characters.** Two HD sub-states (`03030` → `03030_2`) then standard challenge flow. Custom `CHALLENGE_TYPE` for "Only Duelists may intervene" + `EventGenerateChallengeThreat` bonus on accept.
+- `modules/php/cards/_7s5s/_01098.php` (The Cat's Embargo) — **Forced at end of Planning** (pick opponent → reveal random hand card) + two-location resolve. Canonical for `EventPhasePlanningEnd` + `LOCATION_PLAYER_HOME` gate and `PLANNING_PHASE_END_*` states.
+- `modules/php/cards/faf/_03041.php` (Proper Study) — **Trivial Renown resolve + Forced draw-then-discard at Planning End + City Reaction after you claim.** New GameState under `PLANNING_PHASE_END_EVENTS`. Reaction moves Renown off the claimed location via destination buttons.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -72,6 +74,15 @@ Field notes:
 - **Traits must exist in `TraitNames::$TraitsJson`** (`modules/php/TraitNames.php`). Add missing ones in alphabetical order. (Memory feedback.)
 - **`Initiative` is non-zero.** It's the tie-breaker (alongside Leader Panache) for scheme resolution order during planning. Don't leave at the constructor default 0.
 
+### Scheme location lifecycle (read this before writing Forced / Action / Reaction gates)
+
+Chosen schemes sit at **`Game::LOCATION_PLAYER_HOME` for the rest of the day** after Planning reveal/resolve. At Dusk they are sent to the Locker (`stDuskPhase*` clears `selected_scheme_id` and queues `createCardSentToLockerEvent`). They do **not** go to the discard pile after resolve.
+
+Implications:
+- **Forced / Action / Reaction gates** that need "is this the chosen scheme?" use `$this->Location == Game::LOCATION_PLAYER_HOME` (canonical: `_01098`, `_03041`).
+- **`SchemeCityAction` / `SchemeAction`** base availability checks `LOCATION_PLAYER_HOME` — that is correct; do not "fix" it to discard.
+- **Scheme reactions fire through High Drama** because the card is still in `$theah->cards` at Home (and also after Dusk via locker/discard builds — see Reactions section). Don't add "is the scheme still in play" guards.
+
 ## Pick the Right Ability Shape
 
 Read each clause of the printed Text and classify it before writing code. The clauses above the horizontal rule (`<hr>`) are the **scheme effect** (resolved automatically during planning). Clauses below the rule are usually **City Action / Action / Reaction / City Reaction** keywords — the same shapes as on Characters.
@@ -89,7 +100,10 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **`<b>City Reaction:</b>` / `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php` extending `CardReaction`. Pre-commit hook enforces `setUsed`/`isAvailable` literal calls. Reference: `_02004` (City Reaction), `_03005` (Reaction), `_03006` (multi-stage Reaction). |
 | **`<b>Strega Reaction:</b>`** / **`<b>Mercenary City Action:</b>`** / **`<b>Diplomat …:</b>`** / **`<b>Musketeer …:</b>`** | Trait-prefixed keywords are **mechanical performer-trait gates**, NOT Sorcerer abilities. The chosen performer must have that trait (enforce via `hasTrait("Strega")` etc.). Do NOT `implement ISorcererAbility` for these. Reference: `_03006` (Premonition's Strega Reaction enforces the gate via `findStregaPerformerAtLocation`). |
 | **`<b>Sorcerer City Action:</b>` / `<b>Sorcerer Reaction:</b>`** | Mechanical "Sorcerer" keyword — class additionally `implements ISorcererAbility`, must emit `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). Can stack with trait gates: "Sorcerer Strega …" is both. Reference: `Reaction_02001` (Andriana), `Action_03029` (scheme Sorcerer City Action). |
-| **`<b>Forced:</b>`** | Override `handleEvent` directly on the scheme class. No Action/Reaction/State files. Reference: `_02052`'s Forced clause (`EventCharacterDestroyed` at Bazaar during duel). |
+| **`<b>Forced:</b>`** (event-driven, no player choice) | Override `handleEvent` on the scheme class. No Action/Reaction files. May still need a state if the Forced itself requires a pick. Reference: `_02052`'s Forced (`EventCharacterDestroyed` at Bazaar during duel). |
+| **`<b>Forced:</b> At the end of Planning • …`** | **Pattern F.** Listen on `EventPhasePlanningEnd` with `$this->Location == LOCATION_PLAYER_HOME`. If the Forced needs a player pick, queue `createTransitionEvent(..., "NNNNN")` into a `PLANNING_PHASE_END_<NNNNN>` GameState registered under **`PLANNING_PHASE_END_EVENTS.transitions`** (state id `28<NNNNN>`). Do **not** put it on the resolve-schemes map. Reference: `_01098` (pick opponent), `_03041` (draw then discard). |
+| **"Draw two cards, or three … if you control an \<Trait\>. Then, discard an equal number"** | Pattern F draw-then-discard. Check trait via `getCharactersInPlayByPlayerId` + `hasTrait(...)` (includes Home + Leaders). Clamp draw count to drawable cards (faction deck + discard). Persist `$cardsToDiscard` on the scheme. Queue N `createCardDrawnEvent` **before** the discard transition so the hand UI has the new cards. Multi-select discard via `actFromCardWithIds`. If 0 drawable, notify and skip the discard state — "equal number" of 0 draws is 0 discards (do not force-discard the existing hand). Reference: `_03041`. |
+| **"After you claim a location • Move a Renown from that location to a different location"** | City Reaction on `EventLocationClaimed` gated by `$event->playerId == $owner->ControllerId` and claimed location `Renown > 0`. Capture `$event->location`. Destination = button list of other city locations + Pass (no sub-state). Move with batch `createRenownMovingBetweenLocationsEvent` + remove + add(`isMove=true`). Pass does not `setUsed`. Surface the claimed location name in `getReactionDescription`. Reference: `Reaction_03041`, move-Renown button idiom `Reaction_01118`. |
 | **"Choose one: <i>Either</i> … <i>or</i> …" on a City Action** (scheme or character) | **Pattern D — branch-first multi-step High Drama action.** State 1 = button pick (`actFromCardWithId` with ids 1/2); state 2 = character pick; state 3 = location pick only if one branch needs it. Persist the chosen branch on the **action object** (`public int $MoveMode` + `$owner->IsUpdated = true`). Do NOT use `Game::CHOSEN_TARGET` for branch state — the challenge framework owns that global. Use `Game::CHOSEN_CARD` to pass the chosen character between steps 2→3 when a later location pick is needed. Reference: `_03029`, `Reaction_03cd18` (same branch UX, but reactions use `$stage` + `createReactionTransitionEvent`, not HD sub-states). |
 | **"Move your character at any location to your performer's location"** | Porté-style pull: `getCharactersInPlayByPlayerId($playerId)` filtered to `Location != $performer->Location` (includes Home). Single-mode cards can use one state like `Action_01085`. Reference: `Action_01068`, `Action_01085`. |
 | **"Move your character at your performer's location to any location"** | Porté-style push: characters at `$performer->Location`, destinations = all `getCityLocations()` names + `Game::LOCATION_PLAYER_HOME` (if not already Home), excluding current location. Reference: `Action_01093` (Maya "any location"), `Action_01068`. |
@@ -97,7 +111,7 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"Only \<trait\>s may intervene"** on a challenge | Add a new `Game::…_CHALLENGE_TYPE` constant. Enforce in **`Theah::interventionCheck`**, **`ArgumentsTrait`** (intervene-picker `ids`), and **`Reaction_02058`** (adjacent external intervene) — same trio as `LEGENDARY_REPUTATION_CHALLENGE_TYPE` / `AJA_CHALLENGE_TYPE`. Reference: `_03030` (`SWORN_SWORDS_CHALLENGE_TYPE`, Duelist gate). |
 | **"If the challenge is accepted, add a threat to your participant"** | Listen on `EventGenerateChallengeThreat` in the action class; bump `$event->actorThreat` only (not adversary). Fires on accept/intervene path when threat is generated, not on refuse. Reference: `Action_03030` (+1 actor), contrast `Action_02061` (+1 both). |
 
-A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat.
+A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat. `_03041` has a trivial Renown resolve AND a Forced draw/discard at Planning End AND a claim→move-Renown City Reaction.
 
 ## Pattern A — Resolve via `EventResolveScheme`
 
@@ -306,9 +320,47 @@ if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_NNNNN_PLAYER1)
 
 Reference: `_01151` — first state is the owner's pick, second state (`"01151_2"`) is each opponent's pick, queued per-opponent in turn order with `HIGH_PRIORITY` so they fire in order.
 
+## Pattern F — Forced at End of Planning
+
+Use when the printed text is **`<b>Forced:</b> At the end of Planning • …`**. This is **not** scheme resolve — it fires later, from `stPlanningPhaseEnd` → `EventPhasePlanningEnd` → `PLANNING_PHASE_END_EVENTS`.
+
+### Trigger on the scheme class
+
+```php
+if ($event instanceof EventPhasePlanningEnd && $this->Location == Game::LOCATION_PLAYER_HOME)
+{
+    // Forced effect. Queue draws / transitions here.
+}
+```
+
+WHY `LOCATION_PLAYER_HOME`: chosen schemes remain at Home until Dusk (see lifecycle above). Same gate as `_01098`.
+
+### If the Forced needs a player pick — third transition map
+
+| Piece | Where |
+|---|---|
+| State constant | `States::PLANNING_PHASE_END_<NNNNN>` = `28<NNNNN>` (append `2`, `3` for follow-on steps) |
+| Transition map | `states.inc.php` → **`PLANNING_PHASE_END_EVENTS.transitions`** — key `"NNNNN"` |
+| State class | `modules/php/States/<expansion>/State_planningPhaseEnd_<NNNNN>.php` (name: `planningPhaseEnd_<NNNNN>`) |
+| Transitions back | `"" => States::PLANNING_PHASE_END_EVENTS` |
+| JS keys | `planningPhaseEnd_<NNNNN>` in OnEntering / OnUpdate / OnLeaving |
+
+Do **not** register these under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` — that map is only for resolve-time picks. Same card number key (`"03041"`) can legally appear in both maps because they are separate lookups (see `_01098`: resolve `"01098"` vs end `"01098"`).
+
+### Draw-then-discard subtype (`_03041`)
+
+1. Compute N (e.g. 2, or 3 if `controlsAcademic` via `getCharactersInPlayByPlayerId` + `hasTrait("Academic")`).
+2. Clamp N to drawable count: `countCardsInLocation(factionDeck) + countCardsInLocation(discard)`. If 0, notify and **return** — do not open a discard state or strip the existing hand.
+3. Persist `public int $cardsToDiscard = $actualDraws` + `$this->IsUpdated = true`.
+4. Queue N × `createCardDrawnEvent` **then** `createTransitionEvent($controllerId, $this->Id, "NNNNN")` (draws process before the state opens so `factionHand` includes them).
+5. Discard state: `argsFromCard` exposes `cardsToDiscard` (also clamp to current hand size). `actFromCardWithIds` requires `count($ids) == $required`, re-validates each card is in the player's hand, queues `createCardDiscardedFromHandEvent(..., $asEffect = true)`, clears `$cardsToDiscard`, `nextState("")`.
+6. JS: multi `factionHand` select; Confirm calls `onCardsDiscarded()` → `actFromCardWithIds`. Store count in `clientStateArgs.cardsToDiscard` on enter; in `EventHandlers.js` enable Confirm only when `getSelection().length === needed`.
+
+Reference: `_03041` + `State_planningPhaseEnd_03041`. Opponent-pick Forced without draws: `_01098` + `State_planningPhaseEnd_01098`.
+
 ## State class — new pattern (use this for new schemes)
 
-Each player-choice resolve sub-state needs its own GameState class file. Mirror `State_planningPhaseResolveSchemes02052.php`.
+Each player-choice resolve **or Planning-End Forced** sub-state needs its own GameState class file. Mirror `State_planningPhaseResolveSchemes02052.php` (resolve) or `State_planningPhaseEnd_03041.php` (end Forced).
 
 ```php
 <?php
@@ -381,31 +433,46 @@ The older pattern defines the state inline in `states.7s5s.php` as an array entr
 
 ## States.php constant + states.inc.php transition
 
-Both files always need an edit for any new scheme that has a player-choice resolve sub-state.
+Both files always need an edit for any new scheme that has a player-choice sub-state.
 
-**`modules/php/States.php`:**
-
-```php
-const PLANNING_PHASE_RESOLVE_SCHEMES_<NNNNN> = 26<NNNNN>;
-```
-
-State ID convention: `26` + 5-digit `CardNumber`. For additional steps, append `2`, `3`, etc. (`260<NNNNN>2`).
-
-**`states.inc.php`:** Add to `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`:
+**`modules/php/States.php` — three ID prefixes:**
 
 ```php
-"NNNNN" => States::PLANNING_PHASE_RESOLVE_SCHEMES_<NNNNN>,
+const PLANNING_PHASE_RESOLVE_SCHEMES_<NNNNN> = 26<NNNNN>;  // resolve picks
+const PLANNING_PHASE_END_<NNNNN>             = 28<NNNNN>;  // Forced at Planning End picks
+const HIGH_DRAMA_PLAYER_TURN_<NNNNN>         = 40<NNNNN>;  // City Action / Action picks
 ```
 
-The transition key (`"NNNNN"`) is the string you pass as the third arg of `EventFactory::createTransitionEvent(...)` from your `EventResolveScheme` handler. It's looked up against this map.
+For additional steps, append `2`, `3`, etc. (`26030302`, `28030412`, `4030292`).
+
+**`states.inc.php` — put the transition key on the matching map:**
+
+| When the pick happens | Transition map |
+|---|---|
+| During scheme resolve | `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions` |
+| During Forced at Planning End | `PLANNING_PHASE_END_EVENTS.transitions` |
+| During High Drama action | `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions` |
+
+```php
+"NNNNN" => States::PLANNING_PHASE_END_<NNNNN>,   // example: Forced end pick
+```
+
+The transition key (`"NNNNN"`) is the string you pass as the third arg of `EventFactory::createTransitionEvent(...)`. It's looked up against the map for the events state that is currently running.
 
 ## JS Wiring
 
-For every new scheme resolve sub-state, wire all three of:
+For every new player-choice sub-state, wire all three of:
 
 - `modules/js/OnEnteringState.<expansion>.js` — set up the chooser (discard pile / city location / hand / etc.).
 - `modules/js/OnUpdateActionButtons.<expansion>.js` — add Confirm + Pass buttons.
 - `modules/js/OnLeavingState.<expansion>.js` — clean up (hide chooseList, reset city locations, remove highlights).
+
+State name prefixes:
+- Resolve picks → `planningPhaseResolveSchemes_<NNNNN>`
+- Planning-End Forced picks → `planningPhaseEnd_<NNNNN>`
+- High Drama action picks → `highDramaPhase<NNNNN>`
+
+Hand multi-discard also needs an `EventHandlers.js` entry so the Confirm button enables/disables on selection change.
 
 ### Discard-pile chooser (trait-filtered)
 
@@ -485,13 +552,54 @@ Cleanup:
 
 Reference: `_01071`, `_01072`, `_02046`.
 
+### Multi-card hand discard (Planning End Forced / draw-then-discard)
+
+```js
+'planningPhaseEnd_<NNNNN>': () => {
+    if (this.isCurrentPlayerActive()) {
+        const amount = args.args.args.cardsToDiscard;
+        this.clientStateArgs.cardsToDiscard = amount;
+        $('faction_hand_info').innerHTML = dojo.string.substitute(
+            _("(${amount} card(s) to discard)"), { amount: amount }
+        );
+        this.factionHand.setSelectionMode('multiple');
+    }
+},
+```
+
+Buttons (Confirm → reusable `onCardsDiscarded` from `PlayerActions.js`):
+
+```js
+'planningPhaseEnd_<NNNNN>': () => {
+    this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsDiscarded());
+    dojo.addClass('actChooseDiscardCards', 'disabled');
+},
+```
+
+`EventHandlers.js` (exact count — do not enable on `length > 0`):
+
+```js
+'planningPhaseEnd_<NNNNN>': () => {
+    const needed = this.clientStateArgs.cardsToDiscard || 0;
+    if (this.factionHand.getSelection().length === needed) {
+        dojo.removeClass('actChooseDiscardCards', 'disabled');
+    } else {
+        dojo.addClass('actChooseDiscardCards', 'disabled');
+    }
+},
+```
+
+Cleanup: `factionHand.setSelectionMode('none')`, clear `faction_hand_info`, reset `clientStateArgs`.
+
+Reference: `_03041`. Single-card hand discard during HD: `highDramaPhase03038a` / `Action_03038a`.
+
 ## Reactions on Schemes
 
 Schemes can carry Reactions (use `IHasReactions` + `ReactionTrait` + `reactions/Reaction_NNNNN.php`). The reaction shape is identical to character-borne `CardReaction`s — see `create-character`'s Pattern D for the full recipe.
 
 ### Lifecycle: scheme reactions DO fire during High Drama
 
-This was a worry during `_03005` implementation. Verified: `Theah::buildCity()` populates `$this->cards` from every persistent location including each player's discard pile. After a scheme resolves, it lands in discard — but it's still in `$this->cards`, so the framework still calls its `handleEvent`, which still propagates to the reaction's `handleEvent` via `Card::handleEvent`. `EventChallengeRejected` (which fires during High Drama City Action challenges) reaches the reaction normally. Don't add liveness guards based on "the scheme is no longer in play."
+This was a worry during `_03005` implementation. Verified: `Theah::buildCity()` populates `$this->cards` from every persistent location including each player's Home. Chosen schemes sit at **`LOCATION_PLAYER_HOME` for the whole day** (not discard — see lifecycle above), so `handleEvent` still reaches the scheme and its reactions during High Drama claims/challenges/pressures. Don't add liveness guards based on "the scheme is no longer in play."
 
 `CardReaction::handleEvent` resets `Used` to `false` on `EventDuskEndOfDay`, so a scheme reaction is once-per-day, same as a character reaction.
 
@@ -563,6 +671,20 @@ When the bullet text has multiple sentences but no internal "may", the decision 
 ### Schemes that target city locations / can't always claim
 
 `createLocationClaimedEvent($playerId, ?int $performerId, string $location)` — `performerId` is `null` when the claim isn't tied to a specific performer (e.g., scheme-driven claims). Compare `Action_03cd13.php` which passes the performer for an Action-driven claim. Don't invent a "fake performer" — `null` is correct.
+
+### "After you claim a location • Move a Renown …"
+
+City Reaction on `EventLocationClaimed`:
+
+1. Gate: `$this->isAvailable()`, `$event->playerId == $owner->ControllerId`, claimed `getCityLocation(...)->Renown > 0`, and at least one other city location exists as a destination.
+2. Capture `$this->location = $event->location` + `$owner->IsUpdated = true`.
+3. Queue `createReactionTransitionEvent`.
+4. Buttons: one per other city location (`moveTo-{Name}`) + Pass. No GameState / no JS.
+5. On confirm: batch `createRenownMovingBetweenLocationsEvent` + `createRenownRemovedFromLocationEvent` + `createRenownAddedToLocationEvent(..., $isMove = true)` with a shared `batchId`. Re-validate source still has Renown and destination ≠ source. `setUsed` only on success.
+6. Pass clears `$this->location` without `setUsed`.
+7. Bake the claimed location name into `getReactionDescription` (defensive fallback if empty).
+
+Reference: `Reaction_03041`. Button-from-location move-Renown idiom: `Reaction_01118` (Elina — sources with Renown; Proper Study flips it: fixed source, destinations).
 
 ### Multi-stage reactions (button-driven, no sub-state)
 
@@ -735,7 +857,7 @@ Planning resolve sub-states use `PLANNING_PHASE_RESOLVE_SCHEMES_*` (`26<NNNNN>`)
 
 **Sorcerer performer gate on a scheme City Action:** override `getPerformersForAction` to filter `hasTrait("Sorcerer")`. In `isAvailableToPlayer`, loop performers and return true only if at least one has a legal target for at least one printed branch — don't gate availability on a single fixed performer.
 
-**`SchemeCityAction` availability:** the base `SchemeAction` requires the scheme owner card at `LOCATION_PLAYER_HOME`. That is correct for normal schemes (they land in discard after Planning resolve and actions fire from there). Only override `isAvailableToPlayer` like `_02045` when the scheme is **placed on a city location** and the action keys off that placement.
+**`SchemeCityAction` availability:** the base `SchemeAction` requires the scheme owner card at `LOCATION_PLAYER_HOME`. That is correct for normal schemes (chosen schemes stay at Home all day — see lifecycle). Only override `isAvailableToPlayer` like `_02045` when the scheme is **placed on a city location** and the action keys off that placement.
 
 **Sorcerer wound + move event order** (matches Porté on characters):
 
@@ -848,6 +970,22 @@ Card text:
 
 Full implementation: `modules/php/cards/faf/_03030.php`, `modules/php/cards/faf/actions/Action_03030.php`, `modules/php/States/faf/State_planningPhaseResolveSchemes03030.php`, `State_highDramaPhase03030{,_2}.php`.
 
+## Walkthrough: implementing `_03041` (Proper Study)
+
+Card text:
+
+> Add a Renown to City Docks and The Grand Bazaar.
+> **Forced:** At the end of Planning • Draw two cards, or three cards instead if you control an Academic. Then, discard an equal number of cards.
+> **City Reaction:** After you claim a location • Move a Renown from that location to a different location.
+
+1. **Constructor.** `initializeFaction('Castille')`, `Initiative = 68`, `PanacheModifier = 1`, Traits = Alquimia + Scholarship (already in `TraitNames`). Register `IHasReactions` + `ReactionTrait` + `new Reaction_03041()`.
+2. **Resolve.** Trivial dual Renown (Docks + Bazaar). No planning sub-state.
+3. **Forced (Pattern F).** On `EventPhasePlanningEnd` + `Location == LOCATION_PLAYER_HOME`: compute draw count (2 or 3 via Academic), clamp to drawable, queue draws, persist `$cardsToDiscard`, transition `"03041"` under **`PLANNING_PHASE_END_EVENTS`**.
+4. **Discard state.** `State_planningPhaseEnd_03041` with `actFromCardWithIds`. Constant `PLANNING_PHASE_END_03041 = 2803041`. JS: multi hand select + exact-count `EventHandlers` enable + `onCardsDiscarded`.
+5. **City Reaction.** `EventLocationClaimed` → capture location → destination buttons + Pass → batch move Renown. Gate on Renown > 0 at claimed location.
+
+Full implementation: `modules/php/cards/faf/_03041.php`, `modules/php/cards/faf/reactions/Reaction_03041.php`, `modules/php/States/faf/State_planningPhaseEnd_03041.php`.
+
 ## Style / Memory Notes
 
 - `getActivePlayerName()` is deprecated — use `$game->getPlayerNameById($id)`.
@@ -858,8 +996,9 @@ Full implementation: `modules/php/cards/faf/_03030.php`, `modules/php/cards/faf/
   - Action:         `...\cards\<expansion>\actions`
   - Reaction:       `...\cards\<expansion>\reactions`
   - State class:    `Bga\Games\SeventhSeaCityOfFiveSails\States\<expansion>`
-- **State ID convention:** `26<NNNNN>` for Planning resolve sub-states; `40<NNNNN>` for High Drama action sub-states (`HIGH_DRAMA_PLAYER_TURN_<NNNNN>`). Don't engineer around hypothetical CD-card collisions — `2603005` is the right ID for scheme `_03005`, even though `_03cd05` exists. (Memory feedback.)
-- **Two transition tables:** resolve picks → `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`; action picks → `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Don't register HD action states under the planning map.
+- **State ID convention:** `26<NNNNN>` Planning resolve; `28<NNNNN>` Planning End Forced; `40<NNNNN>` High Drama action. Don't engineer around hypothetical CD-card collisions — `2603005` / `2803041` are correct even if `_03cd05` / similar exist. (Memory feedback.)
+- **Three transition tables:** resolve picks → `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS`; Forced end picks → `PLANNING_PHASE_END_EVENTS`; action picks → `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Same string key (e.g. `"01098"`) may appear in more than one map — that is intentional.
+- **Chosen schemes live at `LOCATION_PLAYER_HOME` until Dusk** (then Locker). Not discard after resolve. Forced/Action gates and `SchemeAction` availability rely on this.
 - **"Opposing"** means BOTH different controller AND same location.
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
@@ -873,6 +1012,7 @@ Full implementation: `modules/php/cards/faf/_03030.php`, `modules/php/cards/faf/
 - `$theah->cardInCity($card): bool` — true when the card is at a city location.
 - `$theah->locationInCity(string $location): bool` — the canonical "City location" check (Oles Inn / Docks / Forum / Bazaar / Governor's Garden). Use this when you only have the location string in hand (e.g. a captured `$this->location` on a Reaction) rather than a Card object. The printed keyword **"City"** on a card text maps directly to this set — not Home, not Locker, not Discard.
 - `$theah->getCharactersAtLocation(string $location, bool $includeUncontrolled = false): Character[]` — every Character at the location. Filter by `ControllerId` to split friend/foe.
+- `$theah->getCharactersInPlayByPlayerId($playerId): Character[]` — "control an Academic/…" checks: loop and `hasTrait(...)`. Includes Home and Leaders.
 - `$game->getCardObjectFromDb(int $id): ?Card` — hydrate a card from any location by id.
 - `$game->getGameDeckObject(int $playerId): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` is the discard query.
 - `$game->getPlayerDiscardDeckName(int $playerId): string` — the deck-table location string for a player's discard pile.
@@ -884,7 +1024,9 @@ Event factories you'll likely need:
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createCharacterBeingHealedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createCardDrawnEvent($playerId, $reason)` — for "draw a card" clauses.
+- `createCardDiscardedFromHandEvent($ownerId, $cardId, $sourceId, $asPayment = false, $asPlayed = false, $asEffect = false)` — Forced/effect discards use `$asEffect = true`.
 - `createRenownRemovedFromLocationEvent($playerId, $location, $count, $reason)`
+- `createRenownMovingBetweenLocationsEvent($playerId, $from, $to, $amount, $description)` — pair with remove + add(`isMove`) under one `batchId` for UI/animation.
 - `createCardRemovedFromPlayerDiscardPileEvent($playerId, $cardId)` (notification-only)
 - `createCardAddedToHandEvent($playerId, $cardId)` (does the actual move)
 - `createLocationClaimedEvent($playerId, ?int $performerId, $location)`
@@ -901,6 +1043,11 @@ Event factories you'll likely need:
 | `modules/php/cards/_7s5s/_01071.php` (Épée Sanglante) | Add Renown to a player-chosen city location. `actCityLocationsForReknownSelected`. |
 | `modules/php/cards/_7s5s/_01072.php` (Réputation Méritée) | Pick a location that has no Renown. Pass guard if no such location exists. |
 | `modules/php/cards/_7s5s/_01151.php` (Shifting Tides) | **When-Revealed effect** + **multi-player sequential loop.** First state is the owner's pick, second state is each opponent's pick queued per-player in turn order. |
+| `modules/php/cards/_7s5s/_01098.php` (The Cat's Embargo) | **Forced at Planning End** (opponent pick → random reveal) + two-location resolve. Canonical `EventPhasePlanningEnd` + `LOCATION_PLAYER_HOME` gate; transitions under `PLANNING_PHASE_END_EVENTS`. |
+| `modules/php/States/_7s5s/State_planningPhaseEnd_01098.php` | Planning-End Forced state class (opponent buttons). |
+| `modules/php/cards/faf/_03041.php` (Proper Study) | **Trivial Renown resolve + Forced draw-then-discard at Planning End + claim→move-Renown City Reaction.** Pattern F + `$cardsToDiscard` persistence. |
+| `modules/php/cards/faf/reactions/Reaction_03041.php` | City Reaction on `EventLocationClaimed`; destination buttons; batch Renown move; Pass without `setUsed`. |
+| `modules/php/States/faf/State_planningPhaseEnd_03041.php` | Planning-End Forced discard state (`actFromCardWithIds`). |
 | `modules/php/cards/tac/_02004.php` (Crash the Party) | **Scheme with a City Reaction.** Simple Renown adds resolve. `EventPressureOccuring` reaction with captured-location state. |
 | `modules/php/cards/tac/_02014.php` (Kaspar's Occupation) | Two-option resolve (add OR move Renown via `actFromCardWithId`/`actFromCardWithIds`). Plus a Leader City Action. |
 | `modules/php/cards/tac/_02046.php` (Winter's Wind) | **New GameState-class pattern** for the resolve sub-state. Location picker. |
@@ -929,22 +1076,24 @@ Event factories you'll likely need:
 1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Resolve / When-Revealed / Forced / City Action / Reaction). The Renown/Initiative numbers go on the constructor and are not a "pattern."
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN, `Initiative` is set, `PanacheModifier` is set (often 0 or ±1), all Traits exist in `TraitNames::$TraitsJson`.
 3. For every player-choice **Planning resolve** sub-state, ensure all three of: the GameState class in `modules/php/States/<expansion>/`, the constant in `States.php` (`26<NNNNN>`), and the transition entry in `states.inc.php` under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`.
-4. For every player-choice **High Drama action** sub-state on the scheme, same three pieces but constant `40<NNNNN>` and transitions under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Action file owns `handleEvent`/`getArgsFromAction`/`actFromAction*` — not the scheme class (unless legacy inline pattern).
-5. Don't add a `ZombieTrait.php` case when using the GameState class pattern — the state's own `zombie()` method handles it.
-6. JS triple: `OnEnteringState.<expansion>.js` (chooser setup) + `OnUpdateActionButtons.<expansion>.js` (Confirm + Pass/Back) + `OnLeavingState.<expansion>.js` (cleanup). HD action states use `highDramaPhase<NNNNN>` keys, not `planningPhaseResolveSchemes_<NNNNN>`.
-7. Scheme reactions live through High Drama via `Theah::buildCity()` populating `$this->cards` from discard piles. Don't add "is the scheme still in play" guards.
-8. Capture event-time context onto the reaction as a `private` property; clear it in `performReaction`. Use `$owner->IsUpdated = true` to persist. For **action branch state** (choose-one Either/Or), persist on the action object (`$MoveMode`, etc.) — not `CHOSEN_TARGET`.
-9. **Parse keyword(s) literally** before picking interfaces:
+4. For every player-choice **Planning End Forced** sub-state, same three pieces but constant `28<NNNNN>`, state name `planningPhaseEnd_<NNNNN>`, and transitions under **`PLANNING_PHASE_END_EVENTS.transitions`**. Trigger via `EventPhasePlanningEnd` + `Location == LOCATION_PLAYER_HOME`.
+5. For every player-choice **High Drama action** sub-state on the scheme, same three pieces but constant `40<NNNNN>` and transitions under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Action file owns `handleEvent`/`getArgsFromAction`/`actFromAction*` — not the scheme class (unless legacy inline pattern).
+6. Don't add a `ZombieTrait.php` case when using the GameState class pattern — the state's own `zombie()` method handles it.
+7. JS triple: `OnEnteringState.<expansion>.js` (chooser setup) + `OnUpdateActionButtons.<expansion>.js` (Confirm + Pass/Back) + `OnLeavingState.<expansion>.js` (cleanup). Keys match the state name prefix (`planningPhaseResolveSchemes_`, `planningPhaseEnd_`, or `highDramaPhase`). Multi-hand discard also needs `EventHandlers.js` exact-count enable.
+8. Scheme reactions fire through High Drama because chosen schemes sit at Home all day. Don't add "is the scheme still in play" guards. Don't assume schemes are in discard after resolve.
+9. Capture event-time context onto the reaction as a `private` property; clear it in `performReaction`. Use `$owner->IsUpdated = true` to persist. For **action branch state** (choose-one Either/Or), persist on the action object (`$MoveMode`, etc.) — not `CHOSEN_TARGET`. For **Forced draw-then-discard**, persist `$cardsToDiscard` on the scheme.
+10. **Parse keyword(s) literally** before picking interfaces:
    - "Sorcerer …" → `implements ISorcererAbility` + emit start/played events.
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` check on the chosen performer). NOT a Sorcerer ability.
    - Both can stack.
-10. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions. **Player's own choose-one on a City Action** during High Drama *does* use HD sub-states — don't route that through reaction `$stage`.
-11. **`getPerformersForAction` on trait-gated scheme actions** must filter to performers for whom the *entire* action is legal (eligible secondary character at location, opposing targets present, etc.) — not just `hasTrait(...)`. `isAvailableToPlayer` should delegate to that filtered list.
-12. **Custom `CHALLENGE_TYPE` for intervention gates** needs all three: `Theah::interventionCheck`, `ArgumentsTrait` intervene args, `Reaction_02058` (if adjacent external intervene exists in your expansion).
-13. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
-14. Pre-commit hook checks on every file:
+11. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions. **Player's own choose-one on a City Action** during High Drama *does* use HD sub-states — don't route that through reaction `$stage`. **Forced at Planning End** *does* use `PLANNING_PHASE_END_*` sub-states — that map is phase-scoped and correct for Forced.
+12. **`getPerformersForAction` on trait-gated scheme actions** must filter to performers for whom the *entire* action is legal (eligible secondary character at location, opposing targets present, etc.) — not just `hasTrait(...)`. `isAvailableToPlayer` should delegate to that filtered list.
+13. **Custom `CHALLENGE_TYPE` for intervention gates** needs all three: `Theah::interventionCheck`, `ArgumentsTrait` intervene args, `Reaction_02058` (if adjacent external intervene exists in your expansion).
+14. **"Control an \<Trait\>"** on a Forced = `getCharactersInPlayByPlayerId` + `hasTrait`. Clamp draw-then-discard to drawable cards; if 0 drawable, skip the discard state entirely.
+15. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
+16. Pre-commit hook checks on every file:
     - **Reaction subclass:** `$this->setUsed(` AND `$this->isAvailable(` literal strings present.
     - **SchemeCityAction subclass:** `createActionResolvedEvent()` called.
     - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
     - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
-15. Lint touched PHP files (`php -l`) before committing. On Windows, verify line endings are single CRLF (not `\r\r\n`).
+17. Lint touched PHP files (`php -l`) before committing. On Windows, verify line endings are single CRLF (not `\r\r\n`).
