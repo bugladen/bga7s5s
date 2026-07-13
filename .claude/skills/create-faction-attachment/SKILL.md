@@ -17,6 +17,7 @@ The canonical references depend on which clauses your card has. Read at least on
 - `modules/php/cards/_7s5s/_01181.php` + `reactions/Reaction_01181.php` (Sorte Deck) — `AttachmentReaction` with cancel + `releaseEvent` + `skipNextEvent` interpose pattern.
 - `modules/php/cards/faf/_03019.php` + `reactions/Reaction_03019.php` (Kaiser Schnurrbart) — **Passive trait grant (Hunter) + City Reaction on `EventCardMoved`.** Cleanest "After an opposing character moves to an adjacent City location" template: gate on `fromLocation == owningCharacter->Location` (the "opposing" interpretation), queue a three-event chain (engage attachment / move equipped character with `engage=false` / engage triggering character) on accept.
 - `modules/php/cards/faf/_03043.php` + `techniques/Technique_03043.php` (El Gato's Mask) — **Passive Scoundrel grant + Gambling Technique** that reveals random hand cards (multiplayer `chooseList` acknowledge) then discards one revealed attachment. Attachment-hosted technique transition `sourceId`, `DUEL_GAMBLED` gate, post-ack game-state branch via `stateFromTechnique`.
+- `modules/php/cards/faf/_03044.php` + `reactions/Reaction_03044.php` (Torres Cloak) — **Offhand + Duelist-only equip + cancel Maneuver/Technique unless discard.** Multi-stage offer → threat, cancel-first on Engage, `HIGH_PRIORITY` reaction transitions, deferred `setUsed`. See Pattern D "Cancel unless discard".
 
 When in doubt, mirror one of those rather than invent.
 
@@ -82,6 +83,7 @@ Field notes:
 - **`Riposte` / `Parry` / `Thrust`** are combat-card values — used when this attachment is played as a combat card during duels (only weapons typically have non-zero Thrust). `DashedParry` / `DashedThrust` flags mark stats that exist only conditionally.
 - **`Traits`** must exist in `TraitNames::$TraitsJson` (`modules/php/TraitNames.php`). Add missing ones in alphabetical order. (Memory feedback.) Common traits: `Weapon`, `Melee`, `Ranged`, `Attire`, `Hat`, `Tabbard`, `Talisman`, `Boon`, `Unique`, plus the faction-themed traits (`Dar Matushki`, `Oathsworn`, `Red Hand`, ...).
 - **`CanEquipToOpponents = false`** by default on `FactionAttachment`. Set `true` only when the card text explicitly equips to an opposing character (rare — most curses live as `CityAttachment`).
+- **`OffHand = true`** when printed text says **Offhand** — does not count against the one-Armor / one-Weapon limit; still limited to one Offhand per character (enforced in `UtilitiesTrait::characterHasAttachmentOfType`). See `_03044`, `_01047`, `_02056`.
 
 Key state-on-the-instance (inherited from `Attachment`):
 - `$this->Id` — the attachment's card id.
@@ -89,6 +91,7 @@ Key state-on-the-instance (inherited from `Attachment`):
 - `$this->ControllerId` — the player who controls the equipped character.
 - `$this->Location` — the location of the equipped character (mirrored from the character on equip).
 - `$this->Engaged` — engagement is a property of the attachment itself; many Reactions and Actions cost "Engage this card."
+- `$this->OffHand` — Offhand attachments bypass Armor/Weapon uniqueness (but not Offhand uniqueness).
 
 Helpers from `Attachment`:
 - `$this->isAttached(): bool` — true when `AttachedToId > 0`. Always gate "equipped character" effects on this.
@@ -108,6 +111,8 @@ Read each clause of the printed Text and classify it before writing code. The fi
 | **`<b>Forced:</b>`** — auto-triggers, no choice | Override `handleEvent` directly. No Action/Reaction class. See `_01075`'s passive grant (technically a Forced grant on equip). |
 | **`<b>Action:</b>` or `<b>City Action:</b>`** | Pattern C — `AttachmentAction`. Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php`. |
 | **`<b>Reaction:</b>` or `<b>City Reaction:</b>`** | Pattern D — `AttachmentReaction`. Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php`. |
+| **"Cancel … Maneuver/Technique unless they discard"** / **"would resolve a Maneuver or Technique"** | Pattern D + **cancel-unless-discard** — listen `EventTechniqueActivated` / `EventManeuverActivated` (not `EventResolve*`), cancel-first on Engage, adversary discard restores. See `_03044`. |
+| **`<b>Offhand</b>`** | Set `$this->OffHand = true` in the constructor. No further ability class. |
 | **`<b>Technique:</b>`** | Pattern E — `Technique`. Implement `IHasTechniques`, `use TechniqueTrait`, create `techniques/Technique_NNNNN.php`. Used during duels — `Thrust`/`Parry` modifiers are common. |
 | **`<b>Gambling Technique:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern E + **Gambling gate** — NOT a trait gate. Actor must have gambled for their combat card this round (`Game::DUEL_GAMBLED`). See Pattern E subsection below and `_03043` / `Technique_03002` / `Maneuver_03008`. |
 | **`<b>Maneuver:</b>`** | Pattern E' — `Maneuver`. Implement `IHasManeuvers`, `use ManeuverTrait`, create `maneuvers/Maneuver_NNNNN.php`. |
@@ -360,7 +365,7 @@ class Reaction_NNNNN extends AttachmentReaction
 
 `CardReaction::setUsed` resets at dusk automatically (via `EventDuskEndOfDay`).
 
-References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047`, `Reaction_01181` (cancel + re-queue pattern).
+References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047` (hard cancel Technique), `Reaction_01146b` (hard cancel Maneuver or Technique on a Scheme), `Reaction_01181` (cancel + re-queue pattern), `Reaction_03044` (cancel unless discard).
 
 ### Engage as a cost — gate the trigger on `! $owner->Engaged`
 
@@ -372,6 +377,52 @@ if ($owner == null || $owner->Engaged) return;
 ```
 
 Then queue `createCardEngagedEvent` in `performReaction` when the player accepts. Engagement resets at dusk along with `Used`.
+
+**Do NOT `setUsed(true)` on the Engage click if a later stage still needs a reaction transition.** `Theah::runEvents` skips `transition == "reaction"` when `!$reaction->isAvailable()` (to prevent duplicate offers). Marking Used early drops the next stage (e.g. adversary "unless discard" choice) and pending MEDIUM resolve events proceed uncanceled. Defer `setUsed` to finalize after the last stage — see `Reaction_03007::finalize`, `Reaction_03044::finalizeAfterEngage`.
+
+### Cancel Maneuver / Technique ("would resolve" / "announces")
+
+**Timing:** Listen on `EventTechniqueActivated` / `EventManeuverActivated`, not `EventResolveTechnique` / `EventResolveManeuver`. "Would resolve" / "announces" means interrupt after activation while Resolve + CalculateValues are still queued. Hard-cancel references: `Reaction_01047`, `Reaction_01146b`.
+
+**`IN_DUEL` gate:** Cancel reactions that target duel Maneuvers/Techniques must require `Game::IN_DUEL` (rules-team ruling on `01146b`).
+
+**Equipped participant's adversary gate — do not copy `Reaction_01047`'s id compare.** `getDuelOpponentId($actorId)` returns a **character** id. `EventTechniqueActivated::$playerId` is a **player** id. Correct gates:
+
+```php
+$owningCharacter = $this->getOwningCharacter($theah);
+$actor = $theah->getDuelRoundActor();
+$adversaryId = $theah->getDuelOpponentId($actor->Id);
+// Cloak/attachment must be on the actor's duel adversary
+if ($owningCharacter->Id != $adversaryId) return false;
+// Activator must be the actor's controller
+return $activatingPlayerId == $actor->ControllerId;
+```
+
+`Reaction_01047` compares `ControllerId == getDuelOpponentId(...)` and `actor->Id == event->playerId` — those mix player ids with character ids. Prefer the gates above (`Reaction_03044::isAdversaryActivating`).
+
+**`HIGH_PRIORITY` on every reaction transition in the cancel chain.** `createReactionTransitionEvent` defaults to `REACTION_PRIORITY` (6), which is *later* than MEDIUM (3) Resolve events. Override to `Event::HIGH_PRIORITY` (2) on the offer transition *and* every follow-up cross-player transition, or Resolve fires mid-decision.
+
+**Hard cancel (single click):** `deleteTechniqueEvents` / `deleteManeuverEvents`, clear `CHOSEN_TECHNIQUE` / `CHOSEN_MANEUVER` (+ `CHOSEN_TECHNIQUE_IS_MAIN`), queue `createTechniqueCanceledEvent` / `createManeuverCanceledEvent`. Store `$TechniqueId` / `$ManeuverId` as **public** fields (like `01047` / `01146b`).
+
+### Cancel unless discard (Pattern D + multi-stage) — Torres Cloak `_03044`
+
+Printed: "engage this card • Cancel the effects unless they discard a card."
+
+Reading: cancel is the primary outcome; discard is the escape hatch that *keeps* the Maneuver/Technique. Compose `01047`/`01146b` cancel mechanics + `03007` multi-stage cross-player + `02033` `discardHand-{id}` buttons.
+
+**Use cancel-first on Engage — do not leave Resolve queued during the threat wait.**
+
+Cancel-later (delete only on Accept Cancel) races: Resolve can still fire if `TechniqueId` is lost across the multi-stage serialize, or if any transition is skipped — observed as the cloak player entering `duelChooseTechnique_01093` after Maya’s threat choice. Cancel-first is robust:
+
+1. **Offer** (cloak controller): Engage / Pass.
+2. **Engage:** queue `createCardEngagedEvent`; **immediately** `deleteTechniqueEvents` / `deleteManeuverEvents` + clear `CHOSEN_*`. Do **not** fire `*Canceled` yet (discard may restore). Store `actorId`, `adversaryCharacterId`, `activatingPlayerId`, `techniqueWasMain` for restore. Do **not** `setUsed` yet.
+3. **Empty hand:** log why, fire `*Canceled`, `finalizeAfterEngage` (`setUsed` + reset).
+4. **Threat** (adversary): `discardHand-{id}` → discard as effect + **re-queue** `createResolveTechniqueEvent` / `createResolveManeuverEvent` + CalculateValues + restore `CHOSEN_*`; **or** Accept Cancel → fire `*Canceled`. Then finalize.
+5. Both offer and threat transitions: `priority = Event::HIGH_PRIORITY`.
+
+**Rules check when playtesting:** discard-to-keep *should* let the technique resolve (e.g. cloak player may still enter `duelChooseTechnique_01093`). Accept Cancel must *not*.
+
+**Persistence:** keep `$stage`, `$TechniqueId`, `$ManeuverId`, and restore context as **public** properties on the reaction (mirror `01047`). `$owner->IsUpdated = true` after every mutation.
 
 ### "After an opposing character moves to an adjacent location" triggers
 
@@ -774,6 +825,7 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 - **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack.
 - **"Action" vs "City Action" performer scope:** "City Action:" restricts performers to characters in the city; plain "Action:" includes characters at Home. (Memory feedback.)
 - **"Gambling Technique/Maneuver"** is a duel-round gate (`DUEL_GAMBLED` + actor identity), not a trait. See Pattern E.
+- **Cancel Maneuver/Technique:** Activated (not Resolve); `HIGH_PRIORITY` transitions; cancel-first when multi-stage "unless discard"; correct character/player id gates — do not copy `Reaction_01047`'s compare. See Pattern D / `_03044`.
 - Namespaces:
   - Attachment class: `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>`
   - Action:           `...\cards\<expansion>\actions`
@@ -798,6 +850,9 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 | `modules/php/cards/faf/reactions/Reaction_03006.php` | Sister to `Reaction_03007` but on a Scheme — same multi-stage hand-pick pattern with cross-player transitions. |
 | `modules/php/cards/faf/_03019.php` + `reactions/Reaction_03019.php` (Kaiser Schnurrbart) | **Passive trait grant (Hunter) + City Reaction on `EventCardMoved`.** "After an opposing character moves to an adjacent City location, engage this card • Move the equipped character to their new location and engage that character." Demonstrates the `fromLocation == owningCharacter->Location` gate for "opposing" semantics post-move, the three-event chain (engage attachment / move equipped with `engage=false` / engage triggering character), and resolving the "that character" antecedent ambiguity in favor of the trigger. |
 | `modules/php/cards/faf/_03043.php` + `techniques/Technique_03043.php` (El Gato's Mask) | **Passive Scoundrel grant + Gambling Technique.** Reveal ≤2 random from adversary hand → multiplayer `chooseList` acknowledge (`stMultiPlayerInitSansInitiatingPlayer`) → game `stFromCard` / `stateFromTechnique` branch (0 / 1 auto-discard / 2 restricted hand pick). Attachment-hosted transition `sourceId` = `getOwningCard()`, `DUEL_GAMBLED` + actor Finesse > adversary gates, discard only after ack. |
+| `modules/php/cards/faf/_03044.php` + `reactions/Reaction_03044.php` (Torres Cloak) | **Offhand + Duelist equip + cancel Maneuver/Technique unless discard.** `EventTechniqueActivated`/`EventManeuverActivated` + correct adversary id gates + `HIGH_PRIORITY` offer/threat transitions. Cancel-first on Engage (`delete*Events`, no `*Canceled` yet); discard re-queues Resolve/Calculate; Accept Cancel fires `*Canceled`. Deferred `setUsed` until finalize. Public `$TechniqueId`/`$stage`/restore context. |
+| `modules/php/cards/_7s5s/reactions/Reaction_01047.php` (Kaspar's Panzerhand) | **Hard cancel adversary Technique** on `EventTechniqueActivated`. Single-decision; public `$TechniqueId`. Id-compare in the availability gate is buggy (mixes player/character ids) — prefer `_03044::isAdversaryActivating` when writing new cancel reactions. |
+| `modules/php/cards/_7s5s/reactions/Reaction_01146b.php` | **Hard cancel Maneuver or Technique** (Scheme-hosted). Same Activated + `HIGH_PRIORITY` + `delete*Events` shape as `01047`. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01066.php` (Horatio) | Character-side mirror of the post-move-adjacent pattern. Same `fromLocation == owner location` gate, same `getAdjacentCityLocations` check, but moves Horatio (no engage cost). Read alongside `Reaction_03019` to see how the pattern adapts between Character host and Attachment host. |
 | `modules/php/cards/_7s5s/_01006.php` + `SETUP_TABLE_01006_2` | Canonical **multiplayer reveal acknowledge** (`chooseList` + Ok). Sibling shapes: `Technique_01090`, `Maneuver_01077`, Kaspar `Action_01035`. Use when any ability reveals cards to the table. |
 
@@ -812,11 +867,11 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` on the equipped character or chosen performer). NOT a Sorcerer ability.
    - **"Gambling Technique/Maneuver"** → `Game::DUEL_GAMBLED` + actor identity gate. NOT a trait gate.
    - Both Sorcerer and trait gates can stack ("Sorcerer Strega Reaction" is both).
-6. For Reactions with **engage cost**, gate the trigger on `! $owner->Engaged` AND `$this->isAvailable()`, then queue `createCardEngagedEvent` on the attachment in `performReaction`. The dusk reset handles both `Engaged` and `Used`.
-7. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions.
+6. For Reactions with **engage cost**, gate the trigger on `! $owner->Engaged` AND `$this->isAvailable()`, then queue `createCardEngagedEvent` on the attachment in `performReaction`. The dusk reset handles both `Engaged` and `Used`. **If a later stage still needs a reaction transition, do not `setUsed` on Engage** — `runEvents` skips reaction transitions when `!isAvailable()`. Defer to finalize (`03007`, `03044`).
+7. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions. During duel cancel interrupts, set **`HIGH_PRIORITY` on every** reaction transition in the chain (default `REACTION_PRIORITY` is later than MEDIUM Resolve).
 8. For multi-step pools ("sink two cards"), structure `advanceToNext*` to return `false` when the pool is exhausted, and have the caller finalize early. "If able" is implicit in the rules text.
-9. **Log auto-applied branches.** When an edge case skips the player's choice (no cards to sink, no Leader to wound, etc.), notify *before* the consequent effect so players understand why the choice wasn't offered.
-10. Capture event-time context onto the reaction/technique as a `private` property; clear it when the flow finishes / on cancel. Use `$owner->IsUpdated = true` to persist.
+9. **Log auto-applied branches.** When an edge case skips the player's choice (no cards to sink, no Leader to wound, empty hand on "unless discard", etc.), notify *before* the consequent effect so players understand why the choice wasn't offered.
+10. Capture event-time context onto the reaction/technique; clear it when the flow finishes / on cancel. Use `$owner->IsUpdated = true` to persist. For **cancel Maneuver/Technique** reactions, prefer **public** `$TechniqueId` / `$ManeuverId` / `$stage` / restore ids (mirror `01047` / `03044`) — nested private fields have been fragile across multi-stage playerReaction requests.
 11. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
 12. Pre-commit hook checks on every file you touched:
     - **AttachmentReaction subclass:** `$this->setUsed(`, `$this->isAvailable(`, `$this->ownerIsAttached(`.
@@ -826,5 +881,6 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
     - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
 13. For **attachment-hosted Techniques** that transition into player states: `sourceId` = `getOwningCard()->Id` (attachment), not the equipped character.
 14. When text **reveals** cards: add a multiplayer `chooseList` acknowledge state (Constanzo / Lorenzo / `_03043`). Do not rely on log messages alone. Resolve discard/wound/etc. **after** ack. Register the multi state in `ZombieTrait`.
-15. Lint touched PHP files (`php -l`) before committing. **Do not** rewrite line endings after Write — leaves `\r\r\n` on this Windows repo.
-16. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>-implementation.md` covering the WHY: which existing patterns you mirrored, what alternatives you considered, anything that looks weird (defensive null checks, dual-gate equip restrictions, the order of Sorcerer Start/Played around effects). Read related faf journals first — they encode hard-won knowledge about edge cases.
+15. **"Cancel unless they discard" Maneuver/Technique:** cancel-first on Engage (`delete*Events` + clear `CHOSEN_*`, no `*Canceled` yet); discard re-queues Resolve/Calculate; Accept Cancel fires `*Canceled`. Listen on `*Activated`, not `EventResolve*`. Use correct adversary id gates (character vs player). See `_03044`.
+16. Lint touched PHP files (`php -l`) before committing. **Do not** rewrite line endings after Write — leaves `\r\r\n` on this Windows repo.
+17. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>-implementation.md` covering the WHY: which existing patterns you mirrored, what alternatives you considered, anything that looks weird (defensive null checks, dual-gate equip restrictions, the order of Sorcerer Start/Played around effects). Read related faf journals first — they encode hard-won knowledge about edge cases.
