@@ -1282,7 +1282,7 @@ $machinestates = [
                 "actHighDramaChallengeActionIntervene"
             ],
             "transitions" => [
-                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
+                "proceed" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
                 // WHY: When Least Expected Duelist refuse — discard a card before ChallengeRejected.
                 "03042" => States::HIGH_DRAMA_PLAYER_TURN_03042,
             ]
@@ -2281,6 +2281,7 @@ $machinestates = [
                         "03013" => States::DUEL_CHOOSE_TECHNIQUE_03013,
                         "03025b" => States::DUEL_CHOOSE_TECHNIQUE_03025B,
                         "03039" => States::DUEL_CHOOSE_TECHNIQUE_03039,
+                        "03043" => States::DUEL_CHOOSE_TECHNIQUE_03043,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral
@@ -2291,6 +2292,8 @@ $machinestates = [
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "02057" => States::DUEL_RESOLVE_MANEUVER_02057,
+                        "03024" => States::DUEL_RESOLVE_MANEUVER_03024,
+                        "03035" => States::DUEL_RESOLVE_MANEUVER_03035,
 
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME

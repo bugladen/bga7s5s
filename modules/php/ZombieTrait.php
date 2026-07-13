@@ -296,6 +296,7 @@ trait ZombieTrait
 
                 // Setup Table States
                 case "setupTable_01006_2":
+                case "duelChooseTechnique_03043":
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;
 

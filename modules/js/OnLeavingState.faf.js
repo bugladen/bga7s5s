@@ -388,6 +388,19 @@
                 }
             },
 
+            'duelChooseTechnique_03043': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
+            'duelChooseTechnique_03043_3': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
             'duelEndOfRound_03022': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.clientStateArgs.characterIds.forEach((characterId) => {

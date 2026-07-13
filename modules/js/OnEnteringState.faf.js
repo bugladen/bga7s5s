@@ -517,6 +517,27 @@
                 }
             },
 
+            'duelChooseTechnique_03043': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Revealed Cards from Hand');
+
+                (args.args.args.cards || []).forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(0);
+            },
+
+            'duelChooseTechnique_03043_3': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    const cardIds = (args.args.args.cardIds || []).map((id) => parseInt(id));
+                    const selectable = this.factionHand.getCards().filter((card) => cardIds.includes(parseInt(card.id)));
+                    this.factionHand.setSelectionMode('single');
+                    this.factionHand.setSelectableCards(selectable);
+                }
+            },
+
             'duelEndOfRound_03022': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

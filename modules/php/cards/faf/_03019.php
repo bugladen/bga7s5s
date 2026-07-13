@@ -27,12 +27,12 @@ class _03019 extends FactionAttachment implements IHasReactions
 
         $this->initializeFaction('Eisen');
 
+        $this->WealthCost = 2;
+
         $this->ResolveModifier = 1;
         $this->CombatModifier = 0;
         $this->FinesseModifier = 1;
         $this->InfluenceModifier = 0;
-
-        $this->WealthCost = 2;
 
         $this->Riposte = 0;
         $this->DashedRiposte = true;

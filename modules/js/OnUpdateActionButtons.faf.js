@@ -228,6 +228,15 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelChooseTechnique_03043': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+            },
+
+            'duelChooseTechnique_03043_3': () => {
+                this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             'duelEndOfRound_03022': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

@@ -1303,7 +1303,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState("proceed");
     }
 
     public function actHighDramaChallengeActionReject()
@@ -1347,7 +1347,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, false);
 
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState("proceed");
     }
 
     public function actHighDramaChallengeActionIntervene(int $id)
@@ -1397,7 +1397,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState("proceed");
     }    
 
     public function actDuelActionChooseTechnique()

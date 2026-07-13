@@ -16,6 +16,7 @@ The canonical references depend on which clauses your card has. Read at least on
 - `modules/php/cards/_7s5s/_01022.php` + `reactions/Reaction_01022.php` — **AttachmentReaction with engage cost.** Simpler single-decision shape (Wound Challenger / Wound Challenged / Pass).
 - `modules/php/cards/_7s5s/_01181.php` + `reactions/Reaction_01181.php` (Sorte Deck) — `AttachmentReaction` with cancel + `releaseEvent` + `skipNextEvent` interpose pattern.
 - `modules/php/cards/faf/_03019.php` + `reactions/Reaction_03019.php` (Kaiser Schnurrbart) — **Passive trait grant (Hunter) + City Reaction on `EventCardMoved`.** Cleanest "After an opposing character moves to an adjacent City location" template: gate on `fromLocation == owningCharacter->Location` (the "opposing" interpretation), queue a three-event chain (engage attachment / move equipped character with `engage=false` / engage triggering character) on accept.
+- `modules/php/cards/faf/_03043.php` + `techniques/Technique_03043.php` (El Gato's Mask) — **Passive Scoundrel grant + Gambling Technique** that reveals random hand cards (multiplayer `chooseList` acknowledge) then discards one revealed attachment. Attachment-hosted technique transition `sourceId`, `DUEL_GAMBLED` gate, post-ack game-state branch via `stateFromTechnique`.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -108,6 +109,7 @@ Read each clause of the printed Text and classify it before writing code. The fi
 | **`<b>Action:</b>` or `<b>City Action:</b>`** | Pattern C — `AttachmentAction`. Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php`. |
 | **`<b>Reaction:</b>` or `<b>City Reaction:</b>`** | Pattern D — `AttachmentReaction`. Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php`. |
 | **`<b>Technique:</b>`** | Pattern E — `Technique`. Implement `IHasTechniques`, `use TechniqueTrait`, create `techniques/Technique_NNNNN.php`. Used during duels — `Thrust`/`Parry` modifiers are common. |
+| **`<b>Gambling Technique:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern E + **Gambling gate** — NOT a trait gate. Actor must have gambled for their combat card this round (`Game::DUEL_GAMBLED`). See Pattern E subsection below and `_03043` / `Technique_03002` / `Maneuver_03008`. |
 | **`<b>Maneuver:</b>`** | Pattern E' — `Maneuver`. Implement `IHasManeuvers`, `use ManeuverTrait`, create `maneuvers/Maneuver_NNNNN.php`. |
 | **`<b>Sorcerer Action:</b>` / `<b>Sorcerer Reaction:</b>` / `<b>Sorcerer City Reaction:</b>`** | The Action / Reaction class additionally `implements ISorcererAbility` and emits `createSorcererAbilityStartEvent()` + `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). Often combined with a trait gate ("Strega" performer restriction). |
 | **`<b>Strega Reaction:</b>`** / **`<b>Diplomat Action:</b>`** / **`<b>Musketeer …:</b>`** / etc. | Trait-prefixed keywords are **performer-trait gates**, NOT Sorcerer abilities. The chosen performer (= attached character) must have that trait. Enforce via `$performer->hasTrait("Strega")`. Do NOT `implement ISorcererAbility` unless the literal word "Sorcerer" is also there. (Memory feedback.) |
@@ -590,14 +592,110 @@ The triggering event has only a snapshot of args (`$event->cardId`, `$event->pla
 Both need:
 - `implements IHasTechniques` / `implements IHasManeuvers` on the attachment.
 - `use TechniqueTrait` / `use ManeuverTrait`.
-- A `$this->Techniques = [new Technique_NNNNN()]` / `$this->Maneuvers = [...]` registration in the constructor.
+- A `$this->Techniques = [new Technique_NNNNN()]` / `$this->Maneuvers = [...]` registration in the constructor **after** `$this->resetCard()` (same ordering as Actions/Reactions).
 
 **Pre-commit hook on Maneuver:** must handle `EventManeuverCanceled` (either branch it in `handleEvent` or add a comment `// EventManeuverCanceled handler not needed`).
 
 **Pre-commit hook on Technique:** same — must handle `EventTechniqueCanceled` or add the equivalent comment.
 
-References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency).
+References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard).
 
+### Gambling Technique / Gambling Maneuver
+
+**"Gambling"** is a *mechanical cost of how the combat card was obtained*, NOT a performer trait. Do NOT `hasTrait("Gambling")`. Gate availability with:
+
+```php
+if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false))
+{
+    return false;
+}
+
+$owner = $this->getOwningCharacter($theah);
+$actor = $theah->getDuelRoundActor();
+if ($owner === null || $actor === null || $actor->Id !== $owner->Id)
+{
+    return false;
+}
+```
+
+Also require `Game::IN_DUEL`. Optional printed conditions (greater Finesse than adversary, adversary wounded, combat card ≥ N Thrust) go in the same `isAvailableToPlayer` using `ModifiedFinesse` / `getDuelRoundOpponent()` / `getCurrentRoundThrust()` — see `Technique_03002`, `Maneuver_03008`, `Technique_03039`, `Technique_03043`.
+
+### Attachment-hosted technique — transition `sourceId`
+
+When the Technique lives on the **attachment** (not the character), `createTransitionEvent` / `createTechniqueTransitionEvent` must pass **`$this->getOwningCard($theah)->Id`** (the attachment) as `sourceId`, not `getOwningCharacter()`.
+
+WHY: `FrameworkActionsTrait::actFromCardWithId` / `argsForState` hydrate the source card and call `getTechniqueById` on it. If `sourceId` is the character, the technique is invisible and the act/args path fails. Character-hosted techniques (`Technique_03039`, `Technique_01093`) correctly use the character id; attachment-hosted ones (`Technique_02006`, `Technique_03043`) use the attachment id.
+
+### Revealing cards to all players (multiplayer acknowledge)
+
+Log inject codes alone are **not** enough when printed text says "Reveal …". Players must see the cards in the shared `chooseList` stock. Canonical shapes:
+
+| Reference | Context |
+|---|---|
+| `SETUP_TABLE_01006_2` (Constanzo) | Setup reveal ack — `stMultiPlayerInitSansInitiatingPlayer` |
+| `Technique_01090` / `duelChooseTechnique_01090` | Duel technique reveal ack |
+| `Maneuver_01077` / `duelResolveManeuver_01077` | Duel maneuver reveal → then choose |
+| `Action_01035` / Kaspar | Multi-ack → game `stFromCard` branch |
+| **`Technique_03043`** | Attachment Gambling Technique: reveal hand → multi-ack → game branch → optional discard |
+
+Standard pipeline after picking the random card(s) in `EventResolveTechnique`:
+
+1. Persist revealed ids on the Technique (`private array $revealedCardIds` / `$revealedAttachmentIds`) + `$owner->IsUpdated = true`.
+2. Notify each reveal with inject codes (and optionally `"card" => $card->getPropertyArray($game)`).
+3. `$game->globals->set(Game::MULTI_STATE_INITIATING_PLAYER, $attachment->ControllerId)`.
+4. Queue `createTransitionEvent($controllerId, $attachment->Id, "NNNNN", $this->Id)` into a **multipleactiveplayer** GameState that:
+   - Uses `stMultiPlayerInitSansInitiatingPlayer` (or `setAllPlayersMultiactive` + exclude initiator) in `onEnteringState`
+   - Returns `cards` (property arrays) from `getArgsFromTechnique` for the chooseList
+   - Transitions `"multipleOk"` → a **game** state
+5. Game state calls `stFromCard()` → override `stateFromTechnique` to branch (`"done"` / `"discard"` / etc.).
+6. Only **after** the acknowledge, resolve effects that depend on what was revealed (discard, wound, …). WHY: players must see the cards before consequences fire.
+
+JS (expansion `OnEnteringState` / `OnUpdateActionButtons` / `OnLeavingState`):
+
+```javascript
+'duelChooseTechnique_NNNNN': () => {
+    dojo.removeClass('choose_container', 'hidden');
+    dojo.removeClass('chooseList', 'hidden');
+    $('choose_container_name').innerHTML = _('Revealed Cards from Hand');
+    (args.args.args.cards || []).forEach((card) => this.addCardToDeck(this.chooseList, card));
+    this.chooseList.setSelectionMode(0);
+},
+// Update buttons: Ok → this.onMultipleOk()
+// Leaving: hide choose_container / chooseList, chooseList.removeAll()
+```
+
+Add the multi state name to `ZombieTrait` multipleactiveplayer cases (`setPlayerNonMultiactive(..., 'multipleOk')`).
+
+### Reveal-then-discard restricted choice
+
+When text says "discard one **revealed** attachment (if any were attachments)":
+
+- Filter revealed cards with `instanceof Attachment` (not a Trait).
+- **0** among revealed → notify and `"done"` (parenthetical "if any").
+- **1** → auto-discard (choice is forced; skip picker).
+- **2+** → activeplayer picker with hand selection **restricted** to those ids:
+
+```javascript
+const cardIds = (args.args.args.cardIds || []).map((id) => parseInt(id));
+const selectable = this.factionHand.getCards().filter((card) => cardIds.includes(parseInt(card.id)));
+this.factionHand.setSelectionMode('single');
+this.factionHand.setSelectableCards(selectable);
+```
+
+Server-side: reject ids not in `$this->revealedAttachmentIds`. Mirror Maya/Íñigo discard (`createCardDiscardedFromHandEvent` … `$asEffect = true`) but do **not** open the full hand.
+
+When branching to the discard activeplayer from a game state, `changeActivePlayer($adversary->ControllerId)` before `nextState("discard")` — multiplayer leave leaves active player ambiguous.
+
+### Wiring duel technique sub-states (modern GameState classes)
+
+For faf/tac-style GameState classes under `modules/php/States/<expansion>/`:
+
+1. Constant(s) in `States.php` (e.g. `DUEL_CHOOSE_TECHNIQUE_03043 = 52103043`, `_2`, `_3`).
+2. Transition key on `DUEL_CHOOSE_TECHNIQUE_EVENTS` in `states.inc.php`: `"03043" => States::DUEL_CHOOSE_TECHNIQUE_03043`.
+3. Further steps (`_2` game, `_3` discard) are **internal** transitions on those GameState classes — they do not need separate keys on the events table.
+4. JS handlers in the expansion `OnEnteringState` / `OnUpdateActionButtons` / `OnLeavingState` files + `EventHandlers.js` when hand selection enables a Confirm button.
+
+**Line endings:** On this Windows repo, do **not** post-process Write output to "ensure CRLF" — the Write tool already emits CRLF; a naive `\n` → `\r\n` pass produces `\r\r\n` (double blank lines). Leave endings alone.
 ## When the attachment carries multiple shapes
 
 Combine the interfaces:
@@ -675,6 +773,7 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 - **"Opposing"** means BOTH different controller AND same location.
 - **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack.
 - **"Action" vs "City Action" performer scope:** "City Action:" restricts performers to characters in the city; plain "Action:" includes characters at Home. (Memory feedback.)
+- **"Gambling Technique/Maneuver"** is a duel-round gate (`DUEL_GAMBLED` + actor identity), not a trait. See Pattern E.
 - Namespaces:
   - Attachment class: `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>`
   - Action:           `...\cards\<expansion>\actions`
@@ -698,7 +797,9 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 | `modules/php/cards/faf/_03007.php` + `reactions/Reaction_03007.php` (Matushka's Shears) | **Strega-only equip + Sorcerer City Reaction.** Multi-stage button-driven Reaction with engage cost: `offer` (owner accepts/passes) → `choose` (opponent picks Sink/Wound) → `pick1`/`pick2` (opponent picks cards to sink). Cross-player `createReactionTransitionEvent` flow, `insertCardOnExtremePosition` for sinking, auto-wound + explanatory log when opponent has < 2 cards. Combines ISorcererAbility with `hasTrait("Strega")` performer gating from the equip restriction. |
 | `modules/php/cards/faf/reactions/Reaction_03006.php` | Sister to `Reaction_03007` but on a Scheme — same multi-stage hand-pick pattern with cross-player transitions. |
 | `modules/php/cards/faf/_03019.php` + `reactions/Reaction_03019.php` (Kaiser Schnurrbart) | **Passive trait grant (Hunter) + City Reaction on `EventCardMoved`.** "After an opposing character moves to an adjacent City location, engage this card • Move the equipped character to their new location and engage that character." Demonstrates the `fromLocation == owningCharacter->Location` gate for "opposing" semantics post-move, the three-event chain (engage attachment / move equipped with `engage=false` / engage triggering character), and resolving the "that character" antecedent ambiguity in favor of the trigger. |
+| `modules/php/cards/faf/_03043.php` + `techniques/Technique_03043.php` (El Gato's Mask) | **Passive Scoundrel grant + Gambling Technique.** Reveal ≤2 random from adversary hand → multiplayer `chooseList` acknowledge (`stMultiPlayerInitSansInitiatingPlayer`) → game `stFromCard` / `stateFromTechnique` branch (0 / 1 auto-discard / 2 restricted hand pick). Attachment-hosted transition `sourceId` = `getOwningCard()`, `DUEL_GAMBLED` + actor Finesse > adversary gates, discard only after ack. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01066.php` (Horatio) | Character-side mirror of the post-move-adjacent pattern. Same `fromLocation == owner location` gate, same `getAdjacentCityLocations` check, but moves Horatio (no engage cost). Read alongside `Reaction_03019` to see how the pattern adapts between Character host and Attachment host. |
+| `modules/php/cards/_7s5s/_01006.php` + `SETUP_TABLE_01006_2` | Canonical **multiplayer reveal acknowledge** (`chooseList` + Ok). Sibling shapes: `Technique_01090`, `Maneuver_01077`, Kaspar `Action_01035`. Use when any ability reveals cards to the table. |
 
 ## When You Finish
 
@@ -709,12 +810,13 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 5. **Parse keyword(s) literally** before picking interfaces:
    - "Sorcerer …" → `implements ISorcererAbility` + emit Start/Played events in the Action/Reaction class.
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` on the equipped character or chosen performer). NOT a Sorcerer ability.
-   - Both can stack ("Sorcerer Strega Reaction" is both).
+   - **"Gambling Technique/Maneuver"** → `Game::DUEL_GAMBLED` + actor identity gate. NOT a trait gate.
+   - Both Sorcerer and trait gates can stack ("Sorcerer Strega Reaction" is both).
 6. For Reactions with **engage cost**, gate the trigger on `! $owner->Engaged` AND `$this->isAvailable()`, then queue `createCardEngagedEvent` on the attachment in `performReaction`. The dusk reset handles both `Engaged` and `Used`.
 7. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions.
 8. For multi-step pools ("sink two cards"), structure `advanceToNext*` to return `false` when the pool is exhausted, and have the caller finalize early. "If able" is implicit in the rules text.
 9. **Log auto-applied branches.** When an edge case skips the player's choice (no cards to sink, no Leader to wound, etc.), notify *before* the consequent effect so players understand why the choice wasn't offered.
-10. Capture event-time context onto the reaction as a `private` property; clear it in `performReaction` / `resetStage`. Use `$owner->IsUpdated = true` to persist.
+10. Capture event-time context onto the reaction/technique as a `private` property; clear it when the flow finishes / on cancel. Use `$owner->IsUpdated = true` to persist.
 11. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
 12. Pre-commit hook checks on every file you touched:
     - **AttachmentReaction subclass:** `$this->setUsed(`, `$this->isAvailable(`, `$this->ownerIsAttached(`.
@@ -722,5 +824,7 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
     - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()`.
     - **Maneuver/Technique:** handle the corresponding `*Canceled` event (or add the literal comment).
     - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
-13. Lint touched PHP files (`php -l`) before committing.
-14. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>-implementation.md` covering the WHY: which existing patterns you mirrored, what alternatives you considered, anything that looks weird (defensive null checks, dual-gate equip restrictions, the order of Sorcerer Start/Played around effects). Read related faf journals first — they encode hard-won knowledge about edge cases.
+13. For **attachment-hosted Techniques** that transition into player states: `sourceId` = `getOwningCard()->Id` (attachment), not the equipped character.
+14. When text **reveals** cards: add a multiplayer `chooseList` acknowledge state (Constanzo / Lorenzo / `_03043`). Do not rely on log messages alone. Resolve discard/wound/etc. **after** ack. Register the multi state in `ZombieTrait`.
+15. Lint touched PHP files (`php -l`) before committing. **Do not** rewrite line endings after Write — leaves `\r\r\n` on this Windows repo.
+16. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>-implementation.md` covering the WHY: which existing patterns you mirrored, what alternatives you considered, anything that looks weird (defensive null checks, dual-gate equip restrictions, the order of Sorcerer Start/Played around effects). Read related faf journals first — they encode hard-won knowledge about edge cases.
