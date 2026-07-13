@@ -79,6 +79,19 @@
                 }
             },
 
+            'highDramaPhase03042': () => {
+                if (this.isCurrentPlayerActive()) {
+                    var translated = dojo.string.substitute(
+                        _("(${amount} card(s) to discard)"),
+                        {
+                            amount: 1
+                        }
+                    );
+                    $('faction_hand_info').innerHTML = translated;
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
             'highDramaPhase03cd01': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

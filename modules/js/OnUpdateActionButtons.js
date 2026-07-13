@@ -277,11 +277,17 @@ onUpdateActionButtons: function( stateName, args )
         
         'highDramaChallengeActionAcceptChallenge': () => {
             this.addActionButton(`btnAccept`, _('Accept'), () => this.bgaPerformAction('actHighDramaChallengeActionAccept', {})) 
-            this.addActionButton(`btnRefuse`, _('Refuse'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
+            const refuseLabel = (args.mustDiscardToRefuse && args.defenderHandCount > 0)
+                ? _('Refuse (discard a card)')
+                : _('Refuse');
+            this.addActionButton(`btnRefuse`, refuseLabel, () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
             if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE)
                 dojo.addClass('btnRefuse', 'disabled');
             if (args.challengeType == this.AJA_CHALLENGE_TYPE && args.defenderFinesse < 3)
+                dojo.addClass('btnRefuse', 'disabled');
+            // WHY: When Least Expected Duelist — refuse requires discarding; empty hand cannot refuse.
+            if (args.mustDiscardToRefuse && args.defenderHandCount < 1)
                 dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },

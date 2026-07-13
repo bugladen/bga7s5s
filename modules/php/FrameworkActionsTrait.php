@@ -1327,6 +1327,20 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Aja: Only characters with 3 Finesse or more may refuse this challenge."));
         }
 
+        // WHY: When Least Expected — Duelist performer can only refuse by discarding a card.
+        // Route to hand-picker when hand nonempty; block refuse when empty.
+        if ($challengeType == Game::WHEN_LEAST_EXPECTED_CHALLENGE_TYPE && $performer->hasTrait("Duelist"))
+        {
+            $hand = $this->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId);
+            if (count($hand) == 0)
+            {
+                throw new UserException(clienttranslate("When Least Expected: This challenge can only be refused by discarding a card, and you have no cards in hand."));
+            }
+
+            $this->gamestate->nextState("03042");
+            return;
+        }
+
         $event = EventFactory::createChallengeRejectedEvent($performer->Id, $target->Id);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);

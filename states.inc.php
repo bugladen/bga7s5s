@@ -1019,6 +1019,7 @@ $machinestates = [
                 "03038b" => States::HIGH_DRAMA_PLAYER_TURN_03038b,
                 "03038b_2" => States::HIGH_DRAMA_PLAYER_TURN_03038b_2,
                 "03040" => States::HIGH_DRAMA_PLAYER_TURN_03040,
+                "03042" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "03021" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
@@ -1282,6 +1283,8 @@ $machinestates = [
             ],
             "transitions" => [
                 "" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
+                // WHY: When Least Expected Duelist refuse — discard a card before ChallengeRejected.
+                "03042" => States::HIGH_DRAMA_PLAYER_TURN_03042,
             ]
         ],
 

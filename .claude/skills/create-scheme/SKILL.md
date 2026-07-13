@@ -20,6 +20,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03030.php` (Sworn Swords) — **Two-different-locations resolve + Diplomat City Action where performer (Diplomat) and challenger (Duelist) are different characters.** Two HD sub-states (`03030` → `03030_2`) then standard challenge flow. Custom `CHALLENGE_TYPE` for "Only Duelists may intervene" + `EventGenerateChallengeThreat` bonus on accept.
 - `modules/php/cards/_7s5s/_01098.php` (The Cat's Embargo) — **Forced at end of Planning** (pick opponent → reveal random hand card) + two-location resolve. Canonical for `EventPhasePlanningEnd` + `LOCATION_PLAYER_HOME` gate and `PLANNING_PHASE_END_*` states.
 - `modules/php/cards/faf/_03041.php` (Proper Study) — **Trivial Renown resolve + Forced draw-then-discard at Planning End + City Reaction after you claim.** New GameState under `PLANNING_PHASE_END_EVENTS`. Reaction moves Renown off the claimed location via destination buttons.
+- `modules/php/cards/faf/_03042.php` (When Least Expected) — **Trivial Renown resolve + City Action Finesse challenge with Duelist discard-to-refuse.** Cornered-shaped engage + custom `CHALLENGE_TYPE`; refuse routes through `highDramaPhase03042` hand discard when performer is Duelist.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -110,8 +111,9 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"Engage your performer • Your \<trait\> at this location issues a [Combat] challenge"** | **Pattern E — split performer and challenger.** Framework performer pick (trait-gated Diplomat/etc.) → engage performer → HD sub-state pick challenger at that location → sub-state pick target → challenge. `CHOSEN_CARD` preserves performer id; `CHOSEN_PERFORMER` becomes challenger for challenge framework. Reference: `_03030` (Diplomat + Duelist), character parallel `Action_03003` (Thug issues challenge). |
 | **"Only \<trait\>s may intervene"** on a challenge | Add a new `Game::…_CHALLENGE_TYPE` constant. Enforce in **`Theah::interventionCheck`**, **`ArgumentsTrait`** (intervene-picker `ids`), and **`Reaction_02058`** (adjacent external intervene) — same trio as `LEGENDARY_REPUTATION_CHALLENGE_TYPE` / `AJA_CHALLENGE_TYPE`. Reference: `_03030` (`SWORN_SWORDS_CHALLENGE_TYPE`, Duelist gate). |
 | **"If the challenge is accepted, add a threat to your participant"** | Listen on `EventGenerateChallengeThreat` in the action class; bump `$event->actorThreat` only (not adversary). Fires on accept/intervene path when threat is generated, not on refuse. Reference: `Action_03030` (+1 actor), contrast `Action_02061` (+1 both). |
+| **"If your performer is a Duelist, it can only be refused by discarding a card"** | **Pattern G — discard-to-refuse.** See full section below. Correlator `CHALLENGE_TYPE` (out of auto-engage) + refuse routed through card-keyed HD discard state. Reference: `_03042` / `Action_03042`. |
 
-A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat. `_03041` has a trivial Renown resolve AND a Forced draw/discard at Planning End AND a claim→move-Renown City Reaction.
+A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat. `_03041` has a trivial Renown resolve AND a Forced draw/discard at Planning End AND a claim→move-Renown City Reaction. `_03042` has a trivial Renown resolve AND an engage→Finesse challenge City Action with conditional discard-to-refuse.
 
 ## Pattern A — Resolve via `EventResolveScheme`
 
@@ -853,7 +855,7 @@ Planning resolve sub-states use `PLANNING_PHASE_RESOLVE_SCHEMES_*` (`26<NNNNN>`)
 
 **Performer-required actions:** set `$this->RequiresPerformerSelected = true` on the action. The framework sets `Game::CHOSEN_PERFORMER` before your first sub-state runs.
 
-**Multi-step with Back:** middle/final states expose `#[PossibleAction] actBack()` and a `"back"` transition to the prior state; JS adds `<` calling `actBack`. Reference: `State_highDramaPhase03029_2`, `State_highDramaPhase03cd01_2`.
+**Multi-step with Back:** middle/final states expose `#[PossibleAction] actBack()` and a `"back"` transition to the prior state; JS adds `<` calling `actBack`. Reference: `State_highDramaPhase03029_2`, `State_highDramaPhase03cd01_2`. **If the state also has a success transition, that success key must be named — never `""` alongside `"back"`** (see GameState transition pitfall).
 
 **Sorcerer performer gate on a scheme City Action:** override `getPerformersForAction` to filter `hasTrait("Sorcerer")`. In `isAvailableToPlayer`, loop performers and return true only if at least one has a legal target for at least one printed branch — don't gate availability on a single fixed performer.
 
@@ -907,6 +909,57 @@ When the text restricts who may intervene (or refuse — see `create-risk` skill
 Reference: `LEGENDARY_REPUTATION_CHALLENGE_TYPE` (Leaders only), `AJA_CHALLENGE_TYPE` (3+ Finesse), `SWORN_SWORDS_CHALLENGE_TYPE` (Duelists only on `_03030`).
 
 **Accept-time threat bonus:** handle in the action's `handleEvent` on `EventGenerateChallengeThreat` when `$challengeType` matches — increment `$event->actorThreat` for "your participant" only.
+
+### Engage-and-challenge scheme City Action (same performer issues)
+
+Use when the text is **"Engage your performer • They issue a [Stat] challenge to target opposing character"** (performer = challenger). This is simpler than Pattern E. Reference: `_03042` (scheme), `Action_03021` Cornered (Risk parallel).
+
+**Flow:**
+
+1. `RequiresPerformerSelected = true`. `getPerformersForAction` filters `canChallenge && !Engaged` with ≥1 opposing target at location. `isAvailableToPlayer` = `count(getPerformersForAction) > 0`.
+2. `EventActionTriggered`: engage performer if not engaged → set `CHALLENGE_STAT` + custom `CHALLENGE_TYPE` → `createTransitionEvent(..., "NNNNN", $this->Id)`.
+3. `"NNNNN"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` maps to **`HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`** (framework target picker — no custom HD state for the target pick). Implement `isValidTargetForAbility` for server validation.
+4. Mint a `CHALLENGE_TYPE` kept **out of** `stIssueChallenge`'s auto-engage list. WHY: engage already ran in step 2; `NORMAL_CHALLENGE_TYPE` would double-engage. Same idea as Cornered / Sanjay / Don Constanzo.
+
+**Engagement trichotomy** (see `create-character` Pattern F): (a) Engage printed → engage in ActionTriggered + custom type out of auto-engage (`_03042`, Cornered); (b) conditional engage; (c) never engages (Sanjay). Do not copy the wrong case.
+
+### Pattern G — Discard-to-refuse (conditional refuse cost)
+
+Use when refuse is allowed only by paying a hand card under a trait condition (e.g. "If your performer is a Duelist, it can only be refused by discarding a card").
+
+**Rules reading:**
+- **Intervene ≠ refuse.** Do not gate intervene. (Triskelion precedent: intervening accepts.)
+- Empty hand + condition met → **cannot refuse** (JS disable + server `UserException`). "By discarding" implies a card must exist.
+- Condition not met → free refuse under the same `CHALLENGE_TYPE`.
+
+**Always mint the correlator `CHALLENGE_TYPE` for every use of the action**, not only when the performer currently has the trait. WHY: engage-out-of-auto-list is needed for all performers; the Duelist (or other) check runs only at refuse time.
+
+**Wiring (lockstep):**
+
+| Piece | What |
+|---|---|
+| `Game.php` | `WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = N` (next free int) |
+| `seventhseacityoffivesails.js` | Matching `this.WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = N` (needed if JS gates Refuse) |
+| `FrameworkActionsTrait::actHighDramaChallengeActionReject` | If type + trait + empty hand → throw; if type + trait + hand → `nextState("NNNNN")` (do **not** queue `ChallengeRejected` yet); else normal reject |
+| `ArgumentsTrait::argsHighDramaChallengeActionAcceptChallenge` | Expose `mustDiscardToRefuse` (type + performer trait) and `defenderHandCount` |
+| `states.inc.php` `ACCEPT_CHALLENGE.transitions` | **`"NNNNN" => States::HIGH_DRAMA_PLAYER_TURN_NNNNN`** — card-number key, not a reusable name like `"discardToRefuse"`. Eddie: card-specific keys match other transition naming patterns. |
+| State class | `State_highDramaPhaseNNNNN` — hand discard + Back. Success transition **must be named** (see GameState transition pitfall below). |
+| Action `actFromActionWithId` | Validate hand card → queue `createCardDiscardedFromHandEvent(..., $asEffect = true)` → queue `createChallengeRejectedEvent` → `CHALLENGE_ACCEPTED = false` → `nextState("cardDiscarded")` |
+| JS | Accept-challenge: relabel Refuse / disable when `mustDiscardToRefuse && defenderHandCount < 1`. Discard state: faf triple + `EventHandlers` enable on selection |
+
+**Why `actFromCardWithId` reaches the Action during refuse:** `TRANSITION_SOURCE_ID` / `TRANSITION_INTERNAL_ID` set by the original `createTransitionEvent` persist through the challenge flow. `Card::actFromCardWithId` routes via the action id to `actFromActionWithId`.
+
+**After discard, resume the normal reject path:** `cardDiscarded` → `HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT` (same as ACCEPT_CHALLENGE's `""` after a free refuse). Do not invent a separate reject-events entry.
+
+### GameState transition pitfall (BGA)
+
+When a GameState class has **more than one** transition (e.g. success + `"back"`):
+
+- **Do not** use `""` as a transition key alongside others. Calling `nextState("")` (or bare `nextState()`) yields **"More than one possible transition at this state"**.
+- Use an explicit success name: `"cardDiscarded"`, `"done"`, `"targetChosen"`, etc. Call `nextState("cardDiscarded")`.
+- Canonical: `State_highDramaPhase03038a` (`cardDiscarded`), `State_highDramaPhase03029_2` (`done` + `back`), `State_highDramaPhase03042` (`cardDiscarded` + `back`).
+
+Planning-End Forced states that only have `"" => PLANNING_PHASE_END_EVENTS` (single transition) can keep `nextState("")` — the ambiguity only appears when multiple keys exist.
 
 ## Walkthrough: implementing `_03005` (No Mercy)
 
@@ -986,6 +1039,26 @@ Card text:
 
 Full implementation: `modules/php/cards/faf/_03041.php`, `modules/php/cards/faf/reactions/Reaction_03041.php`, `modules/php/States/faf/State_planningPhaseEnd_03041.php`.
 
+## Walkthrough: implementing `_03042` (When Least Expected)
+
+Card text:
+
+> Add a Renown to City Docks and City Forums.
+> **City Action:** Engage your performer • They issue a [Finesse] challenge to target opposing character. If your performer is a Duelist, it can only be refused by discarding a card.
+
+1. **Constructor.** `initializeFaction('Castille')`, `Initiative = 66`, `PanacheModifier = 0`, Traits = Ambush + Cunning. Register `IHasActions` + `ActionTrait` + `new Action_03042()`.
+2. **Resolve.** Trivial dual Renown (Docks + Forum). No planning sub-state.
+3. **Action (engage-and-challenge).** `SchemeCityAction` + `IAbilityThatTargetsCharacters`. `RequiresPerformerSelected = true`. Filter `canChallenge && !Engaged` with opposing targets. Engage in `EventActionTriggered`; set `WHEN_LEAST_EXPECTED_CHALLENGE_TYPE` + `STAT_FINESSE`; transition `"03042"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`.
+4. **Challenge type `23`.** Out of auto-engage list. No intervene gate. Matching int in `seventhseacityoffivesails.js`.
+5. **Pattern G refuse.** `actHighDramaChallengeActionReject` + accept-challenge args (`mustDiscardToRefuse`, `defenderHandCount`). ACCEPT_CHALLENGE transition key **`"03042"`** (not a reusable name).
+6. **Discard state.** `State_highDramaPhase03042` with transitions `"cardDiscarded" => GENERATE_THREAT` and `"back" => ACCEPT_CHALLENGE`. Action discards then queues `ChallengeRejected`. JS: Refuse label/disable + faf triple + EventHandlers.
+
+**Studio bugs hit (do not regress):**
+- Leaving discard with a typo'd transition name → "transition impossible at this state".
+- Leaving discard with `nextState("")` while `"back"` also exists → "More than one possible transition". Fix: named `"cardDiscarded"`.
+
+Full implementation: `modules/php/cards/faf/_03042.php`, `modules/php/cards/faf/actions/Action_03042.php`, `modules/php/States/faf/State_highDramaPhase03042.php`.
+
 ## Style / Memory Notes
 
 - `getActivePlayerName()` is deprecated — use `$game->getPlayerNameById($id)`.
@@ -1004,6 +1077,9 @@ Full implementation: `modules/php/cards/faf/_03041.php`, `modules/php/cards/faf/
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
 - **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
 - **Windows line endings:** PHP files in this repo use single CRLF (`\r\n`). Agent-written files sometimes land as `\r\r\n` (double carriage return), which displays as a blank line after every line. After writing scheme/action PHP, verify against a sibling file (e.g. hex dump or line count). Fix with: `$content -replace "`r`r`n", "`r`n"` in PowerShell. Match existing files — do not convert LF-only.
+- **GameState transitions with Back:** never pair `""` with `"back"` (or any second key). Use named success transitions (`"cardDiscarded"`, `"done"`, …). Studio error if you don't: "More than one possible transition at this state".
+- **Card-specific challenge sub-transitions** off `HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE` use the card number string (`"03042"`), not a reusable semantic name. Same discipline as HD_EVENTS / resolve maps.
+- **Challenge-type JS int:** if Refuse/Intervene UI needs the type, add the matching constant in `seventhseacityoffivesails.js`. Types with no client gate can omit it (server-only), but discard-to-refuse needs the client disable.
 
 ## Cross-Cutting Helpers
 
@@ -1070,6 +1146,9 @@ Event factories you'll likely need:
 | `modules/php/States/faf/State_planningPhaseResolveSchemes03030.php` | Two-location planning resolve (same shape as `03006`). |
 | `modules/php/States/faf/State_highDramaPhase03030.php` | HD state 1: Duelist pick after Diplomat engaged. |
 | `modules/php/States/faf/State_highDramaPhase03030_2.php` | HD state 2: opposing target pick → challenge technique flow. |
+| `modules/php/cards/faf/_03042.php` (When Least Expected) | **Trivial dual Renown + engage→Finesse challenge City Action with Pattern G discard-to-refuse.** |
+| `modules/php/cards/faf/actions/Action_03042.php` | Cornered-shaped engage + `WHEN_LEAST_EXPECTED_CHALLENGE_TYPE`; `actFromActionWithId` discard-then-reject. |
+| `modules/php/States/faf/State_highDramaPhase03042.php` | Discard-to-refuse hand picker; `"cardDiscarded"` + `"back"` (named success — no `""`). |
 
 ## When You Finish
 
@@ -1093,7 +1172,8 @@ Event factories you'll likely need:
 15. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
 16. Pre-commit hook checks on every file:
     - **Reaction subclass:** `$this->setUsed(` AND `$this->isAvailable(` literal strings present.
-    - **SchemeCityAction subclass:** `createActionResolvedEvent()` called.
+    - **SchemeCityAction subclass:** `createActionResolvedEvent()` called (literal string — challenge-flow actions satisfy with a comment like Cornered / `_03042`).
     - **`implements ISorcererAbility`:** both `createSorcererAbilityStartEvent()` and `createSorcererAbilityPlayedEvent()` called.
     - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
 17. Lint touched PHP files (`php -l`) before committing. On Windows, verify line endings are single CRLF (not `\r\r\n`).
+18. **Engage-and-challenge / Pattern G:** confirm `CHALLENGE_TYPE` is out of auto-engage; ACCEPT_CHALLENGE uses card-number transition key `"NNNNN"`; discard GameState uses named success transition (not `""` alongside `"back"`); JS Refuse disable uses `mustDiscardToRefuse` + `defenderHandCount`; intervene stays ungated unless the card says otherwise.

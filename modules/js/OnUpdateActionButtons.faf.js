@@ -41,6 +41,12 @@
                 dojo.addClass('actChooseDiscardCards', 'disabled');
             },
 
+            'highDramaPhase03042': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCards', 'disabled');
+            },
+
             'highDramaPhase03cd01': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

@@ -724,6 +724,10 @@ trait ArgumentsTrait
             $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->hasTrait("Duelist"));
         }
 
+        $mustDiscardToRefuse = $challengeType == Game::WHEN_LEAST_EXPECTED_CHALLENGE_TYPE
+            && $performer->hasTrait("Duelist");
+        $defenderHand = $this->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId);
+
         return [
             "performerId" => $performerId,
             "targetId" => $targetId,
@@ -731,6 +735,8 @@ trait ArgumentsTrait
             "challengeType" => $challengeType,
             "defenderThreat" => $defenderThreat,
             "defenderFinesse" => $target->ModifiedFinesse,
+            "mustDiscardToRefuse" => $mustDiscardToRefuse,
+            "defenderHandCount" => count($defenderHand),
         ];
 
     }
