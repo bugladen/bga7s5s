@@ -530,6 +530,7 @@ class States
             const DUEL_CHOOSE_GAMBLE_CARD_EVENTS = 5270;
             const DUEL_CHOOSE_GAMBLE_CARD_REACTIONS = 5271;
             const DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION = 5272;
+            const DUEL_CHOOSE_GAMBLE_CARD_03047 = 52703047;
         const DUEL_SET_NEXT_COMBAT_CARD = 528;
         const DUEL_END_OF_ROUND = 529;
             const DUEL_END_OF_ROUND_EVENTS = 5290;

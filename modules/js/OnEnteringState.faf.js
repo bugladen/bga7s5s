@@ -587,6 +587,23 @@
                 }
             },
 
+            'duelChooseGambleCard_03047': () => {
+                // WHY: Public cards via argsForState → getArgsFromManeuver (01077 shape).
+                // Only the active Proper Drama owner can select.
+                if (!args.args.args || !args.args.args.cards) {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Gamble Cards');
+
+                args.args.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(this.isCurrentPlayerActive() ? 1 : 0);
+            },
+
         }
 
         if ( methods[stateName] )

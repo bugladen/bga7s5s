@@ -273,6 +273,14 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelChooseGambleCard_03047': () => {
+                if (!this.isCurrentPlayerActive()) {
+                    return;
+                }
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
         }
 
         if ( methods[stateName] )

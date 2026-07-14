@@ -286,6 +286,13 @@
                 }
             },
 
+            'duelChooseGambleCard_03047': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+
             'highDramaPhase03020': () => {
                 if (this.isCurrentPlayerActive())
                 {

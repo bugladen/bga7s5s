@@ -878,7 +878,10 @@ trait ArgumentsTrait
 
     public function argsDuelChooseGambleCard(): array
     {
-        $playerId = $this->getActivePlayerId();
+        $this->theah->buildCity();
+        // WHY: Deck is always the duel-round actor's. Active player can differ when
+        // Proper Drama (03047a) steals the gamble chooser seat for the opponent.
+        $playerId = $this->theah->getDuelRoundActor()->ControllerId;
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
         $fromBottom = $this->globals->get(Game::GAMBLE_REVEAL_FROM_BOTTOM, false);
         $deckCards = $fromBottom

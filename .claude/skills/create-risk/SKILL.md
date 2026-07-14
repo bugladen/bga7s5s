@@ -33,6 +33,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03036.php` (Valroux Exemplar) — **Finesse-gated combat-card cost discount + Duelist Maneuver that scales Riposte off the dueling line and conditionally forces an adversary hand discard (Pattern C.4).** Discount via `getManeuverFromCombatCardDiscount` when `ModifiedFinesse >` adversary. Maneuver: `+1 Riposte` per other dueling-line card (`01166` count); if ≥3 other cards, adversary discards (skip transition when hand empty). Exemplar for composing discount + line-count calc + conditional cross-player discard on one Maneuver.
 - `modules/php/cards/faf/_03045.php` (Curious) — **Plain Action (Pattern B.1 claim-control destination) + Gambling Maneuver that wounds your participant and adds Riposte.** Action: wound performer • move to adjacent location **controlled by an opponent** (`getControllerForLocation` — claim control, not "enemy present"). Maneuver: `DUEL_GAMBLED` only (no Influence gate) • wound `getDuelRoundActor()` • `+2 Riposte` in calc. Exemplar for claim-control location filters vs `_03009`'s content filters, and for wound-participant (self) vs wound-adversary Gambling Maneuvers.
 - `modules/php/cards/faf/_03046.php` (Passionate) — **Two Pattern D.2 RiskReactions on `EventCharacterIntervened` that En Garde a fixed trigger-named character after pay.** Duelist (`Reaction_03046a`): you intervene → engarde the intervener. Pirate (`Reaction_03046b`): your Pirate's challenge, adversary intervened → engarde the challenger. Exemplar for dual a/b Reactions on one Risk, for "challenge accepted if adversary intervened" mapping to `EventCharacterIntervened` (**not** `EventChallengeAccepted`), and for engarde deferred to `EventRiskReactionTriggered`.
+- `modules/php/cards/faf/_03047.php` (Proper Drama) — **Scoundrel + Duelist Maneuvers (Pattern C.5).** Scoundrel (`Maneuver_03047a`): `+1 Riposte` + if adversary gambles next round, **you** choose their combat card (hijack on `EventDuelGambleCardsRevealed`, public choose state, `actGambleCardChosen` uses actor deck). Duelist (`Maneuver_03047b`): adversary cannot gamble next round (`eventCheck` on `EventDuelAttemptGamble`, mirror `Technique_02037`). Exemplar for dual a/b trait Maneuvers, next-round gamble locks, stolen gamble chooser, and `getArgsFromManeuver` + `argsForState` (not an ArgumentsTrait helper).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -117,7 +118,7 @@ Read each clause of the printed Text and classify it before writing code.
 |---|---|
 | **`<b>City Action:</b>`** | Pattern A — `RiskCityAction`. The Action lives in `cards/<expansion>/actions/Action_NNNNN.php`. Performer must be in the city (framework helper). |
 | **`<b>Action:</b>`** (no "City") | Pattern B — `RiskAction`. Defaults to requiring the Risk in hand (`Card::Location == LOCATION_HAND`); override `overrideInHandCheck` only when the card text implies otherwise. **Performer pool is home + city** — do NOT filter to city characters even when the effect implies city (e.g. "move to an adjacent location"). The keyword "City" in the heading is mechanical: if absent, home performers are eligible too. |
-| **`<b>Maneuver:</b>`** / **`<b>Duelist Maneuver:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern C — `Maneuver` subclass in `cards/<expansion>/maneuvers/Maneuver_NNNNN.php`. Trait-prefixed Maneuvers add an `isAvailable` gate (`hasTrait` or `DUEL_GAMBLED`). |
+| **`<b>Maneuver:</b>`** / **`<b>Duelist Maneuver:</b>`** / **`<b>Scoundrel Maneuver:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern C — `Maneuver` subclass in `cards/<expansion>/maneuvers/Maneuver_NNNNN.php`. Trait-prefixed Maneuvers add an `isAvailable` gate (`hasTrait` or `DUEL_GAMBLED`). |
 | **`<b>Reaction:</b>`** | Pattern D — `RiskReaction`. Pre-commit hook requires hand-only guard (`Location == Game::LOCATION_HAND`) + `setUsed`/`isAvailable` literal calls. |
 | **"When an opponent's ability would wound/move/engage your character"** (no "target" wording) | Pattern D.4 — effect-event redirect `RiskReaction`. Intercept `EventCharacterBeingWounded` / `EventCardMoving` / `EventCardEngaged` (± `EventCharacterIntervened` for duel intervention). Gate on opponent source, not `IAbilityThatTargetsCharacters`. See `Reaction_03031`. |
 | **"While [adversary/condition] …"** / **"If your participant has more [Stat] … this card has -1 cost"** (combat-card cost or stat modifier) | Pattern E — cost discounts via `getManeuverFromCombatCardDiscount` on the Maneuver (`_01084`, `_03036`); other always-on effects may override `handleEvent` on the Risk class. |
@@ -135,8 +136,11 @@ Read each clause of the printed Text and classify it before writing code.
 | **"Wound your participant • +X [stat]"** (Gambling / other Maneuver) | Pattern C — calc branch for the stat; resolve wounds `getDuelRoundActor()` (your participant), not the adversary. See `Maneuver_03045`, `Maneuver_02018`. |
 | **"After your performer intervenes • En garde them"** / **"… challenge is accepted, if their adversary intervened • En garde your performer"** | Pattern D.2 on `EventCharacterIntervened` — engarde deferred to `EventRiskReactionTriggered`. Trait gate on the trigger-named performer. See `_03046`. |
 | **Two distinct trait-prefixed Reactions on one Risk** | Split into `Reaction_NNNNNa` / `Reaction_NNNNNb` (mirror `_03027` / `_03016`). Do not merge into one class with a mode field. |
+| **"The adversary cannot gamble during their next round"** | Pattern C.5 — arm on resolve; `eventCheck` `EventDuelAttemptGamble` for blocked adversary character. Mirror `Technique_02037`; clear via owner **ControllerId** on Risk Maneuvers. See `Maneuver_03047b`. |
+| **"If the adversary gambles during their next round, you choose their combat card"** (± **+X [stat]**) | Pattern C.5 — arm on resolve; hijack on `EventDuelGambleCardsRevealed` (not AttemptGamble); transition to Maneuver owner; public choose state; `actGambleCardChosen` uses actor deck. See `Maneuver_03047a`. |
+| **Two distinct trait-prefixed Maneuvers on one Risk** | Split into `Maneuver_NNNNNa` / `Maneuver_NNNNNb` (mirror `_01108`). Same discipline as dual Reactions. |
 
-A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_03033` has both a Forced (on the Risk class) and a Gambling Maneuver. `_03034` is a single Diplomat City Action (Pattern A.3). `_03035` has both a pressure Reaction and a multi-step C.3 Maneuver. `_03036` composes a Finesse cost discount with a Duelist C.4 Maneuver (line-count Riposte + conditional discard). `_03045` has a plain Action (claim-control move) and a Gambling Maneuver (wound participant + Riposte). `_03046` has two Pattern D.2 intervene/engarde Reactions (Duelist + Pirate). `_01083` is a single City Action only.
+A single Risk freely combines these. `_01115` has both a City Action and a Maneuver. `_03008` has both a City Action and a Gambling Maneuver. `_03033` has both a Forced (on the Risk class) and a Gambling Maneuver. `_03034` is a single Diplomat City Action (Pattern A.3). `_03035` has both a pressure Reaction and a multi-step C.3 Maneuver. `_03036` composes a Finesse cost discount with a Duelist C.4 Maneuver (line-count Riposte + conditional discard). `_03045` has a plain Action (claim-control move) and a Gambling Maneuver (wound participant + Riposte). `_03046` has two Pattern D.2 intervene/engarde Reactions (Duelist + Pirate). `_03047` has dual a/b Maneuvers (Scoundrel choose-gamble + Duelist cannot-gamble). `_01083` is a single City Action only.
 
 ## Pattern A — City Action (`RiskCityAction`)
 
@@ -490,12 +494,12 @@ Every Maneuver subclass must include either an `EventManeuverCanceled` handler O
 
 When the maneuver carries state on the Maneuver object (e.g., `Maneuver_01084::IncreaseAdversaryThrust`), include a real handler that clears the flag on cancel.
 
-### "Duelist Maneuver" / "Gambling Maneuver" — trait-prefixed gates
+### "Duelist Maneuver" / "Scoundrel Maneuver" / "Gambling Maneuver" — trait-prefixed gates
 
 These are **mechanical performer-trait gates**, not Sorcerer abilities. Add an `isAvailable` predicate:
 
 ```php
-// Duelist Maneuver:
+// Duelist / Scoundrel / Pirate / … Maneuver:
 $actor = $theah->getDuelRoundActor();
 if (! $actor || ! $actor->hasTrait('Duelist')) return false;
 
@@ -580,6 +584,49 @@ if (count($hand) == 0) return;
 Adversary hand-pick discard does **not** need `IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters` — those mark character choosers. Wire the sub-state like `Maneuver_01115` (JS: `factionHand.setSelectionMode('single')`, Confirm via `onCardDiscarded()`, enable Confirm in `EventHandlers.js` on selection).
 
 References: `Maneuver_01166` (pure line-count calc), `Maneuver_03036` (Duelist + Riposte scaling + ≥3 discard), `Maneuver_01115` / `Maneuver_01108a` (discard chooser / hand-gated availability when discard is the only effect).
+
+### Pattern C.5 — Next-round gamble control ("cannot gamble" / "you choose their combat card")
+
+Two related texts that arm a lock on `EventResolveManeuver` for **the adversary's next round**. Split distinct trait-prefixed Maneuvers into `a`/`b` files (mirror `_01108` / `_03046`).
+
+#### Cannot gamble (`Maneuver_03047b`, `Technique_02037`)
+
+```php
+// Arm on resolve:
+$this->CancelAdversaryGamble = true;
+$this->BlockedAdversaryCharacterId = $adversary->Id;
+
+// Block in eventCheck (not handleEvent):
+if ($event instanceof EventDuelAttemptGamble
+    && $this->CancelAdversaryGamble
+    && $event->actorId == $this->BlockedAdversaryCharacterId)
+{
+    throw new UserException(...);
+}
+```
+
+**Clear via ControllerId on Risk Maneuvers:** Techniques clear when `$owningCharacter->Id == $event->actorId` on `EventDuelNewRound`. A Maneuver lives on a Risk in the dueling line — there is no owning character. Clear when the new round's actor `ControllerId == $owner->ControllerId` (your next turn starts). Also clear on `EventManeuverCanceled` / `EventDuelEnd`.
+
+#### You choose their combat card (`Maneuver_03047a`)
+
+Do **not** hijack on `EventDuelAttemptGamble` — the adversary must still commit to gambling and reveal. Hijack on **`EventDuelGambleCardsRevealed`** when `$event->actorId == $this->BlockedAdversaryCharacterId`:
+
+1. `notify->all` waiting log (`must choose the adversary's combat card from the revealed gamble cards`) — state description alone is not enough for watchers.
+2. `queueEvent(createTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id))`.
+3. Wire `"NNNNN"` under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** (not `DUEL_RESOLVE_MANEUVER_EVENTS`) → custom GameState (e.g. `DUEL_CHOOSE_GAMBLE_CARD_NNNNN` / id `5270NNNNN`).
+4. Named transitions must match `actGambleCardChosen`: `"useManeuver"` → `DUEL_USE_MANEUVER_FROM_COMBAT_CARD`, `"noManeuver"` → `DUEL_CHOOSE_GAMBLE_CARD_EVENTS`. No `actBack` (gamble already committed).
+
+**Transition priority:** `EventTransition` defaults to priority 8; reaction transitions use priority 6. So Ivy-style "before choosing" reactions (`Reaction_02042`) still run first — do not `stackEvent` the choose transition ahead of them.
+
+**Framework: deck = actor, not active player.** When the Maneuver owner is active but the gamble is the adversary's:
+- `argsDuelChooseGambleCard` / `actGambleCardChosen` must read/write the **duel-round actor's** faction deck (`getDuelRoundActor()->ControllerId`), not `getActivePlayerId()`.
+- Before `nextState("useManeuver"|"noManeuver")`, `changeActivePlayer($actor->ControllerId)` so combat-card maneuvers belong to the gambler.
+
+**Public reveal for the stolen-chooser state:** Prefer public `cards` (everyone + spectators) via `getArgsFromManeuver` + State `argsForState()` (01077 shape — client path `args.args.args.cards`). Do **not** park a one-off helper on `ArgumentsTrait`. Stock `duelChooseGambleCard` stays `_private.active` for normal gambles. Select/Confirm only when `isCurrentPlayerActive()`.
+
+**Args / act live on the Maneuver:** `getArgsFromManeuver` for the choose state; `actFromManeuverWithId` clears the lock then calls `$game->actGambleCardChosen($id)`. Clear also on adversary `EventDuelEndOfRound`, owner `EventDuelNewRound`, cancel, duel end.
+
+References: `Maneuver_03047a` / `Maneuver_03047b` (Proper Drama), `Technique_02037` (cannot-gamble Technique shape), `Maneuver_01108a`/`b` (dual a/b Maneuvers), `Maneuver_01077` (`getArgsFromManeuver` + public `cards` + `argsForState`).
 
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
@@ -1329,6 +1376,8 @@ If your Action transitions to a custom sub-state for a non-challenge effect, add
 
 For Pattern C Maneuvers that transition to a sub-state (e.g., `Maneuver_01115`), add an entry under the duel's resolve-maneuver transition map and define the state. Mirror `Maneuver_01115`'s wiring.
 
+For Pattern C.5 "you choose their combat card" hijacks, wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** (after reveal), not resolve-maneuver. State id convention near the choose family: `5270NNNNN` (see `States::DUEL_CHOOSE_GAMBLE_CARD_03047`).
+
 ### GameState class vs legacy array state
 
 Two formats coexist for sub-state definitions:
@@ -1481,11 +1530,12 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 | `modules/php/cards/faf/_03036.php` (Valroux Exemplar) | **Finesse cost discount + Duelist Pattern C.4 Maneuver.** `getManeuverFromCombatCardDiscount` when `ModifiedFinesse >` adversary. Maneuver: Duelist gate; `+1 Riposte` per other dueling-line card (`unset($cards[$owner->Id])`); if ≥3 other cards and adversary hand non-empty, `queueEvent` discard transition to adversary controller (`01115` JS hand-pick). Empty-hand skip at resolve (not `isAvailable`) so Riposte scaling stays offerable. No `IRiskThatTargetsCharacters` (hand discard, not character chooser). No sticky Maneuver state → `EventManeuverCanceled handler not needed`. |
 | `modules/php/cards/faf/_03045.php` (Curious) | **Plain Action (Pattern B.1 claim-control) + Gambling Maneuver (wound participant + +2 Riposte).** Action: `RiskAction` (home performers eligible); wound performer then move to adjacent city location where `getControllerForLocation` is an opposing player (`!= 0`). Not `_03009`'s enemy/Mercenary content filter. No `IRiskThatTargetsCharacters` (location chooser). Maneuver: `DUEL_GAMBLED` only; calc `+2 Riposte`; resolve wounds `getDuelRoundActor()` — contrast `Maneuver_03033` (wounds adversary). Pairs with `State_highDramaPhase03045` (same JS location-chooser trio as `03009`/`03032`). |
 | `modules/php/cards/faf/_03046.php` (Passionate) | **Two Pattern D.2 RiskReactions on `EventCharacterIntervened` that En Garde after pay.** `Reaction_03046a` (Duelist): you intervene → engarde intervener. `Reaction_03046b` (Pirate): your Pirate challenger + adversary intervened → engarde challenger. Critical: intervene sets `CHALLENGE_ACCEPTED` but never fires `EventChallengeAccepted` — Pirate listens to Intervened only. Split a/b (not one mode class). Engarde only if still `Engaged` at `EventRiskReactionTriggered`. No `IRiskThatTargetsCharacters` (fixed trigger targets). No new states/JS. |
+| `modules/php/cards/faf/_03047.php` (Proper Drama) | **Scoundrel + Duelist Pattern C.5 Maneuvers.** `Maneuver_03047a`: `+1 Riposte`; arm choose-lock on resolve; on `EventDuelGambleCardsRevealed` for blocked adversary → waiting log + transition `"03047"` under `DUEL_GAMBLE_REVEALED_EVENTS` to owner; public `cards` via `getArgsFromManeuver` + `argsForState`; `actGambleCardChosen` must use actor deck + restore active player. `Maneuver_03047b`: cannot gamble next round (`eventCheck` `EventDuelAttemptGamble`, mirror `Technique_02037`; clear via owner ControllerId). Split a/b. Framework actor-deck fix is shared with normal gamble choose when active ≠ actor. |
 | `modules/php/cards/reactions/ICancelReaction.php` | Marker interface — empty body. Implementing it changes `FrameworkActionsTrait::actChooseCardForReactionPaid` to `stackEvent` (not `queueEvent`) the post-pay `EventRiskReactionTriggered` and `EventRiskPlayed`. Required whenever your RiskReaction's effect needs to interleave ahead of `HIGH_PRIORITY` events still queued from the same trigger batch (e.g., Renown Add/Remove pairs). |
 
 ## When You Finish
 
-1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Forced / Passive / A.2 / A.3 / B.1 claim-control vs content filter / C.3 multi-step / C.4 dueling-line count / D.2.1 / D.2 intervene-engarde). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern." Parse "controlled by an opponent" (location) vs "enemy character", "Wound your participant" vs "Wound the adversary", and "challenge accepted if adversary intervened" (→ `EventCharacterIntervened`, not `EventChallengeAccepted`) before copying a mirror.
+1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (City Action / Action / Maneuver / Reaction / Forced / Passive / A.2 / A.3 / B.1 claim-control vs content filter / C.3 multi-step / C.4 dueling-line count / C.5 next-round gamble / D.2.1 / D.2 intervene-engarde). Riposte/Parry/Thrust numbers go on the constructor and are not a "pattern." Parse "controlled by an opponent" (location) vs "enemy character", "Wound your participant" vs "Wound the adversary", "challenge accepted if adversary intervened" (→ `EventCharacterIntervened`, not `EventChallengeAccepted`), and "you choose their combat card" / "cannot gamble" (→ C.5, not mid-round AttemptGamble for the choose seat) before copying a mirror.
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN, `WealthCost` is set, combat stats match the printed card (set `DashedX = true` for printed-dashed stats), all Traits exist in `TraitNames::$TraitsJson`.
 3. Mark `implements IRiskThatTargetsCharacters` on the Risk class when any of its abilities targets a character. The interface marker lives on the Risk class itself, not the Action/Reaction/Maneuver. Skip it for location-chooser-only Actions (`_03009`, `_03032`, `_03045`), hand-discard choosers (`_03036`), and fixed-target Reactions with no character chooser (`_03012`, `_03046`).
 4. Each Action/Maneuver/Reaction is its own file in the corresponding subdirectory (`actions/`, `maneuvers/`, `reactions/`). Create the subdirectory if the expansion doesn't have one yet.
@@ -1530,3 +1580,6 @@ Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_0111
 30. **"Wound your participant" on a Maneuver:** resolve wounds `getDuelRoundActor()`, not `getDuelRoundOpponent()`. Pair with calc for any printed Riposte/Parry/Thrust. Gambling with no further gate → `DUEL_GAMBLED` only. Reference: `Maneuver_03045`, `Maneuver_02018`; contrast `Maneuver_03033` (adversary).
 31. **"Challenge accepted if adversary intervened" → `EventCharacterIntervened` only:** `actHighDramaChallengeActionIntervene` sets `CHALLENGE_ACCEPTED = true` but never fires `EventChallengeAccepted`. Gate on your challenger (`CHOSEN_PERFORMER` + trait) for the Pirate/challenger-side clause; gate on `$event->playerId` + intervener trait for the "you intervene" clause. Do not dual-listen to Accepted. Reference: `Reaction_03046b`, contrast `Reaction_03046a` / `Reaction_03012`.
 32. **En garde after intervene (Pattern D.2):** defer `createCardEngardedEvent` to `EventRiskReactionTriggered` after pay. Intervene queues Engaged *after* Intervened, so by pay time the intervener is usually Engaged — still check `$character->Engaged` before engarde. Split distinct trait-prefixed Reactions into `a`/`b` files. No new states/JS when the framework reaction + pay flow is enough. Reference: `_03046`, Pattern D.2.
+33. **Next-round "cannot gamble" (Pattern C.5):** arm on `EventResolveManeuver`; block with `eventCheck` on `EventDuelAttemptGamble` for the blocked adversary character id. Risk Maneuvers clear when the owner's **ControllerId** becomes the new round actor (`EventDuelNewRound`) — not an owning-character id (`Technique_02037` shape). Also clear on cancel / duel end. Reference: `Maneuver_03047b`, `Technique_02037`.
+34. **"You choose their combat card if they gamble" (Pattern C.5):** arm on resolve; hijack on **`EventDuelGambleCardsRevealed`** (not AttemptGamble). Transition priority 8 runs after reaction transitions (6) so before-choose reactions still fire. Wire under `DUEL_GAMBLE_REVEALED_EVENTS`. Public `cards` via `getArgsFromManeuver` + State `argsForState` (client `args.args.args.cards`) — do not invent an ArgumentsTrait helper. `actGambleCardChosen` / stock choose args must use the **duel-round actor's** deck; `changeActivePlayer(actor)` before `useManeuver`/`noManeuver`. Waiting log notify before the transition. Reference: `Maneuver_03047a`, `State_duelChooseGambleCard_03047`, `Maneuver_01077`.
+35. **Dual a/b Maneuvers:** same split discipline as dual Reactions (`_01108`, `_03047`). Distinct trait gates + distinct effects → separate classes, not one mode field.

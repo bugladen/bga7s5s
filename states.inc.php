@@ -2606,6 +2606,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "03047" => States::DUEL_CHOOSE_GAMBLE_CARD_03047,
                         "reaction" => States::DUEL_GAMBLE_REVEALED_REACTIONS,
                         "pay" => States::DUEL_GAMBLE_REVEALED_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_CHOOSE_GAMBLE_CARD,

@@ -1612,7 +1612,10 @@ trait FrameworkActionsTrait
         $actor = $this->theah->getDuelRoundActor();
         $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
         $this->theah->eventCheck($gambleCheck);
-        $playerId = $this->getActivePlayerId();
+        // WHY: Always the duel-round actor's deck/events — not getActivePlayerId().
+        // Proper Drama (03047a) can make the Maneuver owner the active chooser while
+        // the gambled card still comes from the actor's faction deck.
+        $playerId = $actor->ControllerId;
         $deckName = $this->getPlayerFactionDeckName($playerId);
 
         $deckCard = $this->cards->getCard($id);
@@ -1710,6 +1713,8 @@ trait FrameworkActionsTrait
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
 
+            // Restore actor as active before leaving so subsequent duel UI is theirs.
+            $this->gamestate->changeActivePlayer($playerId);
             $this->gamestate->nextState("noManeuver");
             return;
         }
@@ -1733,6 +1738,10 @@ trait FrameworkActionsTrait
         $card->Location = Game::LOCATION_DUELING_LINE;
         $this->updateCardObjectInDb($card);
         $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
+
+        // Restore actor as active before useManeuver/noManeuver — chooser may have
+        // been the Proper Drama Maneuver owner, not the gambling player.
+        $this->gamestate->changeActivePlayer($playerId);
 
         if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
             $this->gamestate->nextState("useManeuver");
