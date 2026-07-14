@@ -1897,6 +1897,26 @@ trait EventHub
                 break;
 
             case $event instanceof EventDuelGambleCardsRevealed:
+                $handler = function(Theah $theah, EventDuelGambleCardsRevealed $event) {
+                    // WHY: Gamble is a reveal — names belong in the public log so
+                    // opponents/spectators/history see them even though the stock
+                    // choose UI keeps cards in _private args (active player only).
+                    $names = [];
+                    foreach ($event->revealedCardIds as $cardId)
+                    {
+                        $card = $theah->game->getCardObjectFromDb($cardId);
+                        if ($card)
+                        {
+                            $names[] = $card->getInjectCode();
+                        }
+                    }
+
+                    $theah->game->notify->all("message", clienttranslate('${player_name} reveals the following cards for their Gamble: ${names}.'), [
+                        "player_name" => $theah->game->getPlayerNameById($event->playerId),
+                        "names" => implode(', ', $names),
+                    ]);
+                };
+                $handler($this, $event);
                 break;
 
             case $event instanceof EventDuelPlayerGambled:
