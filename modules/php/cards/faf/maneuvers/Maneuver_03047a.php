@@ -84,22 +84,11 @@ class Maneuver_03047a extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             $game = $event->theah->game;
 
-            // WHY: Cards are public in this state; announce them in the log so
-            // watchers who aren't looking at chooseList still see the reveal.
-            $names = [];
-            foreach ($event->revealedCardIds as $cardId)
-            {
-                $card = $game->getCardObjectFromDb($cardId);
-                if ($card)
-                {
-                    $names[] = $card->getInjectCode();
-                }
-            }
-
-            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} must choose the adversary\'s combat card from the revealed gamble cards: ${names}.'), [
+            // WHY: Names already logged by EventHub on EventDuelGambleCardsRevealed
+            // (hub runs before cards). This line only explains who steals the choose.
+            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} must choose the adversary\'s combat card from the revealed gamble cards.'), [
                 "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                "names" => implode(', ', $names),
             ]);
             $transition = EventFactory::createTransitionEvent(
                 $owner->ControllerId,
