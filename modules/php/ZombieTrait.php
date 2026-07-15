@@ -92,8 +92,16 @@ trait ZombieTrait
                     break;
 
                 case "highDramaChallengeActionAcceptChallenge":
-                    // Default action: Reject
-                    $this->actHighDramaChallengeActionReject();
+                    // Default: Reject, unless refusal is blocked (e.g. Mōri Daichi Combat gate).
+                    $args = $this->argsHighDramaChallengeActionAcceptChallenge();
+                    if (! empty($args['cannotRefuseDueToDaichi']))
+                    {
+                        $this->actHighDramaChallengeActionAccept();
+                    }
+                    else
+                    {
+                        $this->actHighDramaChallengeActionReject();
+                    }
                     break;
 
                 case "highDramaChallengeActionChoosePerformer":

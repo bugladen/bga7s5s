@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
@@ -1325,6 +1326,13 @@ trait FrameworkActionsTrait
         if ($challengeType == Game::AJA_CHALLENGE_TYPE && $target->ModifiedFinesse < 3)
         {
             throw new UserException(clienttranslate("Aja: Only characters with 3 Finesse or more may refuse this challenge."));
+        }
+
+        // WHY: Mōri Daichi — refuse locked by relative Combat for ANY challenge type
+        // involving him (not a dedicated CHALLENGE_TYPE; applies when he is challenged too).
+        if (_03050::challengeRefusalBlocked($performer, $target))
+        {
+            throw new UserException(clienttranslate("Mōri Daichi: This challenge cannot be refused (greater Combat)."));
         }
 
         // WHY: When Least Expected — Duelist performer can only refuse by discarding a card.

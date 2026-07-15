@@ -16,6 +16,7 @@ use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
@@ -737,6 +738,8 @@ trait ArgumentsTrait
             "defenderFinesse" => $target->ModifiedFinesse,
             "mustDiscardToRefuse" => $mustDiscardToRefuse,
             "defenderHandCount" => count($defenderHand),
+            // WHY: Mōri Daichi Combat-gate — client disables Refuse; not a CHALLENGE_TYPE flag.
+            "cannotRefuseDueToDaichi" => _03050::challengeRefusalBlocked($performer, $target),
         ];
 
     }

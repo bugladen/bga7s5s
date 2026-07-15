@@ -289,6 +289,9 @@ onUpdateActionButtons: function( stateName, args )
             // WHY: When Least Expected Duelist — refuse requires discarding; empty hand cannot refuse.
             if (args.mustDiscardToRefuse && args.defenderHandCount < 1)
                 dojo.addClass('btnRefuse', 'disabled');
+            // WHY: Mōri Daichi — relative Combat blocks refuse for either participant role.
+            if (args.cannotRefuseDueToDaichi)
+                dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 
