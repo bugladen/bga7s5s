@@ -2407,7 +2407,7 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "maneuverPaidFor" => States::DUEL_APPLY_COMBAT_CARD_STATS,
-                    "back" => States::DUEL_CHOOSE_ACTION,
+                    "back" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "backAbnormalFlow" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD
                 ]
             ],
