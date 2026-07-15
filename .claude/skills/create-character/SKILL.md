@@ -24,6 +24,7 @@ Canonical references:
 - `modules/php/cards/faf/_03038.php` (Damya Kahina, Sea Serpent) — `Character` with **two City Actions** as `Action_03038a` / `Action_03038b`: (1) **Draw then discard** — queue `createCardDrawnEvent` on `EventActionTriggered` before transitioning to a `factionHand` discard picker; (2) **Move equipped character → destroy attachment → draw cost+1** — character picker (no `IAbilityThatTargetsCharacters` — text lacks "target"), move with `engage=false`, then Adelheide-style attachment **button** picker; destroy via unequip + `createCardDiscardedFromPlayEvent`; draw `WealthCost + 1`.
 - `modules/php/cards/faf/_03039.php` (Íñigo Rocoso, Avispa Mordedora) — `Character` with a **Weapon-equipped +1 Finesse passive** (Rena `_01040` count-transition pattern via `EventAttachmentEquipped`/`Unequipped` + `createCharacterFinesseModifedEvent`) and a **composite Gambling Technique**: −2 Thrust (combat-card ≥2 Thrust gate), adversary hand discard picker (Maya `Technique_01093`), post-discard hand-size En Garde, unconditional EndOfRound move Home (`engage=false`).
 - `modules/php/cards/faf/_03040.php` (Soline el Gato, Gato el la Bolsa) — `Character` with (1) **City Reaction on any character moving to her location** (`EventCardMoved`, no enemy-controller gate — text says "a character") that moves Soline to any other City location via location buttons + Pass; (2) **City Action: Engage → Pressure with Finesse, succeed even if tied** via a dedicated `SOLINE_PRESSURE_TYPE` win-ties flag, then **mandatory claim-or-engage** post-success picker (`Action_01075` pressure + `Action_01105` engage-choice composite).
+- `modules/php/cards/faf/_03049.php` (Ekaterina Ilyanava) — `Leader` with (1) **Continuous Reaction on location claim** (`EventLocationClaimed` at her location — **any** claimer) that moves her to another City location, (2) **opponent Collect-renown denial** (one fewer; remainder stays) via `eventCheck` on Plunder Take/Gains/Removed plus arm+put-back for ability Collects, (3) **Technique +1 Parry with optional engage-Artifact for +2 instead** (choice state only when an unengaged Artifact is equipped).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -148,7 +149,7 @@ class _NNNNN extends Leader implements IHasActions, IHasReactions
 ```
 
 Differences from regular Character:
-- **Do NOT call `initializeFaction()`** on a Leader — the framework sets the faction from the player's faction selection at setup. The Leader's `Factions` is implicit. (Look at `_01006`, `_01089`, `_01116` — none call `initializeFaction`. `_01035` Kaspar does, but `_01089` Soline doesn't, and `_03001` Cesca doesn't. The base game's Leader setup populates this regardless.) If you're scaffolding and unsure, omit it for Leaders.
+- **`initializeFaction()` on Leaders is optional.** The framework sets faction from player selection at setup. Base-game Leaders often omit it (`_01006`, `_01089`, `_01116`); **FAF Leaders commonly call it** (`_03001` Cesca, `_03037` Sanjay, `_03049` Ekaterina — faction spelling **`Ussura`**, not "Usurra"). Either works at runtime; when finishing a FAF Leader scaffold, keep whatever the scaffold has and fix spelling.
 - **Always include `"Leader"` in `Traits`.** Cards filter on `hasTrait("Leader")` (e.g., "target a non-Leader" effects), so this is load-bearing.
 - **`CrewCap` and `Panache` are required.** Don't leave them at the constructor defaults of 0.
 
@@ -183,6 +184,8 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"When <Owner>'s challenge is refused, <effect>"** / **"When a challenge to <Owner> is refused …"** | If the text is a **Forced** / plain passive (no player choice): `handleEvent` on `EventChallengeRejected`. If the text is a **`<b>Reaction:</b>`**: Pattern D button Reaction on the same event. Fields: `$event->challengerId` (issued), `$event->targetId` (refused). Identity gate matches whichever role the text names. Reference: `_03015` Joern (passive self-heal), `Reaction_01116a` Yevgeni (Reaction En Garde), `Reaction_03037` Sanjay (Reaction Collect Renown). |
 | **"<Owner>'s gambled combat cards have +N[Riposte/Parry/Thrust]"** | Pattern A on `EventDuelCalculateCombatCardStats`: gate `actorId == $this->Id` **AND** `$event->gambled`. Call `$event->addRiposte(N)` (etc.). WHY `$event->gambled` not `Game::DUEL_GAMBLED` alone: the calculate-stats event already carries the authoritative per-round flag from `duel_round.gambled` (includes Roll-the-Bones paths). Contrast Yevgeni `_01116` (every combat card, no gambled gate). See Pattern A "Gambled combat-card stat bonus" below. |
 | **"Collect a Renown from <Owner's / this> location"** (Reaction or Action effect) | `createRenownRemovedFromLocationEvent` + `createPlayerGainsReknownEvent`. Valid-target gate: `getCityLocation(...)->Renown > 0` before prompting. Reference: `Reaction_03037` Sanjay, `Action_02035` (pressure-success Collect). |
+| **"When an opponent collects Renown from this location, they collect one fewer. (Remaining Renown stays.)"** | Pattern A `eventCheck` on the card class — **not** a Reaction. Two Collect pipelines differ (Plunder Take→Gains→Removed vs ability Removed→Gains). `EventPlayerGainsReknown` has **no location field** — never reduce every Gains. Do **not** blindly reduce every `EventRenownRemovedFromLocation` (Moves also emit Removed+Added). See Pattern A "Opponent collects one fewer Renown". Reference: `_03049` Ekaterina. |
+| **"After <Owner>'s location is claimed, she may move …"** (unlabelled After…may) | Pattern D **Continuous** Reaction on `EventLocationClaimed` when `event.location == owner.Location`. Gate on **any** claimer unless the text says "opponent" / "you" — base-game `_01117` Reaction is opponent-only; Leader FAF Ekaterina is any-claimer. Effect = move-self-to-any-city buttons. See Pattern D "After the Owner's location is claimed". Reference: `Reaction_03049`, Continuous sibling `Reaction_03025`. |
 | **"<Owner> has +N [Stat] while wounded"** (or any "while <condition-on-self>" stat bonus) | Pattern A passive with a private bool flag (e.g., `$WoundedCombatBonusApplied`). Hook `EventCharacterWounded` AND `EventCharacterHealed` with `characterId == $this->Id`, call `parent::handleEvent` first (so `$this->Wounds` is up-to-date), then re-derive the boolean and queue `createCharacter<Stat>ModifiedEvent(±1)` only on flag transition. Skip if `IsDying` or in discard/locker. See Pattern A "Stat bonus while a self-condition holds" below. Reference: `_03016` Ise. |
 | **"While <Owner> is equipped with a <b>Weapon</b>, he gains +N[Stat]"** | Pattern A on `EventAttachmentEquipped` / `EventAttachmentUnequipped` gated on `characterId == $this->Id`. Count Weapons in `$this->Attachments` **after** the event (Attachments already reflects the new set). Apply +N only when count transitions to `1`; undo only when count transitions to `0`. Do **not** invent a bool flag — the count-transition is the established shape and survives Offhand / multi-Weapon edge cases. Use `createCharacterFinesseModifedEvent` / `createCharacterCombatModifiedEvent` (note Finesse factory typo `Modifed`). Reference: `_01040` Rena (+1 Combat), `_03039` Íñigo (+1 Finesse). |
 | **"Set [StatA] as equal to [StatB]"** while a scoped condition holds (e.g., "while participating in a duel at [The Grand Bazaar]") | Pattern A passive with a **replacement** flag + stored pre-override snapshot — NOT the ±1 delta pattern. Apply on condition start (`EventDuelStarted` + location/participant gates, plus `EventDefenderSwapped`/`EventChallengerSwapped` for mid-duel entry/exit), clear on condition end (`EventDuelEnd`), re-sync target stat whenever source stat changes (`EventCharacterInfluenceModified` → update Combat) or external sources mutate the target stat away from the link (`EventCharacterCombatModified` with `NewCombat != ModifiedInfluence`). Store `$CombatBeforeDuelOverride` at apply-time; restore that snapshot on clear (NOT recompute-from-base — attachments may change mid-condition). See Pattern A "Set one stat equal to another while a scoped condition holds" below. Reference: `_03028` Térence. |
@@ -216,6 +219,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"The adversary discards a card"** (Technique effect) | On `EventResolveTechnique`, if adversary hand nonempty: `createTransitionEvent($adversary->ControllerId, …, "NNNNN", …)` into `DUEL_CHOOSE_TECHNIQUE_NNNNN` (active player = adversary). `actFromTechniqueWithId` validates hand ownership + queues `createCardDiscardedFromHandEvent(..., $asEffect = true)`. Empty hand → skip picker. JS: `factionHand` single-select + `onCardDiscarded` + **also** wire `EventHandlers.js` so Confirm enables on selection. Reference: `Technique_01093` Maya, `Technique_03039` Íñigo. |
 | **"Then, if they have more cards in hand than you, en garde <Owner>"** (after adversary discard) | Compare hands **after** the discard. In `actFromTechniqueWithId` the discard is queued not flushed — use `(adversaryHandCount - 1) > ownerHandCount`. Empty-hand path compares `0 > owner` (never engardes). Queue `createCardEngardedEvent`. Reference: `Technique_03039`. |
 | **"At the end of the round, move <Owner> Home"** (Technique follow-on) | Private `$MoveHome` flag set on `EventResolveTechnique` (unconditional once the technique resolves — do not gate on the hand-size En Garde clause unless the text does). On `EventDuelEndOfRound`: clear flag, skip if discard/locker or already Home, queue `createCardMovingEvent(..., Game::LOCATION_PLAYER_HOME, $engage=false, …)` when Engage is not printed (contrast `_01053` which engages). Clear on `EventTechniqueCanceled` / `EventDuelEnd`. Reference: `Technique_03039`, move-deferral sibling `Technique_01036`. |
+| **"+1[Parry]. You may engage an Artifact equipped to <Owner> for +2[Parry] instead."** | Pattern E. Base +1 is always legal (`IN_DUEL` + actor-is-owner — **no** Artifact gate on availability). On `EventResolveTechnique`: if no unengaged Artifact → set `$ParryBonus = 1`; else `createTechniqueTransitionEvent` into `DUEL_CHOOSE_TECHNIQUE_NNNNN`. Choice: `id: 0` = +1, attachment id = `createCardEngagedEvent` + `$ParryBonus = 2`. Apply on `EventDuelCalculateTechniqueValues`. Clear bonus on `EventTechniqueCanceled`. See Pattern E "Optional engage Artifact for upgraded Parry". Reference: `Technique_03049`, engage-picker sibling `Technique_02011` (Katain — mandatory engage, no base option). |
 
 ## Pattern A — Passive ability via `handleEvent`
 
@@ -680,6 +684,57 @@ Scope-matters: Maxime's text is about "abilities he performs" (own scope via `CH
 
 For partial reduction (Breastplate `_01153` reduces by 1, not to 0), the same `eventCheck` pattern applies — just `$event->wounds--` with a floor at 0. Breastplate additionally tracks `$hasBlockedWound` to enforce "first time this duel."
 
+### Opponent collects one fewer Renown from this location
+
+For text like "When an opponent collects Renown from this location, they collect one fewer. *(Remaining Renown stays.)*" (`_03049` Ekaterina). This is a **passive** on the card class (no Reaction file) — Collect is automatic, not a player choice for the denier.
+
+**Hard constraints:**
+
+1. `EventPlayerGainsReknown` has **no location field** — you cannot reduce every opponent Gains.
+2. Renown **Moves** also emit `EventRenownRemovedFromLocation` + `EventRenownAddedToLocation`. Blindly reducing every opponent Removed from her location would steal renown from Moves.
+3. There are **two Collect pipelines** with different event order:
+
+| Pipeline | Order | Location signal |
+|---|---|---|
+| **Plunder** (`StatesTrait::stPlunderGainRenown`) | `EventPlayerTakeReknownForControlledLocation` → Gains → Removed | Take has `location` + `playerId`; plunder's Removed often has `playerId = 0` |
+| **Ability Collect** (Sanjay / pressure Collect) | Removed → Gains | Removed has `playerId` of the collector; Gains has no location |
+
+**Plunder path** — mutate amounts at `eventCheck` (called at `queueEvent` time):
+
+```php
+// EventPlayerTakeReknownForControlledLocation:
+//   location == $this->Location && playerId != ControllerId && reknown > 0
+//   → reknown--; arm pendingFewerGainPlayerId + pendingFewerRemoveLocation; notify
+// EventPlayerGainsReknown: if playerId matches pending → amount--; clear gain pending
+// EventRenownRemovedFromLocation: if location matches pending → amount--; clear remove pending
+```
+
+**Ability Collect path** — arm on Removed, confirm on immediately next Gains, put Renown back after Removed has already been queued at full amount:
+
+```php
+// eventCheck EventRenownRemovedFromLocation:
+//   location == $this->Location && playerId != 0 && playerId != ControllerId && amount > 0
+//   → arm pendingCollectArmPlayerId / Location (do NOT reduce Removed yet — might be a Move)
+//
+// eventCheck start of every subsequent event:
+//   if arm set && event is NOT the confirming Gains for that playerId → clear arm
+//   (Move's next event is RenownAdded → arm dies; Collect's next is Gains → confirm)
+//
+// eventCheck EventPlayerGainsReknown (confirming):
+//   amount--; set pendingPutBackLocation; clear arm; notify
+//
+// handleEvent EventPlayerGainsReknown (same event, later):
+//   queue createRenownAddedToLocationEvent(…, 1, …) for pendingPutBackLocation
+```
+
+WHY put-back in `handleEvent` (not `eventCheck`): ability Collect queues Removed (full amount) *before* Gains. By Gains `eventCheck` time the Removed is already serialized in the DB queue — you can't rewrite it. Putting 1 Renown back after Removed applies leaves "remaining stays" correctly (start 5, Collect 5 → remove 5, gain 4, add 1 back → end 1).
+
+WHY stale-arm clear: a lone discard-Remove (no following Gains) or a Move (Removed then Added) must not leave an arm that later falsely denies an unrelated Gains for that player.
+
+Liveness: `ControllerId > 0`, `! characterIsInDiscardOrLocker`, `cardInCity($this)`.
+
+Reference: `_03049` Ekaterina. Contrast effect-side Collect (`Reaction_03037` Sanjay) which *emits* the remove+gain pair — Ekaterina *intercepts* someone else's Collect.
+
 ### Stat bonus while a self-condition holds — flag-based recompute on wound/heal
 
 For text like "<Owner> has +1 [Combat] while wounded" (`_03016` Ise). The condition is *on the Owner herself* (wounded / engaged / has-attachment / etc.), and the bonus should flip on/off as the condition changes.
@@ -981,6 +1036,9 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventSorcererAbilityPlayed` | A sorcerer ability resolved | "After <X> performs a Sorcerer ability …" reactions, Pattern D below |
 | `EventActionResolved` | An action just resolved | "After an Action resolves …" reactions, `Reaction_01089` |
 | `EventCardMoving` / `EventCardMoved` | Pre / past tense of a card-to-location move | `Moving` is cancelable (`$event->canceled = true`) — use for opt-out Reactions (Pattern D "Cancel-and-reissue"). `Moved` is the past-tense receiver — use for "after X moves to/from this location" triggers. The Dusk auto-move emits `Moving` with `$sourceId == 0`; ability-driven moves pass a non-zero sourceId. Reference: `Reaction_03016a` (cancel), `Reaction_03016b` (react to). |
+| `EventLocationClaimed` | A location was just claimed (`$event->playerId` claimer, `$event->location`, optional `$event->performerId`) | "After <Owner>'s location is claimed …" — Continuous / daily Reactions. Gate `event.location == owner.Location`. Any-claimer vs opponent-only is text-dependent (`Reaction_03049` any; `Reaction_01117` opponent). |
+| `EventPlayerTakeReknownForControlledLocation` | Plunder notify ahead of Gains+Removed (`$event->playerId`, `$event->location`, `$event->reknown`) | Plunder Collect location signal for "opponent collects one fewer" passives. Reference: `_03049` Ekaterina. |
+| `EventPlayerGainsReknown` / `EventRenownRemovedFromLocation` | Player score + / location Renown − | Collect / Plunder / Moves. Gains has **no location**. See Pattern A "Opponent collects one fewer Renown". |
 
 ## Pattern C — Action / City Action (CharacterAction)
 
@@ -1828,7 +1886,9 @@ Reference: `Reaction_01062` (Odette Leader's existing reaction), `Reaction_03027
 
 ### Continuous Reaction — never set to Used
 
-For "After X happens, you may Y" with no per-round/per-turn/per-game cap (e.g. `_03025` Angeline's "After Angeline moves to a city location, wound an engaged opposing character"). The Reaction should fire every time the trigger event recurs. Omit the `$this->setUsed($theah, true)` call in `performReaction` — let the reaction stay available indefinitely.
+For "After X happens, you may Y" with no per-round/per-turn/per-game cap (e.g. `_03025` Angeline's "After Angeline moves to a city location, wound an engaged opposing character"; `_03049` Ekaterina's "After Ekaterina's location is claimed, she may move…"). The Reaction should fire every time the trigger event recurs. Omit the `$this->setUsed($theah, true)` call in `performReaction` — let the reaction stay available indefinitely.
+
+**Unlabelled "After … may …"** (no `<b>Reaction:</b>` keyword) is still a Pattern D Continuous Reaction when there is a player choice — same shape as Angeline. The once-per-day cap only applies when the Ability keyword says Reaction/Action and you call `setUsed(true)`.
 
 **Pre-commit hook gotcha.** `.githooks/pre-commit` greps for the literal string `$this->setUsed(` in every `CardReaction` subclass and fails the commit if absent. A continuous Reaction has no runtime `setUsed(true)` call, so satisfy the hook by mentioning the literal in a comment:
 
@@ -1838,6 +1898,32 @@ For "After X happens, you may Y" with no per-round/per-turn/per-game cap (e.g. `
 ```
 
 The grep matches the literal inside the comment — no behavior change, hook passes. Same trick works for `$this->isAvailable(` if the reaction doesn't otherwise call it (rare; `isAvailable()` is the standard gate in `handleEvent`).
+
+### After the Owner's location is claimed
+
+For "After <Owner>'s location is claimed, she may move to a different City location" (`Reaction_03049` Ekaterina). Listen on `EventLocationClaimed`.
+
+Required gates:
+
+```php
+if (! ($event instanceof EventLocationClaimed)) return;
+if (! $this->isAvailable()) return;
+$owner = $this->getOwningCharacter($event->theah);
+// liveness: ControllerId > 0, !characterIsInDiscardOrLocker, cardInCity
+if ($event->location != $owner->Location) return;
+if (count($this->getEligibleDestinations($event->theah, $owner)) == 0) return;
+```
+
+**Any claimer vs opponent-only:**
+
+| Text | Gate |
+|---|---|
+| "After <Owner>'s location is claimed …" (no "opponent" / "you") | Any `$event->playerId` — competitive notes for Leader Ekaterina: *all* claim effects |
+| "After an **opponent** claims this location …" | `$event->playerId != $owner->ControllerId` — base-game `Reaction_01117` |
+
+Effect: Pattern D "Move <Owner> to any City location" button list (`Reaction_03040` shape) — `createCardMovingEvent(..., $engage=false, …)` when Engage is not printed; Pass without `setUsed`. For Continuous (Ekaterina), also omit `setUsed(true)` on a successful move.
+
+WHY Continuous for Leader Ekaterina: unlabelled After…may + Tomoe end-of-HD multi-claim abuse lines need every claim prompt, not a once-per-day Reaction slot. Reference: `Reaction_03049`, Continuous sibling `Reaction_03025`.
 
 ### Cancel-and-reissue Reaction — opt out of an auto-emitted event
 
@@ -2249,6 +2335,46 @@ if ($event instanceof EventGenerateChallengeThreat
 
 WHY split the work this way (vs. mirroring Bastien's all-in-events approach in `Technique_01063Swap`): Bastien defers the condition swap into `EventGenerateChallengeThreat` (with a `CHALLENGE_ACCEPTED` guard) so the swap doesn't fire if the challenge is rejected. That's a stricter, more conservative shape. The in-`actFromTechniqueWithId` shape is cleaner to read and matches the user's preference (see project history), but if your card text says the swap is *conditional on the challenge being accepted*, prefer Bastien's pattern instead so a rejection doesn't leave a stuck DUEL_CHALLENGER condition on a character that never enters a duel.
 
+### Optional engage Artifact for upgraded Parry ("+1 Parry. You may engage an Artifact … for +2 instead.")
+
+For text like Ekaterina's Technique (`Technique_03049`): a base stat bonus that can be upgraded by engaging an equipped Artifact. Sibling: Katain `Technique_02011` is **mandatory** engage of a Ranged Weapon for +1 Parry (availability requires the attachment; no base option).
+
+**Availability:** `IN_DUEL` + actor-is-owner only. Do **not** require an Artifact for the Technique to appear — the printed base (+1) is always legal.
+
+**Resolve → optional choice → Calculate:**
+
+```php
+// EventResolveTechnique:
+$artifacts = /* unengaged Artifact attachments on owner (skip FakeAttachment) */;
+if (count($artifacts) == 0) {
+    $this->ParryBonus = 1;   // no Artifact option — lock base
+} else {
+    // HIGHEST_PRIORITY so the choice runs before EventDuelCalculateTechniqueValues
+    $event->theah->queueEvent(EventFactory::createTechniqueTransitionEvent(
+        $owner->ControllerId, $owner->Id, "NNNNN", $this->Id
+    ));
+}
+
+// EventDuelCalculateTechniqueValues:
+if ($this->ParryBonus > 0) {
+    $event->parry += $this->ParryBonus;
+    // explanations + setUsed
+}
+$this->ParryBonus = 0;
+
+// EventTechniqueCanceled: clear ParryBonus
+```
+
+**Choice state** (`DUEL_CHOOSE_TECHNIQUE_NNNNN`, id `521` + cardId):
+
+- `getArgsFromTechnique` → `attachments` list `{id, name}` (unengaged Artifacts only).
+- `actFromTechniqueWithId`: `id == 0` → `$ParryBonus = 1`; else validate Artifact equipped/unengaged → `createCardEngagedEvent` → `$ParryBonus = 2`.
+- JS (`OnUpdateActionButtons.<expansion>.js`): `+1 Parry` button via `actFromCardWithId({ id: 0 })` + one button per `args.args.attachments` (same nest as Katain / Damya). Attachment button label can be just the name — state `descriptionMyTurn` carries the +2 meaning.
+
+WHY `createTechniqueTransitionEvent` (not plain `createTransitionEvent`): HIGHEST_PRIORITY so the picker interrupts before Calculate when both are queued from Resolve. WHY skip the state when no Artifact: avoids a useless single-button prompt.
+
+Reference: `Technique_03049` (optional), `Technique_02011` (mandatory engage-only).
+
 ### Technique usable in BOTH challenge and duel contexts — two states, two routings, two state classes
 
 A technique that fires in either a challenge-resolve flow or a duel round needs entries in BOTH dispatcher routes:
@@ -2500,6 +2626,10 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/faf/_03040.php` (Soline el Gato, Gato el la Bolsa) | **Character with any-character-arrives City Reaction + Engage/Pressure/win-ties/claim-or-engage City Action.** Reaction omits Ise's enemy gate (text: "a character"). Action composites Tabard pressure + Drinking Games engage choice with a dedicated win-ties pressure flag. |
 | `modules/php/cards/faf/reactions/Reaction_03040.php` | **Canonical "after a character moves here" (not enemy-only) + move-self-to-any-city buttons.** Full `EventCardMoved` gate set minus enemy controller; destinations = `array_keys(getCityLocations())` excluding current; Pass before `setUsed`. |
 | `modules/php/cards/faf/actions/Action_03040.php` | **Canonical Finesse pressure with win ties + mandatory claim-or-engage.** Mints `SOLINE_PRESSURE_TYPE`; sets `PRESSURE_STAT = FINESSE`; on success transitions to choice state (Claim via `id: 0`, engage via character Confirm) or resolves immediately if neither option exists. No `IAbilityThatTargetsCharacters`. |
+| `modules/php/cards/faf/_03049.php` (Ekaterina Ilyanava) | **Leader with Continuous claim-move Reaction + Collect-renown denial passive + optional Artifact Technique.** (1) `Reaction_03049` Continuous on `EventLocationClaimed` (any claimer at her location) → city-destination buttons. (2) Card-local `eventCheck` denying opponent Collect by one (Plunder Take arm vs ability Removed→Gains arm+put-back). (3) `Technique_03049` base +1 Parry; choice state only when unengaged Artifact equipped for engage-+2. |
+| `modules/php/cards/faf/reactions/Reaction_03049.php` | **Canonical "after location claimed → move self" Continuous Reaction.** `EventLocationClaimed` + `event.location == owner.Location` (any claimer); move-to-any-city buttons + Pass; no `setUsed(true)` (hook literal in comment). Contrast opponent-only base-game `Reaction_01117`. |
+| `modules/php/cards/faf/techniques/Technique_03049.php` | **Optional engage-Artifact Technique.** Availability ignores Artifact presence; Resolve sets ParryBonus=1 or transitions to picker; `id: 0` = +1, attachment id = engage + +2; Calculate applies `$ParryBonus`. Uses `createTechniqueTransitionEvent` for HIGHEST_PRIORITY before Calculate. |
+| `modules/php/cards/tac/techniques/Technique_02011.php` | **Mandatory engage-attachment Technique** (Katain) — availability requires unengaged Ranged Weapon; picker has no base option; always +1 Parry after engage. Compare to Ekaterina's optional upgrade. |
 | `modules/php/cards/_7s5s/actions/Action_01075.php` | **Canonical Engage + pressure + win ties + auto-claim.** Tabard pattern Soline extends — same pressure globals/`TABARD_PRESSURE_TYPE` shape, but claims immediately on success (no engage choice). |
 | `modules/php/cards/_7s5s/actions/Action_01105.php` | **Post-pressure engage picker (optional).** Transitions on success to character highlight + Confirm + Pass. Soline's claim-or-engage state is the mandatory "or" sibling (no Pass). |
 | `modules/php/cards/_7s5s/_01040.php` (Rena Klingenhalter) | **Canonical "while equipped with a Weapon, +N [Stat]" passive.** Count-transition on `EventAttachmentEquipped`/`Unequipped` — apply at weaponsCount==1, undo at ==0. Íñigo swaps Combat→Finesse factory. |
@@ -2527,7 +2657,7 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 ## When You Finish
 
 1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Dashed stat / Hard ban / Passive handleEvent / Action / Reaction / Sorcerer ability / Technique / Maneuver). Stat numbers go on the constructor and are not a "pattern."
-2. For a Leader, confirm: `"Leader"` is in `Traits`, `CrewCap` and `Panache` are set, no `initializeFaction` call (the framework sets this from player faction selection).
+2. For a Leader, confirm: `"Leader"` is in `Traits`, `CrewCap` and `Panache` are set. Faction spelling is **`Ussura`** (not "Usurra"). Soft guidance historically said omit `initializeFaction` (framework setup), but **FAF Leaders commonly call it** (`_03001` Cesca, `_03037` Sanjay, `_03049` Ekaterina) — either works at runtime; match nearby FAF Leaders when scaffolding.
 3. For a regular Character, confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN.
 4. Every new state class needs all three: the class file in `modules/php/States/<expansion>/`, the constant in `States.php`, and the transition entry in `states.inc.php`. High Drama actions → `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`; duel technique pickers → `DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions` (id `521` + cardId).
 5. Only add `"<card>_2"` to `states.inc.php` if you actually call `EventFactory::createTransitionEvent(..., "<card>_2", ...)` somewhere — that lookup table is **only** consulted by `createTransitionEvent`, not by `nextState`. Some multi-step actions jump step 1 → step 2 solely via `nextState("...")` on the state's own transitions (step-1 entry only). **Others** `nextState` back to `HIGH_DRAMA_PLAYER_TURN_EVENTS` so the queue can process a move/draw/discard, then `createTransitionEvent("NNNNN_2")` re-enters step 2 — those **do** need the `_2` (and `_3`, …) lookup entries (Angeline `"03026_2"`, Damya `"03038b_2"`, Pattern F challenge `"NNNNN_2"`).
@@ -2563,7 +2693,7 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 32. **For hand-card picker states** (discard from hand, reveal from hand): use `factionHand.setSelectionMode('single')` + `onCardDiscarded` (reusable from `PlayerActions.js`). DO NOT use `highlightCardsAsSelectable` — that's for in-play cards in `cardProperties`; hand cards aren't there and the lookup returns `null` (symptom: `Cannot read properties of null (reading 'className')`). See Pattern C "Hand-card picker".
 33. **For city-location picker states on a CharacterAction**: the state's `#[PossibleAction]` is `actFromCardWithLocations(string $locations)`, and the action overrides **`actFromActionWithIds(array $ids)`** — NOT `actFromActionWithId(int $id)`. Each `$ids[N]` entry is a location-name STRING, not an int. Symptom of overriding the wrong method: the state spins waiting for an action that never arrives (presents as an infinite loop). See Pattern C "City-location picker for CharacterActions".
 34. **For `IAbilityThatTargetsCharacters`**: implement ONLY when the card text says "target". "Wound an opposing character" / "engage a character" / "destroy a character" / "Your equipped character moves …" without the word "target" is NOT a targeted ability — don't add the interface. Use a plain private helper (e.g., `isValidWoundCandidate`, `isEligibleMover`) for validation; don't reuse the `isValidTargetForAbility` name. See Pattern C "Don't add `IAbilityThatTargetsCharacters` unless the text says 'target'". References: `_03026` Angeline, `Action_03038b` Damya.
-35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one, **and which engagement trichotomy case applies** (Engage printed / conditional engage / never engages). Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`), the Odette journal (`2026-06-10-02-odette-dubois-darrent-03027-implementation.md`), the Térence journal (`2026-07-01-03-terence-rois-03028-implementation.md`), the Sanjay journal (`2026-07-11-07-sanjay-03037-implementation.md`), the Damya journal (`2026-07-11-09-damya-kahina-03038-implementation.md`), the Íñigo journal (`2026-07-12-03-inigo-03039-implementation.md`), and the Soline journal (`2026-07-12-04-soline-03040-implementation.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here / after-any-character-moves-here / move-self-to-any-city / pressure-win-ties / claim-or-engage-after-pressure / stat-specific-challenge-ban / set-stat-equal-while-dueling / third-party-equip-at-location / gambled-combat-card-passive / never-engages-challenge / Collect-Renown-on-refuse / dual-City-Action-a-b / draw-then-discard / destroy-attachment-to-draw / Weapon-equipped-stat-bonus / adversary-discard-Technique / post-discard-hand-En-Garde / EndOfRound-move-Home decisions in detail.
+35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one, **and which engagement trichotomy case applies** (Engage printed / conditional engage / never engages). Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`), the Odette journal (`2026-06-10-02-odette-dubois-darrent-03027-implementation.md`), the Térence journal (`2026-07-01-03-terence-rois-03028-implementation.md`), the Sanjay journal (`2026-07-11-07-sanjay-03037-implementation.md`), the Damya journal (`2026-07-11-09-damya-kahina-03038-implementation.md`), the Íñigo journal (`2026-07-12-03-inigo-03039-implementation.md`), the Soline journal (`2026-07-12-04-soline-03040-implementation.md`), and the Ekaterina journal (`2026-07-15-02-ekaterina-03049.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here / after-any-character-moves-here / move-self-to-any-city / pressure-win-ties / claim-or-engage-after-pressure / stat-specific-challenge-ban / set-stat-equal-while-dueling / third-party-equip-at-location / gambled-combat-card-passive / never-engages-challenge / Collect-Renown-on-refuse / dual-City-Action-a-b / draw-then-discard / destroy-attachment-to-draw / Weapon-equipped-stat-bonus / adversary-discard-Technique / post-discard-hand-En-Garde / EndOfRound-move-Home / Continuous-claim-move / Collect-renown-denial / optional-Artifact-Technique decisions in detail.
 36. **For stat-specific challenge bans** ("cannot issue [Combat] challenges" / "may only issue [Combat] challenges"): use `eventCheck` on `EventChallengeIssued` gated on `challengerId == $this->Id` AND `CHALLENGE_STAT`. Do NOT override `canChallenge()` to `false` unless the ban covers **all** challenge types — a partial ban must leave `canChallenge()` at default so Finesse/Influence action performers still include the character. Basic Challenge always sets `CHALLENGE_STAT = STAT_COMBAT` in `actHighDramaChallengeActionStart`, so the `eventCheck` backstop blocks Basic Challenge at issue time even if the character appears in the performer list. Pattern reference: `_03028` Térence (ban Combat), `_02013` Wilhelm (only Combat).
 37. **For "set [StatA] as equal to [StatB]" while a scoped condition holds** (duel at named location, etc.): use a replacement flag + snapshot restore — NOT the Ise ±1 delta pattern. Store pre-override target stat at apply-time; restore snapshot on clear; re-sync on source-stat changes and on external target-stat mutations during the override. Hook duel boundaries + swap events like `_01089` Soline. Named locations use `Game::LOCATION_CITY_*` constants. Pattern reference: `_03028` Térence and Pattern A's "Set one stat equal to another while a scoped condition holds" subsection.
 38. **For "Reaction: After a character equips an attachment at [location]"**: listen on `EventAttachmentEquipped`. Gate both `$owner->Location` and equipping `$character->Location` on the named `Game::LOCATION_CITY_*` constant; `cardInCity($owner)` for City Reactions; skip `FakeAttachment`. Only gate on `$event->characterId == $owner->Id` when the text names the owner ("After Philip equips …"). Pattern reference: `Reaction_03028` (any character), `Reaction_01039` (self only).
@@ -2581,3 +2711,6 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 50. **For "Pressure … You succeed even if tied":** mint a new `Game::*_PRESSURE_TYPE` power-of-two constant and OR it into `UtilitiesTrait::pressureLocation`'s win-ties list. Do **not** reuse Tabard/`CONTEMPT_AND_HATRED`/etc. Set `PRESSURE_STAT` when the printed stat is not Influence (default). Engage printed → `createCardEngagedEvent` before pressure. Transition `"pressureLocation"`; handle `EventLocationPressureResult` by `$event->abilityId`. Always `createActionResolvedEvent` on failure / terminal success. Pattern reference: `Action_03040`, `Action_01075`. See Pattern C "Pressure (win ties)".
 51. **For "If successful, claim it or engage an opposing character":** on pressure success, transition to a choice state only when claimable OR unengaged opposing exist; otherwise notify + resolve. Claim = `actFromCardWithId({id: 0})` → `createLocationClaimedEvent`. Engage = character highlight + Confirm → `createCardEngagedEvent` on the opponent. **No Pass** for mandatory "or"; Pass belongs to optional-engage siblings (`Action_01105`). No `IAbilityThatTargetsCharacters` without "target". Args: `OnEnteringState` uses `args.args.args.*`; `OnUpdateActionButtons` uses `args.args.*`. Pattern reference: `Action_03040`. See Pattern C "Claim or engage after pressure".
 52. **For "Move <Owner> to any City location" Reactions:** button list from `array_keys(getCityLocations())` excluding current + Pass; no state/JS. Adjacent-only uses `getAdjacentCityLocations`. `engage=false` when Engage is not printed. Pattern reference: `Reaction_03040` (any), `Reaction_01089` (adjacent).
+53. **For "After <Owner>'s location is claimed, she may …":** Pattern D Continuous (if unlabelled After…may) on `EventLocationClaimed` with `event.location == owner.Location`. Any claimer unless text says opponent/you. Effect often reuses move-to-any-city buttons. Pattern reference: `Reaction_03049` (any claimer Continuous), `Reaction_01117` (opponent-only daily). See Pattern D "After the Owner's location is claimed".
+54. **For "opponent collects Renown … one fewer (remaining stays)":** card-local `eventCheck`, not a Reaction. Handle **Plunder** (Take→Gains→Removed, Take has location) separately from **ability Collect** (Removed→Gains arm + put-back Add in `handleEvent`). Never reduce every Gains (no location field) or every Removed (Moves share the event). Clear stale Collect arms on any non-confirming intervening `eventCheck`. Pattern reference: `_03049` Ekaterina. See Pattern A "Opponent collects one fewer Renown".
+55. **For "+1 Parry / engage Artifact for +2 instead" Techniques:** availability does **not** require an Artifact. Skip the choice state when none equipped (`ParryBonus = 1` on Resolve). When Artifacts exist, `createTechniqueTransitionEvent` → button `id: 0` for base +1 and attachment ids for engage-+2; apply on Calculate. Clear sticky bonus on cancel. Pattern reference: `Technique_03049` (optional), `Technique_02011` (mandatory engage-only). See Pattern E "Optional engage Artifact for upgraded Parry".

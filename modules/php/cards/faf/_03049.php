@@ -122,15 +122,17 @@ class _03049 extends Leader implements IHasReactions, IHasTechniques
                 && $event->playerId != $this->ControllerId
                 && $event->reknown > 0)
             {
+                $originalAmount = $event->reknown;
                 $event->reknown--;
                 $this->pendingFewerGainPlayerId = $event->playerId;
                 $this->pendingFewerRemoveLocation = $event->location;
                 $this->IsUpdated = true;
 
-                $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: Opponent collects one fewer Renown from ${location_name}. Remaining Renown stays.'), [
+                $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: Opponent collects one fewer Renown from ${location_name} (which had ${original_amount} on it). Remaining Renown stays.'), [
                     "i18n" => ["location_name"],
                     "card_inject_code" => $this->getInjectCode(),
                     "location_name" => $event->location,
+                    "original_amount" => $originalAmount,
                 ]);
             }
             return;
@@ -154,6 +156,7 @@ class _03049 extends Leader implements IHasReactions, IHasTechniques
                 && $event->playerId == $this->pendingCollectArmPlayerId
                 && $event->amount > 0)
             {
+                $originalAmount = $event->amount;
                 $event->amount--;
                 // WHY: Collect queues Removed before Gains; at arm time we can't tell Collect
                 // from a Renown Move. Confirming on Gains lets us leave Remaining via put-back.
@@ -162,10 +165,11 @@ class _03049 extends Leader implements IHasReactions, IHasTechniques
                 $this->pendingCollectArmLocation = '';
                 $this->IsUpdated = true;
 
-                $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: Opponent collects one fewer Renown from ${location_name}. Remaining Renown stays.'), [
+                $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: Opponent collects one fewer Renown from ${location_name} (which had ${original_amount} on it). Remaining Renown stays.'), [
                     "i18n" => ["location_name"],
                     "card_inject_code" => $this->getInjectCode(),
                     "location_name" => $this->pendingPutBackLocation,
+                    "original_amount" => $originalAmount,
                 ]);
             }
             return;
