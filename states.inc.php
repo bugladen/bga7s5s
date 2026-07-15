@@ -2283,6 +2283,7 @@ $machinestates = [
                         "03025b" => States::DUEL_CHOOSE_TECHNIQUE_03025B,
                         "03039" => States::DUEL_CHOOSE_TECHNIQUE_03039,
                         "03043" => States::DUEL_CHOOSE_TECHNIQUE_03043,
+                        "03049" => States::DUEL_CHOOSE_TECHNIQUE_03049,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral

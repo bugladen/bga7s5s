@@ -242,6 +242,13 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelChooseTechnique_03049': () => {
+                this.addActionButton(`btnPlusOneParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, `Engage ${attachment.name}, +2 Parry`, () => this.bgaPerformAction('actFromCardWithId', { id: attachment.id }));
+                });
+            },
+
             'duelEndOfRound_03022': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
