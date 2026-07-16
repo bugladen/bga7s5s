@@ -120,6 +120,12 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'highDramaPhase03051': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
             'highDramaPhase03011': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
@@ -246,6 +252,12 @@
                 this.addActionButton(`btnPlusOneParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
                 args.args.attachments.forEach((attachment) => {
                     this.addActionButton(`actChooseAttachment-${attachment.id}`, `Engage ${attachment.name}, +2 Parry`, () => this.bgaPerformAction('actFromCardWithId', { id: attachment.id }));
+                });
+            },
+
+            'duelChooseTechnique_03051': () => {
+                args.args.techniques.forEach((technique) => {
+                    this.addActionButton(`actChooseTechnique-${technique.id}`, technique.name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.id])}));
                 });
             },
 

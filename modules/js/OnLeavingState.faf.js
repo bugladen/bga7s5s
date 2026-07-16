@@ -187,6 +187,14 @@
                 }
             },
 
+            'highDramaPhase03051': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03011': () => {
                 if (this.isCurrentPlayerActive())
                 {

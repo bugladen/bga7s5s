@@ -26,6 +26,7 @@ Canonical references:
 - `modules/php/cards/faf/_03040.php` (Soline el Gato, Gato el la Bolsa) — `Character` with (1) **City Reaction on any character moving to her location** (`EventCardMoved`, no enemy-controller gate — text says "a character") that moves Soline to any other City location via location buttons + Pass; (2) **City Action: Engage → Pressure with Finesse, succeed even if tied** via a dedicated `SOLINE_PRESSURE_TYPE` win-ties flag, then **mandatory claim-or-engage** post-success picker (`Action_01075` pressure + `Action_01105` engage-choice composite).
 - `modules/php/cards/faf/_03049.php` (Ekaterina Ilyanava) — `Leader` with (1) **Continuous Reaction on location claim** (`EventLocationClaimed` at her location — **any** claimer) that moves her to another City location, (2) **opponent Collect-renown denial** (one fewer; remainder stays) via `eventCheck` on Plunder Take/Gains/Removed plus arm+put-back for ability Collects, (3) **Technique +1 Parry with optional engage-Artifact for +2 instead** (choice state only when an unengaged Artifact is equipped).
 - `modules/php/cards/faf/_03050.php` (Mōri Daichi) — `Character` with (1) **character-scoped challenge-refuse passives** tied to relative `ModifiedCombat` (applies to ANY challenge involving him — **not** a new `CHALLENGE_TYPE`), wired through reject / args / JS / zombie, and (2) a **Technique gated on combat card Flourish or Sorcery** that adds +1 Riposte (Elena `_03004` trait-gate shape with an OR of two traits).
+- `modules/php/cards/faf/_03051.php` (Yepikhodov Yepikvidich) — `Character` with (1) **City Action: move to Leader's location then En Garde an engaged attachment there** (Damya attachment-button step after a self-move), and (2) **Jean `_01067`-style location Technique aura** granting other characters "Engage Yepikhodov's attachment • Copy a Technique on it" — copy resolve mirrors Dame of Swords `Technique_02055`, but source techniques are **not** filtered by `isAvailableToPlayer` (third-party attachment owner ≠ duel actor).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -199,6 +200,8 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **Two (or more) distinct City Actions / Actions on one card** | Split into separate classes `Action_NNNNNa`, `Action_NNNNNb`, … each with its own Name, availability, states, and transition keys (`"NNNNNa"`, `"NNNNNb"`). Wire all in `$this->Actions = [...]`. State IDs append `1`/`2` (e.g. `4030381` / `4030382`); a multi-step **b** uses `40303822` for step 2. Reference: `_03038` Damya, `_01095` Patricia. |
 | **"Draw a card. Then, discard a card."** | Queue `createCardDrawnEvent` in `EventActionTriggered` **before** `createTransitionEvent` into the discard state — printed order is Draw → Discard, and the client needs the drawn card in `factionHand` before the picker. Hand picker = Pattern C `factionHand` (not `highlightCardsAsSelectable`). Availability: `cardInCity` + player will have ≥1 hand card after draw (hand nonempty **OR** faction deck + discard nonempty — empty-everything hangs the discard state). Reference: `Action_03038a`. |
 | **"Your equipped character moves to this location. Then, destroy their attachment to draw …"** | Two-step Pattern C. "Equipped" = your character with ≥1 non-`FakeAttachment`. Strict "moves to" → exclude characters already at the owner's location (and thus the owner herself when she is there). No "target" in text → **no** `IAbilityThatTargetsCharacters`. Move with `engage=false` when Engage is not printed. Attachment step: button list (Adelheide `01194`), not board highlight. Destroy = unequip + `createCardDiscardedFromPlayEvent`; capture `WealthCost` **before** destroy; then queue `WealthCost + 1` draws. Parenthetical "must be destroyed to draw" → no Pass on the attachment step. Reference: `Action_03038b`. |
+| **"Move <Owner> to your Leader's location. Then, en garde your attachment there."** | Pattern C. Availability: `cardInCity`, Leader exists, Owner ≠ Leader location, ≥1 Engaged non-Fake attachment that will be at the destination (Owner's engaged attachments travel with him + engaged attachments already on your characters at the Leader's location). Queue `createCardMovingEvent(..., $engage=false)` then `createTransitionEvent("NNNNN")` into an Adelheide-style attachment **button** picker; En Garde via `createCardEngardedEvent` (not Engaged). WHY require Engaged: En Garde on a ready attachment is a no-op. See Pattern C "Move to Leader then En Garde attachment". Reference: `Action_03051`. |
+| **"Your other characters at this location gain: Technique: …"** (location Technique aura) | Pattern A on the **card class** (not a Reaction). Mirror Jean `_01067` / Stranahan `_02022`: grant on `EventCharacterRecruited` / `EventCardMoved` (aura source moves in, ally moves in); remove on leave / aura source destroyed / aura source moves out. Home excluded. Grant with `setId("Technique_NNNNN")` then `setOwnerId($character->Id)`; remove via `getTechniqueByClassId("Technique_NNNNN")`. Trait filter only when text names a trait (Musketeers); "other characters" = every other controlled character, **not** the aura source. See Pattern A "Location Technique grant aura". Reference: `_03051` Yepikhodov, `_01067` Jean. |
 | **"Destroy [an] attachment"** (effect, any context) | Canonical recipe: `createAttachmentUnequippedEvent` → `eventCheck` → queue; then `createCardDiscardedFromPlayEvent(..., $asEffect = true)`. Do **not** invent `createAttachmentDestroyedEvent` — it does not exist. Reference: `Action_01174`, `Maneuver_01142`, `Action_03038b`. |
 | **"Issue a [stat] challenge to target …"** (any flavor) | CharacterAction that sets `CHOSEN_PERFORMER`/`CHOSEN_TARGET`/`CHALLENGE_STAT`/`CHALLENGE_TYPE` and queues a transition into the challenge sub-state machine. See Pattern F. **Engagement is a trichotomy** — do not assume "no Engage printed" means Don Constanzo conditional-engage; some actions never engage (Sanjay `_03037`). |
 | **"<Owner> cannot refuse challenges issued by … with greater [Stat]." / "When <Owner> issues a challenge, characters with greater [Stat] cannot refuse."** | **Character-scoped refuse** — do **not** mint a new `CHALLENGE_TYPE`. Helper on the card class comparing `Modified*` stats (strict `>` for "greater"); wire `actHighDramaChallengeActionReject` + args flag + JS Refuse disable + zombie Accept-when-blocked. See Pattern F "Character-scoped refuse restriction". Reference: `_03050` Daichi. Contrast Aja/Épée (type-owned challenges). |
@@ -223,6 +226,7 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **"At the end of the round, move <Owner> Home"** (Technique follow-on) | Private `$MoveHome` flag set on `EventResolveTechnique` (unconditional once the technique resolves — do not gate on the hand-size En Garde clause unless the text does). On `EventDuelEndOfRound`: clear flag, skip if discard/locker or already Home, queue `createCardMovingEvent(..., Game::LOCATION_PLAYER_HOME, $engage=false, …)` when Engage is not printed (contrast `_01053` which engages). Clear on `EventTechniqueCanceled` / `EventDuelEnd`. Reference: `Technique_03039`, move-deferral sibling `Technique_01036`. |
 | **"+1[Parry]. You may engage an Artifact equipped to <Owner> for +2[Parry] instead."** | Pattern E. Base +1 is always legal (`IN_DUEL` + actor-is-owner — **no** Artifact gate on availability). On `EventResolveTechnique`: if no unengaged Artifact → set `$ParryBonus = 1`; else `createTechniqueTransitionEvent` into `DUEL_CHOOSE_TECHNIQUE_NNNNN`. Choice: `id: 0` = +1, attachment id = `createCardEngagedEvent` + `$ParryBonus = 2`. Apply on `EventDuelCalculateTechniqueValues`. Clear bonus on `EventTechniqueCanceled`. See Pattern E "Optional engage Artifact for upgraded Parry". Reference: `Technique_03049`, engage-picker sibling `Technique_02011` (Katain — mandatory engage, no base option). |
 | **"If <Owner>'s combat card is a <b>Flourish</b> or <b>Sorcery</b> • +N[Stat]"** | Pattern E combat-card trait gate with an **OR of traits**. Same `getCombatCardsForCurrentRound()` + `ControllerId` filter as Elena; accept if either `hasTrait` matches. Reference: `Technique_03050` Daichi, single-trait sibling `Technique_03004` Elena. |
+| **"Engage <named character>'s attachment • Copy the effects of a Technique on that attachment"** (granted / third-party copy) | Pattern E. Availability: `IN_DUEL` + actor-is-owner (the **granted** character) + named aura source at same location with ≥1 unengaged non-Fake attachment that has copyable techniques. On Resolve → `createTechniqueTransitionEvent` into technique-button picker. On pick: `createCardEngagedEvent` on the technique's owning attachment, then Dame `02055` clone/activate/resolve/calc. **Do not** filter source techniques with `isAvailableToPlayer` — those gates assume the attachment's character is the duel actor. Identify the named character by `ExpansionName` + `CardNumber` (avoid `instanceof` circular require from Technique → card). See Pattern E "Engage named character's attachment and copy a Technique". Reference: `Technique_03051`, copy sibling `Technique_02055`. |
 
 ## Pattern A — Passive ability via `handleEvent`
 
@@ -507,6 +511,45 @@ WHY a no-op gate (`$newInfluence == $this->ModifiedInfluence` early-return): eve
 WHY not just hook the post-tense `EventCardMoved` differently — there's no later "after DB updates" event for moves. `runEventHubAfterCards = true` puts the EventHub's write AFTER card handleEvent, period. The choice is: read stale DB and compensate, or hook `EventCharacterMustered`/`EventApproachCharacterPlayed` (which don't have the timing problem) and forgo the move trigger entirely. Card text that says "while X is at this location" needs the move trigger.
 
 Reference: `_03026` Angeline (binary bonus), `_01037` Edeline (per-character count via `$adjustment` int).
+
+### Location Technique grant aura — "Your other characters at this location gain: Technique: …"
+
+For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"), Stranahan `_02022` ("Your Musketeers … gain Lethal"), or Yepikhodov `_03051` ("Your other characters … gain Technique: Engage … Copy …"). This is a **card-class `handleEvent` passive**, not a Reaction and not a Technique mounted on the aura source himself (unless the printed text also gives him the Technique).
+
+**Lifecycle (canonical Jean shape):**
+
+| Event | What to do |
+|---|---|
+| `EventCharacterRecruited` | If the recruit is another controlled character at the aura source's non-Home location → grant |
+| `EventCharacterDestroyed` (`characterId == aura source`) | Strip the Technique from every other controlled character at the (still-set) location |
+| `EventCardMoved` (`cardId == aura source`) | Strip at `fromLocation`; grant at `toLocation` (both skip Home) |
+| `EventCardMoved` (other card `toLocation == aura source.Location`) | Grant to the arriving controlled ally |
+| `EventCardMoved` (other card `fromLocation == aura source.Location`) | Strip from the departing ally |
+
+**Grant / remove recipe:**
+
+```php
+$technique = new Technique_NNNNN();
+$technique->setId("Technique_NNNNN");   // sets ClassId too — required for later lookup
+$technique->setOwnerId($character->Id); // Id becomes "{charId}_Technique_NNNNN"
+$character->addTechnique($technique, $game);
+
+// remove:
+$technique = $character->getTechniqueByClassId("Technique_NNNNN");
+if ($technique) $character->removeTechnique($technique, $game);
+```
+
+WHY `setId` before `setOwnerId`: `setId` overwrites both `Id` and `ClassId`; `setOwnerId` then prefixes `Id` with the owner. Removing by ClassId only works if you set ClassId to the stable `"Technique_NNNNN"` token.
+
+**Filters:**
+
+- Trait gate only when the text names one (`hasTrait("Musketeer")`). "Your other characters" = every other controlled `IHasTechniques` character — **exclude the aura source**.
+- Skip `LOCATION_PLAYER_HOME` for both grant and remove (Jean/Stranahan convention).
+- Dedup: skip grant if `getTechniqueByClassId` already finds one (Yepikhodov helper) — Jean historically re-adds; prefer the dedup.
+
+**Known hole (accept when mirroring Jean):** `EventCharacterRecruited` does **not** also emit `EventCardMoved`. If the *aura source* is recruited into a location that already has allies, those allies are not granted until a later move. Same hole exists on `_01067` / `_02022`. Do not invent an extra Recruited-self branch unless Eddie asks — stay consistent with Jean.
+
+Reference: `_03051` Yepikhodov (no trait filter; granted Technique is interactive), `_01067` Jean (`Technique_PlusOneRiposte` with ClassId `Technique_01067`), `_02022` Stranahan (`Technique_GainLethal`).
 
 ### Forced muster/approach triggers — hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`
 
@@ -1238,6 +1281,51 @@ WHY buttons over `highlightCardsAsSelectable`: equipped attachment art is small/
 - Store mover id in `Game::CHOSEN_TARGET` for the destroy step; clear it when the action finishes.
 - No "target" in text → no `IAbilityThatTargetsCharacters`; use private helpers (`isEligibleMover`, `getDestroyableAttachments`).
 
+### Move to Leader's location, then En Garde an attachment
+
+For text like Yepikhodov `_03051`: **"City Action: Move <Owner> to your Leader's location. Then, en garde your attachment there."**
+
+**Engage vs En Garde (do not mix these up):**
+
+| Printed word | Factory | Effect |
+|---|---|---|
+| **Engage** | `createCardEngagedEvent` | `$card->Engaged = true` (spend / tap) |
+| **En Garde** | `createCardEngardedEvent` | `$card->Engaged = false` (ready / untap) |
+
+**Availability:**
+
+1. `cardInCity($owner)` (City Action).
+2. `$theah->getLeaderByPlayerId($playerId)` exists.
+3. `$owner->Location != $leader->Location` — strict "moves to"; already-there is unavailable.
+4. ≥1 Engaged non-`FakeAttachment` that will be at the destination after the move:
+   - Owner's own engaged attachments (they travel with him), **plus**
+   - Engaged attachments on other controlled characters already at `$leader->Location`.
+5. Helper must **not** double-count the owner when looking up destination characters (skip `$character->Id == $owner->Id` in the destination loop) — works both before the move (availability) and after (args/act once EVENTS has flushed the move).
+
+WHY require Engaged: En Garde on an already-ready attachment is a no-op (`EventCardEngarded` unconditionally sets `Engaged = false`). Gating on Engaged also synergizes with Techniques that Engage attachments as a cost.
+
+**Flow:**
+
+```php
+// EventActionTriggered:
+$moveEvent = EventFactory::createCardMovingEvent(
+    $owner->ControllerId, $owner->Id, $owner->Location, $leader->Location,
+    $engage = false, $owner->Id, $this->Id
+);
+$event->theah->queueEvent($moveEvent);
+$event->theah->queueEvent(EventFactory::createTransitionEvent(
+    $event->playerId, $owner->Id, "NNNNN", $this->Id
+));
+
+// HIGH_DRAMA_PLAYER_TURN_NNNNN — attachment button picker (Adelheide / Damya _2 shape):
+// getArgsFromAction → args['attachments'] = [['id'=>…,'name'=>…], …]
+// actFromActionWithId → createCardEngardedEvent(..., $attachment->Id, ...) + createActionResolvedEvent
+```
+
+Destination may be **Home** when the Leader is Home — City Action only requires the *performer* in city. Move still uses `engage=false` (Engage not printed).
+
+Reference: `Action_03051`, attachment-button sibling `Action_03038b_2` / `Action_01194`.
+
 ### City-location picker for CharacterActions — override `actFromActionWithIds`
 
 For step-N states where the player picks a city location (the JS submits via `onCityLocationsSelected → bgaPerformAction('actFromCardWithLocations', ...)`):
@@ -1769,7 +1857,7 @@ $array[] = $this->createButtonProperty($game, $game->translate('Pass'), 'pass');
 
 On select: `createCardMovingEvent(..., $engage=false, …)` when Engage is not printed; `setUsed(true)` only on a real move (Pass early-returns before `setUsed`). Adjacent-only variant: `getAdjacentCityLocations($owner->Location, $includeHome = false)` — `Reaction_01089` Leader Soline.
 
-For the *self-moves* analogue ("after this character moves to a new location, do X for nearby allies"), the receiver isn't a Reaction — it's a `handleEvent` on the card itself. See `_01067` Jean Urbain or `_02022` Stranahan.
+For the *self-moves* analogue ("after this character moves to a new location, do X for nearby allies"), the receiver isn't a Reaction — it's a `handleEvent` on the card itself. See Pattern A "Location Technique grant aura" (`_01067` Jean Urbain, `_02022` Stranahan, `_03051` Yepikhodov).
 
 ### After a character equips an attachment at a location
 
@@ -2434,6 +2522,57 @@ WHY `createTechniqueTransitionEvent` (not plain `createTransitionEvent`): HIGHES
 
 Reference: `Technique_03049` (optional), `Technique_02011` (mandatory engage-only).
 
+### Engage named character's attachment and copy a Technique (third-party / granted)
+
+For text like Yepikhodov's granted Technique (`Technique_03051`): **"Engage Yepikhodov's attachment • Copy the effects of a Technique on that attachment."** Sibling for the *copy resolve* half: Dame of Swords `Technique_02055` (copies from the **actor's** participant/attachments). Sibling for *mandatory engage-attachment*: Katain `Technique_02011`.
+
+**Who owns the Technique:** the **ally who was granted it** (Jean-style aura). Availability: `IN_DUEL` + `getDuelRoundActor()->Id === getOwningCharacter()->Id` + named aura source at the same location with ≥1 unengaged non-Fake attachment that has copyable techniques.
+
+**Finding the named character from the Technique class — avoid circular require:**
+
+```php
+// BAD: use Bga\...\cards\faf\_03051;  // Technique imports card; card grants Technique → circular
+// GOOD: identify by ExpansionName + CardNumber (or Image), not instanceof
+if ($character->ExpansionName === 'faf' && $character->CardNumber === 51) …
+```
+
+**Listing source techniques — do NOT use `isAvailableToPlayer`:**
+
+Dame (`02055`) filters with `$t->isAvailableToPlayer($playerId, $theah)` because the actor **is** the participant those techniques belong to. Here the duel actor is the *ally*; techniques on Yepikhodov's attachments gate on actor==Yepikhodov and would **always** fail. List every non-temporary technique on his unengaged attachments (skip `ClassId === 'Technique_NNNNN'` self and `IsTemporaryCopy`).
+
+**Resolve → picker → Engage + copy (Dame clone recipe):**
+
+```php
+// EventResolveTechnique → createTechniqueTransitionEvent(..., "NNNNN", $this->Id)
+
+// actFromTechniqueWithIds:
+$attachment = $technique->getOwningAttachment($game->theah);
+// validate: unengaged, non-fake, equipped to the named character
+$game->theah->queueEvent(EventFactory::createCardEngagedEvent(
+    $actor->ControllerId, $attachment->Id, $owner->Id, $this->Id
+));
+
+$copy = clone $technique;
+$copy->setOwnerId($actor->Id);
+$copy->Id = $actor->Id . "_copy_" . $copy->ClassId;
+$copy->IsTemporaryCopy = true;
+$copy->Used = false;
+$actor->addTechnique($copy, $game, $notify = false);
+
+$game->globals->set(Game::CHOSEN_TECHNIQUE, $copy->Id);
+$game->globals->set(Game::CHOSEN_TECHNIQUE_IS_MAIN, false);
+$game->globals->set(Game::TRANSITION_INTERNAL_ID, $copy->Id);
+
+// activate (copied=true) → resolve → calculate — same order as Technique_02055
+$game->gamestate->nextState("cardChosen");
+```
+
+**JS:** `duelChooseTechnique_NNNNN` buttons from `args.args.techniques` via `actFromCardWithIds` + `JSON.stringify([technique.id])` — same nest as Dame `02055`.
+
+WHY Engage before clone: printed cost is Engage the attachment; the copy then resolves as the actor. Temporary copies are cleaned on `EventDuelNewRound` / `EventDuelEnd` by base `Technique::handleEvent`.
+
+Reference: `Technique_03051`, `Technique_02055` (copy pipeline), `Technique_02011` (engage-attachment cost without copy).
+
 ### Technique usable in BOTH challenge and duel contexts — two states, two routings, two state classes
 
 A technique that fires in either a challenge-resolve flow or a duel round needs entries in BOTH dispatcher routes:
@@ -2691,6 +2830,11 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 | `modules/php/cards/tac/techniques/Technique_02011.php` | **Mandatory engage-attachment Technique** (Katain) — availability requires unengaged Ranged Weapon; picker has no base option; always +1 Parry after engage. Compare to Ekaterina's optional upgrade. |
 | `modules/php/cards/faf/_03050.php` (Mōri Daichi) | **Character-scoped challenge-refuse + Flourish/Sorcery Technique.** (1) Relative-`ModifiedCombat` refuse lock for ANY challenge involving him — static `challengeRefusalBlocked`, no new `CHALLENGE_TYPE`. Wired in reject / args (`cannotRefuseDueToDaichi`) / JS Refuse disable / zombie Accept. (2) `Technique_03050` Elena-shape trait gate with Flourish **or** Sorcery → +1 Riposte. |
 | `modules/php/cards/faf/techniques/Technique_03050.php` | **Multi-trait combat-card Technique.** Same `getCombatCardsForCurrentRound()` + `ControllerId` filter as Elena; OR of `hasTrait("Flourish")` / `hasTrait("Sorcery")`; calc adds +1 Riposte. No state/JS. |
+| `modules/php/cards/faf/_03051.php` (Yepikhodov Yepikvidich) | **Location Technique aura + move-to-Leader City Action.** Jean `_01067` grant/remove lifecycle without a trait filter ("other characters"); grants `Technique_03051` to allies, not to himself. City Action: move to Leader (`engage=false`) then En Garde Engaged attachment via button picker. |
+| `modules/php/cards/faf/actions/Action_03051.php` | **Move to Leader then En Garde attachment.** Destination-candidate helper (owner's engaged attachments + others at Leader location, no double-count); `createCardEngardedEvent` (not Engaged); Adelheide/Damya button picker after move flushes via EVENTS. |
+| `modules/php/cards/faf/techniques/Technique_03051.php` | **Granted Technique: Engage third-party attachment + copy Technique.** Finds aura source by ExpansionName+CardNumber (no `instanceof` circular require); lists source techniques **without** `isAvailableToPlayer`; Engage then Dame `02055` clone/activate/resolve/calc. |
+| `modules/php/cards/_7s5s/_01067.php` (Jean Urbain) | **Canonical location Technique grant aura.** Recruited / Destroyed / CardMoved lifecycle; grants `Technique_PlusOneRiposte` with ClassId `Technique_01067` to Musketeers. Trait-filtered sibling of Yepikhodov. |
+| `modules/php/cards/tac/techniques/Technique_02055.php` | **Canonical copy-Technique resolve pipeline.** `createTechniqueTransitionEvent` → technique buttons → clone + `IsTemporaryCopy` + activate/resolve/calc. Yepikhodov reuses this half; Dame filters sources with `isAvailableToPlayer` because actor owns them. |
 | `modules/php/cards/_7s5s/actions/Action_01075.php` | **Canonical Engage + pressure + win ties + auto-claim.** Tabard pattern Soline extends — same pressure globals/`TABARD_PRESSURE_TYPE` shape, but claims immediately on success (no engage choice). |
 | `modules/php/cards/_7s5s/actions/Action_01105.php` | **Post-pressure engage picker (optional).** Transitions on success to character highlight + Confirm + Pass. Soline's claim-or-engage state is the mandatory "or" sibling (no Pass). |
 | `modules/php/cards/_7s5s/_01040.php` (Rena Klingenhalter) | **Canonical "while equipped with a Weapon, +N [Stat]" passive.** Count-transition on `EventAttachmentEquipped`/`Unequipped` — apply at weaponsCount==1, undo at ==0. Íñigo swaps Combat→Finesse factory. |
@@ -2754,7 +2898,7 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 32. **For hand-card picker states** (discard from hand, reveal from hand): use `factionHand.setSelectionMode('single')` + `onCardDiscarded` (reusable from `PlayerActions.js`). DO NOT use `highlightCardsAsSelectable` — that's for in-play cards in `cardProperties`; hand cards aren't there and the lookup returns `null` (symptom: `Cannot read properties of null (reading 'className')`). See Pattern C "Hand-card picker".
 33. **For city-location picker states on a CharacterAction**: the state's `#[PossibleAction]` is `actFromCardWithLocations(string $locations)`, and the action overrides **`actFromActionWithIds(array $ids)`** — NOT `actFromActionWithId(int $id)`. Each `$ids[N]` entry is a location-name STRING, not an int. Symptom of overriding the wrong method: the state spins waiting for an action that never arrives (presents as an infinite loop). See Pattern C "City-location picker for CharacterActions".
 34. **For `IAbilityThatTargetsCharacters`**: implement ONLY when the card text says "target". "Wound an opposing character" / "engage a character" / "destroy a character" / "Your equipped character moves …" without the word "target" is NOT a targeted ability — don't add the interface. Use a plain private helper (e.g., `isValidWoundCandidate`, `isEligibleMover`) for validation; don't reuse the `isValidTargetForAbility` name. See Pattern C "Don't add `IAbilityThatTargetsCharacters` unless the text says 'target'". References: `_03026` Angeline, `Action_03038b` Damya.
-35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one **vs character-scoped refuse (no type)**, **and which engagement trichotomy case applies** (Engage printed / conditional engage / never engages). Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`), the Odette journal (`2026-06-10-02-odette-dubois-darrent-03027-implementation.md`), the Térence journal (`2026-07-01-03-terence-rois-03028-implementation.md`), the Sanjay journal (`2026-07-11-07-sanjay-03037-implementation.md`), the Damya journal (`2026-07-11-09-damya-kahina-03038-implementation.md`), the Íñigo journal (`2026-07-12-03-inigo-03039-implementation.md`), the Soline journal (`2026-07-12-04-soline-03040-implementation.md`), the Ekaterina journal (`2026-07-15-02-ekaterina-03049.md`), and the Daichi journal (`2026-07-15-03-daichi-03050.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here / after-any-character-moves-here / move-self-to-any-city / pressure-win-ties / claim-or-engage-after-pressure / stat-specific-challenge-ban / set-stat-equal-while-dueling / third-party-equip-at-location / gambled-combat-card-passive / never-engages-challenge / Collect-Renown-on-refuse / dual-City-Action-a-b / draw-then-discard / destroy-attachment-to-draw / Weapon-equipped-stat-bonus / adversary-discard-Technique / post-discard-hand-En-Garde / EndOfRound-move-Home / Continuous-claim-move / Collect-renown-denial / optional-Artifact-Technique / character-scoped-refuse / multi-trait-combat-card-Technique decisions in detail.
+35. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>.md`. Capture the **WHY** of any non-obvious decision — event-type choice, why the Reaction was not flagged `ISorcererAbility` (or why it was), what the identity-check field is on the event (`sourceId` vs `performerId` vs `cardId`), why a particular state-ID encoding, why a button-based Reaction was chosen over state classes, why a new challenge type was added vs. piggybacked on an existing one **vs character-scoped refuse (no type)**, **and which engagement trichotomy case applies** (Engage printed / conditional engage / never engages). Read the Cesca journal (`2026-05-13-01-cesca-del-rosso-03001-implementation.md`), the Aja journal (`2026-05-13-02-aja-03002-implementation.md`), the Don Constanzo journal (`2026-05-14-01-don-constanzo-03003-implementation.md`), the Elena journal (`2026-05-16-01-elena-agnelli-03004-implementation.md`), the Kaspar Iron Reforged journal (`2026-05-25-02-kaspar-dietrich-03014-implementation.md`), the Joern journal (`2026-05-29-03-joern-kietelsson-03015-implementation.md`), the Ise journal (`2026-05-29-04-schwester-ise-03016-implementation.md`), the Odette journal (`2026-06-10-02-odette-dubois-darrent-03027-implementation.md`), the Térence journal (`2026-07-01-03-terence-rois-03028-implementation.md`), the Sanjay journal (`2026-07-11-07-sanjay-03037-implementation.md`), the Damya journal (`2026-07-11-09-damya-kahina-03038-implementation.md`), the Íñigo journal (`2026-07-12-03-inigo-03039-implementation.md`), the Soline journal (`2026-07-12-04-soline-03040-implementation.md`), the Ekaterina journal (`2026-07-15-02-ekaterina-03049.md`), the Daichi journal (`2026-07-15-03-daichi-03050.md`), and the Yepikhodov journal (`2026-07-15-04-yepikhodov-03051.md`) — between them they cover the End-of-Dawn / Sorcerer-trigger / move-wound / state-ID-encoding / issue-a-challenge / Gambling-Technique / new-challenge-type / performer-≠-owner / click-to-pay-Wealth / muster-from-discard / dueling-line-recompute / wound-prevention-via-eventCheck / muster-includes-Approach / phase-conditional-Resolve / while-wounded-stat-bonus / cancel-and-reissue-Reaction / after-enemy-moves-here / after-any-character-moves-here / move-self-to-any-city / pressure-win-ties / claim-or-engage-after-pressure / stat-specific-challenge-ban / set-stat-equal-while-dueling / third-party-equip-at-location / gambled-combat-card-passive / never-engages-challenge / Collect-Renown-on-refuse / dual-City-Action-a-b / draw-then-discard / destroy-attachment-to-draw / Weapon-equipped-stat-bonus / adversary-discard-Technique / post-discard-hand-En-Garde / EndOfRound-move-Home / Continuous-claim-move / Collect-renown-denial / optional-Artifact-Technique / character-scoped-refuse / multi-trait-combat-card-Technique / location-Technique-grant-aura / move-to-Leader-then-En-Garde / Engage-attachment-then-copy-Technique decisions in detail.
 36. **For stat-specific challenge bans** ("cannot issue [Combat] challenges" / "may only issue [Combat] challenges"): use `eventCheck` on `EventChallengeIssued` gated on `challengerId == $this->Id` AND `CHALLENGE_STAT`. Do NOT override `canChallenge()` to `false` unless the ban covers **all** challenge types — a partial ban must leave `canChallenge()` at default so Finesse/Influence action performers still include the character. Basic Challenge always sets `CHALLENGE_STAT = STAT_COMBAT` in `actHighDramaChallengeActionStart`, so the `eventCheck` backstop blocks Basic Challenge at issue time even if the character appears in the performer list. Pattern reference: `_03028` Térence (ban Combat), `_02013` Wilhelm (only Combat).
 37. **For "set [StatA] as equal to [StatB]" while a scoped condition holds** (duel at named location, etc.): use a replacement flag + snapshot restore — NOT the Ise ±1 delta pattern. Store pre-override target stat at apply-time; restore snapshot on clear; re-sync on source-stat changes and on external target-stat mutations during the override. Hook duel boundaries + swap events like `_01089` Soline. Named locations use `Game::LOCATION_CITY_*` constants. Pattern reference: `_03028` Térence and Pattern A's "Set one stat equal to another while a scoped condition holds" subsection.
 38. **For "Reaction: After a character equips an attachment at [location]"**: listen on `EventAttachmentEquipped`. Gate both `$owner->Location` and equipping `$character->Location` on the named `Game::LOCATION_CITY_*` constant; `cardInCity($owner)` for City Reactions; skip `FakeAttachment`. Only gate on `$event->characterId == $owner->Id` when the text names the owner ("After Philip equips …"). Pattern reference: `Reaction_03028` (any character), `Reaction_01039` (self only).
@@ -2777,3 +2921,6 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 55. **For "+1 Parry / engage Artifact for +2 instead" Techniques:** availability does **not** require an Artifact. Skip the choice state when none equipped (`ParryBonus = 1` on Resolve). When Artifacts exist, `createTechniqueTransitionEvent` → button `id: 0` for base +1 and attachment ids for engage-+2; apply on Calculate. Clear sticky bonus on cancel. Pattern reference: `Technique_03049` (optional), `Technique_02011` (mandatory engage-only). See Pattern E "Optional engage Artifact for upgraded Parry".
 56. **For character-scoped refuse** ("cannot refuse challenges from greater [Stat]" / "when Owner issues, greater-[Stat] cannot refuse"): do **not** mint a `CHALLENGE_TYPE` — the rule must cover NORMAL challenges issued *to* the owner too. Put a helper on the card class (`Modified*` strict `>` for "greater"); wire `actHighDramaChallengeActionReject` + args bool + JS Refuse disable + zombie Accept-when-blocked. Pattern reference: `_03050` Daichi. See Pattern F "Character-scoped refuse restriction". Contrast type-owned Aja / Épée.
 57. **For Technique "combat card is Flourish or Sorcery" (multi-trait):** Elena loop + OR of `hasTrait`s; filter by `ControllerId`. Plain +N Riposte needs no state/JS. Pattern reference: `Technique_03050`, single-trait `Technique_03004`. See Pattern E "If owner's combat card is a trait".
+58. **For "Your other characters at this location gain: Technique: …":** Jean `_01067` lifecycle on the card class (`Recruited` / `Destroyed` / `CardMoved`); `setId("Technique_NNNNN")` then `setOwnerId`; remove via `getTechniqueByClassId`. Trait filter only when printed; exclude the aura source; skip Home. Accept Jean's recruit-without-CardMoved hole unless Eddie asks otherwise. Pattern reference: `_03051`, `_01067`, `_02022`. See Pattern A "Location Technique grant aura".
+59. **For "Move to Leader's location. Then, en garde your attachment":** `getLeaderByPlayerId`; exclude already-there; Engaged non-Fake candidates = owner's attachments + others at Leader location (no double-count); move `engage=false` then attachment **buttons**; En Garde = `createCardEngardedEvent` (not Engaged). Pattern reference: `Action_03051`. See Pattern C "Move to Leader's location, then En Garde an attachment".
+60. **For "Engage <named character>'s attachment • Copy a Technique on it":** find named character without `instanceof` (ExpansionName+CardNumber); list source techniques **without** `isAvailableToPlayer`; Engage attachment then Dame `02055` clone/activate/resolve/calc; `createTechniqueTransitionEvent` for the picker. Pattern reference: `Technique_03051`, `Technique_02055`. See Pattern E "Engage named character's attachment and copy a Technique".
