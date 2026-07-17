@@ -150,12 +150,10 @@ class Theah
 
             $cityLocation = $this->cityLocations[$card->Location];
             if ($cityLocation->CanBeClaimed) {
-                $cityLocation->CanBeClaimed = false;
-                $this->game->setCanBeClaimedForLocation($card->Location, false);
+                $this->setLocationCanBeClaimed($card->Location, false);
             }
             if ($cityLocation->CanBecomeUncontrolled) {
-                $cityLocation->CanBecomeUncontrolled = false;
-                $this->game->setCanBecomeUncontrolledForLocation($card->Location, false);
+                $this->setLocationCanBecomeUncontrolled($card->Location, false);
             }
         }
     }
@@ -172,8 +170,7 @@ class Theah
 
             $cityLocation = $this->cityLocations[$card->ChosenLocation];
             if ($cityLocation->CanBeClaimed) {
-                $cityLocation->CanBeClaimed = false;
-                $this->game->setCanBeClaimedForLocation($card->ChosenLocation, false);
+                $this->setLocationCanBeClaimed($card->ChosenLocation, false);
             }
         }
     }
@@ -1283,12 +1280,30 @@ class Theah
         return $this->getCityLocation($location)->CanBeClaimed;
     }
 
+    // WHY: Central writer for CanBeClaimed. Persist via globals AND update the in-memory
+    // CityLocation property. Readers (canLocationBeClaimedBy / emit-site guards) use the
+    // property; globals alone leave same-request checks looking at a stale value.
+    // Game::setCanBeClaimedForLocation remains persistence-only (hydration / low-level).
+    public function setLocationCanBeClaimed(string $location, bool $canBeClaimed): void
+    {
+        $this->game->setCanBeClaimedForLocation($location, $canBeClaimed);
+        $this->getCityLocation($location)->CanBeClaimed = $canBeClaimed;
+    }
+
     // WHY: Central rule for "can this location be uncontrolled right now". Parallel to
     // canLocationBeClaimedBy — Indomitable Will (Action_01130) also prevents un-control,
     // and toggles CanBecomeUncontrolled on the location. $playerId reserved for future use.
     public function canLocationBecomeUncontrolledBy(int $playerId, string $location): bool
     {
         return $this->getCityLocation($location)->CanBecomeUncontrolled;
+    }
+
+    // WHY: Parallel to setLocationCanBeClaimed — same dual-write requirement for
+    // CanBecomeUncontrolled so same-request guards see the update immediately.
+    public function setLocationCanBecomeUncontrolled(string $location, bool $canBecomeUncontrolled): void
+    {
+        $this->game->setCanBecomeUncontrolledForLocation($location, $canBecomeUncontrolled);
+        $this->getCityLocation($location)->CanBecomeUncontrolled = $canBecomeUncontrolled;
     }
 
     public function playerCanBasicClaim($playerId): bool

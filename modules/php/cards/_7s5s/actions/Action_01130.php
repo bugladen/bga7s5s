@@ -75,14 +75,10 @@ class Action_01130 extends RiskAction
 
     private function setLocationClaimFlags(Theah $theah, string $locationName, bool $canBeClaimed, bool $canBecomeUncontrolled): void
     {
-        $location = $theah->getCityLocation($locationName);
-        // WHY: Persist via globals AND update the in-memory CityLocation property.
-        // canLocationBeClaimedBy / emit-site guards read the property; globals alone leave
-        // same-request checks looking at a stale value (DebugTrait already syncs both).
-        $theah->game->setCanBeClaimedForLocation($locationName, $canBeClaimed);
-        $location->CanBeClaimed = $canBeClaimed;
-        $theah->game->setCanBecomeUncontrolledForLocation($locationName, $canBecomeUncontrolled);
-        $location->CanBecomeUncontrolled = $canBecomeUncontrolled;
+        // WHY: IW toggles both flags together; Theah helpers own the dual-write (globals +
+        // in-memory) so same-request claim/uncontrol guards never see a stale property.
+        $theah->setLocationCanBeClaimed($locationName, $canBeClaimed);
+        $theah->setLocationCanBecomeUncontrolled($locationName, $canBecomeUncontrolled);
     }
 
     private function setConditionEnded(Game $game)
