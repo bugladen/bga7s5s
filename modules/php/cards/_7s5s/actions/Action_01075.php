@@ -42,13 +42,6 @@ class Action_01075 extends AttachmentAction
             return false;
         }
 
-        // WHY: Gate availability on claimability — pressure that cannot claim is useless;
-        // canLocationBeClaimedBy is the central API (playerId reserved for future rules).
-        if ( ! $theah->canLocationBeClaimedBy($playerId, $owner->Location))
-        {
-            return false;
-        }
-
         return true;
     }
 
