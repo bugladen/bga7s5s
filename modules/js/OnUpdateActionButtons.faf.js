@@ -261,6 +261,20 @@
                 });
             },
 
+            'duelChooseTechnique_03052': () => {
+                this.statusBar.addActionButton(_('Done'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass' });
+            },
+
+            'duskPhaseBegin03052': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Sink Card'), () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'duskPhaseBegin03052_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelEndOfRound_03022': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
