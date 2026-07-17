@@ -66,11 +66,11 @@ class Action_01130 extends RiskAction
         $characters = $theah->getCharactersAtLocation($performer->Location);
         $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
         $location = $theah->getCityLocation($performer->Location);
-        // WHY: Leshiye (and any other claim block) sets CityLocation->CanBeClaimed false.
-        // Indomitable Will can never start at such a location, so availability must refuse it.
+        // WHY: Route claim gate through canLocationBeClaimedBy (central API; $playerId reserved
+        // for future per-player rules). Leshiye/etc. set CanBeClaimed false — IW cannot start there.
         return count($characters) == 1
             && ! $location->isControlled()
-            && $location->CanBeClaimed;
+            && $theah->canLocationBeClaimedBy($playerId, $performer->Location);
     }
 
     private function setLocationClaimFlags(Theah $theah, string $locationName, bool $canBeClaimed, bool $canBecomeUncontrolled): void
@@ -121,8 +121,7 @@ class Action_01130 extends RiskAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            $location = $event->theah->getCityLocation($performer->Location);
-            if ( ! $location->CanBeClaimed)
+            if ( ! $event->theah->canLocationBeClaimedBy($performer->ControllerId, $performer->Location))
             {
                 $game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
                     'i18n' => ['location'],
