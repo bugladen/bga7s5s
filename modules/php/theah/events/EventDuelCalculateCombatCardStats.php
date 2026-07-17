@@ -86,6 +86,10 @@ class EventDuelCalculateCombatCardStats extends Event
             {
                 $this->riposte -= $value;
             }
+            if ($this->riposte < 0)
+            {
+                $this->riposte = 0;
+            }
         }
         else
         {
@@ -101,6 +105,10 @@ class EventDuelCalculateCombatCardStats extends Event
             {
                 $this->parry -= $value;
             }
+            if ($this->parry < 0)
+            {
+                $this->parry = 0;
+            }
         }
         else
         {
@@ -115,6 +123,10 @@ class EventDuelCalculateCombatCardStats extends Event
             if ($this->thrust > 0)
             {
                 $this->thrust -= $value;
+            }
+            if ($this->thrust < 0)
+            {
+                $this->thrust = 0;
             }
         }
         else

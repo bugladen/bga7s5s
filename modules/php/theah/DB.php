@@ -305,8 +305,12 @@ class DB
                     $parry = 0;
                 $endingChallengerThreat -= $parry;
 
-                // Apply total Thrust
-                $endingDefenderThreat += $totalThrust;
+                // Apply total Thrust — clamp so opponent threat cannot go below 0
+                // WHY: negative thrust is intentional (e.g. Technique_01050), but must not drive threat negative
+                $thrust = $totalThrust;
+                if ($endingDefenderThreat + $thrust < 0)
+                    $thrust = -$endingDefenderThreat;
+                $endingDefenderThreat += $thrust;
             }
             else if ($actorId == $defenderId)
             {
@@ -327,8 +331,11 @@ class DB
                     $parry = 0;
                 $endingDefenderThreat -= $parry;
 
-                // Apply total Thrust
-                $endingChallengerThreat += $totalThrust;
+                // Apply total Thrust — clamp so opponent threat cannot go below 0
+                $thrust = $totalThrust;
+                if ($endingChallengerThreat + $thrust < 0)
+                    $thrust = -$endingChallengerThreat;
+                $endingChallengerThreat += $thrust;
             }
 
             // Store the computed values in results (maneuver's contribution is already included in totals)
@@ -389,8 +396,12 @@ class DB
                     $parry = 0;
                 $endingChallengerThreat -= $parry;
 
-                // Apply total Thrust
-                $endingDefenderThreat += $totalThrust;
+                // Apply total Thrust — clamp so opponent threat cannot go below 0
+                // WHY: negative thrust is intentional (e.g. Technique_01050), but must not drive threat negative
+                $thrust = $totalThrust;
+                if ($endingDefenderThreat + $thrust < 0)
+                    $thrust = -$endingDefenderThreat;
+                $endingDefenderThreat += $thrust;
             }
             else if ($actorId == $defenderId)
             {
@@ -411,8 +422,11 @@ class DB
                     $parry = 0;
                 $endingDefenderThreat -= $parry;
 
-                // Apply total Thrust
-                $endingChallengerThreat += $totalThrust;
+                // Apply total Thrust — clamp so opponent threat cannot go below 0
+                $thrust = $totalThrust;
+                if ($endingChallengerThreat + $thrust < 0)
+                    $thrust = -$endingChallengerThreat;
+                $endingChallengerThreat += $thrust;
             }
 
             // Store the computed values in results (technique's contribution is already included in totals)
@@ -472,8 +486,11 @@ class DB
             $endingChallengerThreat -= $parry;
             $results['parry'] = $eventParry;
 
-            //Thrust adds threat
+            //Thrust adds threat — clamp so opponent threat cannot go below 0
+            // WHY: negative thrust is intentional, but must not drive threat negative
             $thrust = $eventThrust;
+            if ($endingDefenderThreat + $thrust < 0)
+                $thrust = -$endingDefenderThreat;
             $endingDefenderThreat += $thrust;
             $results['thrust'] = $eventThrust;
 
@@ -496,8 +513,10 @@ class DB
             $endingDefenderThreat -= $parry;
             $results['parry'] = $eventParry;
 
-            //Thrust adds threat
+            //Thrust adds threat — clamp so opponent threat cannot go below 0
             $thrust = $eventThrust;
+            if ($endingChallengerThreat + $thrust < 0)
+                $thrust = -$endingChallengerThreat;
             $endingChallengerThreat += $thrust;
             $results['thrust'] = $eventThrust;
 

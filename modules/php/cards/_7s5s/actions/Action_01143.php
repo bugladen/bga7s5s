@@ -35,17 +35,27 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
             return false;
         }
 
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE));
-
-        return count($characters) > 0;
+        return count($this->getEligiblePerformers($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE)));
-        
+        return $this->getEligiblePerformers($playerId, $theah);
+    }
+
+    // WHY: Gate on canLocationBeClaimedBy so Contempt and Hatred isn't offered when every
+    // candidate is at an unclaimable location. canLocationBeClaimedBy is the central API
+    // (playerId reserved for future rules). Filter performers so one blocked location does
+    // not hide the action if another eligible performer is at a claimable location.
+    private function getEligiblePerformers(int $playerId, Theah $theah): array
+    {
+        $performers = $theah->getCharactersInCityByPlayerId($playerId);
+        $performers = array_filter(
+            $performers,
+            fn($character) => ! $character->Engaged
+                && $character->canPressure(Game::STAT_INFLUENCE)
+                && $theah->canLocationBeClaimedBy($playerId, $character->Location)
+        );
         return array_values($performers);
     }
 

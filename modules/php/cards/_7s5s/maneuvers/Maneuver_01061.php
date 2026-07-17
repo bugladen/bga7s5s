@@ -13,7 +13,7 @@ class Maneuver_01061 extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("+1 Thrust, Draw Card");
+        $this->Name = clienttranslate("+1 Riposte, Draw Card");
     }
 
     public function handleEvent(Event $event)
@@ -22,7 +22,9 @@ class Maneuver_01061 extends Maneuver
 
         if ($event instanceof EventDuelCalculateManeuverValues && $event->maneuverId == $this->Id)
         {
-            $event->parry += 1;
+            $owner = $this->getOwningCard($event->theah);
+            $event->riposte += 1;
+            $event->explanations[] = sprintf($event->theah->game->translate("%s adds 1 Riposte."), $owner->getInjectCode());
 
             $actor = $event->theah->getCharacterById($event->actorId);
             $drawCard = false;
@@ -38,11 +40,12 @@ class Maneuver_01061 extends Maneuver
 
             if ($drawCard)
             {
-                $owner = $this->getOwningCard($event->theah);
                 $game = $event->theah->game;
                 $addEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
                 $game->theah->queueEvent($addEvent);
             }
         }
+        
+        // EventManeuverCanceled handler not needed
     }
 }

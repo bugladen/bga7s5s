@@ -66,9 +66,19 @@ class Action_01130 extends RiskAction
         $characters = $theah->getCharactersAtLocation($performer->Location);
         $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
         $location = $theah->getCityLocation($performer->Location);
+        // WHY: Route claim gate through canLocationBeClaimedBy (central API; $playerId reserved
+        // for future per-player rules). Leshiye/etc. set CanBeClaimed false — IW cannot start there.
         return count($characters) == 1
             && ! $location->isControlled()
             && $theah->canLocationBeClaimedBy($playerId, $performer->Location);
+    }
+
+    private function setLocationClaimFlags(Theah $theah, string $locationName, bool $canBeClaimed, bool $canBecomeUncontrolled): void
+    {
+        // WHY: IW toggles both flags together; Theah helpers own the dual-write (globals +
+        // in-memory) so same-request claim/uncontrol guards never see a stale property.
+        $theah->setLocationCanBeClaimed($locationName, $canBeClaimed);
+        $theah->setLocationCanBecomeUncontrolled($locationName, $canBecomeUncontrolled);
     }
 
     private function setConditionEnded(Game $game)
@@ -81,10 +91,10 @@ class Action_01130 extends RiskAction
             "cardId" => $this->ControllingCharacterId,
         ]);
 
-        $game->setCanBeClaimedForLocation($this->ControlledLocation, true);
         // WHY: Clear CanBecomeUncontrolled before queueing the uncontrolled event so the
         // emit-site guard below (and any future ones) lets THIS legitimate uncontrol pass.
-        $game->setCanBecomeUncontrolledForLocation($this->ControlledLocation, true);
+        // No Leshiye overlap to consider — IW cannot be active at a Leshiye location.
+        $this->setLocationClaimFlags($game->theah, $this->ControlledLocation, true, true);
 
         $locationUncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($character->ControllerId, $this->ControlledLocation);
         $game->theah->queueEvent($locationUncontrolledEvent);
@@ -132,8 +142,7 @@ class Action_01130 extends RiskAction
             $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
 
-            $game->setCanBeClaimedForLocation($performer->Location, false);
-            $game->setCanBecomeUncontrolledForLocation($performer->Location, false);
+            $this->setLocationClaimFlags($event->theah, $performer->Location, false, false);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);

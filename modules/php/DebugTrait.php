@@ -246,16 +246,14 @@ trait DebugTrait
     public function debug_SetLocationCanBeClaimed(string $location, bool $canBeClaimed)
     {
         $this->theah->buildCity();
-        $this->setCanBeClaimedForLocation($location, $canBeClaimed);
-        $this->theah->getCityLocation($location)->CanBeClaimed = $canBeClaimed;
+        $this->theah->setLocationCanBeClaimed($location, $canBeClaimed);
     }
 
     #[Debug(reload: true)]
     public function debug_SetLocationCanBecomeUncontrolled(string $location, bool $canBeUncontrolled)
     {
         $this->theah->buildCity();
-        $this->setCanBecomeUncontrolledForLocation($location, $canBeUncontrolled);
-        $this->theah->getCityLocation($location)->CanBecomeUncontrolled = $canBeUncontrolled;
+        $this->theah->setLocationCanBecomeUncontrolled($location, $canBeUncontrolled);
     }
 
     public function debug_EmptyHand(int $playerId)

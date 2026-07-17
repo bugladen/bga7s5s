@@ -136,6 +136,10 @@ class Reaction_01023 extends RiskReaction
         if ($owner->Location == Game::LOCATION_HAND && $reaction->Id == $this->Id)
         {
             $challengeLocation = $theah->game->globals->get(GAME::CHOSEN_LOCATION);
+            if ($challengeLocation == null)
+            {
+                return $discount;
+            }
 
             //Get all characters at the location of the challenge controlled by the player
             $characters = $theah->getCharactersAtLocationByPlayerId($challengeLocation, $owner->ControllerId);
