@@ -668,10 +668,10 @@
 
             'highDramaPhase01028': () => {
                 if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
                     this.numberOfCityLocationsSelectable = 1;
-                    args.args.args.locationIds.forEach((locationId) => {
-                        const imageElement = this.getCityLocationElement(locationId);
-                        this.makeCityLocationSelectable(imageElement);
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
                     });
                 }
             },
