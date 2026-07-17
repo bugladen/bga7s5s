@@ -752,6 +752,10 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     position: relative;
 }
 ._7sfs-scheme-container-in-city {
+    /* WHY: Stat boxes are absolute-positioned siblings of the scheme image.
+       Without a positioned container they resolve against ._7sfs-city-location
+       and stay put when flex-wrap moves the scheme to the next row. */
+    position: relative;
     margin-left: 15px;
 }
 
