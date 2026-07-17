@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
@@ -131,6 +132,7 @@ class Theah
         }
 
         $this->backfillIndomitableWillFlags();
+        $this->backfillLeshiyeOfTheWoodFlags();
 
         $this->cityBuilt = true;
     }
@@ -154,6 +156,24 @@ class Theah
             if ($cityLocation->CanBecomeUncontrolled) {
                 $cityLocation->CanBecomeUncontrolled = false;
                 $this->game->setCanBecomeUncontrolledForLocation($card->Location, false);
+            }
+        }
+    }
+
+    // STOPGAP: Games with an active Leshiye of the Wood from before its claim
+    // protection used CityLocation->CanBeClaimed won't have the flag written.
+    // Idempotent, cheap; remove once those in-flight games have completed.
+    private function backfillLeshiyeOfTheWoodFlags(): void
+    {
+        foreach ($this->cards as $card) {
+            if ( ! $card instanceof _01126) continue;
+            if ($card->ChosenLocation === '' || $card->Location !== $card->ChosenLocation) continue;
+            if ( ! array_key_exists($card->ChosenLocation, $this->cityLocations)) continue;
+
+            $cityLocation = $this->cityLocations[$card->ChosenLocation];
+            if ($cityLocation->CanBeClaimed) {
+                $cityLocation->CanBeClaimed = false;
+                $this->game->setCanBeClaimedForLocation($card->ChosenLocation, false);
             }
         }
     }

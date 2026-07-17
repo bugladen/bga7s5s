@@ -80,6 +80,7 @@ class _01126 extends Scheme
 
         if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
         {
+            $event->theah->game->setCanBeClaimedForLocation($this->ChosenLocation, true);
             $this->ChosenLocation = '';
             $event->theah->game->updateCardObjectInDb($this);
         }
@@ -102,6 +103,8 @@ class _01126 extends Scheme
         {
             $playerId = $event->theah->game->getActivePlayerId();
             $deck = $event->theah->game->getGameDeckObject();
+
+            $event->theah->game->setCanBeClaimedForLocation($this->ChosenLocation, false);
 
             $event->theah->game->notify->all('schemeMovedToCity', 
                 clienttranslate('${scheme_inject_code} moved to ${location}'), [
