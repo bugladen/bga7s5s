@@ -22,6 +22,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/faf/_03041.php` (Proper Study) — **Trivial Renown resolve + Forced draw-then-discard at Planning End + City Reaction after you claim.** New GameState under `PLANNING_PHASE_END_EVENTS`. Reaction moves Renown off the claimed location via destination buttons.
 - `modules/php/cards/faf/_03042.php` (When Least Expected) — **Trivial Renown resolve + City Action Finesse challenge with Duelist discard-to-refuse.** Cornered-shaped engage + custom `CHALLENGE_TYPE`; refuse routes through `highDramaPhase03042` hand discard when performer is Duelist.
 - `modules/php/cards/faf/_03053.php` (Curry Favor) — **Two-different-locations resolve + City Action that spends player Renown, directly claims performer's location, and each opponent draws.** No HD sub-state — resolves entirely on `EventActionTriggered` after framework performer pick. Canonical for "Spend a Renown" (score) vs location-token remove, and for claimability-gated performers.
+- `modules/php/cards/faf/_03054.php` (No Steel, No Surrender) — **Trivial dual Renown resolve + City Action that wounds an unequipped performer then pressures with Resolve; on success, wound opposing target and move them Home.** Canonical for wound-before-pressure (`CHOSEN_LOCATION` / clear `CHOSEN_PERFORMER`) and lethal-wound + Home-move interaction. Risk parallel for Resolve pressure success-pick: `Action_01105` (Drinking Games).
 
 When in doubt, mirror one of those rather than invent.
 
@@ -118,8 +119,11 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"If the challenge is accepted, add a threat to your participant"** | Listen on `EventGenerateChallengeThreat` in the action class; bump `$event->actorThreat` only (not adversary). Fires on accept/intervene path when threat is generated, not on refuse. Reference: `Action_03030` (+1 actor), contrast `Action_02061` (+1 both). |
 | **"If your performer is a Duelist, it can only be refused by discarding a card"** | **Pattern G — discard-to-refuse.** See full section below. Correlator `CHALLENGE_TYPE` (out of auto-engage) + refuse routed through card-keyed HD discard state. Reference: `_03042` / `Action_03042`. |
 | **"Spend a Renown • Claim your performer's location. [trailing effects]"** | **Pattern H — immediate-resolve City Action.** Framework performer pick only; all effects fire on `EventActionTriggered`. No `HIGH_DRAMA_PLAYER_TURN_*` GameState. Reference: `_03053`. |
+| **"unequipped performer"** / **"Your unequipped performer …"** | Gate `count($performer->Attachments) == 0` in `getPerformersForAction` / availability. Same check as `Action_01131` (Iron and Velvet). Re-validate on `EventActionTriggered`. |
+| **"Wound your [unequipped] performer • Pressure their location with [Stat]"** | **Pattern I — wound-then-pressure.** Queue performer wound, then `PRESSURE_STAT` + `createPressureOccuringEvent` + transition `"pressureLocation"`. **Must** capture city location in `CHOSEN_LOCATION` and clear `CHOSEN_PERFORMER` before pressure (lethal wound → locker before `stHighDramaPressureLocation`). Stash original performer id in `CHOSEN_CARD` for post-pressure UI. Reference: `_03054`. |
+| **"If successful, wound target opposing character and move them Home"** (after pressure) | On `EventLocationPressureResult` success: if opposing remain at `$event->location`, transition to HD pick state; else notify + `createActionResolvedEvent`. On pick: queue wound, then Home move **only if** `$target->Wounds + 1 < $target->ModifiedResolve` (skip move when lethal — avoid locker→Home yank). Failure / no-target paths must still queue `createActionResolvedEvent` (do not copy `Action_01105`'s failure gap). Reference: `Action_03054`. |
 
-A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat. `_03041` has a trivial Renown resolve AND a Forced draw/discard at Planning End AND a claim→move-Renown City Reaction. `_03042` has a trivial Renown resolve AND an engage→Finesse challenge City Action with conditional discard-to-refuse. `_03053` has a two-location resolve AND an immediate-resolve spend→claim→opponents-draw City Action (Pattern H).
+A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat. `_03041` has a trivial Renown resolve AND a Forced draw/discard at Planning End AND a claim→move-Renown City Reaction. `_03042` has a trivial Renown resolve AND an engage→Finesse challenge City Action with conditional discard-to-refuse. `_03053` has a two-location resolve AND an immediate-resolve spend→claim→opponents-draw City Action (Pattern H). `_03054` has a trivial dual Renown resolve AND a wound-then-Resolve-pressure City Action with success target wound+Home (Pattern I).
 
 ## Pattern A — Resolve via `EventResolveScheme`
 
@@ -851,7 +855,7 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 Pre-commit hook: `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`.
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`.
 
 ### Pattern H — Immediate-resolve City Action (no HD sub-state)
 
@@ -886,6 +890,57 @@ foreach ($game->loadPlayersBasicInfos() as $opponentId => $_)
 ```
 
 Reference: `Action_03053`. Character parallels for direct claim without pressure: `Action_01103a`, `Action_02029`.
+
+### Pattern I — Wound-then-pressure City Action (Resolve / Combat / Finesse)
+
+Use when the printed City Action pays a **wound on the performer** (often **unequipped**) and then **pressures** their location; success usually opens a character pick. Canonical: `_03054` (No Steel, No Surrender). Risk parallel for Resolve pressure + success pick: `Action_01105` (engage only — no wound cost, no Home move).
+
+**Flow:**
+
+1. `SchemeCityAction` + `IAbilityThatTargetsCharacters` (if success targets a character) + `RequiresPerformerSelected = true`.
+2. `getPerformersForAction` / `isAvailableToPlayer`: filter full legality — unequipped (`count(Attachments) == 0`), `canPressure($stat)`, ≥1 opposing character at location when the success payoff needs a target. Availability = `count(getPerformersForAction) > 0`.
+3. `EventActionTriggered`:
+   - Capture `$location = $performer->Location`.
+   - Set `PRESSURING_PLAYER`, `PRESSURE_TYPE = NORMAL`, `PRESSURE_STAT` (e.g. `STAT_RESOLVE`).
+   - Set `CHOSEN_LOCATION = $location`, `CHOSEN_CARD = $performerId`, then **`CHOSEN_PERFORMER = 0`**.
+   - Queue `createCharacterBeingWoundedEvent` for the performer.
+   - Queue `createPressureOccuringEvent(..., $performerId, $location, $pressureStats)` (still pass the real performer id for messaging) + `createTransitionEvent(..., "pressureLocation", $this->Id)`.
+4. `EventLocationPressureResult` when `$event->abilityId == $this->Id`:
+   - **Success + opposing at `$event->location`:** `createTransitionEvent(..., "NNNNN", $this->Id)` into HD pick state — **return** (do not resolve yet).
+   - **Success + no opposing / failure:** notify if needed, then **always** `createActionResolvedEvent`. WHY: hub only auto-resolves `highDramaBasicAction` pressures; ability pressures must resolve themselves. Do not copy `Action_01105`'s silent failure path.
+5. HD pick state: `isValidTargetForAbility` vs `CHOSEN_LOCATION`; on confirm queue target wound, then Home move if non-lethal, then `createActionResolvedEvent`, `nextState("")`.
+
+**WHY clear `CHOSEN_PERFORMER` before pressure:**
+
+`stHighDramaPressureLocation` does:
+
+```php
+$performerId = $this->globals->get(Game::CHOSEN_PERFORMER);
+if ($performerId != 0) {
+    $performer = $this->getCardObjectFromDb($performerId);
+    $location = $performer->Location;  // locker if destroyed!
+} else {
+    $location = $this->globals->get(Game::CHOSEN_LOCATION);
+}
+```
+
+`EventCharacterBeingWounded` queues `EventCharacterWounded` at medium priority; `EventTransition` is priority 8. The wound (and possible destroy→locker) can apply **before** the pressure state runs. Leaving `CHOSEN_PERFORMER` set would pressure the locker. Clearing it forces the captured city `CHOSEN_LOCATION`.
+
+**Lethal wound + "move them Home":**
+
+```php
+$willDie = ($target->Wounds + 1 >= $target->ModifiedResolve);
+queue createCharacterBeingWoundedEvent(...)
+if (! $willDie) {
+    queue createCardMovingEvent(..., LOCATION_PLAYER_HOME, engage: false, ...)
+}
+```
+
+WHY skip Home when lethal: a later `EventCardMoved` after destroy can yank the character from the locker back to Home. Destroy-at-city is the correct lethal outcome for "wound and move Home" when they cannot survive the wound.
+
+**Resolve pressure note:** `getResolvePressureValue` returns `ModifiedResolve` (wounds ignored for the total — same idea as Drinking Games' "Ignore wounds"). Characters must still **be at the location** to count; a destroyed performer does not.
+
+Reference: `Action_03054`, `State_highDramaPhase03054`. Compare `Action_01105` / `Action_03040` / `Action_03cd20` for pressure + `EventLocationPressureResult` shapes.
 
 ### High Drama action sub-states (City Action / Sorcerer City Action)
 
@@ -1120,6 +1175,22 @@ Card text:
 
 Full implementation: `modules/php/cards/faf/_03053.php`, `modules/php/cards/faf/actions/Action_03053.php`, `modules/php/States/faf/State_planningPhaseResolveSchemes03053.php`.
 
+## Walkthrough: implementing `_03054` (No Steel, No Surrender)
+
+Card text:
+
+> Add a Renown to [City Docks] and [City Forum].
+> **City Action:** Wound your unequipped performer • Pressure their location with Resolve. If successful, wound target opposing character and move them **Home**.
+
+1. **Constructor.** `initializeFaction('Ussura')`, `Initiative = 5`, `PanacheModifier = 0`, Traits = Kulachniy Boi + Brawl (both already in `TraitNames`). Register `IHasActions` + `ActionTrait` + `new Action_03054()`. **Verify printed locations against art** — scaffold / early text may say Grand Bazaar when the card is Forum (or vice versa).
+2. **Resolve.** Trivial dual Renown (Docks + Forum). No planning sub-state — same shape as `_03029` / `_03042`.
+3. **Action (Pattern I).** `SchemeCityAction` + `IAbilityThatTargetsCharacters`. Performers: unequipped + `canPressure(STAT_RESOLVE)` + ≥1 opposing at location. On trigger: stash location / performer (`CHOSEN_LOCATION`, `CHOSEN_CARD`), clear `CHOSEN_PERFORMER`, wound performer, pressure with Resolve via `"pressureLocation"`.
+4. **Success pick.** `HIGH_DRAMA_PLAYER_TURN_03054 = 403054`, transition `"03054"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. State class `State_highDramaPhase03054` with `actFromCardWithId(string $id)`. On pick: wound target; Home move only if non-lethal; `createActionResolvedEvent`.
+5. **JS (faf).** Enter: highlight performer (if still set) + opposing `ids`. Buttons: Confirm only (no Pass — mandatory target when state opens). Leave: unhighlight.
+6. **Pre-commit.** `createActionResolvedEvent()` on failure, success-without-target, and after successful pick.
+
+Full implementation: `modules/php/cards/faf/_03054.php`, `modules/php/cards/faf/actions/Action_03054.php`, `modules/php/States/faf/State_highDramaPhase03054.php`.
+
 ## Style / Memory Notes
 
 - `getActivePlayerName()` is deprecated — use `$game->getPlayerNameById($id)`.
@@ -1137,12 +1208,17 @@ Full implementation: `modules/php/cards/faf/_03053.php`, `modules/php/cards/faf/
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
 - **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
-- **Windows line endings:** PHP files in this repo use single CRLF (`\r\n`). Agent-written files sometimes land as `\r\r\n` (double carriage return), which displays as a blank line after every line. After writing scheme/action PHP, verify against a sibling file (e.g. hex dump or line count). Fix with: `$content -replace "`r`r`n", "`r`n"` in PowerShell. Match existing files — do not convert LF-only.
+- **Windows line endings:** PHP files in this repo use single CRLF (`\r\n`). Agent-written files sometimes land as `\r\r\n` (double carriage return), which displays as a blank line after every line (and doubles reported line counts). After writing scheme/action PHP, verify `doubleCR=0` with a byte scan. PowerShell string `-replace "`r`r`n"` is unreliable on some hosts — prefer a byte-list walk that collapses `13,13,10` → `13,10`. Match existing files — do not convert LF-only.
 - **GameState transitions with Back:** never pair `""` with `"back"` (or any second key). Use named success transitions (`"cardDiscarded"`, `"done"`, …). Studio error if you don't: "More than one possible transition at this state".
 - **Card-specific challenge sub-transitions** off `HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE` use the card number string (`"03042"`), not a reusable semantic name. Same discipline as HD_EVENTS / resolve maps.
 - **Challenge-type JS int:** if Refuse/Intervene UI needs the type, add the matching constant in `seventhseacityoffivesails.js`. Types with no client gate can omit it (server-only), but discard-to-refuse needs the client disable.
 - **Two-location resolve JS:** faf/tac/_7s5s triple is not enough — `PlayerActions.js` `actionMap` must map `planningPhaseResolveSchemes_<NNNNN>` → `'actCityLocationsForReknownSelected'`. Without it Confirm falls through to `actFromCardWithLocations` and breaks.
 - **"Spend a Renown"** without a named location is always player score (`createPlayerLosesReknownEvent`), never a location token.
+- **"Unequipped"** = `count($character->Attachments) == 0` (not a trait). Re-check on trigger; JS can be ignored.
+- **Ability pressure must `createActionResolvedEvent` on failure** (and on success with no legal payoff). Hub auto-resolve is only for `highDramaBasicAction`. Mirror `Action_03040` / `Action_03cd20` / `Action_03054`, not the incomplete failure path on `Action_01105`.
+- **Wound-then-pressure:** always `CHOSEN_LOCATION` + `CHOSEN_PERFORMER = 0` (+ `CHOSEN_CARD` for UI) before queuing the performer wound and `"pressureLocation"`. See Pattern I.
+- **Wound + move Home on the same target:** skip the Home move when `$Wounds + 1 >= ModifiedResolve` so destroy stays at the city (no locker→Home yank).
+- **Printed location names drift:** cross-check JPG / Eddie corrections before shipping Renown adds (Forum vs Bazaar is a common swap).
 
 ## Cross-Cutting Helpers
 
@@ -1172,6 +1248,8 @@ Event factories you'll likely need:
 - `createCardRemovedFromPlayerDiscardPileEvent($playerId, $cardId)` (notification-only)
 - `createCardAddedToHandEvent($playerId, $cardId)` (does the actual move)
 - `createLocationClaimedEvent($playerId, ?int $performerId, $location)`
+- `createPressureOccuringEvent($playerId, $performerId, $location, $pressureTypes)` — then transition `"pressureLocation"`; listen for `EventLocationPressureResult` with matching `$abilityId`
+- `createCardMovingEvent($playerId, $cardId, $from, $to, $engage, $sourceId, $abilityId)` — Home moves use `Game::LOCATION_PLAYER_HOME` and usually `$engage = false`
 - `createTransitionEvent($playerId, $sourceId, string $internalId)` — for moving into a sub-state.
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)` — for the reaction's transition.
 
@@ -1218,6 +1296,10 @@ Event factories you'll likely need:
 | `modules/php/cards/faf/_03053.php` (Curry Favor) | **Two-different-locations resolve + Pattern H City Action** (spend score Renown → direct claim → each opponent draws). No HD sub-state. |
 | `modules/php/cards/faf/actions/Action_03053.php` | Immediate-resolve `SchemeCityAction`: `createPlayerLosesReknownEvent`, claimability-filtered performers, opponent draws via `loadPlayersBasicInfos`. |
 | `modules/php/States/faf/State_planningPhaseResolveSchemes03053.php` | Two-location planning resolve (same shape as `03006` / `03030`). |
+| `modules/php/cards/faf/_03054.php` (No Steel, No Surrender) | **Trivial dual Renown (Docks + Forum) + Pattern I** wound-unequipped → Resolve pressure → wound+Home. |
+| `modules/php/cards/faf/actions/Action_03054.php` | Pattern I: unequipped gate, `CHOSEN_LOCATION` / clear `CHOSEN_PERFORMER`, `EventLocationPressureResult` success pick, lethal skip Home move, ActionResolved on fail. |
+| `modules/php/States/faf/State_highDramaPhase03054.php` | Post-pressure opposing-character pick (`actFromCardWithId`). |
+| `modules/php/cards/_7s5s/actions/Action_01105.php` | Resolve-pressure success → engage pick (no wound cost). Useful parallel; **do not** copy its missing ActionResolved-on-failure. |
 
 ## When You Finish
 
@@ -1247,3 +1329,4 @@ Event factories you'll likely need:
 17. Lint touched PHP files (`php -l`) before committing. On Windows, verify line endings are single CRLF (not `\r\r\n`).
 18. **Engage-and-challenge / Pattern G:** confirm `CHALLENGE_TYPE` is out of auto-engage; ACCEPT_CHALLENGE uses card-number transition key `"NNNNN"`; discard GameState uses named success transition (not `""` alongside `"back"`); JS Refuse disable uses `mustDiscardToRefuse` + `defenderHandCount`; intervene stays ungated unless the card says otherwise.
 19. **Pattern H (immediate-resolve City Action):** no HD GameState — only planning resolve states if the scheme effect needs picks. Confirm "Spend a Renown" uses `createPlayerLosesReknownEvent` (score), claimability gates performers, trailing opponent effects still queue after a blocked claim notify, and Traits match card art / `TraitNames`.
+20. **Pattern I (wound-then-pressure):** unequipped gate if printed; `CHOSEN_LOCATION` + `CHOSEN_PERFORMER = 0` (+ `CHOSEN_CARD`) before wound/pressure; ActionResolved on pressure failure and success-without-target; skip Home move when the wound is lethal; verify Renown destinations against card art.

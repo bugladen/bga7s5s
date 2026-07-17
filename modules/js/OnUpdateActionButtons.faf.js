@@ -131,6 +131,11 @@
                 });
             },
 
+            'highDramaPhase03054': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase03011': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

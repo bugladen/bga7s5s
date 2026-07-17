@@ -296,6 +296,19 @@
                 }
             },
 
+            'highDramaPhase03054': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
             'highDramaPhase03011': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
