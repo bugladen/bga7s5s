@@ -86,7 +86,10 @@ class Reaction_01080 extends RiskReaction
         if ($event instanceof EventDuelEnd && $this->isAvailable() && $this->DuelOpponentId != 0)
         {
             $owner = $this->getOwningCard($event->theah);
-            if ($owner->Location == Game::LOCATION_HAND)
+            // WHY: Gate offer on claimability — pressure that cannot claim is useless;
+            // canLocationBeClaimedBy is the central API (playerId reserved for future rules).
+            if ($owner->Location == Game::LOCATION_HAND
+                && $event->theah->canLocationBeClaimedBy($owner->ControllerId, $this->DuelLocation))
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
