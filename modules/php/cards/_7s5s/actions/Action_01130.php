@@ -66,9 +66,23 @@ class Action_01130 extends RiskAction
         $characters = $theah->getCharactersAtLocation($performer->Location);
         $characters = array_filter($characters, fn($character) => $character->ControllerId == $playerId);
         $location = $theah->getCityLocation($performer->Location);
+        // WHY: Leshiye (and any other claim block) sets CityLocation->CanBeClaimed false.
+        // Indomitable Will can never start at such a location, so availability must refuse it.
         return count($characters) == 1
             && ! $location->isControlled()
-            && $theah->canLocationBeClaimedBy($playerId, $performer->Location);
+            && $location->CanBeClaimed;
+    }
+
+    private function setLocationClaimFlags(Theah $theah, string $locationName, bool $canBeClaimed, bool $canBecomeUncontrolled): void
+    {
+        $location = $theah->getCityLocation($locationName);
+        // WHY: Persist via globals AND update the in-memory CityLocation property.
+        // canLocationBeClaimedBy / emit-site guards read the property; globals alone leave
+        // same-request checks looking at a stale value (DebugTrait already syncs both).
+        $theah->game->setCanBeClaimedForLocation($locationName, $canBeClaimed);
+        $location->CanBeClaimed = $canBeClaimed;
+        $theah->game->setCanBecomeUncontrolledForLocation($locationName, $canBecomeUncontrolled);
+        $location->CanBecomeUncontrolled = $canBecomeUncontrolled;
     }
 
     private function setConditionEnded(Game $game)
@@ -81,10 +95,10 @@ class Action_01130 extends RiskAction
             "cardId" => $this->ControllingCharacterId,
         ]);
 
-        $game->setCanBeClaimedForLocation($this->ControlledLocation, true);
         // WHY: Clear CanBecomeUncontrolled before queueing the uncontrolled event so the
         // emit-site guard below (and any future ones) lets THIS legitimate uncontrol pass.
-        $game->setCanBecomeUncontrolledForLocation($this->ControlledLocation, true);
+        // No Leshiye overlap to consider — IW cannot be active at a Leshiye location.
+        $this->setLocationClaimFlags($game->theah, $this->ControlledLocation, true, true);
 
         $locationUncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($character->ControllerId, $this->ControlledLocation);
         $game->theah->queueEvent($locationUncontrolledEvent);
@@ -107,7 +121,8 @@ class Action_01130 extends RiskAction
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
 
-            if ( ! $event->theah->canLocationBeClaimedBy($performer->ControllerId, $performer->Location))
+            $location = $event->theah->getCityLocation($performer->Location);
+            if ( ! $location->CanBeClaimed)
             {
                 $game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
                     'i18n' => ['location'],
@@ -132,8 +147,7 @@ class Action_01130 extends RiskAction
             $claimEvent = EventFactory::createLocationClaimedEvent($performer->ControllerId, $performerId, $performer->Location);
             $event->theah->queueEvent($claimEvent);
 
-            $game->setCanBeClaimedForLocation($performer->Location, false);
-            $game->setCanBecomeUncontrolledForLocation($performer->Location, false);
+            $this->setLocationClaimFlags($event->theah, $performer->Location, false, false);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $event->theah->queueEvent($actionResolvedEvent);
