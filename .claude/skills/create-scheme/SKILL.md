@@ -21,6 +21,7 @@ Canonical references (read at least the ones that match your card shape before w
 - `modules/php/cards/_7s5s/_01098.php` (The Cat's Embargo) — **Forced at end of Planning** (pick opponent → reveal random hand card) + two-location resolve. Canonical for `EventPhasePlanningEnd` + `LOCATION_PLAYER_HOME` gate and `PLANNING_PHASE_END_*` states.
 - `modules/php/cards/faf/_03041.php` (Proper Study) — **Trivial Renown resolve + Forced draw-then-discard at Planning End + City Reaction after you claim.** New GameState under `PLANNING_PHASE_END_EVENTS`. Reaction moves Renown off the claimed location via destination buttons.
 - `modules/php/cards/faf/_03042.php` (When Least Expected) — **Trivial Renown resolve + City Action Finesse challenge with Duelist discard-to-refuse.** Cornered-shaped engage + custom `CHALLENGE_TYPE`; refuse routes through `highDramaPhase03042` hand discard when performer is Duelist.
+- `modules/php/cards/faf/_03053.php` (Curry Favor) — **Two-different-locations resolve + City Action that spends player Renown, directly claims performer's location, and each opponent draws.** No HD sub-state — resolves entirely on `EventActionTriggered` after framework performer pick. Canonical for "Spend a Renown" (score) vs location-token remove, and for claimability-gated performers.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -73,6 +74,7 @@ Field notes:
 - **`initializeFaction(...)` is mandatory** — schemes belong to a faction deck.
 - **`CardNumber` matches the `NNNNN` in the filename.**
 - **Traits must exist in `TraitNames::$TraitsJson`** (`modules/php/TraitNames.php`). Add missing ones in alphabetical order. (Memory feedback.)
+- **Verify Traits against card art / TraitNames.** Scaffold stubs sometimes misspell traits (e.g. Curry Favor had `Beauracracy` → correct is `Bureaucracy`). Cross-check the JPG in `misc/Assets/jpg/image_store/` and `TraitNames::$TraitsJson` before shipping.
 - **`Initiative` is non-zero.** It's the tie-breaker (alongside Leader Panache) for scheme resolution order during planning. Don't leave at the constructor default 0.
 
 ### Scheme location lifecycle (read this before writing Forced / Action / Reaction gates)
@@ -94,7 +96,10 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"When this scheme is revealed, …"** | Pattern B — When-Revealed effect. Override `hasWhenRevealedEffect()` to `true` AND handle `EventCardWhenRevealedEffect` in `handleEvent`. The When-Revealed fires *before* the resolve (and before other schemes' resolves), per card text. |
 | **"Put a card from your discard into your hand"** / **"Search your discard for X"** | Pattern A resolve with a transition to a discard-pick state. New state class + JS wiring (chooseList). Reference: `_01044`, `_03005`. |
 | **"Add a Renown to a city location"** (player choice) | Pattern A resolve with a transition to a location-pick state. JS uses `makeCityLocationSelectable` / `onCityLocationsSelected`. Reference: `_01071`, `_01072`, `_02046`. |
-| **"Add a Renown to two different locations"** | Single-state two-location pick — use the framework helper `actCityLocationsForReknownSelected` and set `numberOfCityLocationsSelectable = 2` in JS. The helper iterates the JSON array, validates distinctness server-side (throws `UserException` if duplicates submitted), and queues one Renown event per location. JS also enforces distinctness as the first line of defense. Reference: `_01098` (Cat's Embargo), `_03006` (Premonition), `_03017` (Noble Sacrifice). |
+| **"Add a Renown to two different locations"** | Single-state two-location pick — use the framework helper `actCityLocationsForReknownSelected` and set `numberOfCityLocationsSelectable = 2` in JS. The helper iterates the JSON array, validates distinctness server-side (throws `UserException` if duplicates submitted), and queues one Renown event per location. JS also enforces distinctness as the first line of defense. **Also** add the state name to `PlayerActions.js` `actionMap` → `'actCityLocationsForReknownSelected'` (Confirm button calls `onCityLocationsSelected`, which looks up that map). Reference: `_01098`, `_03006`, `_03017`, `_03030`, `_03053`. |
+| **"Spend a Renown"** (no location named) | **Player score cost**, not a location token. Gate `getPlayerReknown($playerId) >= 1`; queue `createPlayerLosesReknownEvent($playerId, 1)`. Contrast: "Remove a Renown from [Location]" / "from this location" → `createRenownRemovedFromLocationEvent`. Reference: `Action_03053`, `Action_01168`, `Action_01139`. |
+| **"Claim your performer's location"** (no Pressure / challenge) | **Direct claim** via `createLocationClaimedEvent($playerId, $performerId, $performer->Location)`. Gate performers with `$theah->canLocationBeClaimedBy($playerId, $performer->Location)` when Claim is the payoff (do not offer a dead spend). Recheck at resolve; if blocked, notify `"${location} cannot be claimed."` and still run any separate trailing effects. Reference: `Action_03053`, `Action_01103a`, `Action_02029`. |
+| **"Each opponent draws a card"** | Loop `loadPlayersBasicInfos()`, skip self, queue `createCardDrawnEvent($opponentId, $owner->getInjectCode())` per opponent. No sub-state. Reference: `Action_03053`. |
 | **"After your character at a `City` location is destroyed"** | Reaction listening on `EventCharacterDestroyed`. Gate by `$destroyed->ControllerId == $owner->ControllerId` and `$theah->locationInCity($destroyed->Location)`. `EventCharacterDestroyed` has `runEventHubAfterCards = true` so `$destroyed->Location` is still the destroy-time city slot when the reaction sees the event — capture it onto a `private string $location` because by the time the player clicks, the character has been moved to the locker. Reference: `_03017` (Noble Sacrifice), `Reaction_01013` (Red Hand destroyed). |
 | **"Then, each opponent does X"** | Pattern C — multi-player sequential loop. Queue per-opponent reaction transitions during your own resolve. Reference: `_01151`. |
 | **`<b>City Action:</b>`** / **`<b>Action:</b>`** | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php` extending the right action base (`SchemeCityAction` if it's a City Action on a scheme — see action-base table below). The Action lives next to the scheme, not on the scheme class itself. |
@@ -112,8 +117,9 @@ Read each clause of the printed Text and classify it before writing code. The cl
 | **"Only \<trait\>s may intervene"** on a challenge | Add a new `Game::…_CHALLENGE_TYPE` constant. Enforce in **`Theah::interventionCheck`**, **`ArgumentsTrait`** (intervene-picker `ids`), and **`Reaction_02058`** (adjacent external intervene) — same trio as `LEGENDARY_REPUTATION_CHALLENGE_TYPE` / `AJA_CHALLENGE_TYPE`. Reference: `_03030` (`SWORN_SWORDS_CHALLENGE_TYPE`, Duelist gate). |
 | **"If the challenge is accepted, add a threat to your participant"** | Listen on `EventGenerateChallengeThreat` in the action class; bump `$event->actorThreat` only (not adversary). Fires on accept/intervene path when threat is generated, not on refuse. Reference: `Action_03030` (+1 actor), contrast `Action_02061` (+1 both). |
 | **"If your performer is a Duelist, it can only be refused by discarding a card"** | **Pattern G — discard-to-refuse.** See full section below. Correlator `CHALLENGE_TYPE` (out of auto-engage) + refuse routed through card-keyed HD discard state. Reference: `_03042` / `Action_03042`. |
+| **"Spend a Renown • Claim your performer's location. [trailing effects]"** | **Pattern H — immediate-resolve City Action.** Framework performer pick only; all effects fire on `EventActionTriggered`. No `HIGH_DRAMA_PLAYER_TURN_*` GameState. Reference: `_03053`. |
 
-A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat. `_03041` has a trivial Renown resolve AND a Forced draw/discard at Planning End AND a claim→move-Renown City Reaction. `_03042` has a trivial Renown resolve AND an engage→Finesse challenge City Action with conditional discard-to-refuse.
+A single scheme can combine these freely. `_03005` has a two-clause resolve (Renown adds + pick-from-discard) AND a Reaction. `_01044` has a resolve (Renown + pick attachment) AND a City Action. `_02014` has a one-clause resolve (add OR move Renown) AND a Leader City Action. `_03029` has a trivial Renown resolve AND a branched Sorcerer City Action. `_03030` has a two-location resolve AND a split-performer Combat challenge with intervention gate and accept-time threat. `_03041` has a trivial Renown resolve AND a Forced draw/discard at Planning End AND a claim→move-Renown City Reaction. `_03042` has a trivial Renown resolve AND an engage→Finesse challenge City Action with conditional discard-to-refuse. `_03053` has a two-location resolve AND an immediate-resolve spend→claim→opponents-draw City Action (Pattern H).
 
 ## Pattern A — Resolve via `EventResolveScheme`
 
@@ -535,6 +541,12 @@ Reference: `_01044` (uses `card.type === 'Attachment'`), `_01045` (uses `card.tr
 },
 ```
 
+For **"two different locations"** set `numberOfCityLocationsSelectable = 2` (same enter/leave/button shape). Also add to `PlayerActions.js` `actionMap`:
+
+```js
+'planningPhaseResolveSchemes_<NNNNN>': 'actCityLocationsForReknownSelected',
+```
+
 Buttons:
 
 ```js
@@ -839,7 +851,41 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 Pre-commit hook: `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`.
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`.
+
+### Pattern H — Immediate-resolve City Action (no HD sub-state)
+
+Use when the printed City Action needs a performer but **no further player picks** after confirm — cost + effects all resolve on `EventActionTriggered`. Curry Favor (`_03053`): Spend a Renown • Claim your performer's location. Each opponent draws a card.
+
+**Do NOT invent an HD GameState** for this shape. The framework already runs performer selection before `EventActionTriggered` when `RequiresPerformerSelected = true`.
+
+**Flow:**
+
+1. `SchemeCityAction` + `RequiresPerformerSelected = true`.
+2. `isAvailableToPlayer`: parent + cost gate (`getPlayerReknown >= 1` for "Spend a Renown") + `count(getPerformersForAction) > 0`.
+3. `getPerformersForAction`: start from parent (city characters), then filter full legality. When Claim is the payoff, keep only `$theah->canLocationBeClaimedBy($playerId, $performer->Location)` — offering an unclaimable performer wastes the Renown spend (same discipline as `Action_01103a` / `Action_03cd13`).
+4. `EventActionTriggered`: re-validate cost + performer + `cardInCity`; queue cost event; queue claim (or notify cannot claim); queue trailing effects (e.g. opponent draws); queue `createActionResolvedEvent`.
+5. Trailing sentences after Claim (e.g. "Each opponent draws") still fire even if claim is blocked at resolve — they are separate effects. Availability already tried to prevent dead claims.
+
+**"Spend a Renown" vs location Renown:**
+
+| Printed text | Event |
+|---|---|
+| **Spend a Renown** (no location) | `createPlayerLosesReknownEvent($playerId, 1)` — player score |
+| **Remove a Renown from [Location]** / this location | `createRenownRemovedFromLocationEvent(...)` — location token |
+
+**Opponent draws (no pick):**
+
+```php
+foreach ($game->loadPlayersBasicInfos() as $opponentId => $_)
+{
+    $opponentId = (int)$opponentId;
+    if ($opponentId == $playerId) continue;
+    $event->theah->queueEvent(EventFactory::createCardDrawnEvent($opponentId, $owner->getInjectCode()));
+}
+```
+
+Reference: `Action_03053`. Character parallels for direct claim without pressure: `Action_01103a`, `Action_02029`.
 
 ### High Drama action sub-states (City Action / Sorcerer City Action)
 
@@ -1059,6 +1105,21 @@ Card text:
 
 Full implementation: `modules/php/cards/faf/_03042.php`, `modules/php/cards/faf/actions/Action_03042.php`, `modules/php/States/faf/State_highDramaPhase03042.php`.
 
+## Walkthrough: implementing `_03053` (Curry Favor)
+
+Card text:
+
+> Add a Renown to two different locations.
+> **City Action:** Spend a Renown • Claim your performer's location. Each opponent draws a card.
+
+1. **Constructor.** `initializeFaction('Ussura')`, `Initiative = 49`, `PanacheModifier = 0`, Traits = Trade + Bureaucracy (verify spelling against art / `TraitNames` — scaffold had `Beauracracy`). Register `IHasActions` + `ActionTrait` + `new Action_03053()`.
+2. **Resolve.** Same as `_03006` / `_03030`: notify + `createTransitionEvent(..., "03053")` with `MEDIUM_PRIORITY`. State uses `actCityLocationsForReknownSelected` + `numberOfCityLocationsSelectable = 2`. Wire JS triple **and** `PlayerActions.js` `actionMap`.
+3. **State constant.** `PLANNING_PHASE_RESOLVE_SCHEMES_03053 = 2603053`. Transition `"03053"` under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` only — no HD map entry.
+4. **Action (Pattern H).** `SchemeCityAction`. No HD GameState. Gate score Renown + claimable city performers. On `EventActionTriggered`: `createPlayerLosesReknownEvent` → claim (or notify) → each opponent `createCardDrawnEvent` → `createActionResolvedEvent`.
+5. **Pre-commit.** `createActionResolvedEvent()` present. No `ISorcererAbility` / reaction hooks.
+
+Full implementation: `modules/php/cards/faf/_03053.php`, `modules/php/cards/faf/actions/Action_03053.php`, `modules/php/States/faf/State_planningPhaseResolveSchemes03053.php`.
+
 ## Style / Memory Notes
 
 - `getActivePlayerName()` is deprecated — use `$game->getPlayerNameById($id)`.
@@ -1080,6 +1141,8 @@ Full implementation: `modules/php/cards/faf/_03042.php`, `modules/php/cards/faf/
 - **GameState transitions with Back:** never pair `""` with `"back"` (or any second key). Use named success transitions (`"cardDiscarded"`, `"done"`, …). Studio error if you don't: "More than one possible transition at this state".
 - **Card-specific challenge sub-transitions** off `HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE` use the card number string (`"03042"`), not a reusable semantic name. Same discipline as HD_EVENTS / resolve maps.
 - **Challenge-type JS int:** if Refuse/Intervene UI needs the type, add the matching constant in `seventhseacityoffivesails.js`. Types with no client gate can omit it (server-only), but discard-to-refuse needs the client disable.
+- **Two-location resolve JS:** faf/tac/_7s5s triple is not enough — `PlayerActions.js` `actionMap` must map `planningPhaseResolveSchemes_<NNNNN>` → `'actCityLocationsForReknownSelected'`. Without it Confirm falls through to `actFromCardWithLocations` and breaks.
+- **"Spend a Renown"** without a named location is always player score (`createPlayerLosesReknownEvent`), never a location token.
 
 ## Cross-Cutting Helpers
 
@@ -1093,10 +1156,13 @@ Full implementation: `modules/php/cards/faf/_03042.php`, `modules/php/cards/faf/
 - `$game->getGameDeckObject(int $playerId): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` is the discard query.
 - `$game->getPlayerDiscardDeckName(int $playerId): string` — the deck-table location string for a player's discard pile.
 - `$card->hasTrait(string $trait): bool` — check a trait. English strings compare directly against `clienttranslate()`-wrapped values.
+- `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claimability gate (flags, controllers, etc.). Use in **availability / performer filters** when Claim is the payoff so the action is never offered when unclaimable; recheck at resolve before `createLocationClaimedEvent`.
+- `$game->getPlayerReknown(int $playerId): int` — player score Renown (for "Spend a Renown" costs).
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${scheme_inject_code}` placeholder).
 
 Event factories you'll likely need:
 - `createRenownAddedToLocationEvent($playerId, $location, $count, $reason, $isMove = false)`
+- `createPlayerLosesReknownEvent($playerId, $amount)` — "Spend a Renown" (player score), not location tokens
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createCharacterBeingHealedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createCardDrawnEvent($playerId, $reason)` — for "draw a card" clauses.
@@ -1149,6 +1215,9 @@ Event factories you'll likely need:
 | `modules/php/cards/faf/_03042.php` (When Least Expected) | **Trivial dual Renown + engage→Finesse challenge City Action with Pattern G discard-to-refuse.** |
 | `modules/php/cards/faf/actions/Action_03042.php` | Cornered-shaped engage + `WHEN_LEAST_EXPECTED_CHALLENGE_TYPE`; `actFromActionWithId` discard-then-reject. |
 | `modules/php/States/faf/State_highDramaPhase03042.php` | Discard-to-refuse hand picker; `"cardDiscarded"` + `"back"` (named success — no `""`). |
+| `modules/php/cards/faf/_03053.php` (Curry Favor) | **Two-different-locations resolve + Pattern H City Action** (spend score Renown → direct claim → each opponent draws). No HD sub-state. |
+| `modules/php/cards/faf/actions/Action_03053.php` | Immediate-resolve `SchemeCityAction`: `createPlayerLosesReknownEvent`, claimability-filtered performers, opponent draws via `loadPlayersBasicInfos`. |
+| `modules/php/States/faf/State_planningPhaseResolveSchemes03053.php` | Two-location planning resolve (same shape as `03006` / `03030`). |
 
 ## When You Finish
 
@@ -1158,15 +1227,15 @@ Event factories you'll likely need:
 4. For every player-choice **Planning End Forced** sub-state, same three pieces but constant `28<NNNNN>`, state name `planningPhaseEnd_<NNNNN>`, and transitions under **`PLANNING_PHASE_END_EVENTS.transitions`**. Trigger via `EventPhasePlanningEnd` + `Location == LOCATION_PLAYER_HOME`.
 5. For every player-choice **High Drama action** sub-state on the scheme, same three pieces but constant `40<NNNNN>` and transitions under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Action file owns `handleEvent`/`getArgsFromAction`/`actFromAction*` — not the scheme class (unless legacy inline pattern).
 6. Don't add a `ZombieTrait.php` case when using the GameState class pattern — the state's own `zombie()` method handles it.
-7. JS triple: `OnEnteringState.<expansion>.js` (chooser setup) + `OnUpdateActionButtons.<expansion>.js` (Confirm + Pass/Back) + `OnLeavingState.<expansion>.js` (cleanup). Keys match the state name prefix (`planningPhaseResolveSchemes_`, `planningPhaseEnd_`, or `highDramaPhase`). Multi-hand discard also needs `EventHandlers.js` exact-count enable.
+7. JS triple: `OnEnteringState.<expansion>.js` (chooser setup) + `OnUpdateActionButtons.<expansion>.js` (Confirm + Pass/Back) + `OnLeavingState.<expansion>.js` (cleanup). Keys match the state name prefix (`planningPhaseResolveSchemes_`, `planningPhaseEnd_`, or `highDramaPhase`). Multi-hand discard also needs `EventHandlers.js` exact-count enable. **Two-location Renown resolve also needs `PlayerActions.js` `actionMap` → `actCityLocationsForReknownSelected`.**
 8. Scheme reactions fire through High Drama because chosen schemes sit at Home all day. Don't add "is the scheme still in play" guards. Don't assume schemes are in discard after resolve.
 9. Capture event-time context onto the reaction as a `private` property; clear it in `performReaction`. Use `$owner->IsUpdated = true` to persist. For **action branch state** (choose-one Either/Or), persist on the action object (`$MoveMode`, etc.) — not `CHOSEN_TARGET`. For **Forced draw-then-discard**, persist `$cardsToDiscard` on the scheme.
 10. **Parse keyword(s) literally** before picking interfaces:
-   - "Sorcerer …" → `implements ISorcererAbility` + emit start/played events.
-   - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` check on the chosen performer). NOT a Sorcerer ability.
-   - Both can stack.
+    - "Sorcerer …" → `implements ISorcererAbility` + emit start/played events.
+    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` check on the chosen performer). NOT a Sorcerer ability.
+    - Both can stack.
 11. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions. **Player's own choose-one on a City Action** during High Drama *does* use HD sub-states — don't route that through reaction `$stage`. **Forced at Planning End** *does* use `PLANNING_PHASE_END_*` sub-states — that map is phase-scoped and correct for Forced.
-12. **`getPerformersForAction` on trait-gated scheme actions** must filter to performers for whom the *entire* action is legal (eligible secondary character at location, opposing targets present, etc.) — not just `hasTrait(...)`. `isAvailableToPlayer` should delegate to that filtered list.
+12. **`getPerformersForAction` on trait-gated scheme actions** must filter to performers for whom the *entire* action is legal (eligible secondary character at location, opposing targets present, etc.) — not just `hasTrait(...)`. `isAvailableToPlayer` should delegate to that filtered list. **Claim-as-payoff actions** also filter `canLocationBeClaimedBy`.
 13. **Custom `CHALLENGE_TYPE` for intervention gates** needs all three: `Theah::interventionCheck`, `ArgumentsTrait` intervene args, `Reaction_02058` (if adjacent external intervene exists in your expansion).
 14. **"Control an \<Trait\>"** on a Forced = `getCharactersInPlayByPlayerId` + `hasTrait`. Clamp draw-then-discard to drawable cards; if 0 drawable, skip the discard state entirely.
 15. **Typed parameters** on every function/method signature. No bare `$foo`. Add `use ...\cards\Card;` (etc.) imports as needed.
@@ -1177,3 +1246,4 @@ Event factories you'll likely need:
     - No class implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards`.
 17. Lint touched PHP files (`php -l`) before committing. On Windows, verify line endings are single CRLF (not `\r\r\n`).
 18. **Engage-and-challenge / Pattern G:** confirm `CHALLENGE_TYPE` is out of auto-engage; ACCEPT_CHALLENGE uses card-number transition key `"NNNNN"`; discard GameState uses named success transition (not `""` alongside `"back"`); JS Refuse disable uses `mustDiscardToRefuse` + `defenderHandCount`; intervene stays ungated unless the card says otherwise.
+19. **Pattern H (immediate-resolve City Action):** no HD GameState — only planning resolve states if the scheme effect needs picks. Confirm "Spend a Renown" uses `createPlayerLosesReknownEvent` (score), claimability gates performers, trailing opponent effects still queue after a blocked claim notify, and Traits match card art / `TraitNames`.

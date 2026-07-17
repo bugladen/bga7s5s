@@ -35,6 +35,10 @@
                 this.resetCityLocations();
             },
 
+            'planningPhaseResolveSchemes_03053': () => {
+                this.resetCityLocations();
+            },
+
             'planningPhaseEnd_03041': () => {
                 if (this.isCurrentPlayerActive())
                 {

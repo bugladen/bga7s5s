@@ -64,6 +64,16 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_03053': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 2;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'planningPhaseEnd_03041': () => {
                 if (this.isCurrentPlayerActive()) {
                     const amount = args.args.args.cardsToDiscard;
