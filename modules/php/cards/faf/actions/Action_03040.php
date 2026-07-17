@@ -74,6 +74,15 @@ class Action_03040 extends CharacterAction
             return false;
         }
 
+        // WHY: Gate availability on having at least one success payoff — claim or engage.
+        // canLocationBeClaimedBy is the central API (playerId reserved for future rules).
+        // Engage-only remains valid when claim is blocked (mirrors EventLocationPressureResult).
+        $canClaim = $theah->canLocationBeClaimedBy($playerId, $soline->Location);
+        if (! $canClaim && count($this->getEngageableOpponents($theah, $soline)) === 0)
+        {
+            return false;
+        }
+
         return true;
     }
 
