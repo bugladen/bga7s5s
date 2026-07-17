@@ -46,6 +46,15 @@ class Action_03cd13 extends EventCityAction implements IAbilityThatTargetsPlayer
             return false;
         }
 
+        // WHY: Gate availability on claimability — sole payoff is Claim this location;
+        // offering it when unclaimable wastes engage + turn. canLocationBeClaimedBy is
+        // the central API (playerId reserved for future rules).
+        $owner = $this->getOwningCard($theah);
+        if ( ! $theah->canLocationBeClaimedBy($playerId, $owner->Location))
+        {
+            return false;
+        }
+
         if (count($this->getEligibleTargetPlayerIds($theah, $playerId)) == 0)
         {
             return false;
