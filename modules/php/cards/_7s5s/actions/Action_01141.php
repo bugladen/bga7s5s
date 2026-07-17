@@ -27,22 +27,15 @@ class Action_01141 extends RiskAction
             return false;
         }
 
-        return count($this->getEligiblePerformers($playerId, $theah)) > 0;
+        $performers = $theah->getCharactersInCityByPlayerId($playerId);
+        $performers = array_filter($performers, fn($character) => $character->canPressure(Game::STAT_COMBAT));
+        return count($performers) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        return $this->getEligiblePerformers($playerId, $theah);
-    }
-
-    private function getEligiblePerformers(int $playerId, Theah $theah): array
-    {
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        $performers = array_filter(
-            $performers,
-            fn($character) => $character->canPressure(Game::STAT_COMBAT)
-                && $theah->canLocationBeClaimedBy($playerId, $character->Location)
-        );
+        $performers = array_filter($performers, fn($character) => $character->canPressure(Game::STAT_COMBAT));
         return array_values($performers);
     }
 

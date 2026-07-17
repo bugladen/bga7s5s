@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
-use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -10,7 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01028 extends RiskAction
 {
@@ -21,31 +19,6 @@ class Action_01028 extends RiskAction
         $this->Name = clienttranslate('Move Thugs and Pressure City Location');
     }
 
-    // WHY: Pack Tactics exists to pressure-then-claim; if no city location can be claimed,
-    // offering it wastes the hand Risk. canLocationBeClaimedBy is the central API
-    // ($playerId reserved for future per-player rules).
-    private function getClaimableLocations(int $playerId, Theah $theah): array
-    {
-        $locations = [];
-        foreach ($theah->getCityLocations() as $location)
-        {
-            if ($theah->canLocationBeClaimedBy($playerId, $location->Name))
-            {
-                $locations[] = $location->Name;
-            }
-        }
-        return $locations;
-    }
-
-    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
-    {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
-        {
-            return false;
-        }
-
-        return count($this->getClaimableLocations($playerId, $theah)) > 0;
-    }
 
     public function handleEvent(Event $event)
     {
@@ -85,12 +58,6 @@ class Action_01028 extends RiskAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01028)
-        {
-            $owner = $this->getOwningCard($game->theah);
-            $args['locationIds'] = $this->getClaimableLocations($owner->ControllerId, $game->theah);
-        }
-
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01028_2)
         {
             $owner = $this->getOwningCard($game->theah);
@@ -118,11 +85,6 @@ class Action_01028 extends RiskAction
             $location = $ids[0];
             $owner = $this->getOwningCard($game->theah);
 
-            if ( ! $game->theah->canLocationBeClaimedBy($owner->ControllerId, $location))
-            {
-                throw new UserException($game->translate("That location cannot be claimed"));
-            }
-
             $game->globals->set(Game::CHOSEN_LOCATION, $location);
 
             $game->gamestate->nextState();
@@ -140,17 +102,17 @@ class Action_01028 extends RiskAction
                 $thug = $game->theah->getCharacterById($id);
                 if ($thug == null)
                 {
-                    throw new UserException($game->translate("Character not found"));
+                    throw new \BgaUserException($game->translate("Character not found"));
                 }
 
                 if ($thug->ControllerId != $owner->ControllerId)
                 {
-                    throw new UserException($game->translate("You do not control that thug"));
+                    throw new \BgaUserException($game->translate("You do not control that thug"));
                 }
 
                 if (! in_array($thug->Location, $adjacentLocations))
                 {
-                    throw new UserException($game->translate("Thug is not adjacent to the chosen location"));
+                    throw new \BgaUserException($game->translate("Thug is not adjacent to the chosen location"));
                 }
                 
                 $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $thug->Id, $thug->Location, $location, $engage = false, $owner->Id, $this->Id);

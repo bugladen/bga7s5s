@@ -32,24 +32,19 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
             return false;
         }
 
-        return count($this->getEligiblePerformers($playerId, $theah)) > 0;
+        $characters = $theah->getCharactersInCityWithOpposingCharacters($playerId);
+        $characters = array_filter($characters, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE));
+        $characters = array_filter($characters, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega"));
+
+        return count($characters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        return $this->getEligiblePerformers($playerId, $theah);
-    }
-
-    // WHY: Shared filter keeps availability and performer pick list in sync. Gate on
-    // canLocationBeClaimedBy so Pull the Strand isn't offered when every candidate
-    // location is blocked (Leshiye / Indomitable Will); playerId reserved for future rules.
-    private function getEligiblePerformers(int $playerId, Theah $theah): array
-    {
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
         $performers = array_filter($performers, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE));
-        $performers = array_filter($performers, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega"));
-        $performers = array_filter($performers, fn($character) => $theah->canLocationBeClaimedBy($playerId, $character->Location));
-        return array_values($performers);
+        $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega")));
+        return $performers;
     }
 
     public function handleEvent(Event $event)
