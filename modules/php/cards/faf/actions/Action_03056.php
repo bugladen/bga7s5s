@@ -64,12 +64,6 @@ class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             return [false, $game->translate("Their controller already controls this location.")];
         }
 
-        // WHY: Claim is half the printed effect — Leshiye / Indomitable Will etc. block claim.
-        if (! $game->theah->canLocationBeClaimedBy($character->ControllerId, $character->Location))
-        {
-            return [false, $game->translate("This location cannot be claimed.")];
-        }
-
         // WHY: "and you move a Renown" — both halves fire together; no Renown means dead payoff.
         $cityLocation = $game->theah->getCityLocation($character->Location);
         if ($cityLocation === null || $cityLocation->Renown < 1)
@@ -272,7 +266,7 @@ class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacte
                     return false;
                 }
 
-                return $theah->canLocationBeClaimedBy($character->ControllerId, $performer->Location);
+                return true;
             }
         ));
     }
