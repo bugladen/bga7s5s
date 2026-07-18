@@ -108,7 +108,7 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat), `Maneuver_03058` (Pattern C.7 — +N Parry and Thrust per opposing at duel location).
 
 ### "Wound your participant" vs "Wound the adversary"
 
@@ -226,9 +226,30 @@ No sub-state, no sticky Maneuver fields → `// EventManeuverCanceled handler no
 
 References: `Maneuver_03048` (move via Riposte + Scoundrel gate + gambled discount), `Technique_02012` (remove via Parry), `Theah::getCurrentDuelThreat`.
 
+### Pattern C.7 — "+X [stat] for each opposing character" (location-scoped, often unstated)
+
+For Maneuvers like **"Gambling Maneuver: +1[Parry] and +1[Thrust] for each opposing character."** — see `Maneuver_03058` (Courageous). The printed text often **omits** "at this location."
+
+**Default scope = duel actor's location**, not all opposing characters in play:
+
+```php
+$actor = $event->theah->getDuelRoundActor();
+$opposing = $event->theah->getOpposingCharactersAtLocation($actor->Location, $actor->ControllerId);
+// getOpposingCharactersAtLocation already requires isControlled() via isNotControlledByPlayer
+$count = count($opposing);
+$event->parry += $count;
+$event->thrust += $count;
+```
+
+**WHY not Ren-style global:** `_01121` Ren compares `getCharactersInPlayByPlayerId` for a *passive* "controls equal or more characters" gate — that is a different printed shape ("controls … characters", no location, not a per-character combat-card bonus). Applying global in-play counts to a Maneuver "+1 per opposing character" balloons Parry/Thrust and fights the duel-board idiom used by `Maneuver_01031` / `Maneuver_03011`. Only go global when the text clearly says so (e.g. "each opposing character you/they control" with no location cue and a Ren-like comparison context).
+
+**Pure calc:** `EventDuelCalculateManeuverValues` only; skip `EventResolveManeuver`; `// EventManeuverCanceled handler not needed`. Gambling prefix → `DUEL_GAMBLED` in `isAvailable` (adversary is almost always present, so do not require `$count > 0` to offer the Maneuver). Skip the explanation line when `$count == 0`.
+
+References: `Maneuver_03058`, contrast `_01121` (global in-play comparison), `Maneuver_01031` / `Maneuver_03011` (location counts).
+
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
-When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline).
+When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling).
 
 ### Pure-resolve maneuvers (no calc branch)
 
