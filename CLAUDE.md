@@ -61,6 +61,7 @@ The `.githooks/pre-commit` hook enforces these on staged PHP files:
 | `extends CardReaction/AttachmentReaction` | `$this->setUsed()` AND `$this->isAvailable()` |
 | `extends RiskReaction` | Check `Location == Game::LOCATION_HAND` |
 | Calls `createAttachmentEquippedEvent()` | Must also call `getRequiredAttachTargetId()` |
+| `extends FactionAttachment/CityAttachment` | Must set `$this->Riposte =` |
 | **Forbidden**: implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` on the same class |
 
 Note: `$this->setUsed(true)`, `$this->resetPlayerPassCount()`, and `$this->announceAction()` are no longer called from `CharacterAction/AttachmentAction/SchemeAction/SchemeCityAction` subclasses — these run centrally during action confirmation (`actHighDramaInPlayActionConfirm` and `stHighDramaInPlayActionDispatch`).

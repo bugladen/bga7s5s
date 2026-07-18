@@ -35,6 +35,10 @@ class _03043 extends FactionAttachment implements IHasTechniques
 
         $this->InPlayXImageOffset = -20;
 
+        $this->Riposte = 1;
+        $this->Parry = 2;
+        $this->Thrust = 1;
+
         $this->Traits = [
             clienttranslate('Attire'),
             clienttranslate('Mask'),

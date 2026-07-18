@@ -212,6 +212,19 @@
                 }
             },
 
+            'highDramaPhase03055': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+
+                    const card = this.cardProperties[this.clientStateArgs.performerId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, '_7sfs-chosen');
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03011': () => {
                 if (this.isCurrentPlayerActive())
                 {

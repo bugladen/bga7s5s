@@ -18,6 +18,7 @@ The canonical references depend on which clauses your card has. Read at least on
 - `modules/php/cards/faf/_03019.php` + `reactions/Reaction_03019.php` (Kaiser Schnurrbart) — **Passive trait grant (Hunter) + City Reaction on `EventCardMoved`.** Cleanest "After an opposing character moves to an adjacent City location" template: gate on `fromLocation == owningCharacter->Location` (the "opposing" interpretation), queue a three-event chain (engage attachment / move equipped character with `engage=false` / engage triggering character) on accept.
 - `modules/php/cards/faf/_03043.php` + `techniques/Technique_03043.php` (El Gato's Mask) — **Passive Scoundrel grant + Gambling Technique** that reveals random hand cards (multiplayer `chooseList` acknowledge) then discards one revealed attachment. Attachment-hosted technique transition `sourceId`, `DUEL_GAMBLED` gate, post-ack game-state branch via `stateFromTechnique`.
 - `modules/php/cards/faf/_03044.php` + `reactions/Reaction_03044.php` (Torres Cloak) — **Offhand + Duelist-only equip + cancel Maneuver/Technique unless discard.** Multi-stage offer → threat, cancel-first on Engage, `HIGH_PRIORITY` reaction transitions, deferred `setUsed`. See Pattern D "Cancel unless discard".
+- `modules/php/cards/faf/_03055.php` + `actions/Action_03055.php` (Syrneth Compass) — **City Action: engage this attachment + move equipped character to a Scion/Artifact location.** Choose-location HD state, available-or-equipped Artifact scan, Home endcap JS, self-trait destination exclude. See Pattern C subsections.
 
 When in doubt, mirror one of those rather than invent.
 
@@ -109,7 +110,7 @@ Read each clause of the printed Text and classify it before writing code. The fi
 | **"...and they gain Trait"** | Pattern B — passive trait grant. Pair `EventAttachmentEquipped` (addTrait) with `EventAttachmentUnequipped` (removeTrait). |
 | **"(If they lose their Weapon, destroy this card.)"** | Pattern B' — conditional auto-destroy. Watch `EventAttachmentUnequipped` on the *other* attachment and queue unequip + discard for self. See `_01050`. |
 | **`<b>Forced:</b>`** — auto-triggers, no choice | Override `handleEvent` directly. No Action/Reaction class. See `_01075`'s passive grant (technically a Forced grant on equip). |
-| **`<b>Action:</b>` or `<b>City Action:</b>`** | Pattern C — `AttachmentAction`. Implement `IHasActions`, `use ActionTrait`, create `actions/Action_NNNNN.php`. |
+| **`<b>Action:</b>` or `<b>City Action:</b>`** | Pattern C — `AttachmentAction` (no `AttachmentCityAction` base). City → `cardInCity` gate. Engage-this-card / choose-location move: see `_03055`. |
 | **`<b>Reaction:</b>` or `<b>City Reaction:</b>`** | Pattern D — `AttachmentReaction`. Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php`. |
 | **"Cancel … Maneuver/Technique unless they discard"** / **"would resolve a Maneuver or Technique"** | Pattern D + **cancel-unless-discard** — listen `EventTechniqueActivated` / `EventManeuverActivated` (not `EventResolve*`), cancel-first on Engage, adversary discard restores. See `_03044`. |
 | **`<b>Offhand</b>`** | Set `$this->OffHand = true` in the constructor. No further ability class. |
@@ -228,6 +229,8 @@ References: `_01075` (Tabard → Musketeer), `_01198` (Guild Triskelion → Duel
 
 The character the attachment is equipped to performs the action. `AttachmentAction::getPerformersForAction` defaults to `[$this->getOwningCharacter($theah)]`, and `isAvailableToPlayer` already gates on the owning character being non-null.
 
+**There is no `AttachmentCityAction` base class.** "City Action:" on an attachment = `extends AttachmentAction` plus an explicit `$theah->cardInCity($owner)` gate in `isAvailableToPlayer` (mirror `_01073`, `_01075`, `_02047`, `_03055`). Plain "Action:" may include Home.
+
 ```php
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>\actions;
 
@@ -262,18 +265,85 @@ class Action_0300N extends AttachmentAction
 }
 ```
 
-### "Engage the equipped performer"
+### "Engage the equipped performer" vs "Engage this card"
 
-Common cost on attachment Actions. Queue `createCardEngagedEvent` against the *character*:
+Parse the printed cost literally:
+
+| Printed cost | Engage target | Availability gate |
+|---|---|---|
+| "Engage the equipped performer" / "Engage the equipped character" | `$owner->Id` (character) | `$owner->Engaged` must be false |
+| "Engage this card" | `$attachment->Id` | `$attachment->Engaged` must be false; character may already be engaged |
 
 ```php
+// Engage the equipped performer
 $engageEvent = EventFactory::createCardEngagedEvent(
     $owner->ControllerId, $owner->Id, $owner->Id, $this->Id
 );
-$event->theah->queueEvent($engageEvent);
+
+// Engage this card (the attachment) — Reaction_01022 / Action_03055
+$engageEvent = EventFactory::createCardEngagedEvent(
+    $attachment->ControllerId, $attachment->Id, $attachment->Id, $this->Id
+);
 ```
 
-If the text is "engage this card" instead (engaging the attachment, not the performer), engage `$attachment->Id` rather than `$owner->Id` — see `Reaction_01022`.
+When the effect also **moves** the equipped character, pass `engage=false` on `createCardMovingEvent` — the printed engage cost already went to the attachment (or was a separate character engage). Do not conflate move-with-engage.
+
+### Choose-location City Action (move to a filtered destination)
+
+When text is "Move the equipped character to a location where …", mirror `_03055` (Syrneth Compass) / location-pick Risks like `_03045`:
+
+1. **`EventActionTriggered`** → `createTransitionEvent($attachment->ControllerId, $attachment->Id, "NNNNN", $this->Id)`. WHY `sourceId` = attachment: `actFromCardWithLocations` / `argsForState` hydrate the source card and call `getActionById` on it.
+2. **GameState** under `modules/php/States/<expansion>/State_highDramaPhaseNNNNN.php` — activeplayer, `actFromCardWithLocations`, transitions `"locationChosen"` / `"zombie"` → `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Constant e.g. `403055`.
+3. Register `"NNNNN" => States::HIGH_DRAMA_PLAYER_TURN_NNNNN` on `HIGH_DRAMA_PLAYER_TURN_EVENTS` in `states.inc.php`.
+4. **`getArgsFromAction`**: `performerId` + `locationIds` from a private `getValidDestinations`.
+5. **`actFromActionWithIds`**: validate location ∈ destinations; queue engage (if cost) + move + `createActionResolvedEvent`; `nextState("locationChosen")`.
+6. **JS** (expansion `OnEnteringState` / `OnUpdateActionButtons` / `OnLeavingState`): Confirm Location via `onCityLocationsSelected`; highlight performer; `resetCityLocations` on leave.
+
+**Pay engage on location resolve (with the move), not on `EventActionTriggered`.** WHY: single resolution step when the player commits to a destination. Tabard-style engage-at-trigger is for effects that proceed without a further picker (pressure). Prefer resolve-time engage when a choose-location (or choose-target) state sits between announce and effect.
+
+**"a location" vs "City location":** if printed text does **not** say City, include `Game::LOCATION_PLAYER_HOME` in destinations when the filter can match there (Scions / Artifacts / etc. can sit at Home). City Action still requires the *performer* to start in the city (`cardInCity`).
+
+**Home in JS:** when `locationIds` may contain Home, special-case like `highDramaPhase03029_3`:
+
+```javascript
+if (locationId == this.LOCATION_PLAYER_HOME) {
+    this.makeHomeEndcapMarkerSelectable();
+} else {
+    const imageElement = this.getCityLocationElement(locationId);
+    this.makeCityLocationSelectable(imageElement);
+}
+```
+
+Do **not** copy bare `03032` / `03045` enter handlers for Home-capable actions — those PHP lists can include Home while their JS only calls `makeCityLocationSelectable` (Home never becomes selectable).
+
+### Available vs equipped attachments at a location
+
+Parenthetical "(The Artifact may be available or equipped.)" means check **both**:
+
+```php
+// Available = unattached at the location
+foreach ($theah->getAvailableAttachmentsAtLocation($location) as $attachment) {
+    if ($attachment->hasTrait("Artifact")) { /* match */ }
+}
+
+// Equipped = on any character at the location (skip FakeAttachment)
+foreach ($theah->getCharactersAtLocation($location, $includeUncontrolled = true) as $character) {
+    foreach ($character->Attachments as $attachmentId) {
+        $attachment = $theah->getAttachmentById($attachmentId);
+        if ($attachment instanceof Attachment
+            && ! $attachment->FakeAttachment
+            && $attachment->hasTrait("Artifact")) { /* match */ }
+    }
+}
+```
+
+Trait gates on characters (e.g. Scion) use `hasTrait` with `$includeUncontrolled = true` unless the text says "your" / "opposing".
+
+### Self-trait destination hazard
+
+If **this attachment** itself carries the trait the destination filter looks for (e.g. Compass is an Artifact), the equipped character's **current** location always matches. **Exclude `$performer->Location`** from valid destinations — "move to" implies a different place. Without the exclude, the action is always available and can offer a no-op stay.
+
+Same hazard for any "move to a location with Trait X" where the host card grants or is Trait X.
 
 ### `setUsed` / `announceAction` / `resetPlayerPassCount`
 
@@ -283,7 +353,7 @@ If the text is "engage this card" instead (engaging the attachment, not the perf
 
 `Action_NNNNN extends AttachmentAction → CardAction` — the hook requires `createActionResolvedEvent()` somewhere in the class. Make sure it's queued at the end of effect resolution (after any state loops complete).
 
-Reference: `_01073`'s `Action_01073`, `_01075`'s `Action_01075`.
+References: `_01073` / `_01075` (City Action templates), `_03055` (engage-this-card + choose-location move), `_02047` (City Action + available attachments at location).
 
 ## Pattern D — AttachmentReaction
 
@@ -775,9 +845,12 @@ The framework hydrates each ability separately. No cross-talk needed between the
 
 - `$theah->getCharacterById(int $id): ?Character` — hydrate a character by id.
 - `$theah->getCharactersAtLocation(string $location, bool $includeUncontrolled = false): Character[]` — every Character at a location. Filter by `ControllerId` for friend/foe.
+- `$theah->getAvailableAttachmentsAtLocation(string $location): Attachment[]` — unattached attachments sitting at a location ("available"). Pair with equipped scans when text says "available or equipped."
+- `$theah->getAttachmentById(int $id): ?Attachment` — hydrate an equipped (or available) attachment.
 - `$theah->getLeaderByPlayerId(int $playerId): ?Leader` — get a player's Leader (returns null if destroyed).
 - `$theah->getCardObjectsAtLocation(string $location, int $playerId = 0): Card[]` — all cards in a generic location (`Game::LOCATION_HAND`, `Game::LOCATION_PLAYER_HOME`, etc.). For hand, pass the player id.
-- `$theah->locationInCity(string $location): bool` — canonical "is this a City location" check.
+- `$theah->locationInCity(string $location): bool` / `$theah->cardInCity(Card $card): bool` — canonical City checks. **Required** for attachment City Actions (no `AttachmentCityAction` base).
+- `$theah->getCityLocations(): CityLocation[]` — all five city slots; map `->Name` when building destination lists.
 - `$game->getCardObjectFromDb(int $id): ?Card` — hydrate any card from db (works even if it's not in `Theah::$cards`).
 - `$game->getGameDeckObject(int $playerId = 0): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` queries discard; `getPlayerHand($playerId)` queries hand.
 - `$game->getPlayerFactionDeckName(int $playerId): string` — the deck-table location string for a player's faction deck.
@@ -790,6 +863,8 @@ Event factories you'll likely need:
 - `createAttachmentUnequippedEvent($playerId, $characterId, $attachmentId)`
 - `createCardDiscardedFromPlayEvent($playerId, $cardId, $location, $sourceId, $asEffect)`
 - `createCardEngagedEvent($playerId, $cardId, $sourceId, $abilityId)`
+- `createCardMovingEvent($playerId, $cardId, $from, $to, $engage = true, $sourceId = 0, $abilityId = '')` — default `$engage = true`; pass `false` when move is an effect and engage was a separate cost
+- `createTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — for attachment Actions, `$sourceId` is usually the **attachment** id
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)`
 - `createActionResolvedEvent($playerId)`
@@ -823,7 +898,11 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **"Opposing"** means BOTH different controller AND same location.
 - **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack.
-- **"Action" vs "City Action" performer scope:** "City Action:" restricts performers to characters in the city; plain "Action:" includes characters at Home. (Memory feedback.)
+- **"Action" vs "City Action" performer scope:** "City Action:" restricts performers to characters in the city (`cardInCity`); plain "Action:" includes characters at Home. There is **no** `AttachmentCityAction` — gate manually on `AttachmentAction`. (Memory feedback.)
+- **"Engage this card" vs "Engage the equipped performer":** engage `$attachment->Id` vs `$owner->Id`; gate availability on the matching card's `Engaged`. Move effects that accompany an attachment engage cost use `createCardMovingEvent(..., engage=false)`.
+- **"a location" vs "City location" destinations:** literal "City" → city slots only. Unqualified "a location" → include `LOCATION_PLAYER_HOME` when the filter can match. JS must use `makeHomeEndcapMarkerSelectable` for Home — do not copy city-only enter handlers from `03032`/`03045`.
+- **Self-trait destination hazard:** if this attachment *is* the trait the destination looks for (Artifact, etc.), exclude the performer's current location or every destination list includes a no-op stay.
+- **"Available or equipped" attachments:** `getAvailableAttachmentsAtLocation` (unattached) **and** walk `character->Attachments` at the location. Skip `FakeAttachment`.
 - **"Gambling Technique/Maneuver"** is a duel-round gate (`DUEL_GAMBLED` + actor identity), not a trait. See Pattern E.
 - **Cancel Maneuver/Technique:** Activated (not Resolve); `HIGH_PRIORITY` transitions; cancel-first when multi-stage "unless discard"; correct character/player id gates — do not copy `Reaction_01047`'s compare. See Pattern D / `_03044`.
 - Namespaces:
@@ -851,6 +930,7 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 | `modules/php/cards/faf/_03019.php` + `reactions/Reaction_03019.php` (Kaiser Schnurrbart) | **Passive trait grant (Hunter) + City Reaction on `EventCardMoved`.** "After an opposing character moves to an adjacent City location, engage this card • Move the equipped character to their new location and engage that character." Demonstrates the `fromLocation == owningCharacter->Location` gate for "opposing" semantics post-move, the three-event chain (engage attachment / move equipped with `engage=false` / engage triggering character), and resolving the "that character" antecedent ambiguity in favor of the trigger. |
 | `modules/php/cards/faf/_03043.php` + `techniques/Technique_03043.php` (El Gato's Mask) | **Passive Scoundrel grant + Gambling Technique.** Reveal ≤2 random from adversary hand → multiplayer `chooseList` acknowledge (`stMultiPlayerInitSansInitiatingPlayer`) → game `stFromCard` / `stateFromTechnique` branch (0 / 1 auto-discard / 2 restricted hand pick). Attachment-hosted transition `sourceId` = `getOwningCard()`, `DUEL_GAMBLED` + actor Finesse > adversary gates, discard only after ack. |
 | `modules/php/cards/faf/_03044.php` + `reactions/Reaction_03044.php` (Torres Cloak) | **Offhand + Duelist equip + cancel Maneuver/Technique unless discard.** `EventTechniqueActivated`/`EventManeuverActivated` + correct adversary id gates + `HIGH_PRIORITY` offer/threat transitions. Cancel-first on Engage (`delete*Events`, no `*Canceled` yet); discard re-queues Resolve/Calculate; Accept Cancel fires `*Canceled`. Deferred `setUsed` until finalize. Public `$TechniqueId`/`$stage`/restore context. |
+| `modules/php/cards/faf/_03055.php` + `actions/Action_03055.php` (Syrneth Compass) | **City Action: engage this card + move to Scion/Artifact location.** No equip restriction. `cardInCity` + `!$attachment->Engaged` + destination filter; available (`getAvailableAttachmentsAtLocation`) **or** equipped Artifact; include Home when text says "a location"; exclude current location (self is Artifact); engage attachment + `createCardMovingEvent(..., engage=false)` on location resolve; HD GameState + faf JS with `makeHomeEndcapMarkerSelectable`. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01047.php` (Kaspar's Panzerhand) | **Hard cancel adversary Technique** on `EventTechniqueActivated`. Single-decision; public `$TechniqueId`. Id-compare in the availability gate is buggy (mixes player/character ids) — prefer `_03044::isAdversaryActivating` when writing new cancel reactions. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01146b.php` | **Hard cancel Maneuver or Technique** (Scheme-hosted). Same Activated + `HIGH_PRIORITY` + `delete*Events` shape as `01047`. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01066.php` (Horatio) | Character-side mirror of the post-move-adjacent pattern. Same `fromLocation == owner location` gate, same `getAdjacentCityLocations` check, but moves Horatio (no engage cost). Read alongside `Reaction_03019` to see how the pattern adapts between Character host and Attachment host. |
@@ -882,5 +962,6 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 13. For **attachment-hosted Techniques** that transition into player states: `sourceId` = `getOwningCard()->Id` (attachment), not the equipped character.
 14. When text **reveals** cards: add a multiplayer `chooseList` acknowledge state (Constanzo / Lorenzo / `_03043`). Do not rely on log messages alone. Resolve discard/wound/etc. **after** ack. Register the multi state in `ZombieTrait`.
 15. **"Cancel unless they discard" Maneuver/Technique:** cancel-first on Engage (`delete*Events` + clear `CHOSEN_*`, no `*Canceled` yet); discard re-queues Resolve/Calculate; Accept Cancel fires `*Canceled`. Listen on `*Activated`, not `EventResolve*`. Use correct adversary id gates (character vs player). See `_03044`.
-16. Lint touched PHP files (`php -l`) before committing. **Do not** rewrite line endings after Write — leaves `\r\r\n` on this Windows repo.
-17. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>-implementation.md` covering the WHY: which existing patterns you mirrored, what alternatives you considered, anything that looks weird (defensive null checks, dual-gate equip restrictions, the order of Sorcerer Start/Played around effects). Read related faf journals first — they encode hard-won knowledge about edge cases.
+16. **Choose-location AttachmentAction:** `sourceId` = attachment; HD GameState + `"NNNNN"` on `HIGH_DRAMA_PLAYER_TURN_EVENTS`; pay engage (if any) with the move on location resolve; exclude current location when this card itself satisfies the destination trait; Home in PHP **and** JS (`makeHomeEndcapMarkerSelectable`) when text is not City-only. See `_03055`.
+17. Lint touched PHP files (`php -l`) before committing. **Do not** rewrite line endings after Write — leaves `\r\r\n` on this Windows repo.
+18. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>-implementation.md` covering the WHY: which existing patterns you mirrored, what alternatives you considered, anything that looks weird (defensive null checks, dual-gate equip restrictions, the order of Sorcerer Start/Played around effects). Read related faf journals first — they encode hard-won knowledge about edge cases.

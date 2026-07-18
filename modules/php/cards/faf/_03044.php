@@ -36,6 +36,10 @@ class _03044 extends FactionAttachment implements IHasReactions
         $this->FinesseModifier = 0;
         $this->InfluenceModifier = 0;
 
+        $this->Riposte = 1;
+        $this->Parry = 1;
+        $this->Thrust = 1;
+
         $this->OffHand = true;
 
         $this->Traits = [

@@ -34,6 +34,12 @@ class _03007 extends FactionAttachment implements IHasReactions
         $this->FinesseModifier = 0;
         $this->InfluenceModifier = 0;
 
+        $this->Riposte = 3;
+        $this->Parry = 0;
+        $this->DashedParry = true;
+        $this->Thrust = 0;
+        $this->DashedThrust = true;
+
         $this->Traits = [
             clienttranslate("Weapon"),
             clienttranslate("Melee"),
