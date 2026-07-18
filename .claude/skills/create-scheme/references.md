@@ -46,4 +46,8 @@
 | `modules/php/cards/faf/_03054.php` (No Steel, No Surrender) | **Trivial dual Renown (Docks + Forum) + Pattern I** wound-unequipped → Resolve pressure → wound+Home. |
 | `modules/php/cards/faf/actions/Action_03054.php` | Pattern I: unequipped gate, `CHOSEN_LOCATION` / clear `CHOSEN_PERFORMER`, `EventLocationPressureResult` success pick, lethal skip Home move, ActionResolved on fail. |
 | `modules/php/States/faf/State_highDramaPhase03054.php` | Post-pressure opposing-character pick (`actFromCardWithId`). |
+| `modules/php/cards/faf/_03061.php` (Burn like Mice) | **Trivial dual Renown (Forum + Bazaar) + Hero City Action + Forced wound-order at High Drama End.** `EventHighDramaPhaseEnd` + `LOCATION_PLAYER_HOME`; remaining queue on `$remainingWoundIds`; transition under `HIGH_DRAMA_END_EVENTS` (not Planning End / HD turn). |
+| `modules/php/cards/faf/actions/Action_03061.php` | Hero trait gate (not Sorcerer); target en garde non-Leader at any Home; move to performer (`engage=false`). |
+| `modules/php/States/faf/State_highDramaEnd_03061.php` | HD-end Forced sequential wound pick; zombie wounds first remaining. |
+| `modules/php/States/faf/State_highDramaPhase03061.php` | City Action Home-target pick. |
 | `modules/php/cards/_7s5s/actions/Action_01105.php` | Resolve-pressure success → engage pick (no wound cost). Useful parallel; **do not** copy its missing ActionResolved-on-failure. |

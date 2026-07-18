@@ -212,6 +212,29 @@
                 }
             },
 
+            'highDramaPhase03061': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaEnd_03061': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03055': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
