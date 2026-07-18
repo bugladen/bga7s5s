@@ -37,9 +37,14 @@ class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacte
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
 
+        // WHY: Claim is half the printed effect — Leshiye / Indomitable Will etc. block
+        // claim. Gate performers here so the picker never offers a dead location
+        // (same discipline as Action_03053 / Action_01103a).
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => count($this->getValidTargets($theah, $performer)) > 0
+            fn(Character $performer) =>
+                $theah->canLocationBeClaimedBy($playerId, $performer->Location)
+                && count($this->getValidTargets($theah, $performer)) > 0
         ));
     }
 
