@@ -128,6 +128,16 @@ if ($event instanceof EventChallengeRejected
 
 Reference: `_03021` (Cornered) — `CORNERED_CHALLENGE_TYPE` is consumed for correlation only; `Theah::interventionCheck` doesn't branch on it (gates stay normal).
 
+#### Dual purpose when the card also prints "Engage your performer"
+
+`stIssueChallenge` auto-engages the performer only for `NORMAL_CHALLENGE_TYPE`, `SERVO_SCARPA_CHALLENGE_TYPE`, `TORVO_ESPADA_CHALLENGE_TYPE`, and `AJA_CHALLENGE_TYPE`. When the Action pays the engage cost itself on `EventActionTriggered` (printed "Engage your performer"), the fresh `CHALLENGE_TYPE` must stay **off** that list — otherwise the performer is engaged twice (second `EventCardEngaged` can re-trigger reactions). So the same constant often serves **both** correlator and "keep off auto-engage." Mirror `Action_03021` (Cornered), `Action_03042` (When Least Expected), `Action_03057` (Censure).
+
+Contrast: `_03008` (Arrogant) uses `NORMAL_CHALLENGE_TYPE` because it does **not** engage the performer as a cost — the auto-engage *is* the challenge's engage.
+
+#### Non-Combat challenge stats
+
+Set `Game::CHALLENGE_STAT` to `STAT_INFLUENCE` / `STAT_FINESSE` / `STAT_COMBAT` to match the printed bracket. For **Influence** challenges, also filter performers with `! $c->DashedInfluence` in both availability and the performer list — a dashed Influence character cannot meaningfully issue that challenge. Mirror `Action_01033`, `Action_02028`, `Action_03037`, `Action_03057`.
+
 ### "Your performer" semantics
 
 When the printed text says "Your performer issues a challenge," the framework picks the performer first via `RequiresPerformerSelected = true`. The chosen performer's id is in `$game->globals->get(Game::CHOSEN_PERFORMER)` by the time `isValidTargetForAbility` runs.
@@ -251,6 +261,27 @@ For City Actions like **"Target an opposing character • If their controller do
 **WHY not shared challenge chooser:** no challenge is issued — need a card-specific character GameState, then a separate location GameState for the Renown half.
 
 References: `Action_03056`, `Reaction_03041` (Renown move batch), `Action_03053` / `Action_01130` (claim-illegal notify + resolve), `Action_03011` / `Action_03045` (JS shapes).
+
+### Pattern A.5 — Engage + [Stat] challenge + if refused, claim (auto)
+
+For City Actions like **"Engage your performer • Issue an [Influence] challenge to target opposing character. If the challenge is refused, claim your performer's location."** — see `_03057` Censure.
+
+Composition of Pattern A challenge + correlator side-effect (not a new chooser flow):
+
+1. **`RiskCityAction implements IAbilityThatTargetsCharacters`**, `RequiresPerformerSelected = true`. Mark the Risk with `IRiskThatTargetsCharacters`.
+2. **Performer filter:** `canChallenge()` **and** `! Engaged` (engage cost) **and** `! DashedInfluence` when the printed challenge is Influence (or the matching `DashedX` for other stats) **and** at least one opposing character at the performer's location.
+3. **`EventActionTriggered`:** queue `createCardEngagedEvent` on the performer, set a fresh `CHALLENGE_TYPE` (correlator **and** off the auto-engage list), set `CHALLENGE_STAT` to the printed stat, transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. No card-specific GameState / JS.
+4. **Refuse side effect on the Risk class** (`EventChallengeRejected` + `CHALLENGE_TYPE` match):
+   - Resolve the performer via `$event->challengerId` (not `CHOSEN_PERFORMER` — may have shifted).
+   - Gate with `cardInCity($challenger)` and `canLocationBeClaimedBy($challenger->ControllerId, $location)`.
+   - Queue `createLocationClaimedEvent($challenger->ControllerId, $challenger->Id, $location)`.
+   - If unclaimable: notify and skip — do not throw.
+
+**Mandatory vs optional claim:** "If the challenge is refused, claim …" (no *may*) is Forced-style on the Risk — **not** a `RiskReaction`. Contrast `Reaction_03005` (Red Hand), which is an optional "you may claim" Reaction after refuse. Do not invent a Reaction chooser for mandatory claim.
+
+**Do not gate Action availability on claimability.** The challenge is still a live play when you already control the location or Leshiye / Indomitable Will blocks claim — only the refuse bonus fails. Gate the *emit* with `canLocationBeClaimedBy`, not `isAvailableToPlayer`.
+
+References: `_03057` / `Action_03057`, correlator section above, `_03021` (engage + side-effect type), `Reaction_03005` (optional claim Reaction — different shape).
 
 ### Common precondition predicates
 

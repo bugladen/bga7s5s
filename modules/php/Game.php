@@ -188,6 +188,7 @@ class Game extends \Bga\GameFramework\Table
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
     final const SANJAY_CHALLENGE_TYPE = 22;
     final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
+    final const CENSURE_CHALLENGE_TYPE = 24;
 
     //Duel global variables
     //Duel Names

@@ -12,19 +12,19 @@
 - `$theah->getDuelChallengerId() / getDuelDefenderId() / getDuelOpponentId(int $actorId)` — id-only accessors. **All three return CHARACTER ids, not player ids.** Looking up a player from one of these requires `$theah->getCharacterById($id)->ControllerId`. Don't pass them to `getPlayerNameById($playerId)` — you'll print "0" or worse. The `challenger_id` / `defender_id` columns in the `duel` table are character primary keys (the dueling characters), not player primary keys.
 - `Game::IN_DUEL` global — true between duel start and end.
 - `Game::DUEL_GAMBLED` global — true after the actor locks in a combat card via gamble; cleared at end of round.
-- `Game::CHOSEN_PERFORMER` / `CHOSEN_TARGET` / `CHALLENGE_TYPE` / `CHALLENGE_STAT` globals — set in `handleEvent` on `EventActionTriggered` to brief the challenge sub-state machine.
+- `Game::CHOSEN_PERFORMER` / `CHOSEN_TARGET` / `CHALLENGE_TYPE` / `CHALLENGE_STAT` globals — set in `handleEvent` on `EventActionTriggered` to brief the challenge sub-state machine. `stIssueChallenge` auto-engages only for `NORMAL` / `SERVO_SCARPA` / `TORVO_ESPADA` / `AJA` — when the Action pays engage itself, mint a type **off** that list (also doubles as a refuse/intervene correlator; Pattern A.5 / `_03057`).
 - `Game::EXTRA_ACTIONS` — integer counter read in `stNextPlayer`. When `> 0`, the current player takes another turn instead of advancing. Decremented each time `stNextPlayer` runs. Set by cards that grant "an extra action" (e.g., `Action_01090`, `Action_03013`). **Alone, this only keeps the same player — not the same performer.**
 - `Game::EXTRA_ACTION_PERFORMER` — character id paired with `EXTRA_ACTIONS` when the follow-up action must be performed by a specific character and Pass is forbidden. Set alongside `EXTRA_ACTIONS = 1`; cleared when the turn actually ends (next player). Framework helpers on `Game.php` + enforcement in `ArgumentsTrait`, `FrameworkActionsTrait`, `Theah`. Pattern A.2 reference: `_03032`.
-- `$character->canChallenge(): bool` — currently `return $this->isControlled();` only. It does **not** check Engaged. Layer `! $c->Engaged` yourself when the text imposes an engage cost.
+- `$character->canChallenge(): bool` — currently `return $this->isControlled();` only. It does **not** check Engaged. Layer `! $c->Engaged` yourself when the text imposes an engage cost. For Influence challenges also layer `! $c->DashedInfluence` (`Action_01033`, `Action_03057`).
 - `$character->ModifiedInfluence` / `ModifiedFinesse` / `ModifiedCombat` / `ModifiedResolve` — live stats.
 - `$this->getInjectCode(): string` — inline-styled card name for notifications.
-- `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claim gate (reads `CityLocation->CanBeClaimed`; Leshiye / Indomitable Will flip it off). Use at availability **and** emit sites. `$playerId` is reserved for future per-player rules — still pass the claimer's id.
+- `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claim gate (reads `CityLocation->CanBeClaimed`; Leshiye / Indomitable Will flip it off). Use at availability **and** emit sites for effects whose *whole* point is the claim. For Pattern A.5 refuse→claim, gate the **emit** only — do not grey the Action when claim is currently illegal (the challenge still plays). `$playerId` is reserved for future per-player rules — still pass the claimer's id.
 - `$game->getControllerForLocation(string $location): int` — claim-control owner (`0` = uncontrolled). Distinct from "enemy character present."
 
 Event factories you'll likely need:
 - `createTransitionEvent($playerId, $sourceId, string $internalId, ?int $abilityId = null)` — move into a sub-state via the `*_EVENTS` transitions table.
 - `createActionResolvedEvent($playerId, $actionId)` — fire when the Action's effect is fully resolved. NOT needed for challenge-issuing actions (the challenge resolution flow fires it).
-- `createLocationClaimedEvent(int $playerId, ?int $performerId, string $location)` — sets location controller to `$playerId`. For Pattern A.4 opponent-claim, pass the **target's** ControllerId / Id, not the active player.
+- `createLocationClaimedEvent(int $playerId, ?int $performerId, string $location)` — sets location controller to `$playerId`. For Pattern A.4 opponent-claim, pass the **target's** ControllerId / Id, not the active player. For Pattern A.5 refuse→claim, pass the **challenger's** ControllerId / Id from `$event->challengerId`.
 - `createCardDrawnEvent($playerId, string $reason)` — draw one card.
 - `createGainLethalEvent($actorId, Theah $theah)` — grant Lethal in a duel round.
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)` — move into the reaction's player-button state.
