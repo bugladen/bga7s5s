@@ -1,0 +1,17 @@
+> Part of **create-city-event-card**. Open from [SKILL.md](SKILL.md) only when the shape table routes here - keep WHYs intact; do not summarize away regression traps.
+
+## Reference Implementations
+
+| Card | What it demonstrates |
+|---|---|
+| `modules/php/cards/faf/_03cd01.php` + `actions/Action_03cd01.php` + 2 state files | CityCharacter with City Forced (duel/wound → city-deck swap) AND a two-step CharacterAction (companion + adjacent location). Best canonical example of the full faf state-class + JS-wiring flow. |
+| `modules/php/cards/faf/_03cd03.php` + `actions/Action_03cd03.php` + 2 state files | Pure CityEventCard with an `EventCityAction`. Demonstrates multi-player sequential loop in initiative order via queued EventTransitions, discard-deferred-until-loop-ends, `CURRENT_PLAYER` for actionResolved. |
+| `modules/php/cards/faf/_03cd05.php` + `State_duelGambleSetup_03cd05.php` | CityAttachment, not CityEventCard, but shows: Forced wound on equip via `handleEvent`, a custom state inserted into core flow (DUEL_GAMBLE_SETUP), state-class file pattern. |
+| `modules/php/cards/faf/_03cd08.php` | Minimal Forced pressure-flag card. Reuses `Game::CLAUDE_PRESSURE_TYPE` rather than minting a new flag. |
+| `modules/php/cards/faf/_03cd12.php` | Pure Forced CityEventCard listening to `EventHighDramaPhaseEnd`. Demonstrates the "each player equal X" check via `loadPlayersBasicInfos` + `array_unique`, and queues `createLocationBecomesUncontrolledEvent` to flip a location uncontrolled. |
+| `modules/php/cards/faf/_03cd13.php` + `actions/Action_03cd13.php` + `State_highDramaPhase03cd13.php` | CityEventCard with both a Forced (per-player conditional draw on reveal) and a multi-use City Action (engage + claim). Canonical example of: server-filtered target picker, per-player once-per-Day tracking via `playersUsed` (card stays in play), used-list display on the card, performer highlight in the target-picker state. |
+| `modules/php/cards/faf/_03cd20.php` + `actions/Action_03cd20.php` + `reactions/Reaction_03cd20.php` | CityEventCard with a **Reaction-while-in-Home** (`EventPhasePlanningEnd`, multi-stage button-based picker — character → adjacent city → discard) AND a **Pressure-with-Finesse City Action** that puts the card back in the active player's Home on success. Only CityEventCard precedent for living in a player's Home. Demonstrates the `ControllerId`-update-then-move-to-home recipe, the `cardMoved` notify's `controllerId` field (added in this card's PR), and the multi-stage `CardReaction` with private `$stage` field. |
+| `modules/php/cards/_7s5s/_01179.php` + `actions/Action_01179.php` | Original multi-use City Action / used-list display pattern (Siren's Scream). The `_03cd13` pattern is a direct descendant. Reference for the `setUsed(false)` defensive call and the `EventDuskEndOfDay` clear-and-renotify. |
+| `modules/php/cards/_7s5s/_01184.php` + `reactions/Reaction_01184.php` | City Reaction template (sets the same `CLAUDE_PRESSURE_TYPE` flag opt-in instead of Forced). |
+| `modules/php/cards/_7s5s/_01006.php` | Forced pressure bonus (`CONSTANZO_PRESSURE_TYPE`) — alternate flag/branch pattern. |
+| `modules/php/UtilitiesTrait.php::pressureLocation()` | Where pressure flags are consumed. Add a branch here if minting a new pressure type. |
