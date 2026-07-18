@@ -234,6 +234,23 @@
                 }
             },
 
+            'highDramaPhase03060': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase03060_2': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase03056_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();

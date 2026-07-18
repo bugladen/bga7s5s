@@ -303,6 +303,28 @@ Composition of Pattern A challenge + trait prefix + bullet-**If** as **target fi
 
 References: `_03058` / `Action_03058`, `Action_03008` (shared Combat challenge chooser), `Action_02061` (Duelist performer gate), A.4 (bullet-If as filter).
 
+### Pattern A.7 — "You may engage your performer, if you do, ignore all costs" + effect
+
+For City Actions / Actions like **"Sorcerer City Action: You may engage your performer, if you do, ignore all costs • Heal two wounds from another character at this location."** — see `_03060` (Matushka's Song). Same pay-time cost channel as `_01133` (Matushka's Efficiency — plain Action + move), but Song uses a **GameState** for the engage choice instead of a RiskReaction.
+
+Composition (do not invent a new cost channel):
+
+1. **`public bool $WillEngage = false`** on the **Risk class**. Reset to false when entering the engage-choice path.
+2. **Pre-pay GameState (preferred for new cards):** on `EventEnteringPayState` for this card in hand, reset `WillEngage`, and if the performer is **not** Engaged, `stackEvent` a `createTransitionEvent(..., "NNNNN_2", ...)`. Wire `"NNNNN_2"` under **`HIGH_DRAMA_IN_HAND_ACTION_EVENTS.transitions`** (not `HIGH_DRAMA_PLAYER_TURN_EVENTS` — that is post-pay). State transitions **`"done"` / `"zombie"`** → `HIGH_DRAMA_IN_HAND_ACTION_EVENTS` (no empty `""` when more than one transition). Engage → set `WillEngage`, `ABNORMAL_FLOW`, queue `createCardEngagedEvent`, then **`calculateInHandPayDiscount(...)`**, then `nextState("done")`. Pass → set **`ABNORMAL_FLOW`** then `nextState("done")` with WillEngage still false. Already-engaged performers skip the state (cannot pay the optional cost) but can still play paying full Wealth. **Both Engage and Pass must set `ABNORMAL_FLOW`** — otherwise pay shows stock Back → `backPerformer`, which re-enters `EnteringPayState` and re-prompts the engage chooser.
+3. **Legacy Reaction shape (`_01133` only unless Eddie asks):** pay-state `RiskReaction` Engage/Pass on `EventEnteringPayState` — same WillEngage semantics. Prefer the GameState for new work. (01133 does **not** currently recalc discount after Engage — same footgun; fix Song-style if Efficiency ever regresses.)
+4. **`getActionFromHandDiscount` on the Action:** when `$action->Id == $this->Id` and `$owner->WillEngage`, add `$owner->WealthCost` (printed "ignore all costs" = waive this Risk's Wealth). Gate on `$action->Id` so a sticky flag cannot discount unrelated hand Actions.
+5. **Effect** is a normal Pattern A / B chooser after pay (heal character, move, …). Sorcerer prefix → `ISorcererAbility` + start/played around the effect.
+6. **Heal chooser without printed "Target":** "Heal … from another character at this location" is still a character chooser in the UI, but do **not** `implements IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters` — Rules Team + Cesca (`Reaction_01008`) require the printed word "target" (or similar). No Cesca whitelist/`copyCard` for abilities that lack that wording. Validation stays a private helper (e.g. `isValidHealCharacter`), not `isValidTargetForAbility`.
+7. **Heal pool:** "another character at this location" with no "you control" → any other character at the performer's location with `Wounds > 0` (mirror `Action_01091`'s unrestricted heal pool; exclude the performer for "another").
+
+**WHY recalculate discount on Engage (load-bearing):** `EventEnteringPayState` has `runEventHubAfterCards = true`. Cards stack the engage Transition first; EventHub then `stackEvent`s `CalculatePayDiscount`, which gets a *lower* priority and runs **before** the Transition — with `WillEngage` still false. Stacking the Transition does **not** pre-empt the discount. After the player Engages, call `calculateInHandPayDiscount` (mirror `Reaction_01116b` / `Reaction_03013`) so `Game::DISCOUNT` reflects WealthCost. Pass needs no recalc (0 is correct).
+
+**WHY not Action-side engage-at-announce:** the choice must land *before* wealth is locked in the pay UI.
+
+**City vs plain:** "City Action" → `RiskCityAction` (city performers only). "Action" → `RiskAction` (home eligible) — `_01133`.
+
+References: `_03060` / `Action_03060` / `State_highDramaPhase03060_2` (GameState engage + recalc), `_01133` / `Action_01133` / `Reaction_01133` (legacy Reaction engage). (Cesca copies Efficiency `_01133`, not Song — Song has no printed "target".)
+
 ### Common precondition predicates
 
 A few wordings recur often:
