@@ -472,6 +472,87 @@
                 }
             },
 
+            'duelResolveManeuver_03059': () => {
+                if (! this.isCurrentPlayerActive())
+                {
+                    return;
+                }
+                if (! args.args._private || ! args.args._private.args || ! args.args._private.args.cards)
+                {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+
+                var translated = dojo.string.substitute(
+                    _("Top Cards of ${opponentName}'s Faction Deck"),
+                    {
+                        opponentName: args.args._private.args.opponentName
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+
+                args.args._private.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(1);
+            },
+
+            'duelResolveManeuver_03059_3': () => {
+                if (! this.isCurrentPlayerActive())
+                {
+                    return;
+                }
+                if (! args.args._private || ! args.args._private.args || ! args.args._private.args.cards)
+                {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+
+                var translated = dojo.string.substitute(
+                    _("Looked-at Cards in ${opponentName}'s Faction Deck"),
+                    {
+                        opponentName: args.args._private.args.opponentName
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+
+                args.args._private.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(2);
+            },
+
+            'duelResolveManeuver_03059_4': () => {
+                if (! this.isCurrentPlayerActive())
+                {
+                    return;
+                }
+                if (! args.args._private || ! args.args._private.args || ! args.args._private.args.cards)
+                {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+
+                var translated = dojo.string.substitute(
+                    _("Remaining Cards in ${opponentName}'s Faction Deck"),
+                    {
+                        opponentName: args.args._private.args.opponentName
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+
+                args.args._private.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(2);
+            },
+
             'highDramaPhase03020': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

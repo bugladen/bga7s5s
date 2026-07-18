@@ -247,6 +247,50 @@ $event->thrust += $count;
 
 References: `Maneuver_03058`, contrast `_01121` (global in-play comparison), `Maneuver_01031` / `Maneuver_03011` (location counts).
 
+### Pattern C.8 — Adversary-deck peek → reveal one for Parry/Thrust → replace unchosen (± trait sink)
+
+For Maneuvers like **"Look at the top three cards of your adversary's deck. Reveal one and add its [Parry] or [Thrust] to this card. Replace them in any order. If your participant is an Academic, sink any of those cards instead of replacing them."** — see `Maneuver_03059` (Insightful).
+
+This is **C.3 timing plus deck UI**, not a pure-resolve look. The Parry/Thrust bonus must land in `EventDuelCalculateManeuverValues` this round.
+
+#### Timing (must use C.3 / `EventManeuverActivated`)
+
+`stResolveManeuverFromCombatCard` queues Activate → Resolve → Calculate up front. Peeking or choosing the stat from `EventResolveManeuver` is **too late** — calc has already run (or will run before your prompt returns).
+
+1. On `EventManeuverActivated`: peek via `getCardsOnTopOfPlayerFactionDeck($adversary->ControllerId, N)` into `Game::CHOSEN_CARD`, notify "looks at", `stackEvent("NNNNN")`.
+2. Every intermediate step until the calc-driving Parry/Thrust choice (and preferably until deck mutations finish) also `stackEvent`s the next transition — same discipline as `Maneuver_03035`. Do **not** `queueEvent` mid-chain.
+3. Apply stored `$ChooseParry` / `$BonusAmount` in `EventDuelCalculateManeuverValues`. Real `EventManeuverCanceled` clears Maneuver fields + `CHOSEN_CARD`.
+
+#### Reveal vs "those cards" for sink/reorder
+
+**Eddie correction (do not regress):** after the player picks the card to reveal for the stat, **sink and reorder pools are the unchosen looked-at cards only** — exclude `$RevealedCardId`. The revealed pick stays in its current deck position (not offered again). Academic sink is skipped when unchosen count is 0.
+
+Parse "Replace them" / "sink any of those" as the **rest** of the look, not including the reveal pick. Keep a `getUnchosenLookedAtCards()` helper shared by sink args/act, reorder args/act, and `finishReplaceOrReorder`.
+
+#### Deck ops and UI
+
+| Step | Mirror | Notes |
+|---|---|---|
+| Peek adversary faction deck | `Technique_01010` | `getDuelRoundOpponent()` + `getCardsOnTopOfPlayerFactionDeck` (auto-reshuffles discard; may return &lt; N) |
+| Private chooseList look / reorder | `Reaction_03052` | `argsForStatePrivate`; JS `On*.faf.js` + `EventHandlers.js` sort tags |
+| Public reveal | `Action_01038` | No `createCardRevealedEvent` for peeks — `notify->all` with inject codes |
+| Printed Parry/Thrust of revealed card | `IFactionCard` | `$card->Parry` / `$card->Thrust`; Characters → 0. Do **not** permanently mutate the Risk's printed stats — calc event fields only |
+| Optional multi-sink then reorder | `Action_02002` / `_02005` | Sink via **immediate** `insertCardOnExtremePosition(..., false)` (`Technique_01010`). WHY not queued `createCardAddedToFactionDeckEvent`: reorder top-inserts in the same act chain race ahead of EVENTS-drained sinks |
+| Pass = sink none | Academic "any" | Pass allowed; Confirm enables when selection length &gt; 0 |
+
+#### Availability and trait upgrades
+
+- Gate `isAvailableToPlayer` on adversary present and **deck + discard &gt; 0** — not exact N. Operate on actual count after peek.
+- Participant trait ("If … Academic") is **not** an availability gate — it unlocks the optional sink step after the stat choice. Skip that step when unchosen count is 0.
+
+#### Wiring
+
+- States `DUEL_RESOLVE_MANEUVER_NNNNN` … `_4` (`5250NNNNN` family); wire **all** transition strings under `DUEL_RESOLVE_MANEUVER_EVENTS` **and** mirror under `DUEL_CHOOSE_TECHNIQUE_EVENTS` (Miyato/Ota, same as `03024`/`03035`).
+- Look/sink/reorder: private chooseList. Stat choice: public `argsForState` with dynamic `+N Parry` / `+N Thrust` button labels.
+- No `IRiskThatTargetsCharacters` (deck chooseList, not a character chooser).
+
+References: `Maneuver_03059`, `Maneuver_03035` (stackEvent multi-step), `Reaction_03052`, `Technique_01010`, `Action_02002`, `Action_01038`.
+
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
 When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling).

@@ -331,6 +331,29 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelResolveManeuver_03059': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Reveal Card'), () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'duelResolveManeuver_03059_2': () => {
+                const parry = args.args.parry;
+                const thrust = args.args.thrust;
+                this.addActionButton(`btnParry`, dojo.string.substitute(_('+${n} Parry'), { n: parry }), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
+                this.addActionButton(`btnThrust`, dojo.string.substitute(_('+${n} Thrust'), { n: thrust }), () => this.bgaPerformAction('actFromCardWithId', { id: 2}));
+            },
+
+            'duelResolveManeuver_03059_3': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Sink Selected'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
+            'duelResolveManeuver_03059_4': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelChooseGambleCard_03047': () => {
                 if (!this.isCurrentPlayerActive()) {
                     return;
