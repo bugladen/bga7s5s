@@ -50,4 +50,7 @@
 | `modules/php/cards/faf/actions/Action_03061.php` | Hero trait gate (not Sorcerer); target en garde non-Leader at any Home; move to performer (`engage=false`). |
 | `modules/php/States/faf/State_highDramaEnd_03061.php` | HD-end Forced sequential wound pick; zombie wounds first remaining. |
 | `modules/php/States/faf/State_highDramaPhase03061.php` | City Action Home-target pick. |
+| `modules/php/cards/faf/_03062.php` (Deal with the Devil) | **Trivial dual Renown (Forum + Docks) + Villain City Action** muster from locker. Traits Villainous+Pact (not Virtue). End-of-Dusk return via Character condition (scheme already in locker). |
+| `modules/php/cards/faf/actions/Action_03062.php` | Villain trait gate; wound + locker muster; Monster/Undead after `EventCharacterMustered`; `$pendingMusterId`. |
+| `modules/php/States/faf/State_highDramaPhase03062.php` | HD locker chooseList pick. |
 | `modules/php/cards/_7s5s/actions/Action_01105.php` | Resolve-pressure success → engage pick (no wound cost). Useful parallel; **do not** copy its missing ActionResolved-on-failure. |

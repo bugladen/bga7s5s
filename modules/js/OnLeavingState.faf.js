@@ -225,6 +225,16 @@
                 }
             },
 
+            'highDramaPhase03062': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                }
+                this.clientStateArgs = {};
+            },
+
             'highDramaEnd_03061': () => {
                 if (this.isCurrentPlayerActive())
                 {

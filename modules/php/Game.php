@@ -91,6 +91,8 @@ class Game extends \Bga\GameFramework\Table
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
+    final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
+    final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';

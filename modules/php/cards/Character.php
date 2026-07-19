@@ -5,9 +5,11 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -316,6 +318,49 @@ abstract class Character extends Card implements IHasTechniques
             $this->IsDying = false;
             $this->WoundsHealedIncoming = 0;
             $this->IsUpdated = true;
+        }
+
+        // WHY: Deal with the Devil (_03062) stamps DEAL_WITH_THE_DEVIL when mustering
+        // from The Locker. The scheme is already in the locker by DuskPhaseEnd and is
+        // not in buildCity()'s card list, so cleanup must live on the character (at Home).
+        if ($event instanceof EventDuskPhaseEnd && $this->hasCondition(Game::DEAL_WITH_THE_DEVIL))
+        {
+            $game = $event->theah->game;
+
+            // Strip gained traits before the locker notify so the client payload is clean.
+            $this->removeTrait($game, "Undead");
+            if ($this->hasCondition(Game::DEAL_WITH_THE_DEVIL_GRANTED_MONSTER))
+            {
+                $this->removeTrait($game, "Monster");
+                $this->removeCondition(Game::DEAL_WITH_THE_DEVIL_GRANTED_MONSTER);
+            }
+
+            $this->unEquipAllAttachments($event->theah);
+
+            $lockerEvent = EventFactory::createCardSentToLockerEvent($this->ControllerId, $this->Id);
+            $event->theah->queueEvent($lockerEvent);
+
+            $this->IsUpdated = true;
+        }
+
+        // WHY: Recreate after send (same as destroy→locker) so a later Muster does not
+        // inherit wounds/engagement. Condition is the correlator; fresh instance clears it.
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id && $this->hasCondition(Game::DEAL_WITH_THE_DEVIL))
+        {
+            $game = $event->theah->game;
+            $playerId = $this->ControllerId;
+            $ownerId = $this->OwnerId;
+            $location = $this->Location;
+
+            $fullClassname = get_class($this);
+            $pos = strrpos($fullClassname, '\\');
+            $className = substr($fullClassname, $pos + 2);
+            $fresh = $game->instantiateCard($className, $this->Id);
+            $fresh->ControllerId = $playerId;
+            $fresh->OwnerId = $ownerId;
+            $fresh->Location = $location;
+            $fresh->IsUpdated = true;
+            $event->theah->addCardToWorld($fresh);
         }
     }
 
