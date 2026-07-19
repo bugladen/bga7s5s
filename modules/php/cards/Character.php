@@ -2,9 +2,11 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
@@ -80,6 +82,23 @@ abstract class Character extends Card implements IHasTechniques
     public function canIntervene() : bool
     {
         return $this->isControlled();
+    }
+
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        // WHY: Harpoon (_03064) stamps HARPOON_CONDITION on the adversary for the
+        // remainder of the duel. Enforce "cannot move" here so the condition itself
+        // is the source of truth (not a Technique flag that dies if Harpoon leaves play).
+        // Respect unstoppable moves (e.g. Reaction_01144 forced relocation).
+        if ($this->hasCondition(Game::HARPOON_CONDITION)
+            && $event instanceof EventCardMoving
+            && $event->cardId == $this->Id
+            && ! $event->unstoppable)
+        {
+            throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
+        }
     }
 
     public function canPressure(String $stat): bool

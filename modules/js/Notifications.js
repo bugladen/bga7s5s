@@ -87,6 +87,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['solineElGatoConditionEnded', 1],
             ['epeeSanglanteConditionStarted', 1],
             ['epeeSanglanteConditionEnded', 1],
+            ['harpoonConditionStarted', 1],
+            ['harpoonConditionEnded', 1],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -1821,6 +1823,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.EPEE_SANGLANTE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_harpoonConditionStarted: function( notif )
+    {
+        debug( 'notif_harpoonConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.HARPOON_CONDITION))
+                card.conditions.push(this.HARPOON_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_harpoonConditionEnded: function( notif )
+    {
+        debug( 'notif_harpoonConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.HARPOON_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },

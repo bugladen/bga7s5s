@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -10,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -36,6 +38,25 @@ class Technique_01036 extends Technique
 
         $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
         return $inDuel;
+    }
+
+    // WHY: Same shape as Technique_01063Swap — keep the technique button visible when
+    // Harpooned so the player can attempt it and see why it failed. Move is deferred to
+    // EndOfRound; without this check they could lock in a location and only fail later.
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventTechniqueActivated && $event->techniqueId == $this->Id)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner !== null
+                && $event->theah->game->globals->get(Game::IN_DUEL, false)
+                && $owner->hasCondition(Game::HARPOON_CONDITION))
+            {
+                throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
+            }
+        }
     }
 
     public function handleEvent(Event $event)

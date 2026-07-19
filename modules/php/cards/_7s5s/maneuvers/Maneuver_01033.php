@@ -2,10 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -37,6 +39,25 @@ class Maneuver_01033 extends Maneuver
         return $actor->ModifiedInfluence > $adversary->ModifiedInfluence;
     }
 
+    // WHY: Same shape as Maneuver_01164 — keep the maneuver button visible when the
+    // adversary is Harpooned so the player can attempt it and see why it failed.
+    // Checks the adversary (this maneuver moves them home), not the actor.
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        if ($event instanceof EventManeuverActivated && $event->maneuverId == $this->Id)
+        {
+            $adversary = $event->theah->getDuelRoundOpponent();
+            if ($adversary !== null
+                && $event->theah->game->globals->get(Game::IN_DUEL, false)
+                && $adversary->hasCondition(Game::HARPOON_CONDITION))
+            {
+                throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
+            }
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -51,5 +72,7 @@ class Maneuver_01033 extends Maneuver
             $moveEvent = EventFactory::createCardMovingEvent($adversary->ControllerId, $adversary->Id, $adversary->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
             $event->theah->queueEvent($moveEvent);
         }
+
+        // EventManeuverCanceled handler not needed
     }
 }

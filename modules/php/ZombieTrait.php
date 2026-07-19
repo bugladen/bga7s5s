@@ -248,7 +248,6 @@ trait ZombieTrait
                 case "duelChooseTechnique_01013": // Vissenta Scarpa's Technique
                 case "duelChooseTechnique_01036": // Daniela's Technique
                 case "duelChooseTechnique_01067": // Jean Urbain's Technique
-                case "duelChooseTechnique_01063": // Bastien's Technique
                     $this->gamestate->nextState("");
                     break;
 

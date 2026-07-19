@@ -1596,6 +1596,14 @@ class Theah
         $oldParticipant = $this->getCharacterById($oldParticipantId);
         $newParticipant = $this->getCharacterById($newParticipantId);
 
+        // WHY: Must gate BEFORE mutating duel rows / conditions. ChallengerSwapped /
+        // DefenderSwapped only queue after the swap is already applied, so eventCheck
+        // on those events is too late. Harpoon (_03064) stamps HARPOON_CONDITION.
+        if ($oldParticipant->hasCondition(Game::HARPOON_CONDITION))
+        {
+            throw new UserException($this->game->translate("This character is Harpooned and cannot be swapped for the remainder of the duel."));
+        }
+
         if ($oldParticipantId == $challengerId)
         {
             $sql = "UPDATE duel SET challenger_id = $newParticipantId WHERE duel_id = $duelId";
