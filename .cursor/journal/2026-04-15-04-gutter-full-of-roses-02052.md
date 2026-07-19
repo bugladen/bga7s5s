@@ -1,8 +1,8 @@
 # Gutter Full of Roses (_02052) - Neutral Scheme Implementation
 
 ## Card Ability
-**Resolve:** Add a Renown to [Bazaar]. Then, move a Renown to [Bazaar].
-**Forced:** When a player's adversary is destroyed during a duel at [Bazaar] - That player collects a Renown from [Bazaar]. (This Forced ability activates for any player.)
+**Resolve:** Add a Renown to [The Grand Bazaar]. Then, move a Renown to [The Grand Bazaar].
+**Forced:** When a player's adversary is destroyed during a duel at [The Grand Bazaar] - That player collects a Renown from [The Grand Bazaar]. (This Forced ability activates for any player.)
 
 ## Implementation
 

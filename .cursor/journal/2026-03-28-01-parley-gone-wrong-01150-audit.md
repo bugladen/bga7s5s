@@ -1,11 +1,11 @@
 # Parley Gone Wrong (_01150) Audit
 
 ## Card Text
-> Add a Renown to [The Forums]. Then, each opponent may move a Renown from any location to [The Forums].
+> Add a Renown to [The City Forum]. Then, each opponent may move a Renown from any location to [The City Forum].
 >
 > [BAR]
 >
-> Players can intervene in challenges at [The Forums] only if they added or moved a Renown there this Day. (Adding or moving a Renown during the Day counts.)
+> Players can intervene in challenges at [The City Forum] only if they added or moved a Renown there this Day. (Adding or moving a Renown during the Day counts.)
 
 ## Files Audited
 - `modules/php/cards/_7s5s/_01150.php` (main class — Scheme)
@@ -38,10 +38,10 @@ Fixed to `$this->ControllerId`. This matches the pattern in `_01151` (line 156) 
 
 ### Resolution Effect (Above the BAR)
 
-**"Add a Renown to [The Forums]."**
+**"Add a Renown to [The City Forum]."**
 - `EventResolveScheme` handler creates `EventRenownAddedToLocation` with `ControllerId`, `LOCATION_CITY_FORUM`, amount 1. ✅
 
-**"Then, each opponent may move a Renown from any location to [The Forums]."**
+**"Then, each opponent may move a Renown from any location to [The City Forum]."**
 - Iterates all players, skips controller, creates transition events to state 01150. ✅
 - State is `activeplayer` type with `actFromCardWithLocations` and `actFromCardPass`. ✅
 - `actFromCardWithIds` creates paired remove/add events (add has `$isMove = true`). ✅

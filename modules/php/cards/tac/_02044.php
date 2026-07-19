@@ -35,7 +35,7 @@ class _02044 extends Character
             clienttranslate('Ussura'),
         ];
 
-        $this->Text = clienttranslate("<p>While [The Forums] is uncontrolled, Solomonia cannot be challenged.</p><p>While Solomonia is at [The Forums], add +1 to your total during [Influence] pressures at adjacent locations.</p>");
+        $this->Text = clienttranslate("<p>While [The City Forum] is uncontrolled, Solomonia cannot be challenged.</p><p>While Solomonia is at [The City Forum], add +1 to your total during [Influence] pressures at adjacent locations.</p>");
 
         $this->resetCard();
     }

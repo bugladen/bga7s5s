@@ -32,7 +32,7 @@ class _02052 extends Scheme
             clienttranslate('Brawl'),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [Bazaar]. Then, move a Renown to [Bazaar].</p><hr><p><b>Forced:</b> When a player's adversary is destroyed during a duel at [Bazaar] • That player collects a Renown from [Bazaar]. <i>(This Forced ability activates for any player.)</i></p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Grand Bazaar]. Then, move a Renown to [The Grand Bazaar].</p><hr><p><b>Forced:</b> When a player's adversary is destroyed during a duel at [The Grand Bazaar] • That player collects a Renown from [The Grand Bazaar]. <i>(This Forced ability activates for any player.)</i></p>");
 
         $this->resetCard();
     }
