@@ -2,7 +2,7 @@
 
 ## Card Text
 
-> Add a Renown to [The Docks] and [The Forums].
+> Add a Renown to [The City Docks] and [The City Forum].
 >
 > **Reaction:** After you equip a Weapon - Draw a card.
 >

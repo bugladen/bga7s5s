@@ -34,7 +34,7 @@ class _02004 extends Scheme implements IHasReactions
             clienttranslate('Unwelcome'),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [Docks] and [Bazaar]</p><hr><p><b>City Reaction:</b> When an opponent initiates a pressure • Move your adjacent en garde performer to the pressured location. If the opponent's pressure succeeds, draw a card.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The City Docks] and [The Grand Bazaar]</p><hr><p><b>City Reaction:</b> When an opponent initiates a pressure • Move your adjacent en garde performer to the pressured location. If the opponent's pressure succeeds, draw a card.</p>");
 
         $this->resetCard();
 

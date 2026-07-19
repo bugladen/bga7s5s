@@ -1,8 +1,8 @@
 # Solomonia Saboruvya (_02044) — Two Passive Abilities
 
 ## Card Text
-- **Ability 1:** "While [The Forums] is uncontrolled, Solomonia cannot be challenged."
-- **Ability 2:** "While Solomonia is at [The Forums], add +1 to your total during [Influence] pressures at adjacent locations."
+- **Ability 1:** "While [The City Forum] is uncontrolled, Solomonia cannot be challenged."
+- **Ability 2:** "While Solomonia is at [The City Forum], add +1 to your total during [Influence] pressures at adjacent locations."
 
 ## Implementation
 

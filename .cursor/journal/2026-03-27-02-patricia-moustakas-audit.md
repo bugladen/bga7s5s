@@ -2,8 +2,8 @@
 
 ## Card Text
 - **Passive:** While Patricia is at [The Docks], if she is en garde, she cannot be issued challenges.
-- **City Action (a):** If Patricia is at [The Docks] • Claim it.
-- **City Action (b):** If Patricia is at [The Docks], engage her • If you are the first player, draw a card. Otherwise, each opponent discards a card.
+- **City Action (a):** If Patricia is at [The City Docks] • Claim it.
+- **City Action (b):** If Patricia is at [The City Docks], engage her • If you are the first player, draw a card. Otherwise, each opponent discards a card.
 
 ## Files Audited
 - `modules/php/cards/_7s5s/_01095.php` (main class)

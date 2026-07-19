@@ -1,8 +1,8 @@
 # Midnight Shipment (01149) Audit
 
 ## Card Text
-**Scheme:** Add a Renown to [The Docks] and [The Grand Bazaar]. Then, add a City Card to [The Docks].
-**City Action:** If [The Docks] has no City Cards or only events - Move your performer from [The Docks] to any City location.
+**Scheme:** Add a Renown to [The City Docks] and [The Grand Bazaar]. Then, add a City Card to [The City Docks].
+**City Action:** If [The City Docks] has no City Cards or only events - Move your performer from [The City Docks] to any City location.
 
 ## Scheme Resolution - OK
 The `_01149.php` handleEvent correctly:

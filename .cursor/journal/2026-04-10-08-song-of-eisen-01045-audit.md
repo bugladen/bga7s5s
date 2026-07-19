@@ -1,7 +1,7 @@
 # The Song of Eisen (01045) Audit
 
 ## Card Text
-**Resolve:** Add a Renown to [The Forums]. Put target Mercenary from the City Deck discard pile on top of the City Deck.
+**Resolve:** Add a Renown to [The City Forum]. Put target Mercenary from the City Deck discard pile on top of the City Deck.
 **Passive:** Your Leader gains +1[Influence] while parleying with a Mercenary.
 **Reaction:** At the end of High Drama, if there are no available Mercenaries and attachments • Gain a Renown.
 

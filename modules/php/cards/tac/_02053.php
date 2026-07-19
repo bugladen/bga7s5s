@@ -43,7 +43,7 @@ class _02053 extends Scheme implements IHasReactions
             clienttranslate('Sabotage')
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [City Docks].</p><hr><p><b>City Reaction:</b> At the beginning of Dusk • Your performer does not move <b>Home</b> during Dusk. Then, send up to one card from each discard pile to <b>The Locker</b>.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The City Docks].</p><hr><p><b>City Reaction:</b> At the beginning of Dusk • Your performer does not move <b>Home</b> during Dusk. Then, send up to one card from each discard pile to <b>The Locker</b>.</p>");
 
         $this->resetCard();
 

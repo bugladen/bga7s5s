@@ -2,7 +2,7 @@
 
 ## Card Text
 
-> Add a Renown to [The Forums]. Then, you may add another Renown to any location. If you do, discard all City Cards there.
+> Add a Renown to [The City Forum]. Then, you may add another Renown to any location. If you do, discard all City Cards there.
 >
 > All Mercenaries have -1 [Influence].
 >

@@ -34,7 +34,7 @@ class _02036 extends Scheme implements IHasActions
             clienttranslate('Rumor'),
         ];
 
-        $this->Text = clienttranslate("<p>Add two Renown to [City Docks].</p><hr><p><b>Pirate Action:</b> Move target opposing non-<b>Pirate</b> <b>Home</b> unless their controller discards a card.</p><p><b>Pirate Action:</b> If your performer is adjacent to [City Docks] • Move them there.</p>");
+        $this->Text = clienttranslate("<p>Add two Renown to [The City Docks].</p><hr><p><b>Pirate Action:</b> Move target opposing non-<b>Pirate</b> <b>Home</b> unless their controller discards a card.</p><p><b>Pirate Action:</b> If your performer is adjacent to [The City Docks] • Move them there.</p>");
 
         $this->resetCard();
 

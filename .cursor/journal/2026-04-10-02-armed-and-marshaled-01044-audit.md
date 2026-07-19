@@ -1,7 +1,7 @@
 # Armed and Marshaled (01044) Audit
 
 ## Card Text
-- **Scheme Effect**: Add a Renown to [The Docks] and [The Grand Bazaar]. Put target attachment from your discard pile into your hand.
+- **Scheme Effect**: Add a Renown to [The City Docks] and [The Grand Bazaar]. Put target attachment from your discard pile into your hand.
 - **City Action**: Engage your performer's attachment and target an opposing character with equal or fewer attachments • Engage them or move them Home.
 
 ## Scheme Effect — Renown + Discard Recovery
