@@ -16,7 +16,12 @@
 - **"Opposing"** means BOTH different controller AND same location.
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
-- **"Strega" / "Mercenary" / "Diplomat" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the chosen performer. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
+- **"Strega" / "Mercenary" / "Diplomat" / "Hero" / "Villain" / "Scoundrel" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait(...)` on the chosen performer. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
+- **Action field persistence:** mutating `$MoveMode` / `$pendingMusterId` / similar on an Action requires `$game->updateCardObjectInDb($owner)`. `$owner->IsUpdated = true` alone is not flushed before `stRunEvents` rebuilds from DB.
+- **`getEquipDiscount` cost increase:** return `$discount -= 1` (negative discount). On schemes, also gate `Location == LOCATION_PLAYER_HOME` and **`cardInCity($performer)`** — Home shares one location string across players.
+- **Renown-vs-attachment pick sentinel:** use `actFromCardWithId` id `0` for "Move Renown". Card ids are never 0, so no collision with attachment picks.
+- **"Available attachment"** at a location = `$theah->getAvailableAttachmentsAtLocation($location)` (unattached `Attachment` at that location).
+- **End-of-Dusk effects on mustered characters:** put the handler on the **Character** (condition), not the scheme Action — chosen schemes are already in the locker before `EventDuskPhaseEnd`.
 - **Windows line endings:** PHP files in this repo use single CRLF (`\r\n`). Agent-written files sometimes land as `\r\r\n` (double carriage return), which displays as a blank line after every line (and doubles reported line counts). After writing scheme/action PHP, verify `doubleCR=0` with a byte scan. PowerShell string `-replace "`r`r`n"` is unreliable on some hosts — prefer a byte-list walk that collapses `13,13,10` → `13,10`. Match existing files — do not convert LF-only.
 - **GameState transitions with Back:** never pair `""` with `"back"` (or any second key). Use named success transitions (`"cardDiscarded"`, `"done"`, …). Studio error if you don't: "More than one possible transition at this state".
 - **Card-specific challenge sub-transitions** off `HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE` use the card number string (`"03042"`), not a reusable semantic name. Same discipline as HD_EVENTS / resolve maps.
@@ -41,9 +46,12 @@
 - `$game->getGameDeckObject(int $playerId): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` is the discard query.
 - `$game->getPlayerDiscardDeckName(int $playerId): string` — the deck-table location string for a player's discard pile.
 - `$card->hasTrait(string $trait): bool` — check a trait. English strings compare directly against `clienttranslate()`-wrapped values.
+- `$theah->getAvailableAttachmentsAtLocation($location): Attachment[]` — unattached attachments sitting at a city location ("available attachment").
 - `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claimability gate (flags, controllers, etc.). Use in **availability / performer filters** when Claim is the payoff so the action is never offered when unclaimable; recheck at resolve before `createLocationClaimedEvent`.
 - `$game->getPlayerReknown(int $playerId): int` — player score Renown (for "Spend a Renown" costs).
+- `$game->updateCardObjectInDb($card)` — **required** after mutating public fields on nested Actions (`$MoveMode`, `$pendingMusterId`, …) so `stRunEvents` rebuild sees them.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${scheme_inject_code}` placeholder).
+- `$card->getEquipDiscount($theah, $performer, $attachment, &$explanations): int` — override on scheme/character; `$discount -= 1` raises equip cost.
 
 Event factories you'll likely need:
 - `createRenownAddedToLocationEvent($playerId, $location, $count, $reason, $isMove = false)`

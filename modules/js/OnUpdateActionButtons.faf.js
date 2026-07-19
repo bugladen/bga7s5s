@@ -146,6 +146,22 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase03063': () => {
+                if (args.args.renownAvailable) {
+                    this.addActionButton('actMoveRenown', _('Move Renown'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
+                }
+                if ((args.args.attachmentsInPlay || []).length > 0) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Attachment'), () => this.onChooseInPlayCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase03063_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaEnd_03061': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

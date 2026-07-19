@@ -14,7 +14,9 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 Pre-commit hook: `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`.
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`.
+
+**Action-object persistence:** public fields on the Action (`$MoveMode`, `$pendingMusterId`, …) survive only if you call `$game->updateCardObjectInDb($owner)` after mutating them. `$owner->IsUpdated = true` alone is **not** flushed before `stRunEvents` rebuilds cards from DB (learned on `_03029` / `_03062` / `_03063`).
 
 ### Pattern H — Immediate-resolve City Action (no HD sub-state)
 
@@ -100,6 +102,45 @@ WHY skip Home when lethal: a later `EventCardMoved` after destroy can yank the c
 **Resolve pressure note:** `getResolvePressureValue` returns `ModifiedResolve` (wounds ignored for the total — same idea as Drinking Games' "Ignore wounds"). Characters must still **be at the location** to count; a destroyed performer does not.
 
 Reference: `Action_03054`, `State_highDramaPhase03054`. Compare `Action_01105` / `Action_03040` / `Action_03cd20` for pressure + `EventLocationPressureResult` shapes.
+
+### Pattern J — Move Renown or available attachment to another City location
+
+Use when the printed City Action is **"Move a Renown or an available attachment from your performer's location to a different City location"** (often trait-prefixed: Scoundrel). Canonical: `_03063` (Smuggling Run).
+
+**Flow:**
+
+1. `SchemeCityAction` (+ `IAbilityThatTargetsCards` when attachments are selectable). `RequiresPerformerSelected = true`.
+2. `getPerformersForAction`: trait gate **and** location has something to move — `CityLocation->Renown > 0` **or** `count(getAvailableAttachmentsAtLocation) > 0`. `isAvailableToPlayer` = `count(getPerformersForAction) > 0`.
+3. `EventActionTriggered`: validate performer + movable thing → clear `$MoveMode` / `CHOSEN_CARD` → `updateCardObjectInDb` → transition `"NNNNN"`.
+4. HD state `NNNNN` (choose what):
+   - **Renown:** action button → `actFromCardWithId` with **id `0`**. WHY 0: card ids are never 0, so no collision with attachment ids.
+   - **Attachment:** `highlightCardsAsSelectable(attachmentsInPlay)` + Confirm → `actFromCardWithId` with attachment id. Re-validate `Location == performer->Location && !isAttached()`.
+   - Set `$MoveMode` (RENOWN vs ATTACHMENT); for attachment also `CHOSEN_CARD = id`; `updateCardObjectInDb`; `nextState("thingChosen")`.
+5. HD state `NNNNN_2` (destination): city locations excluding performer's current location (`actFromCardWithLocations` / `actFromActionWithIds`). Named success transition + `"back"` (never `""` alongside `"back"`).
+6. Resolve:
+   - Renown: batch `createRenownMovingBetweenLocationsEvent` + `createRenownRemovedFromLocationEvent` + `createRenownAddedToLocationEvent(..., $isMove = true)` under one `batchId` (same idiom as `Reaction_03041`).
+   - Attachment: `createCardMovingEvent($playerId, $attachmentId, $from, $to, engage: false, ...)`. WHY `engage=false`: unattached city cards; no engage printed.
+   - Clear mode/globals, `updateCardObjectInDb`, `createActionResolvedEvent`, `nextState("locationChosen")`.
+
+**JS:** State 1 shows Move Renown button only when `renownAvailable`; Confirm Attachment only when `attachmentsInPlay.length > 0`. State 2: city location select + Back + Confirm.
+
+Reference: `Action_03063`, `State_highDramaPhase03063{,_2}`. Attachment-pick parallel: `Action_02047`. Renown-move batch: `Reaction_03041`.
+
+### Pattern K — Muster from The Locker; return at end of Dusk
+
+Use when the City Action musters a character from The Locker (often with a wound cost and temporary trait grants) and says they return to The Locker at end of Dusk. Canonical: `_03062` (Deal with the Devil).
+
+**Flow:**
+
+1. Trait-gated `SchemeCityAction` (e.g. Villain). HD state: locker `chooseList` filtered by printed exclusions (e.g. non-Undead, non-Mercenary).
+2. On confirm: wound performer (if printed) → `createCharacterMusteredEvent` at performer location → `createActionResolvedEvent`.
+3. **Grant traits after muster in play:** stash `$pendingMusterId` on the action + `updateCardObjectInDb`; on `EventCharacterMustered` matching that id, `addTrait` Monster/Undead (or whatever is printed), clear pending, flush again. WHY after muster: trait notifies should fire once the character is in play, not while still in the locker.
+4. **Dusk return on the Character, not the Action/Scheme.** Chosen schemes are sent to the locker in `stDuskPhaseCleanup` **before** `EventDuskPhaseEnd`. `buildCity()` does not load locker cards into `$theah->cards`, so Action/Scheme `handleEvent` never sees DuskPhaseEnd. Stamp a condition on the mustered character (e.g. `Game::DEAL_WITH_THE_DEVIL`); Character.php on `EventDuskPhaseEnd` strips granted traits, unequips, queues `createCardSentToLockerEvent`.
+5. **Strip granted traits before re-locker.** `EventCardSentToLocker` does not recreate the card (unlike destroy). Leaving Undead (etc.) on them permanently fails the next muster’s non-Undead filter.
+
+**JS:** locker chooseList — coerce ids with `Number()` on both args and locker card ids (client types drift).
+
+Reference: `Action_03062`, `State_highDramaPhase03062`, Character dusk condition path.
 
 ### High Drama action sub-states (City Action / Sorcerer City Action)
 

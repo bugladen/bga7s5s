@@ -51,6 +51,11 @@
 | `modules/php/States/faf/State_highDramaEnd_03061.php` | HD-end Forced sequential wound pick; zombie wounds first remaining. |
 | `modules/php/States/faf/State_highDramaPhase03061.php` | City Action Home-target pick. |
 | `modules/php/cards/faf/_03062.php` (Deal with the Devil) | **Trivial dual Renown (Forum + Docks) + Villain City Action** muster from locker. Traits Villainous+Pact (not Virtue). End-of-Dusk return via Character condition (scheme already in locker). |
-| `modules/php/cards/faf/actions/Action_03062.php` | Villain trait gate; wound + locker muster; Monster/Undead after `EventCharacterMustered`; `$pendingMusterId`. |
+| `modules/php/cards/faf/actions/Action_03062.php` | Villain trait gate; wound + locker muster; Monster/Undead after `EventCharacterMustered`; `$pendingMusterId` + `updateCardObjectInDb`. |
 | `modules/php/States/faf/State_highDramaPhase03062.php` | HD locker chooseList pick. |
+| `modules/php/cards/faf/_03063.php` (Smuggling Run) | **Trivial dual Renown (Bazaar + Docks) + passive equip tax + Scoundrel City Action** move Renown or available attachment. |
+| `modules/php/cards/faf/actions/Action_03063.php` | Pattern J: Scoundrel gate; Renown id=`0` vs attachment pick; destination city; batch Renown move; `createCardMovingEvent(engage=false)` for attachment. |
+| `modules/php/States/faf/State_highDramaPhase03063.php` | HD state 1: choose Renown or attachment (`thingChosen`). |
+| `modules/php/States/faf/State_highDramaPhase03063_2.php` | HD state 2: destination location (`locationChosen` + `back`). |
+| `modules/php/cards/_7s5s/_01092.php` (Makepeace) | Character parallel for `getEquipDiscount` -= 1 when opposing character equips. |
 | `modules/php/cards/_7s5s/actions/Action_01105.php` | Resolve-pressure success → engage pick (no wound cost). Useful parallel; **do not** copy its missing ActionResolved-on-failure. |

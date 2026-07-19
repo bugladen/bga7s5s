@@ -128,3 +128,37 @@ Card text:
 6. **Pre-commit.** `createActionResolvedEvent()` on failure, success-without-target, and after successful pick.
 
 Full implementation: `modules/php/cards/faf/_03054.php`, `modules/php/cards/faf/actions/Action_03054.php`, `modules/php/States/faf/State_highDramaPhase03054.php`.
+
+## Walkthrough: implementing `_03062` (Deal with the Devil)
+
+Card text:
+
+> Add a Renown to [City Forum] and [City Docks].
+> **Villain City Action:** Wound your performer • Muster one of your non-**Undead**, non-**Mercenary** characters from **The Locker** at this location. They gain **Monster** and **Undead**. At the end of Dusk, send them to **The Locker**.
+
+1. **Constructor.** Neutral faction. Verify Traits against art (scaffold had Virtue — art is Villainous–Pact). Register `IHasActions` + `Action_03062`.
+2. **Resolve.** Trivial dual Renown (Forum + Docks). No planning sub-state.
+3. **Action (Pattern K).** `SchemeCityAction`. Villain trait gate (not Sorcerer). HD locker `chooseList` of eligible characters. Wound performer → muster at performer location → `createActionResolvedEvent`.
+4. **Trait grants.** `$pendingMusterId` + `updateCardObjectInDb`; on `EventCharacterMustered`, add Monster/Undead, clear pending, flush again.
+5. **Dusk return on Character.** Stamp a condition on the mustered character. Character `EventDuskPhaseEnd`: strip granted traits, unequip, queue locker. WHY not on Action/Scheme: scheme is already in locker; `buildCity()` skips locker.
+6. **JS.** Locker chooseList; coerce ids with `Number()` both sides.
+
+Full implementation: `modules/php/cards/faf/_03062.php`, `modules/php/cards/faf/actions/Action_03062.php`, `modules/php/States/faf/State_highDramaPhase03062.php` (+ Character condition path).
+
+## Walkthrough: implementing `_03063` (Smuggling Run)
+
+Card text:
+
+> Add a Renown to [The Grand Bazaar] and [City Docks].
+> When an opponent equips a card to a character opposing your **Scoundrel**, it gains +1 cost.
+> **Scoundrel City Action:** Move a Renown or an available attachment from your performer's location to a different **City** location.
+
+1. **Constructor.** Neutral, Cunning–Crime, Init 52 / Panache 0. Register `IHasActions` + `Action_03063`.
+2. **Resolve.** Trivial dual Renown (Bazaar + Docks — match sack/anchor icons on art).
+3. **Passive equip tax.** On the scheme: `getEquipDiscount` → `$discount -= 1` when opponent equips onto a city character at a location where you have a Scoundrel. Gates: scheme at Home, opponent performer, **`cardInCity($performer)`**, owned Scoundrel at that location. Character parallel: Makepeace `_01092`.
+4. **Action (Pattern J).** Scoundrel trait gate + location has Renown or available attachment. Two HD states: choose Renown (id `0`) or attachment → choose other City location. Persist `$MoveMode` with `updateCardObjectInDb`. Renown = batch move events; attachment = `createCardMovingEvent(engage=false)`.
+5. **State constants.** `HIGH_DRAMA_PLAYER_TURN_03063 = 403063`, `_2 = 4030632`. Named transitions `thingChosen` / `locationChosen` / `back` / `zombie`.
+6. **JS (faf).** State 1: conditional Move Renown button + attachment highlight/Confirm. State 2: city locations + Back + Confirm.
+7. **Pre-commit.** `createActionResolvedEvent()`; no `ISorcererAbility`. After Write tool, verify single CRLF (`doubleCR=0`).
+
+Full implementation: `modules/php/cards/faf/_03063.php`, `modules/php/cards/faf/actions/Action_03063.php`, `modules/php/States/faf/State_highDramaPhase03063{,_2}.php`.
