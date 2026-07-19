@@ -36,7 +36,7 @@ class _03005 extends Scheme implements IHasReactions
             clienttranslate("Duress"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [Bazaar] and [Forums]</p><p>Put a <b>Gang</b>, <b>Crime</b>, or <b>Villainous</b> card from your discard into your hand.</p><hr><p><b>Reaction:</b> After your <b>Red Hand</b>'s challenge is refused • Claim that location.</p>");
+        $this->Text = clienttranslate("<p>Add a Renown to [The Grand Bazaar] and [The City Forum]</p><p>Put a <b>Gang</b>, <b>Crime</b>, or <b>Villainous</b> card from your discard into your hand.</p><hr><p><b>Reaction:</b> After your <b>Red Hand</b>'s challenge is refused • Claim that location.</p>");
 
         $this->resetCard();
 

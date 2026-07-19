@@ -41,7 +41,7 @@ class _03018 extends Scheme implements IHasReactions
             clienttranslate('Finale')
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [Bazaar] and [Forums]</p>
+        $this->Text = clienttranslate("<p>Add a Renown to [The Grand Bazaar] and [The City Forum]</p>
 <hr />
 <p><b>Reaction:</b> When a challenge issued by your <b>Zealot</b> or <b>Hunter</b> is refused • Wound the refusing character.</p>
 <p>Your wounded characters gain: <b>Technique:</b> If your adversary is a <b>Sorcerer</b> • +1[Thrust]</p>");
@@ -59,7 +59,7 @@ class _03018 extends Scheme implements IHasReactions
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
         {
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. A Renown is added to [Bazaar] and [Forums].'), [
+            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. A Renown is added to [The Grand Bazaar] and [The City Forum].'), [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
 

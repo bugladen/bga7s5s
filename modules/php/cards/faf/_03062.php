@@ -36,7 +36,7 @@ class _03062 extends Scheme implements IHasActions
             clienttranslate('Pact'),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [City Forum] and [City Docks]</p>
+        $this->Text = clienttranslate("<p>Add a Renown to [The City Forum] and [The City Docks]</p>
 <hr />
 <p><b>Villain City Action:</b> Wound your performer • Muster one of your non-<b>Undead</b>, non-<b>Mercenary</b> characters from <b>The Locker</b> at this location. They gain <b>Monster</b> and <b>Undead</b>. At the end of Dusk, send them to <b>The Locker</b>.</p>");
 

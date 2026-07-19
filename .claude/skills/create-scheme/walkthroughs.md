@@ -4,7 +4,7 @@
 
 A concrete worked example combining most patterns above. Card text:
 
-> Add a Renown to [Bazaar] and [Forums]
+> Add a Renown to [The Grand Bazaar] and [The City Forum]
 > Put a **Gang**, **Crime**, or **Villainous** card from your discard into your hand.
 > **Reaction:** After your **Red Hand**'s challenge is refused • Claim that location.
 
@@ -24,7 +24,7 @@ Full implementation lives at `modules/php/cards/faf/_03005.php`, `modules/php/ca
 
 Card text:
 
-> Add a Renown to [City Forum] and [City Docks]
+> Add a Renown to [The City Forum] and [The City Docks]
 > **Sorcerer City Action:** Wound your performer • Choose one: *Either* move your character at any location to your performer's location, *or* move your character at your performer's location to any location.
 
 1. **Constructor.** `initializeFaction('Montaigne')`, `Initiative = 71`, `PanacheModifier = 0`, Traits = Sorcery + Porté. Register `IHasActions` + `ActionTrait` + `new Action_03029()`.
@@ -117,7 +117,7 @@ Full implementation: `modules/php/cards/faf/_03053.php`, `modules/php/cards/faf/
 
 Card text:
 
-> Add a Renown to [City Docks] and [City Forum].
+> Add a Renown to [The City Docks] and [The City Forum].
 > **City Action:** Wound your unequipped performer • Pressure their location with Resolve. If successful, wound target opposing character and move them **Home**.
 
 1. **Constructor.** `initializeFaction('Ussura')`, `Initiative = 5`, `PanacheModifier = 0`, Traits = Kulachniy Boi + Brawl (both already in `TraitNames`). Register `IHasActions` + `ActionTrait` + `new Action_03054()`. **Verify printed locations against art** — scaffold / early text may say Grand Bazaar when the card is Forum (or vice versa).

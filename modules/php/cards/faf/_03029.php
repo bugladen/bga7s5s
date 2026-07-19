@@ -35,7 +35,7 @@ class _03029 extends Scheme implements IHasActions
             clienttranslate("Porté"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [City Forum] and [City Docks]</p>
+        $this->Text = clienttranslate("<p>Add a Renown to [The City Forum] and [The City Docks]</p>
         <hr>
         <p><b>Sorcerer City Action:</b> Wound your performer • Choose one: <i>Either</i> move your character at any location to your performer's location, <i>or</i> move your character at your performer's location to any location.</p>");
 

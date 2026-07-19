@@ -35,7 +35,7 @@ class _03054 extends Scheme implements IHasActions
             clienttranslate('Brawl')
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [City Docks] and [City Forum].</p>
+        $this->Text = clienttranslate("<p>Add a Renown to [The City Docks] and [The City Forum].</p>
 <hr />
 <p><b>City Action:</b> Wound your unequipped performer • Pressure their location with Resolve. If successful, wound target opposing character and move them <b>Home</b>.</p>");
 

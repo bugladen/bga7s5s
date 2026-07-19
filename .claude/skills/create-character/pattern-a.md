@@ -705,7 +705,7 @@ WHY `EventCharacterCombatModified` re-sync uses `$event->NewCombat`:
 
 Named city location constants (real ones in `Game.php`):
 - `[The Grand Bazaar]` → `Game::LOCATION_CITY_BAZAAR`
-- `[The Docks]` → `Game::LOCATION_CITY_DOCKS`
+- `[The City Docks]` → `Game::LOCATION_CITY_DOCKS`
 - `[The City Forum]` / `[The Forums]` → `Game::LOCATION_CITY_FORUM`
 - `[Ole's Inn]` → `Game::LOCATION_CITY_OLES_INN`
 - `[The Governor's Garden]` → `Game::LOCATION_CITY_GOVERNORS_GARDEN`
