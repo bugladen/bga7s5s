@@ -2,7 +2,7 @@
 
 ## Card text
 
-- **Resolve:** Add a Renown to [Bazaar] and [Forums]
+- **Resolve:** Add a Renown to [The Grand Bazaar] and [The City Forum]
 - **Resolve:** Put a **Gang**, **Crime**, or **Villainous** card from your discard into your hand.
 - **Reaction:** After your **Red Hand**'s challenge is refused • Claim that location.
 

@@ -2,7 +2,7 @@
 
 ## Card text
 
-> Add a Renown to [Bazaar] and [Forums]
+> Add a Renown to [The Grand Bazaar] and [The City Forum]
 > ---
 > **Reaction:** When a challenge issued by your **Zealot** or **Hunter** is refused • Wound the refusing character.
 > Your wounded characters gain: **Technique:** If your adversary is a **Sorcerer** • +1[Thrust]
