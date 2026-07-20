@@ -53,7 +53,7 @@ class Technique_01063Swap extends Technique
                 && $event->theah->game->globals->get(Game::IN_DUEL, false)
                 && $owner->hasCondition(Game::HARPOON_CONDITION))
             {
-                throw new UserException($event->theah->game->translate("This character is Harpooned and cannot be swapped for the remainder of the duel."));
+                throw new UserException(sprintf($event->theah->game->translate("%s is Harpooned and cannot be swapped for the remainder of the duel."), $owner->Name));
             }
         }
     }
@@ -183,7 +183,7 @@ class Technique_01063Swap extends Technique
             // use the back button instead of leaving a half-resolved technique in the queue.
             if ($state == States::DUEL_CHOOSE_TECHNIQUE_01063 && $owner->hasCondition(Game::HARPOON_CONDITION))
             {
-                throw new UserException($game->translate("This character is Harpooned and cannot be swapped for the remainder of the duel."));
+                throw new UserException(sprintf($game->translate("%s is Harpooned and cannot be swapped for the remainder of the duel."), $owner->Name));
             }
 
             $game->notifyAllPlayers("message", $game->translate('${player_name} has used Technique [${technique_name}] to swap ${challenger_inject_code} with ${musketeer_inject_code}.'), [

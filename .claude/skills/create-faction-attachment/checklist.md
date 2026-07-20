@@ -5,8 +5,13 @@
 1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Stat / Equip Restriction / Passive Grant / Forced / Action / Reaction / Technique / Maneuver). Stat numbers and combat-card stats go on the constructor and are not a "pattern."
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's `NNNNN`, `WealthCost` is set, all stat modifiers are set (default 0), all Traits exist in `TraitNames::$TraitsJson`.
 3. For equip restrictions, implement BOTH `eventCheck(EventAttachmentEquipping)` AND `canAttachTo(Character)`. Don't pick one — the UI uses `canAttachTo` to grey out invalid targets, and `eventCheck` is the server-side enforcement when the equip event fires.
+3b. For **opponent-equip** (`CanEquipToOpponents = true`): set the flag; remember HD `CHOSEN_PERFORMER` is the **target**. "Opposing" = different controller + same location. If text compares to "your performer," use a same-location ally with greater `Modified*` (`_03066`) — do not assume a second picker exists. After equip, attachment `ControllerId` stays the **equipper**. Watch equip-discount abilities (`_03063`) — "opponent equips" must use `$attachment->ControllerId`, not `$performer->ControllerId`.
 4. For passive trait grants, implement BOTH `EventAttachmentEquipped` (add) AND `EventAttachmentUnequipped` (remove). Don't forget the unequip half.
-4b. For **while-equipped condition restrictions** (Pattern B'', e.g. Lodestone): same Equipped/Unequipped pair, but `addCondition` / `removeCondition` + `updateCardObjectInDb` + Started/Ended notifs. Enforce in `Character::eventCheck`. Detect opponent abilities via move **`sourceId` ControllerId**, never `initiatingPlayerId`. Clear on unequip (not DuelEnd). Add activate-time checks on abilities that always do the blocked thing (`Maneuver_01033` for Home). See `_03065`.
+4b. For **while-equipped condition restrictions** (Pattern B''):
+    - Lodestone-style ability-scoped Home block: `_03065` — opponent detection via move **`sourceId` ControllerId**, never `initiatingPlayerId`.
+    - Shackles-style **"cannot move"** (all destinations): `_03066` / `SHACKLES_CONDITION` — Harpoon-shaped `EventCardMoving` gate + `unstoppable`; **no** swap gate unless text says so; clear on unequip (not DuelEnd).
+    - Activate-time checks only on abilities that always do the blocked thing; move-only → skip swap techniques.
+4c. **Forced destroy at end of High Drama:** `EventHighDramaPhaseEnd` + `isAttached()` → unequip → discard (`asEffect=true`). Mirror `_01025_Burden` trigger + `_01153` destroy. Unequip clears B'' conditions.
 5. **Parse keyword(s) literally** before picking interfaces:
    - "Sorcerer …" → `implements ISorcererAbility` + emit Start/Played events in the Action/Reaction class.
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` on the equipped character or chosen performer). NOT a Sorcerer ability.
@@ -36,6 +41,6 @@
     - **Cannot move:** `Character::eventCheck` on `EventCardMoving` (respect `unstoppable`) **plus** activate-time `eventCheck` on deferred EndOfRound movers (`EventTechniqueActivated` / `EventManeuverActivated`) — check the character who would actually move (actor vs adversary).
     - **Cannot swap:** gate in `Theah::swapParticipantsInDuel` *before* mutating duel rows; do **not** rely on `EventChallengerSwapped` / `EventDefenderSwapped` (too late). Add activate-time checks on swap techniques that wound-before-picker (`Technique_03013`).
     - Intervene ≠ swap. JS: constant + Started/Ended notifs (Soline tooltip shape). See `_03064`.
-    - Distinct from Pattern B'' while-equipped conditions (`_03065`) — those clear on unequip, not DuelEnd.
+    - Distinct from Pattern B'' while-equipped conditions (`_03065` Lodestone, `_03066` Shackles) — those clear on unequip, not DuelEnd. Shackles is move-only (no swap gate).
 18. Lint touched PHP files (`php -l`) before committing. **Do not** rewrite line endings after Write — leaves `\r\r\n` on this Windows repo. If a file already has doubled CRs (`0D 0D 0A`), fix with `\r\r\n` → `\r\n` only; do not convert the repo to LF.
 19. Write a journal entry in `.cursor/journal/YYYY-MM-DD-NN-<card>-implementation.md` covering the WHY: which existing patterns you mirrored, what alternatives you considered, anything that looks weird (defensive null checks, dual-gate equip restrictions, the order of Sorcerer Start/Played around effects). Read related faf journals first — they encode hard-won knowledge about edge cases.

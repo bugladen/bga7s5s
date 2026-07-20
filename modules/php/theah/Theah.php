@@ -1601,7 +1601,7 @@ class Theah
         // on those events is too late. Harpoon (_03064) stamps HARPOON_CONDITION.
         if ($oldParticipant->hasCondition(Game::HARPOON_CONDITION))
         {
-            throw new UserException($this->game->translate("This character is Harpooned and cannot be swapped for the remainder of the duel."));
+            throw new UserException(sprintf($this->game->translate("%s is Harpooned and cannot be swapped for the remainder of the duel."), $oldParticipant->Name));
         }
 
         if ($oldParticipantId == $challengerId)

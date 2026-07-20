@@ -53,7 +53,7 @@ class Maneuver_01033 extends Maneuver
                 && $event->theah->game->globals->get(Game::IN_DUEL, false)
                 && $adversary->hasCondition(Game::HARPOON_CONDITION))
             {
-                throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
+                throw new UserException(sprintf($event->theah->game->translate("%s is Harpooned and cannot move for the remainder of the duel."), $adversary->Name));
             }
 
             // WHY: Same activate-time shape as Harpoon — this maneuver moves the adversary
@@ -62,7 +62,13 @@ class Maneuver_01033 extends Maneuver
             if ($adversary !== null
                 && $adversary->hasCondition(Game::LODESTONE_CONDITION))
             {
-                throw new UserException($event->theah->game->translate("Lodestone prevents opponents from moving this character Home."));
+                throw new UserException(sprintf($event->theah->game->translate("Lodestone prevents opponents from moving %s Home."), $adversary->Name));
+            }
+
+            if ($adversary !== null
+                && $adversary->hasCondition(Game::SHACKLES_CONDITION))
+            {
+                throw new UserException(sprintf($event->theah->game->translate("%s is Shackled and cannot move."), $adversary->Name));
             }
         }
     }

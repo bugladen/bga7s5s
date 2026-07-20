@@ -78,15 +78,20 @@ class _03063 extends Scheme implements IHasActions
             return $discount;
         }
 
-        // WHY: "opponent equips" — never tax your own equips.
-        if (! $performer->isNotControlledByPlayer($this->ControllerId))
+        // WHY: Printed "When an opponent equips" means the equipping player — use the
+        // attachment's controller. Do NOT use $performer->ControllerId for this gate:
+        // CanEquipToOpponents (Shackles / Legion's Caress) sets CHOSEN_PERFORMER to the
+        // equip *target*, so a performer-based check falsely taxes you for equipping onto
+        // an opponent while your Scoundrel is at that location.
+        if ($attachment->ControllerId == $this->ControllerId || $attachment->ControllerId == 0)
         {
             return $discount;
         }
 
-        // WHY: Home shares one location string across players; opposing only applies in the city
-        // (same discipline as Makepeace _01092).
-        if (! $theah->cardInCity($performer))
+        // WHY: "...to a character opposing your Scoundrel" — $performer is the equip
+        // target in both normal and CanEquipToOpponents flows. Home shares one location
+        // string across players; opposing only applies in the city (Makepeace _01092).
+        if (! $performer->isNotControlledByPlayer($this->ControllerId) || ! $theah->cardInCity($performer))
         {
             return $discount;
         }
@@ -97,7 +102,7 @@ class _03063 extends Scheme implements IHasActions
             {
                 $discount -= 1;
                 $explanations[] = sprintf(
-                    $theah->game->translate("%s: +1 because performer is opposing your Scoundrel."),
+                    $theah->game->translate("%s: +1 because an opponent is equipping onto a character opposing your Scoundrel."),
                     $this->getInjectCode()
                 );
                 break;

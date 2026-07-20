@@ -25,3 +25,5 @@ class _NNNNN extends FactionAttachment implements IHasActions, IHasReactions, IH
 The framework hydrates each ability separately. No cross-talk needed between them inside the card class.
 
 **Condition + Action on the same card:** `_03065` (Lodestone) stamps a while-equipped condition in the attachment's `handleEvent` (B'') and hosts `Action_03065` for the City Action (C). The Action does not re-implement the restriction — `Character::eventCheck` does. When the City Action sinks self, unequip clears the condition before the (own-ability) move Home fires; that ordering is intentional.
+
+**Opponent-equip + condition + Forced destroy:** `_03066` (Shackles) combines Pattern A (`CanEquipToOpponents` + Finesse-vs-ally gate), Pattern B'' (`SHACKLES_CONDITION` cannot-move), and Forced `EventHighDramaPhaseEnd` destroy. No Action/Reaction class — all on the attachment `handleEvent` / `eventCheck`. Forced unequip clears the condition.

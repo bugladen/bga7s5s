@@ -52,7 +52,7 @@ class Technique_03013 extends Technique
                 && $event->theah->game->globals->get(Game::IN_DUEL, false)
                 && $owner->hasCondition(Game::HARPOON_CONDITION))
             {
-                throw new UserException($event->theah->game->translate("This character is Harpooned and cannot be swapped for the remainder of the duel."));
+                throw new UserException(sprintf($event->theah->game->translate("%s is Harpooned and cannot be swapped for the remainder of the duel."), $owner->Name));
             }
         }
     }

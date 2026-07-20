@@ -38,7 +38,13 @@ class Maneuver_01059 extends Maneuver
                 && $event->theah->game->globals->get(Game::IN_DUEL, false)
                 && $actor->hasCondition(Game::HARPOON_CONDITION))
             {
-                throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
+                throw new UserException(sprintf($event->theah->game->translate("%s is Harpooned and cannot move for the remainder of the duel."), $actor->Name));
+            }
+
+            if ($actor !== null
+                && $actor->hasCondition(Game::SHACKLES_CONDITION))
+            {
+                throw new UserException(sprintf($event->theah->game->translate("%s is Shackled and cannot move."), $actor->Name));
             }
         }
     }

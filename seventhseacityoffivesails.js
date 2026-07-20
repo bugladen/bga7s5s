@@ -161,6 +161,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
             this.HARPOON_CONDITION = 'Harpooned (-1 Finesse; cannot swap or move)';
             this.LODESTONE_CONDITION = 'Lodestone (opponents cannot move Home)';
+            this.SHACKLES_CONDITION = 'Shackled (cannot move)';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

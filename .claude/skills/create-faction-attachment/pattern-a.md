@@ -77,3 +77,70 @@ public function handleEvent(Event $event)
 ```
 
 Reference: `_01050` (Unsavory Salve).
+
+### Opponent-equip (`CanEquipToOpponents`)
+
+When printed text says the card equips to an **opposing** character (not "your" character):
+
+1. Set `$this->CanEquipToOpponents = true` in the constructor. Without this, `argsHighDramaEquipActionChoosePerformer` / `actHighDramaEquipAction*` never offer opponents.
+2. Implement Pattern A dual-gate for whatever else the text requires (non-Leader, City only, Finesse comparison, …).
+
+**Critical framework fact:** HD Equip stores the equip **target** in `Game::CHOSEN_PERFORMER`. With `CanEquipToOpponents`, that target can be an opponent. There is **no** separate "your performer" global in the normal Equip flow.
+
+References: `_01021` (Legion's Caress — non-Leader + City; no Finesse compare), `_03066` (Shackles — opposing + less Finesse than performer).
+
+**"Opposing"** (wiring.md): different `ControllerId` **and** same location.
+
+### "Less [Stat] than your performer" under opponent-equip
+
+Printed text often still says "your performer" even though BGA collapsed performer → target. Do **not** invent a two-step Equip UI unless Eddie asks for it.
+
+Canonical resolution (`_03066` Shackles):
+
+- Target must be opposing (`ControllerId != equipping player`).
+- You must control a character **at the target's location** with `ModifiedFinesse > target.ModifiedFinesse` (that ally is the implicit performer). Same-location also satisfies the "opposing" location half.
+
+```php
+if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
+{
+    $character = $event->theah->getCharacterById($event->characterId);
+    $playerId = $event->playerId;
+
+    if ($character->ControllerId == $playerId)
+    {
+        throw new UserException(/* only opposing */);
+    }
+
+    $allies = $event->theah->getCharactersAtLocation($character->Location);
+    $allies = array_filter(
+        $allies,
+        fn(Character $ally): bool =>
+            $ally->ControllerId == $playerId
+            && $ally->ModifiedFinesse > $character->ModifiedFinesse
+    );
+
+    if (count($allies) === 0)
+    {
+        throw new UserException(/* less Finesse than your performer at same location */);
+    }
+}
+
+public function canAttachTo(Character $character): bool
+{
+    if (! parent::canAttachTo($character))
+    {
+        return false;
+    }
+
+    // Finesse vs same-location performer needs Theah — eventCheck only.
+    return $this->ControllerId > 0 && $character->ControllerId != $this->ControllerId;
+}
+```
+
+**ControllerId after equip:** `EventHub` sets `$attachment->ControllerId = $event->playerId` (the equipper). The attachment does **not** flip to the victim's controller. Discard / destroy / "your" effects on the attachment still use the equipper's id.
+
+### Equip-discount footgun (Smuggling Run)
+
+Abilities that tax "when an opponent equips" must key off **`$attachment->ControllerId`**, not `$performer->ControllerId`. WHY: with `CanEquipToOpponents`, `performer` is the equip **target** (often the opponent), so a performer-based "opponent equips" check falsely taxes *your* Shackles/Caress onto them.
+
+Fixed shape: `_03063` (Smuggling Run). Makepeace `_01092` uses different printed wording ("character opposing Makepeace equips") — do not blindly copy either.

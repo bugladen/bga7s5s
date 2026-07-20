@@ -97,7 +97,18 @@ abstract class Character extends Card implements IHasTechniques
             && $event->cardId == $this->Id
             && ! $event->unstoppable)
         {
-            throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
+            throw new UserException(sprintf($event->theah->game->translate("%s is Harpooned and cannot move for the remainder of the duel."), $this->Name));
+        }
+
+        // WHY: Shackles (_03066) stamps SHACKLES_CONDITION while equipped. Same move
+        // gate as Harpoon (all destinations, respect unstoppable) but clears on unequip
+        // / Forced end-of-HD destroy — not on DuelEnd.
+        if ($this->hasCondition(Game::SHACKLES_CONDITION)
+            && $event instanceof EventCardMoving
+            && $event->cardId == $this->Id
+            && ! $event->unstoppable)
+        {
+            throw new UserException(sprintf($event->theah->game->translate("%s is Shackled and cannot move."), $this->Name));
         }
 
         // WHY: Lodestone (_03065) stamps LODESTONE_CONDITION while equipped. Gate

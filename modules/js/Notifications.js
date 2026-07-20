@@ -1887,6 +1887,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_shacklesConditionStarted: function( notif )
+    {
+        debug( 'notif_shacklesConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.SHACKLES_CONDITION))
+                card.conditions.push(this.SHACKLES_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_shacklesConditionEnded: function( notif )
+    {
+        debug( 'notif_shacklesConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.SHACKLES_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
     notif_crystalEyeTargetChosen: function( notif )
     {
         debug( 'notif_crystalEyeTargetChosen' );

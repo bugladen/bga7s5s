@@ -16,14 +16,17 @@
 - `$game->getPlayerNameById(int $playerId): string` — use this instead of deprecated `getActivePlayerName()`.
 - `$card->hasTrait(string $trait): bool` — check a trait.
 - `$character->addTrait(Game $game, string $trait)` / `$character->removeTrait(Game $game, string $trait)` — for passive trait grants.
-- `$card->addCondition($condition)` / `hasCondition($condition)` / `removeCondition($condition)` — lasting stamped state (Harpoon remainder-of-duel, Lodestone while-equipped, Soline, Indomitable Will). Define the string on `Game` as `final const`. JS constant must match exactly.
+- `$card->addCondition($condition)` / `hasCondition($condition)` / `removeCondition($condition)` — lasting stamped state (Harpoon remainder-of-duel, Lodestone/Shackles while-equipped, Soline, Indomitable Will). Define the string on `Game` as `final const`. JS constant must match exactly.
 - `$game->updateCardObjectInDb($card)` — flush condition / property stamps when the next event rebuild must see them (do not rely on `IsUpdated` alone for mid-resolve stamps).
 - `$game->characterIsInDiscardOrLocker(Character $character): bool` — skip restoring duel-end conditions on already-removed characters.
 - `$theah->getDuelRoundActor()` / `getDuelRoundOpponent()` — current duel participants for Gambling / remainder-of-duel effects.
 - `$theah->swapParticipantsInDuel($duelId, $round, $oldId, $newId)` — mid-duel participant replace. Harpoon-style "cannot be swapped" must throw here *before* DB mutate.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${attachment_inject_code}` placeholder).
+- **Attachment `ControllerId` after equip:** `EventHub` sets it to the **equipping player**. For `CanEquipToOpponents`, that is *not* the equipped character's controller — use `$attachedTo->ControllerId` for the victim.
 
 **`EventCardMoving` opponent detection:** use `$event->sourceId` → source card `ControllerId`, **not** `$event->initiatingPlayerId`. WHY: `Maneuver_01033` sets initiatingPlayerId to the victim. Own abilities pass the owner's card as `sourceId` and must still be allowed (Lodestone City Action).
+
+**`CanEquipToOpponents` + "your performer":** `CHOSEN_PERFORMER` is the equip target. Resolve "less Stat than your performer" as a same-location ally you control with greater `Modified*` (`_03066`). See Pattern A.
 
 Event factories you'll likely need:
 - `createAttachmentUnequippedEvent($playerId, $characterId, $attachmentId)`

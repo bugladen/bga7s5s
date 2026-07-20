@@ -54,7 +54,13 @@ class Technique_01036 extends Technique
                 && $event->theah->game->globals->get(Game::IN_DUEL, false)
                 && $owner->hasCondition(Game::HARPOON_CONDITION))
             {
-                throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
+                throw new UserException(sprintf($event->theah->game->translate("%s is Harpooned and cannot move for the remainder of the duel."), $owner->Name));
+            }
+
+            if ($owner !== null
+                && $owner->hasCondition(Game::SHACKLES_CONDITION))
+            {
+                throw new UserException(sprintf($event->theah->game->translate("%s is Shackled and cannot move."), $owner->Name));
             }
         }
     }
