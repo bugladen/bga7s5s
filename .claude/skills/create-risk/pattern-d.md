@@ -4,6 +4,8 @@
 
 Risk reactions are played from hand (the Risk card is the cost). Pre-commit hook enforces hand-only guard.
 
+**City Reaction on a Risk:** the printed heading is still Pattern D / `RiskReaction` — there is no `RiskCityReaction` base. Add the mechanical City gate on top of the hand guard: `count($theah->getCharactersInCityByPlayerId($owner->ControllerId)) > 0` before offering (mirror scheme/attachment City Reactions such as `Reaction_02053`). The Risk itself stays in hand until paid; "City" here means the controller has presence in the city, not that the Risk is played from a city location.
+
 ```php
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>\reactions;
 
@@ -43,13 +45,13 @@ Pre-commit hook requirements on RiskReaction:
 - Literal `Location == Game::LOCATION_HAND` somewhere in the file (substring `grep` — `!=` does **not** satisfy it; structure your in-hand guard with the `==` form, e.g. `if (! ($owner->Location == Game::LOCATION_HAND)) return;`).
 - Literal `$this->setUsed(` and `$this->isAvailable(` somewhere in the file.
 
-References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1), `Reaction_03031` (effect-event redirect after pay — see Pattern D.4; structural cousin of `Reaction_02016` on attachments).
+References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1), `Reaction_03068` (pass-trigger + mandatory opponent Home→City move via buttons — see Pattern D.1.1), `Reaction_03031` (effect-event redirect after pay — see Pattern D.4; structural cousin of `Reaction_02016` on attachments).
 
 ### Pattern D.1 — Multi-stage cross-player RiskReaction with pay
 
 When the Risk Reaction's effect itself involves another player choosing something (e.g., "Wound them unless their controller does X"), the standard RiskReaction shape (pay → `EventRiskReactionTriggered` → resolve inline) isn't enough. The pattern that works in-codebase, modeled after `Reaction_03010` (Manipulative):
 
-1. **Internal `$stage` field** on the reaction (`''` / `'choice'` / `'pickN'` …) plus `$targetId` / `$opposingPlayerId` captured at trigger time. `getReactionButtonProperties()` and `getReactionDescription()` switch on `$stage`.
+1. **Internal `$stage` field** on the reaction (`''` / `'choice'` / `'pickN'` …) plus `$targetId` / `$opposingPlayerId` captured at trigger time. `getReactionButtonProperties()` and `getReactionDescription()` switch on `$stage`. Prefer **`public`** stage/id fields when the active player flips to an opponent across serialize/DB round-trips (same WHY as `Reaction_03044` — private can work via PHP serialization of `$theah->cards`, but public is the safer multi-stage discipline).
 2. **`handleEvent` on the trigger event** → save target + opposing player ids, set `$stage = ''`, queue `createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id)` (offer to owner).
 3. **`performReaction` with `$stage === ''`:**
    - `'use'` → queue `createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id)` + `createReactionPayTransitionEvent(...)`. The framework discards the Risk and fires `EventRiskReactionTriggered` after the pay.
@@ -63,6 +65,25 @@ Key gotchas:
 - `createReactionTransitionEvent($opponentId, …)` still works after the Risk is in discard — the reaction object lives on `$theah->cards` (the discarded Risk is still in the cards map) and the `playerReaction` state machinery is owner-card-agnostic.
 - `isAvailable()` returns `!Used`. Don't `setUsed(true)` until `finalize()`, or the mid-flow `playerReaction` state won't be able to render its `$stage`-dependent buttons cleanly.
 - Cross-stage notifications: emit the "you used the Reaction" message from your `EventRiskReactionTriggered` handler (after pay) rather than from the offer-stage `performReaction`, so the announce-order matches the actual cost being paid.
+- **Prefer reaction buttons over GameStates** when both choosers are small fixed pools (character name buttons, city location buttons). `Reaction_03010` muster pick and `Reaction_01039` / `Reaction_03040` location pick already prove the UI. GameStates + On*.js are for board-highlight choosers that need `ids` args / click-to-select — don't invent them for D.1 when buttons suffice.
+
+### Pattern D.1.1 — Pass-trigger City Reaction: opponent must move Home → City
+
+When the printed text says **City Reaction: After an opponent passes • They must move an en garde character from their Home to a City location**, wire Pattern D.1 against `EventHighDramaPhasePlayerPassed` (queued by `FrameworkActionsTrait::actHighDramaPass`). Reference: `Reaction_03068` (Confusion).
+
+1. **Trigger** — `EventHighDramaPhasePlayerPassed && isAvailable()`, hand guard `Location == Game::LOCATION_HAND`, `$event->playerId != $owner->ControllerId` (opponent passed), City gate `getCharactersInCityByPlayerId(owner) > 0`, and passer has ≥1 en garde at Home (`getCharactersAtHomeByPlayerId($event->playerId)` filtered `! Engaged`). Store `$opposingPlayerId = $event->playerId`.
+2. **Hide when the "must" is impossible** — if the passer has no en garde Home character, do **not** offer the Reaction. "They must move" has no legal fulfillment; offering a no-op wastes the Risk.
+3. **Pay** — standard D.1 `performReaction('use')` → EnteringPayState + ReactionPayTransition. WealthCost 0 still goes through pay (same as Manipulative `_03010`).
+4. **After `EventRiskReactionTriggered`** — notify, set `$stage = 'chooseCharacter'`, `createReactionTransitionEvent($opposingPlayerId, …)`. No Pass button on mandatory stages.
+5. **`chooseCharacter`** — buttons `character-{id}` from the en garde Home pool; advance to `$stage = 'chooseLocation'` and re-transition to the same opponent.
+6. **`chooseLocation`** — buttons `moveTo-{locationName}` for `array_keys($theah->getCityLocations())` (any City location — text does not say adjacent). Re-validate character still en garde at Home; queue `createCardMovingEvent(..., engage: false, …)` — Move only, no Engage. `finalize()` + `setUsed`.
+7. **No `IRiskThatTargetsCharacters`** — printed text never says "Target"/"target"; the chooser is a forced mandatory pick via reaction buttons (same discipline as `_03060` heal-another).
+
+**Pass → events routing (critical):**
+- Non-final pass: `actHighDramaPass` → `nextState("pass")` → `HIGH_DRAMA_PLAYER_TURN_EVENTS` (has `"reaction"` / `"pay"`).
+- Final pass (everyone has passed): `nextState("end")` → `HIGH_DRAMA_END` → `HIGH_DRAMA_END_EVENTS` (also has `"reaction"` / `"pay"`). Queued `EventHighDramaPhasePlayerPassed` still processes there before Plunder. Both paths must be able to host the offer/pay/opponent-choice loop — do **not** assume only turn-events wiring.
+
+**WHY not GameStates for the opponent choosers:** character + city location both fit reaction buttons (D.1 preference). `_03061` Burn like Mice uses a GameState character chooser because it is a City *Action* with board highlight — different UI channel. Don't copy Action chooser scaffolding onto a RiskReaction that already owns `playerReaction`.
 
 ### Pattern D.2 — Single-stage RiskReaction with pay that applies an effect
 
@@ -217,6 +238,16 @@ Same mechanical meaning as Hexenjagd (`Reaction_01053`): `getCharactersAtLocatio
 Reach for `Reaction_01014` (Vittoria — Thug-only redirect) or `Reaction_02016` when adapting attachment reactions; reach for `Reaction_03031` when porting that shape to a hand-paid Risk with effect-based wording.
 
 References: `Reaction_03031` (Altruistic), `Reaction_02016` (structural template on attachments), `Reaction_01053` (Hexenjagd — "performer at that location" chooser semantics on a Risk).
+
+### `EventHighDramaPhasePlayerPassed` trigger semantics
+
+Fired by `FrameworkActionsTrait::actHighDramaPass` after the player elects to pass their High Drama Action. Field:
+
+- `$event->playerId` — the player who passed (not necessarily the next active player).
+
+Queued alongside `EventActionResolved`, then the state machine goes either to `HIGH_DRAMA_PLAYER_TURN_EVENTS` (`"pass"`) or `HIGH_DRAMA_END` → `HIGH_DRAMA_END_EVENTS` (`"end"` when `PASS_COUNT >= PLAYER_COUNT`). Both EVENTS tables expose `"reaction"` / `"pay"`, so a reaction transition queued from the PlayerPassed handler can run in either path. Hub handler currently only notifies; card handlers own the interesting work (Confusion `_03068` is the first Risk to listen here).
+
+For "After an **opponent** passes", gate `$event->playerId != $owner->ControllerId`. Do **not** confuse with `actPass` / generic Pass buttons inside sub-states — those do not emit this event.
 
 ### `EventCharacterIntervened` trigger semantics
 

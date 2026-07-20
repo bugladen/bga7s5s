@@ -2,7 +2,8 @@
 
 ## Cross-Cutting Helpers
 
-- `$theah->getCharactersInCityByPlayerId(int $playerId): array` — characters of `playerId` currently at city locations.
+- `$theah->getCharactersInCityByPlayerId(int $playerId): array` — characters of `playerId` currently at city locations. **City Reaction gate** on Risks: offer only when this is non-empty for the Risk owner (`Reaction_03068`, `Reaction_02053`).
+- `$theah->getCharactersAtHomeByPlayerId(int $playerId): array` — characters of `playerId` at `LOCATION_PLAYER_HOME`. Filter `! Engaged` for "en garde … from their Home" pools (`Reaction_03068`).
 - `$theah->getCharactersInPlayByPlayerId(int $playerId): array` — wider net: characters in city or home.
 - `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing characters at a location.
 - `$theah->getCharactersAtLocation(string $location): array` — everyone at a location (defensive: filter by `isControlled()` and `ControllerId` when "opposing" is the intent).

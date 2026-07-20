@@ -64,6 +64,8 @@ When you add a card-specific sub-state, you usually need three matching JS handl
 
 Pattern reference for the trio: `highDramaPhase03cd01_2` (Penya — location chooser with both performer and target highlight) and `highDramaPhase03009` (single-performer + location-chooser).
 
+**Skip the JS trio** when the chooser lives entirely in `playerReaction` button properties (Pattern D.1 / D.1.1 — e.g. Confusion `_03068` character then city-location buttons). Those need no GameState and no On*.js handlers; inventing Action-style board-highlight scaffolding is a regression trap.
+
 ## Pre-Commit Hook Compliance
 
 The `.githooks/pre-commit` hook checks staged PHP files. Risk-related rules:
