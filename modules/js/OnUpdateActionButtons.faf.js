@@ -162,6 +162,19 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'highDramaPhase03067': () => {
+                const stats = args.args.stats || [];
+                if (stats.includes('Combat')) {
+                    this.addActionButton(`actCombat`, _('Combat'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                }
+                if (stats.includes('Finesse')) {
+                    this.addActionButton(`actFinesse`, _('Finesse'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+                }
+                if (stats.includes('Influence')) {
+                    this.addActionButton(`actInfluence`, _('Influence'), () => this.bgaPerformAction('actFromCardWithId', {id: 3}));
+                }
+            },
+
             'highDramaEnd_03061': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

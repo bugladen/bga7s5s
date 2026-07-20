@@ -325,6 +325,32 @@ Composition (do not invent a new cost channel):
 
 References: `_03060` / `Action_03060` / `State_highDramaPhase03060_2` (GameState engage + recalc), `_01133` / `Action_01133` / `Reaction_01133` (legacy Reaction engage). (Cesca copies Efficiency `_01133`, not Song — Song has no printed "target".)
 
+### Pattern A.8 — Leader City Action: wound • location-count If • choose-stat pressure • claim on success • locker
+
+For City Actions like **"Leader City Action: Wound your performer • If you control fewer locations than an opponent, pressure your performer's location with your choice of [Combat], [Finesse], or [Influence]. If successful, claim this location. Send this card to The Locker."** — see `_03067` (Ambitious).
+
+Composition of Leader performer + wound cost + bullet-If availability + pressure pipeline + Unique locker (do not invent a new pressure channel):
+
+1. **`RiskCityAction`** — Leader must be in the city. Do **not** set `RequiresPerformerSelected` (Leader is fixed — same as `Action_03020`). No `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters` — no printed "Target"; the only chooser is Combat/Finesse/Influence buttons.
+2. **Availability gates (all required):**
+   - `getLeaderByPlayerId` non-null + `cardInCity($leader)`.
+   - **Location-count If:** count city locations where `$location->Controller == $playerId`; require **exists** an opponent with a strictly greater count (`$myCount < $oppCount`). "Fewer … than an opponent" ≠ fewer than every opponent / ≠ fewest overall.
+   - Leader `canPressure` at least one of Combat / Finesse / Influence (dashed stats are ineligible).
+   - Do **not** gate on `canLocationBeClaimedBy` — claim is the success payoff; pressure still plays when Leshiye / Indomitable Will blocks (same discipline as A.5 / `Action_01141` / `Action_01206`).
+3. **`EventActionTriggered`:** set `CHOSEN_PERFORMER` to the Leader id yourself (pressure/`stHighDramaPressureLocation` reads it; pay path left it unset because `RequiresPerformerSelected` is false) → `createCharacterBeingWoundedEvent` on the Leader (`eventCheck` before `queueEvent`) → `createTransitionEvent(..., "NNNNN")` into the choose-stat GameState. Wound is a printed cost paid **before** the chooser (same announce-before-chooser discipline as engage-before-chooser).
+4. **Choose-stat GameState** (`State_highDramaPhaseNNNNN`, id `4NNNNN`): buttons for each pressureable stat (`id` 1/2/3 → `STAT_COMBAT` / `STAT_FINESSE` / `STAT_INFLUENCE`). JS: `OnUpdateActionButtons` offers only stats returned in `args.stats`; `OnEnteringState` highlights the Leader. Named transition `"statChosen"` → `HIGH_DRAMA_PLAYER_TURN_EVENTS`.
+5. **`actFromActionWithId` (stat chosen):** validate `canPressure` + location-count If still true → set `PRESSURING_PLAYER`, `PRESSURE_TYPE = NORMAL`, `PRESSURE_STAT` → `createPressureOccuringEvent` + `createTransitionEvent(..., "pressureLocation", $this->Id)` → `nextState("statChosen")`. The 4th arg on the pressure transition is the ability id that becomes `TRANSITION_INTERNAL_ID` → `EventLocationPressured.abilityId` → `EventLocationPressureResult.abilityId`.
+6. **`EventLocationPressureResult` + `$event->abilityId == $this->Id`:**
+   - On `$event->success`: if `canLocationBeClaimedBy`, queue `createLocationClaimedEvent($event->playerId, $event->performerId, $event->location)`; else notify and skip (do not throw).
+   - **Always** queue `createCardSentToLockerEvent` for the Risk, then `createActionResolvedEvent`. WHY always: Unique spend — playing the Action removes the card whether pressure succeeds or fails. Do not success-gate the locker solely because the sentence follows "If successful, claim…".
+7. **Contrast A.5:** A.5 is challenge + claim-on-**refuse**. A.8 is pressure + claim-on-**success**. Do not mint a `CHALLENGE_TYPE`; do not listen to `EventChallengeRejected`.
+
+**Pressure pipeline reminders (shared with `Action_01141` / `Action_01206` / `Action_03040`):**
+- `stHighDramaPressureLocation` reads `PRESSURE_STAT` (default Influence) and `CHOSEN_PERFORMER` (or `CHOSEN_LOCATION` when performer is 0).
+- Hand-played Risks are discarded via `createCardDiscardedFromHandEvent` after `ActionTriggered` is queued — locker later moves the card from discard to locker; `createCardSentToLockerEvent` alone is enough (no separate remove-from-discard required).
+
+References: `_03067` / `Action_03067` / `State_highDramaPhase03067`, `Action_01141` / `Action_01206` (pressure → claim on success), `Action_03020` (Leader, no performer chooser), A.5 (claimability gate discipline — different trigger).
+
 ### Common precondition predicates
 
 A few wordings recur often:
@@ -335,4 +361,5 @@ A few wordings recur often:
   ```
   `getOpposingCharactersAtLocation` already filters via `isNotControlledByPlayer` which excludes uncontrolled — satisfies the "opposing = different controller AND controlled" memory feedback automatically. See `Action_03011`.
 - **"Your adjacent X":** any of the player's characters with trait/property X at a location in `getAdjacentCityLocations($performer->Location, $includeHome = true)`. The `$includeHome = true` is generally correct when scanning for friendly home-pool characters; for "move TO an adjacent location" use `$includeHome = false` (you don't move someone *to* home from a city slot).
+- **"If you control fewer locations than an opponent":** count `$location->Controller == $playerId` over `getCityLocations()`; require **exists** an opponent with a strictly greater count. Pattern A.8 / `_03067`.
 
