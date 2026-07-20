@@ -16,13 +16,23 @@
 - `$game->getPlayerNameById(int $playerId): string` — use this instead of deprecated `getActivePlayerName()`.
 - `$card->hasTrait(string $trait): bool` — check a trait.
 - `$character->addTrait(Game $game, string $trait)` / `$character->removeTrait(Game $game, string $trait)` — for passive trait grants.
+- `$card->addCondition($condition)` / `hasCondition($condition)` / `removeCondition($condition)` — lasting stamped state (Harpoon remainder-of-duel, Lodestone while-equipped, Soline, Indomitable Will). Define the string on `Game` as `final const`. JS constant must match exactly.
+- `$game->updateCardObjectInDb($card)` — flush condition / property stamps when the next event rebuild must see them (do not rely on `IsUpdated` alone for mid-resolve stamps).
+- `$game->characterIsInDiscardOrLocker(Character $character): bool` — skip restoring duel-end conditions on already-removed characters.
+- `$theah->getDuelRoundActor()` / `getDuelRoundOpponent()` — current duel participants for Gambling / remainder-of-duel effects.
+- `$theah->swapParticipantsInDuel($duelId, $round, $oldId, $newId)` — mid-duel participant replace. Harpoon-style "cannot be swapped" must throw here *before* DB mutate.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${attachment_inject_code}` placeholder).
+
+**`EventCardMoving` opponent detection:** use `$event->sourceId` → source card `ControllerId`, **not** `$event->initiatingPlayerId`. WHY: `Maneuver_01033` sets initiatingPlayerId to the victim. Own abilities pass the owner's card as `sourceId` and must still be allowed (Lodestone City Action).
 
 Event factories you'll likely need:
 - `createAttachmentUnequippedEvent($playerId, $characterId, $attachmentId)`
+- `createCardRemovedFromPlayEvent($playerId, $cardId, $toLocation, $hidden = false)` — first step of "Sink this card" UI cleanup after unequip
+- `createCardAddedToFactionDeckEvent($playerId, $cardId, $onTop)` — `$onTop = false` sinks to bottom; use `$attachment->OwnerId` for the playerId
 - `createCardDiscardedFromPlayEvent($playerId, $cardId, $location, $sourceId, $asEffect)`
-- `createCardEngagedEvent($playerId, $cardId, $sourceId, $abilityId)`
-- `createCardMovingEvent($playerId, $cardId, $from, $to, $engage = true, $sourceId = 0, $abilityId = '')` — default `$engage = true`; pass `false` when move is an effect and engage was a separate cost
+- `createCardEngagedEvent($playerId, $cardId, $sourceId, $abilityId)` — "Engage this card" on an attachment Technique: `$cardId` = attachment id
+- `createCardMovingEvent($playerId, $cardId, $from, $to, $engage = true, $sourceId = 0, $abilityId = '')` — default `$engage = true`; pass `false` when move is an effect and engage/sink was a separate cost. `$unstoppable = true` bypasses Harpoon-style move blocks (Lodestone Home-from-opponent gate does not check unstoppable — printed text is ability-scoped).
+- `createCharacterFinesseModifedEvent($playerId, $characterId, $old, $new, $reason)` — note the historical typo `Modifed` in the factory name. Siblings: `createCharacterCombatModifiedEvent`, `createCharacterInfluenceModifiedEvent`.
 - `createTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — for attachment Actions, `$sourceId` is usually the **attachment** id
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)`

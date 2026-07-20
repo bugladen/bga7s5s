@@ -1,11 +1,11 @@
 ---
 name: create-faction-attachment
-description: Implement or finish a Faction Attachment (modules/php/cards/<expansion>/_NNNNN.php where the class extends FactionAttachment). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a Faction Attachment, or when they reference a faction-deck attachment whose class extends FactionAttachment and has unimplemented Text. Triggers on phrases like "implement this faction attachment", "finish _NNNNN" (when it extends FactionAttachment), "wire up the equip restriction", "add the City Reaction to this weapon", "the equipped Strega does X", or natural-language descriptions of a faction-deck attachment (Weapon / Attire / Hat / Tabbard / Talisman that lives in a player's faction deck and equips onto one of their characters).
+description: Implement or finish a Faction Attachment (modules/php/cards/<expansion>/_NNNNN.php where the class extends FactionAttachment). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a Faction Attachment, or when they reference a faction-deck attachment whose class extends FactionAttachment and has unimplemented Text. Triggers on phrases like "implement this faction attachment", "finish _NNNNN" (when it extends FactionAttachment), "wire up the equip restriction", "add the City Reaction to this weapon", "the equipped Strega does X", "opponents cannot move Home", "sink this card", "use a condition for the restriction", or natural-language descriptions of a faction-deck attachment (Weapon / Attire / Hat / Tabbard / Talisman / Trinket / Compass that lives in a player's faction deck and equips onto one of their characters).
 ---
 
 # Creating a Faction Attachment
 
-Faction attachments are *player-deck cards* that equip onto one of the controller's own characters from hand (paying `WealthCost`), modifying that character's stats and granting Forced abilities, Actions, Reactions, Techniques, or Maneuvers. They live in the player's faction deck and discard pile — unlike `CityAttachment`s, they are *not* drawn from the city deck and they are not "neutral" — they belong to a faction.
+Faction attachments are *player-deck cards* that equip onto one of the controller's own characters from hand (paying `WealthCost`), modifying that character's stats and granting Forced abilities, Actions, Reactions, Techniques, or Maneuvers. They live in the player's faction deck and discard pile — unlike `CityAttachment`s, they are *not* drawn from the city deck. Most belong to a named faction; **Neutral** faction attachments also exist (`initializeFaction('Neutral')` — e.g. Harpoon `_03064`, Lodestone `_03065`, Main Gauche `_02056`) and still use `FactionAttachment` + `CardNumber` (not city-deck numbering).
 
 
 ## How to use this skill (progressive disclosure)
@@ -20,7 +20,7 @@ Faction attachments are *player-deck cards* that equip onto one of the controlle
 | File | Read when |
 |---|---|
 | [pattern-a.md](pattern-a.md) | Equip restriction |
-| [pattern-b.md](pattern-b.md) | Passive trait grant |
+| [pattern-b.md](pattern-b.md) | Passive trait grant / while-equipped condition restriction |
 | [pattern-c.md](pattern-c.md) | AttachmentAction |
 | [pattern-d.md](pattern-d.md) | AttachmentReaction |
 | [pattern-e.md](pattern-e.md) | Technique / Maneuver |
@@ -87,7 +87,7 @@ class _0300N extends FactionAttachment
 ```
 
 Field notes:
-- **`initializeFaction(<Faction>)` is mandatory** — faction attachments belong to a player's faction deck (Castille / Eisen / Montaigne / Ussura / Vodacce / Vesten / Vendel / etc.). Without it, the card has no home deck.
+- **`initializeFaction(<Faction>)` is mandatory** — Castille / Eisen / Montaigne / Ussura / Vodacce / Vesten / Vendel / **Neutral** / etc. Without it, the card has no home deck. Neutral still lives in a player's faction deck as a Neutral card.
 - **`CardNumber` matches the `NNNNN` in the filename.** Unlike `CityAttachment` (where `CardNumber = 0` and `CityCardNumber` carries the visible number), faction attachments use `CardNumber` directly.
 - **`WealthCost` is the equip cost** — the controller pays this from their hand of wealth-spending cards when equipping.
 - **`ResolveModifier` / `CombatModifier` / `FinesseModifier` / `InfluenceModifier`** apply to the equipped character's printed stat while attached. These are *additive*, summed across all equipped attachments.
@@ -120,18 +120,20 @@ Read each clause of the printed Text and classify it before writing code. The fi
 | **"May only equip to your X"** | Pattern A — equip restriction. Implement BOTH `eventCheck(EventAttachmentEquipping)` (throws UserException on mismatch) AND `canAttachTo(Character)` (returns false on mismatch). |
 | **"...and they gain Trait"** | Pattern B — passive trait grant. Pair `EventAttachmentEquipped` (addTrait) with `EventAttachmentUnequipped` (removeTrait). |
 | **"(If they lose their Weapon, destroy this card.)"** | Pattern B' — conditional auto-destroy. Watch `EventAttachmentUnequipped` on the *other* attachment and queue unequip + discard for self. See `_01050`. |
+| **"Opponent's abilities cannot …"** / while-equipped lasting restriction (not duel-scoped) | Pattern B'' — **while-equipped condition**. Stamp `Game::*_CONDITION` on equip, clear on unequip; enforce in `Character::eventCheck` (not Attachment-only). Opponent detection via move `sourceId` ControllerId — **not** `initiatingPlayerId`. See Pattern B and `_03065` (Lodestone). |
 | **`<b>Forced:</b>`** — auto-triggers, no choice | Override `handleEvent` directly. No Action/Reaction class. See `_01075`'s passive grant (technically a Forced grant on equip). |
-| **`<b>Action:</b>` or `<b>City Action:</b>`** | Pattern C — `AttachmentAction` (no `AttachmentCityAction` base). City → `cardInCity` gate. Engage-this-card / choose-location move: see `_03055`. |
+| **`<b>Action:</b>` or `<b>City Action:</b>`** | Pattern C — `AttachmentAction` (no `AttachmentCityAction` base). City → `cardInCity` gate. Immediate resolve (no picker): `_03065`. Engage-this-card / choose-location move: `_03055`. **"Sink this card"** cost: unequip → removeFromPlay → faction-deck bottom (`Technique_02055` / `Action_03065`). |
 | **`<b>Reaction:</b>` or `<b>City Reaction:</b>`** | Pattern D — `AttachmentReaction`. Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_NNNNN.php`. |
 | **"Cancel … Maneuver/Technique unless they discard"** / **"would resolve a Maneuver or Technique"** | Pattern D + **cancel-unless-discard** — listen `EventTechniqueActivated` / `EventManeuverActivated` (not `EventResolve*`), cancel-first on Engage, adversary discard restores. See `_03044`. |
 | **`<b>Offhand</b>`** | Set `$this->OffHand = true` in the constructor. No further ability class. |
 | **`<b>Technique:</b>`** | Pattern E — `Technique`. Implement `IHasTechniques`, `use TechniqueTrait`, create `techniques/Technique_NNNNN.php`. Used during duels — `Thrust`/`Parry` modifiers are common. |
-| **`<b>Gambling Technique:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern E + **Gambling gate** — NOT a trait gate. Actor must have gambled for their combat card this round (`Game::DUEL_GAMBLED`). See Pattern E subsection below and `_03043` / `Technique_03002` / `Maneuver_03008`. |
+| **`<b>Gambling Technique:</b>`** / **`<b>Gambling Maneuver:</b>`** | Pattern E + **Gambling gate** — NOT a trait gate. Actor must have gambled for their combat card this round (`Game::DUEL_GAMBLED`). See Pattern E and `_03043` / `Technique_03002` / `Maneuver_03008` / `_03064`. |
+| **"Engage this card • … for the remainder of the duel"** / **"-1 [Stat], cannot be swapped, cannot move"** | Pattern E + **remainder-of-duel condition** — stamp a `Game::*_CONDITION` on the affected character; enforce move/swap via condition checks; clear on `EventDuelEnd` / `*Canceled`. See Pattern E subsection and `_03064` (Harpoon). |
 | **`<b>Maneuver:</b>`** | Pattern E' — `Maneuver`. Implement `IHasManeuvers`, `use ManeuverTrait`, create `maneuvers/Maneuver_NNNNN.php`. |
 | **`<b>Sorcerer Action:</b>` / `<b>Sorcerer Reaction:</b>` / `<b>Sorcerer City Reaction:</b>`** | The Action / Reaction class additionally `implements ISorcererAbility` and emits `createSorcererAbilityStartEvent()` + `createSorcererAbilityPlayedEvent()` (pre-commit hook enforces both literal calls). Often combined with a trait gate ("Strega" performer restriction). |
 | **`<b>Strega Reaction:</b>`** / **`<b>Diplomat Action:</b>`** / **`<b>Musketeer …:</b>`** / etc. | Trait-prefixed keywords are **performer-trait gates**, NOT Sorcerer abilities. The chosen performer (= attached character) must have that trait. Enforce via `$performer->hasTrait("Strega")`. Do NOT `implement ISorcererAbility` unless the literal word "Sorcerer" is also there. (Memory feedback.) |
 
-A single attachment commonly combines several — `_01075` mixes an equip restriction, a passive trait grant, AND a City Action. `_03007` mixes an equip restriction with a Sorcerer City Reaction.
+A single attachment commonly combines several — `_01075` mixes an equip restriction, a passive trait grant, AND a City Action. `_03007` mixes an equip restriction with a Sorcerer City Reaction. `_03043` mixes a passive trait grant with a Gambling Technique. `_03064` is a single Gambling Technique that stamps a remainder-of-duel condition (no equip restriction). `_03065` mixes a while-equipped condition restriction (B'') with an immediate-resolve sink + move-Home City Action (C).
 
 
 ## Finish (short)

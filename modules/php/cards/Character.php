@@ -99,6 +99,24 @@ abstract class Character extends Card implements IHasTechniques
         {
             throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
         }
+
+        // WHY: Lodestone (_03065) stamps LODESTONE_CONDITION while equipped. Gate
+        // opponent-ability moves to Home here so the condition is the source of truth.
+        // Detect opponent via source card ControllerId (initiatingPlayerId is unreliable —
+        // Maneuver_01033 sets it to the victim). Own abilities (incl. Lodestone's City
+        // Action) keep source->ControllerId == this->ControllerId and are allowed.
+        if ($this->hasCondition(Game::LODESTONE_CONDITION)
+            && $event instanceof EventCardMoving
+            && $event->cardId == $this->Id
+            && $event->toLocation == Game::LOCATION_PLAYER_HOME
+            && $event->sourceId > 0)
+        {
+            $source = $event->theah->getCardById($event->sourceId);
+            if ($source !== null && $source->ControllerId != $this->ControllerId)
+            {
+                throw new UserException($event->theah->game->translate("Lodestone prevents opponents from moving this character Home."));
+            }
+        }
     }
 
     public function canPressure(String $stat): bool

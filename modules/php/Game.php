@@ -92,6 +92,7 @@ class Game extends \Bga\GameFramework\Table
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
     final const HARPOON_CONDITION = "Harpooned (-1 Finesse; cannot swap or move)";
+    final const LODESTONE_CONDITION = "Lodestone (opponents cannot move Home)";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
     final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 

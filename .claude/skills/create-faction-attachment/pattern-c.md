@@ -63,6 +63,34 @@ $engageEvent = EventFactory::createCardEngagedEvent(
 
 When the effect also **moves** the equipped character, pass `engage=false` on `createCardMovingEvent` — the printed engage cost already went to the attachment (or was a separate character engage). Do not conflate move-with-engage.
 
+### Immediate-resolve City Action (no picker)
+
+When the printed effect needs **no further choice** (no target, no location, no list), resolve entirely on `EventActionTriggered` — do **not** invent a GameState / transition. Gate `cardInCity`, queue costs + effects + `createActionResolvedEvent`, done.
+
+Canonical: **`Action_03065` (Lodestone)** — Sink this card • Move performer Home.
+
+Tabard-style (`Action_01075`) that transitions into a shared pressure flow is different — that transition exists because pressure has its own multi-step machine. Lodestone has none.
+
+### "Sink this card" cost (equipped attachment)
+
+Printed **"Sink this card"** on an in-play faction attachment means put it on the **bottom of its owner's faction deck** — not the locker, not discard. Canonical sink chain (Dame of Swords `Technique_02055`, Lodestone `Action_03065`):
+
+```php
+$unequipEvent = EventFactory::createAttachmentUnequippedEvent(
+    $attachment->ControllerId, $owner->Id, $attachment->Id
+);
+$removedEvent = EventFactory::createCardRemovedFromPlayEvent(
+    $attachment->ControllerId, $attachment->Id, $attachment->Location
+);
+$sinkEvent = EventFactory::createCardAddedToFactionDeckEvent(
+    $attachment->OwnerId, $attachment->Id, false  // false = bottom
+);
+```
+
+Queue unequip first so while-equipped conditions (Pattern B'') clear before subsequent effects. Use `OwnerId` for the faction-deck sink (Neutral / stolen-edge cases). After sink, if the effect also moves the (former) equipped character, pass `engage=false` on the move — sink was the cost, not engage.
+
+Hand/deck "sink one of these looked-at cards" is different (`insertCardOnExtremePosition` on a deck location) — do not mix that shape with sinking an equipped attachment.
+
 ### Choose-location City Action (move to a filtered destination)
 
 When text is "Move the equipped character to a location where …", mirror `_03055` (Syrneth Compass) / location-pick Risks like `_03045`:
@@ -128,4 +156,4 @@ Same hazard for any "move to a location with Trait X" where the host card grants
 
 `Action_NNNNN extends AttachmentAction → CardAction` — the hook requires `createActionResolvedEvent()` somewhere in the class. Make sure it's queued at the end of effect resolution (after any state loops complete).
 
-References: `_01073` / `_01075` (City Action templates), `_03055` (engage-this-card + choose-location move), `_02047` (City Action + available attachments at location).
+References: `_01073` / `_01075` (City Action templates), `_03055` (engage-this-card + choose-location move), `_03065` (immediate-resolve sink + move Home), `_02047` (City Action + available attachments at location).

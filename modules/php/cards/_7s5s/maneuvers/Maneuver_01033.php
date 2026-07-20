@@ -55,6 +55,15 @@ class Maneuver_01033 extends Maneuver
             {
                 throw new UserException($event->theah->game->translate("This character is Harpooned and cannot move for the remainder of the duel."));
             }
+
+            // WHY: Same activate-time shape as Harpoon — this maneuver moves the adversary
+            // Home, which Lodestone (_03065) blocks. Fail at activate so the player sees
+            // why instead of a silently-dropped queued move.
+            if ($adversary !== null
+                && $adversary->hasCondition(Game::LODESTONE_CONDITION))
+            {
+                throw new UserException($event->theah->game->translate("Lodestone prevents opponents from moving this character Home."));
+            }
         }
     }
 

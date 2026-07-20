@@ -89,6 +89,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['epeeSanglanteConditionEnded', 1],
             ['harpoonConditionStarted', 1],
             ['harpoonConditionEnded', 1],
+            ['lodestoneConditionStarted', 1],
+            ['lodestoneConditionEnded', 1],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -1852,6 +1854,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.HARPOON_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_lodestoneConditionStarted: function( notif )
+    {
+        debug( 'notif_lodestoneConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.LODESTONE_CONDITION))
+                card.conditions.push(this.LODESTONE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_lodestoneConditionEnded: function( notif )
+    {
+        debug( 'notif_lodestoneConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.LODESTONE_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },

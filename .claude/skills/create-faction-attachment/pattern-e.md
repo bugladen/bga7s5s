@@ -13,7 +13,7 @@ Both need:
 
 **Pre-commit hook on Technique:** same — must handle `EventTechniqueCanceled` or add the equivalent comment.
 
-References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard).
+References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition).
 
 ### Gambling Technique / Gambling Maneuver
 
@@ -34,6 +34,45 @@ if ($owner === null || $actor === null || $actor->Id !== $owner->Id)
 ```
 
 Also require `Game::IN_DUEL`. Optional printed conditions (greater Finesse than adversary, adversary wounded, combat card ≥ N Thrust) go in the same `isAvailableToPlayer` using `ModifiedFinesse` / `getDuelRoundOpponent()` / `getCurrentRoundThrust()` — see `Technique_03002`, `Maneuver_03008`, `Technique_03039`, `Technique_03043`.
+
+When the cost is **"Engage this card"** (the attachment), also gate `! $attachment->Engaged` and queue `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)` on `EventResolveTechnique` — mirror `Technique_01049` / `Technique_03064`.
+
+### Remainder-of-duel lasting effects (condition)
+
+When printed text says the adversary (or participant) **"has -N [Stat], cannot be swapped, and cannot move for the remainder of the duel"** (or similar lasting duel-scoped restrictions), do **not** rely on a Technique `$Active` bool alone. Stamp a **`Game::*_CONDITION`** on the affected character.
+
+**Not the same as while-equipped restrictions** (Pattern B'', Lodestone `_03065`) — those stamp on equip / clear on unequip and are not duel-scoped. Use Pattern E only when the printed duration is the duel (or "remainder of the duel").
+
+Canonical: **`Technique_03064` (Harpoon)** + `Game::HARPOON_CONDITION`. Mirror Soline `_01089` for Finesse ±1 via `createCharacterFinesseModifedEvent` + condition Started/Ended notifies.
+
+**Apply** (on `EventResolveTechnique`):
+1. Pay engage cost if printed.
+2. Queue stat-mod event (`createCharacterFinesseModifedEvent` / Combat / Influence siblings) with attachment inject code as reason.
+3. `$character->addCondition(Game::YOUR_CONDITION)` + `$game->updateCardObjectInDb($character)` (IsUpdated alone is not always flushed before the next rebuild — same lesson as 03062 muster stamps).
+4. Notify `yourConditionStarted` with `cardId` so JS can push the condition onto `card.conditions` and refresh the tooltip.
+5. Persist `$AffectedCharacterId` on the Technique + `$attachment->IsUpdated = true`.
+
+**Clear** (on `EventDuelEnd` and `EventTechniqueCanceled` / `EventManeuverCanceled`):
+1. If `AffectedCharacterId > 0` and character still has the condition and is not in discard/locker → reverse the stat mod, `removeCondition`, `updateCardObjectInDb`, notify `*Ended`.
+2. Reset `$AffectedCharacterId = 0`.
+
+**Enforce "cannot move"** — two layers:
+1. **Central:** `Character::eventCheck` on `EventCardMoving` when `$this->hasCondition(...)` and `! $event->unstoppable` → `UserException`. Condition is the source of truth even if the attachment leaves `$theah->cards`.
+2. **Activate-time on deferred movers:** Techniques/Maneuvers that *choose now, move later* (`EventDuelEndOfRound`) must also `eventCheck` `EventTechniqueActivated` / `EventManeuverActivated` when the character who would move is conditioned. WHY: keep the button visible so the player gets an explanatory exception, instead of locking in a location/target and only failing at EndOfRound / `swapParticipantsInDuel`. See `Technique_01036`, `Maneuver_01164`, `Maneuver_01059` (actor), `Maneuver_01033` (adversary — "Move Adversary Home"; also checks Lodestone `_03065` for Home-specific blocks).
+
+**Enforce "cannot be swapped"** — must gate **before** duel rows mutate:
+1. **Central:** `Theah::swapParticipantsInDuel` — if `$oldParticipant->hasCondition(...)` throw. WHY: `EventChallengerSwapped` / `EventDefenderSwapped` only queue *after* the swap is already applied; `eventCheck` on those events is too late.
+2. **Activate-time on swap techniques:** `EventTechniqueActivated` check when the owning/swap-out character is conditioned — especially when Resolve pays a wound *before* the picker (`Technique_03013` Daniella). Also `Technique_01063Swap` (Bastien). Optional UX: Back button on the Musketeer picker so a Harpooned participant is not stuck (`State_duelChooseTechnique_01063`).
+
+**Do not conflate:**
+- **"Cannot be swapped"** ≠ intervene. Intervene is challenge-time; a mid-duel Gambling Technique never needs an intervene gate.
+- Challenge-time `ChallengerSwapped` (pre-duel Daniella path) does not go through `swapParticipantsInDuel` — usually no condition exists yet.
+
+**JS for the condition** (Soline / Épée Sanglante shape — tooltip only, no chip required):
+1. Constant on `seventhseacityoffivesails.js` matching the PHP string exactly.
+2. Register `*ConditionStarted` / `*ConditionEnded` in `Notifications.js` durations + handlers that push/filter `card.conditions` and `refreshTooltipForCard(card)`.
+
+**Finesse floor footgun:** `EventHub` clamps ModifiedFinesse with `max(0, …)`. Clearing with +1 after a 0-floor can overshoot printed 0. Soline has the same footgun — mirror deliberately unless Rules ask otherwise.
 
 ### Attachment-hosted technique — transition `sourceId`
 
