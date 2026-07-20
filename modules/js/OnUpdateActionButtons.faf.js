@@ -375,6 +375,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'duelResolveManeuver_03069': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelResolveManeuver_03035_2': () => {
                 this.addActionButton(`btnRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
                 this.addActionButton(`btnThrust`, _('+2 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 2}));

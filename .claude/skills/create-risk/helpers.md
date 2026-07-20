@@ -10,6 +10,7 @@
 - `$theah->cardInCity(Card $card): bool` — true when the card is at a city location.
 - `$theah->getLeaderByPlayerId(int $playerId): ?Character` — the player's Leader (at most one). Leader Actions/City Actions fetch this instead of `RequiresPerformerSelected`.
 - `$theah->getDuelRoundActor(): ?Character` / `getDuelRoundOpponent(): ?Character` — the round's participant + adversary.
+- `$theah->swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)` — mid-duel participant replace (challenger/defender rows, conditions, actor serialization). **Harpoon** (`HARPOON_CONDITION`) throws here pre-mutate — still add activate-time + confirm-time checks on swap Maneuvers/Techniques so failure is explanatory (Pattern C.9 / `_03069`). Lodestone/Shackles do **not** gate this (swap ≠ move).
 - `$theah->getCurrentDuelThreat(int $characterId): int` — this round's `ending_<side>_threat` for a duel participant. Use for Pattern C.6 move/remove-all-threat calcs (`Maneuver_03048`, `Technique_02012`).
 - `$theah->getDuelChallengerId() / getDuelDefenderId() / getDuelOpponentId(int $actorId)` — id-only accessors. **All three return CHARACTER ids, not player ids.** Looking up a player from one of these requires `$theah->getCharacterById($id)->ControllerId`. Don't pass them to `getPlayerNameById($playerId)` — you'll print "0" or worse. The `challenger_id` / `defender_id` columns in the `duel` table are character primary keys (the dueling characters), not player primary keys.
 - `Game::IN_DUEL` global — true between duel start and end.

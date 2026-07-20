@@ -12,6 +12,8 @@ If your Action transitions to a custom sub-state for a non-challenge effect, add
 
 For Pattern C Maneuvers that transition to a sub-state (e.g., `Maneuver_01115`), add an entry under the duel's resolve-maneuver transition map and define the state. Mirror `Maneuver_01115`'s wiring.
 
+**Miyato/Ota mirror (`DUEL_CHOOSE_TECHNIQUE_EVENTS`):** when a Maneuver queues a card-specific transition (`createTransitionEvent(..., "NNNNN", …)`) and the Risk is **Neutral or Ussura** (factions covered by the Neutral/Ussura block in `states.inc.php`), also add `"NNNNN" => States::DUEL_RESOLVE_MANEUVER_NNNNN` under `DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions`. WHY: `Technique_02043a` (Miyato and Ota) clones the Maneuver and re-fires Activate→Resolve→Calc while still draining choose-technique EVENTS — without the key, a Resolve-queued chooser throws impossible transition. Pattern C.8 / C.9 (`_03059`, `_03069`) and other state-bearing Neutral/Ussura Maneuvers in that block. Normal combat-card play only needs `DUEL_RESOLVE_MANEUVER_EVENTS`.
+
 For Pattern C.5 "you choose their combat card" hijacks, wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** (after reveal), not resolve-maneuver. State id convention near the choose family: `5270NNNNN` (see `States::DUEL_CHOOSE_GAMBLE_CARD_03047`).
 
 ### GameState class vs legacy array state
@@ -97,5 +99,5 @@ A Risk card that both extends `Risk` AND has Actions/Maneuvers/Reactions in sepa
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
 - **"Strega" / "Mercenary" / "Diplomat" / "Duelist" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the performer / `getDuelRoundActor()`. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack.
-- **`IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters`** — mark when printed text says **"Target"/"target"** (Rules Team + Cesca `Reaction_01008`). The interface is not merely "has a character chooser UI" — `_03060` heals "another character" without "target" and must **not** implement either (and must not be on Cesca's copy whitelist). Compare `_01083`, `_01115`, `_03008`, `_03011`, `_03034`. Skip for location-only / hand-discard / fixed-trigger choosers.
+- **`IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters`** — mark when printed text says **"Target"/"target"** (Rules Team + Cesca `Reaction_01008`). The interface is not merely "has a character chooser UI" — `_03060` heals "another character" without "target", `_03069` swaps with "your other character" without "target", and both must **not** implement either (and must not be on Cesca's copy whitelist). Compare `_01083`, `_01115`, `_03008`, `_03011`, `_03034`. Skip for location-only / hand-discard / fixed-trigger choosers.
 

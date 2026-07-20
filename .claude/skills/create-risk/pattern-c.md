@@ -291,6 +291,38 @@ Parse "Replace them" / "sink any of those" as the **rest** of the look, not incl
 
 References: `Maneuver_03059`, `Maneuver_03035` (stackEvent multi-step), `Reaction_03052`, `Technique_01010`, `Action_02002`, `Action_01038`.
 
+### Pattern C.9 — Swap participant with your other character at this location
+
+For Maneuvers like **"Maneuver: Swap your participant with your other character at this location"** / **"Gambling Maneuver: +1[Riposte] and swap …"** — see `_03069` (Hop on Board). Mid-duel **participant replace**, not a board move.
+
+#### Core resolve path (mirror Daniella duel, not Bastien calc-time)
+
+1. **`isAvailableToPlayer`** — ≥1 other character you control at `$actor->Location` (`getCharactersAtLocationByPlayerId`, exclude actor). Keep Harpooned participants **visible** (do not hide for `HARPOON_CONDITION`).
+2. **`EventResolveManeuver`** — `queueEvent(createTransitionEvent(..., "NNNNN", $this->Id))` to a friendly character chooser. **Not** C.3 `stackEvent` from Activated: the swap does not drive calc. Gambling **+X Riposte** stays in `EventDuelCalculateManeuverValues`; Resolve→queue lands the chooser **after** pending calc (same ordering as `Maneuver_01108a` discard).
+3. **`actFromManeuverWithId`** — validate same controller + same location + not self; then `$theah->swapParticipantsInDuel($duelId, $round, $actor->Id, $target->Id)` (Daniella `Technique_03013` duel branch). Do **not** defer swap to `EventDuelCalculateManeuverValues` (Bastien `Technique_01063Swap` calc-time path is for Techniques that also rewrite challenge threat).
+
+#### Harpoon vs Lodestone / Shackles
+
+| Condition | Blocks swap? | What to do on C.9 |
+|---|---|---|
+| **Harpoon** (`HARPOON_CONDITION` — cannot be swapped) | **Yes** | Activate-time `eventCheck` on `EventManeuverActivated` (explanatory `UserException`, button stays visible — same WHY as `Technique_01063Swap` / `Technique_03013`) **and** confirm-time check in `actFromManeuverWithId`. Central gate already in `Theah::swapParticipantsInDuel` (pre-mutate). |
+| **Lodestone** | No | Opponent Home **moves** only. |
+| **Shackles** | No | **Cannot move** — swap ≠ move. Do **not** cargo-cult activate-time Shackles/Lodestone checks onto swappers. |
+
+#### Dual plain + Gambling sharing one chooser
+
+Split `Maneuver_NNNNNa` / `Maneuver_NNNNNb`. Both may `createTransitionEvent(..., "NNNNN", $this->Id)` into the **same** GameState. When Gambling only adds calc Riposte on the shared swap, **`b extends a`** is fine (`Maneuver_03069b`) — still put `// EventManeuverCanceled handler not needed` in **both** files (pre-commit matches `extends Maneuver…`).
+
+No printed **"Target"/"target"** → no `IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters` (private validation helper only — same as `_03060` / `_03068`).
+
+#### Wiring + Miyato/Ota
+
+- State id `5250NNNNN`, name `duelResolveManeuver_NNNNN`, JS trio like `duelResolveManeuver_03035` (highlight + Confirm).
+- Wire `"NNNNN"` under **`DUEL_RESOLVE_MANEUVER_EVENTS`**.
+- **Also** mirror under **`DUEL_CHOOSE_TECHNIQUE_EVENTS`** when the Risk is **Neutral or Ussura** (or any faction Miyato/Ota can copy from that block). WHY: `Technique_02043a` clones the Maneuver and re-queues Activate→Resolve→Calc while still in choose-technique EVENTS; a Resolve-queued `"NNNNN"` without that key → impossible transition. See the Neutral/Ussura comment block in `states.inc.php`. Eddie confirmed keep this for `_03069`.
+
+References: `_03069` / `Maneuver_03069a`/`b`, `Technique_03013` (duel swap in act), `Technique_01063Swap` (Harpoon activate WHY), `Theah::swapParticipantsInDuel`, contrast move-only attachments `_03065` / `_03066`.
+
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
 When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling).
