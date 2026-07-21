@@ -371,6 +371,17 @@ Composition of bullet-If claim-control + engage opposing chooser (do not invent 
 
 References: `_03071` / `Action_03071` / `State_highDramaPhase03071`, `_01159` / `Action_01159` (control gate + engarde self), Pattern B.1 (`getControllerForLocation`), A.4/A.6 (bullet-If as filter), `_03060` (no-Target character chooser).
 
+### Pattern A.10 — Target opposing • Destroy all engaged attachments • Engage remaining
+
+For City Actions like **"City Action: Destroy all engaged attachments equipped to target opposing character. Then, engage each of their equipped attachments."** — see `_03072` (Sabotage). Choose-one destroy of an engaged attachment on the adversary (duel Technique, not City Action): `Technique_02026b`.
+
+1. **`RiskCityAction`**, `RequiresPerformerSelected = true`, **`IAbilityThatTargetsCharacters`** + Risk **`IRiskThatTargetsCharacters`** — printed **"target"**. Chooser GameState + faf JS trio (`03011` / `03056` / `03071` shape).
+2. **Target filter:** opposing at performer location with ≥1 non-`FakeAttachment` attachment (either destroy half or engage half is useful).
+3. **On confirm — snapshot before queue:** split real attachments into `$toDestroy` (`Engaged`) and `$toEngage` (`! Engaged`). WHY snapshot: unequip/discard events are queued, not applied mid-act — re-reading `Attachments` would still include doomed cards. For each destroy: `createAttachmentUnequippedEvent` (`eventCheck`) + `createCardDiscardedFromPlayEvent(..., $asEffect = true)` (`OwnerId`, location from attachment). Then `createCardEngagedEvent` on each remaining (the unengaged snapshot). Skip FakeAttachment always.
+4. No challenge / `CHALLENGE_TYPE`. Maneuver half on the same card (destroy all engaged on adversary, pure resolve) mirrors the destroy loop without a chooser — see `Maneuver_03072`.
+
+References: `_03072` / `Action_03072` / `State_highDramaPhase03072` / `Maneuver_03072`, `Technique_02026b` (choose-one engaged destroy), `Action_03038b` (unequip+discard destroy), contrast A.9 (engage *character*, no Target / no Cesca).
+
 ### Common precondition predicates
 
 A few wordings recur often:

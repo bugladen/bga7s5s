@@ -275,6 +275,15 @@
                 }
             },
 
+            'highDramaPhase03072': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaEnd_03061': () => {
                 if (this.isCurrentPlayerActive())
                 {

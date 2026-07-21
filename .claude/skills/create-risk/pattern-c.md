@@ -363,7 +363,7 @@ if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
 }
 ```
 
-Reference: `Maneuver_03033` (Glorious — Gambling + Influence ≥ → wound), `Maneuver_01055` (Ranged Weapon → wound), `Maneuver_01033` (Influence > → move adversary Home).
+Reference: `Maneuver_03033` (Glorious — Gambling + Influence ≥ → wound), `Maneuver_01055` (Ranged Weapon → wound), `Maneuver_01033` (Influence > → move adversary Home), `Maneuver_03072` (Sabotage — destroy **all** engaged non-Fake attachments on adversary; snapshot list then unequip+discard; gate `! characterIsInDiscardOrLocker` + ≥1 engaged; contrast choose-one `Technique_02026b`).
 
 ### Pattern C.2 — Suppress end-of-round threat→wound conversion (with optional carry-forward)
 
