@@ -89,6 +89,28 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 } else {
                     dojo.addClass('actChooseCardSelected', 'disabled');
                 }
+            },
+
+            'highDramaPhase03cd03_2': () => {
+                var items = this.approachDeck.getSelectedItems();
+                items.forEach((item) => {
+                    if (item.id != item_id) {
+                        this.approachDeck.unselectItem(item.id);
+                    }
+                });
+                if (item_id)
+                {
+                    const div = this.approachDeck.getItemDivId(item_id);
+                    if (dojo.hasClass(div, '_7sfs-unselectable')) {
+                        this.approachDeck.unselectItem(item_id);
+                    }
+                }
+
+                if (this.approachDeck.getSelectedItems().length === 1) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
             }
         };
 
@@ -250,6 +272,34 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duskPhaseBegin01177_2': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'duskPhaseBegin03052_2': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'duelResolveManeuver_03059_3': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'duelResolveManeuver_03059_4': () => {
                 this.addSortTagToCard(item_id);
 
                 if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
@@ -449,6 +499,39 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     dojo.addClass('actChooseDiscardCards', 'disabled');
                 }
             },
+
+            'highDramaPhase03026': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
+            'highDramaPhase03038a': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
+            'highDramaPhase03042': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
+            'planningPhaseEnd_03041': () => {
+                const needed = this.clientStateArgs.cardsToDiscard || 0;
+                if (this.factionHand.getSelection().length === needed) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
             
             'highDramaPhase01091_2': () => {
                 if (this.factionHand.getSelection().length > 0) {
@@ -578,6 +661,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'duelResolveManeuver_03036': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'duelNewRound_01090': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
@@ -587,6 +678,22 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelChooseTechnique_01093': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'duelChooseTechnique_03039': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'duelChooseTechnique_03043_3': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {

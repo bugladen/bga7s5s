@@ -92,7 +92,7 @@ class Technique_02055 extends Technique
             $event->theah->queueEvent($transition);
         }
 
-        // EventTechniqueCanceled handler not needed
+        // EventTechniqueCanceled handler not needed        
     }
 
     public function getArgsFromTechnique(Game $game, int $state, string $stateName): array

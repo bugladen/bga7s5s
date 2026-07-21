@@ -12,6 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
@@ -455,16 +456,12 @@ trait UtilitiesTrait
         //Pull the first two characters of the card id to get the set
         $set = substr($cardClass, 0, 2);
 
-        switch ($set) {
-            case '01':
-                $set = "_7s5s";
-                break;
-            case '02':
-                $set = "tac";
-                break;
-            default:
-                $set = "_7s5s";
-        }
+        $set = match ($set) {
+            '01' => "_7s5s",
+            '02' => "tac",
+            '03' => "faf",
+            default => "_7s5s",
+        };
 
         return "\Bga\Games\SeventhSeaCityOfFiveSails\cards\\$set\_$cardClass";
     }
@@ -686,6 +683,16 @@ trait UtilitiesTrait
             }
         }
 
+        //If Loyal Reaction was used, add +1 to that player's total for the pressure
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::LOYAL_PRESSURE_TYPE))
+        {
+            $loyalPlayerId = $this->globals->get(Game::LOYAL_PLAYER_ID, 0);
+            if ($loyalPlayerId && isset($playerInfluences[$loyalPlayerId]))
+            {
+                $playerInfluences[$loyalPlayerId]['influence'] += 1;
+            }
+        }
+
         //Get the player with the most influence
         $maxInfluence = 0;
         $maxPlayerId = 0;
@@ -728,6 +735,7 @@ trait UtilitiesTrait
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::KASPARS_OCCUPATION_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::USSURAN_INTRIGUE_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::SOLINE_PRESSURE_TYPE)
         )
         {
             //Ties win
@@ -975,4 +983,39 @@ trait UtilitiesTrait
         return false;
     }
 
+    public function getExtraActionPerformerId(): ?int
+    {
+        $id = (int) $this->globals->get(Game::EXTRA_ACTION_PERFORMER, 0);
+
+        return $id > 0 ? $id : null;
+    }
+
+    public function mustPerformExtraAction(): bool
+    {
+        return $this->getExtraActionPerformerId() !== null;
+    }
+
+    public function assertIsExtraActionPerformer(int $characterId): void
+    {
+        $lockedId = $this->getExtraActionPerformerId();
+        if ($lockedId !== null && $lockedId !== $characterId)
+        {
+            throw new UserException($this->translate("You must perform this action with the same character."));
+        }
+    }
+
+    /**
+     * @param int[] $performerIds
+     * @return int[]
+     */
+    public function filterPerformerIdsForExtraAction(array $performerIds): array
+    {
+        $lockedId = $this->getExtraActionPerformerId();
+        if ($lockedId === null)
+        {
+            return $performerIds;
+        }
+
+        return in_array($lockedId, $performerIds, true) ? [$lockedId] : [];
+    }
 }

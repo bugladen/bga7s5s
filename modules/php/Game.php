@@ -72,6 +72,7 @@ class Game extends \Bga\GameFramework\Table
     final const PASS_COUNT = "passCount";
     final const MULTI_STATE_INITIATING_PLAYER = "multiStateInitiatingPlayer";
     final const EXTRA_ACTIONS = "extraActions";
+    final const EXTRA_ACTION_PERFORMER = "extraActionPerformer";
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = "overrideAsNotFirstPlayer";
     final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
     final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";
@@ -84,11 +85,17 @@ class Game extends \Bga\GameFramework\Table
     final const OLD_CATS_EMBARGO_TARGET = "Cats Embargo Target";
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
     final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
+    final const SILVER_SPINE_ABILITY_USED = "Silver Spine Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
+    final const HARPOON_CONDITION = "Harpooned (-1 Finesse; cannot swap or move)";
+    final const LODESTONE_CONDITION = "Lodestone (opponents cannot move Home)";
+    final const SHACKLES_CONDITION = "Shackled (cannot move)";
+    final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
+    final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 
     //Equip global variables
     final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
@@ -127,7 +134,10 @@ class Game extends \Bga\GameFramework\Table
     final const CASTILLIAN_CAPER_PRESSURE_TYPE = 1024;
     final const SOLOMONIA_PRESSURE_TYPE = 2048;
     final const USSURAN_INTRIGUE_PRESSURE_TYPE = 4096;
+    final const LOYAL_PRESSURE_TYPE = 8192;
+    final const SOLINE_PRESSURE_TYPE = 16384;
     final const SOLOMONIA_ID = "solomoniaId";
+    final const LOYAL_PLAYER_ID = "loyalPlayerId";
 
     //Player action global variables
     //Delete these in stNextPlayer
@@ -177,6 +187,13 @@ class Game extends \Bga\GameFramework\Table
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
     final const JUSTICE_SERVED_COLD_CHALLENGE_TYPE = 16;
     final const UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
+    final const AJA_CHALLENGE_TYPE = 18;
+    final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
+    final const CORNERED_CHALLENGE_TYPE = 20;
+    final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
+    final const SANJAY_CHALLENGE_TYPE = 22;
+    final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
+    final const CENSURE_CHALLENGE_TYPE = 24;
 
     //Duel global variables
     //Duel Names
@@ -195,6 +212,7 @@ class Game extends \Bga\GameFramework\Table
     final const DUEL_MANUEVER_ID = "duelManeuverId";
     final const GAMBLE_REVEAL_COUNT = "gambleRevealCount";
     final const GAMBLE_REVEAL_EXPLANATIONS = "gambleRevealExplanations";
+    final const GAMBLE_REVEAL_FROM_BOTTOM = "gambleRevealFromBottom";
 
     final const PENDING_CHALLENGER_THREAT = "pendingChallengerThreat";
     final const PENDING_DEFENDER_THREAT = "pendingDefenderThreat";
@@ -383,12 +401,19 @@ class Game extends \Bga\GameFramework\Table
         }
 
         $result["sirensScreamUsedList"] = null;
+        $result["crabsInABucketUsedList"] = null;
         $result["catsEmbargoData"] = null;
         foreach ($this->theah->getAllCards() as $card) {
             if ($card instanceof cards\_7s5s\_01179 && $this->theah->cardInCity($card)) {
                 $result["sirensScreamUsedList"] = [
                     'cardId' => $card->Id,
                     'usedList' => $card->getSirensScreamUsedListData($this),
+                ];
+            }
+            if ($card instanceof cards\faf\_03cd13 && $this->theah->cardInCity($card)) {
+                $result["crabsInABucketUsedList"] = [
+                    'cardId' => $card->Id,
+                    'usedList' => $card->getCrabsInABucketUsedListData($this),
                 ];
             }
             if ($card instanceof cards\_7s5s\_01098 && $card->Location == Game::LOCATION_PLAYER_HOME) {
@@ -507,7 +532,7 @@ class Game extends \Bga\GameFramework\Table
         $this->doZombieTurn($state, $active_player);
     }
 
-    public function translate($text) 
+    public function translate(string $text): string 
     {
         return clienttranslate($text);
     }

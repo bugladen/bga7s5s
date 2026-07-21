@@ -9,8 +9,7 @@
 
 The old check used `CHOSEN_PERFORMER` (the enemy character, which IS the
 ability target) and compared the incoming `$character` against it — i.e.,
-treating the parameter as the friendly being challenged. It also had a
-leftover `var_dump($character->Name)` debug line.
+treating the parameter as the friendly being challenged. 
 
 ## Why this matters
 
@@ -38,9 +37,7 @@ worse, validating against the wrong shape of character).
    (important: Vittoria calls this with a redirect candidate, not the original
    target, and may run before `CHOSEN_PERFORMER` is meaningful for this card).
 
-2. Removed the `var_dump`.
-
-3. `FrameworkActionsTrait::actHighDramaChallengeActionTargetChosen` now skips
+2. `FrameworkActionsTrait::actHighDramaChallengeActionTargetChosen` now skips
    the `$action->isValidTargetForAbility(...)` call when
    `CHALLENGE_TYPE == DEFENDING_HONOR_CHALLENGE_TYPE`. The args function
    (`argsHighDramaChallengeActionChooseTarget`) already filters the legal

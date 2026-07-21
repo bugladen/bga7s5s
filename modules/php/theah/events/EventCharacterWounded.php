@@ -9,6 +9,7 @@ class EventCharacterWounded extends Event
     public string $abilityId;
     public int $wounds;
     public string $reason;
+    public bool $characterHandled = false;
 
     public function __construct()
     {

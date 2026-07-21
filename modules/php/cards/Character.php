@@ -2,12 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -78,6 +82,52 @@ abstract class Character extends Card implements IHasTechniques
     public function canIntervene() : bool
     {
         return $this->isControlled();
+    }
+
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        // WHY: Harpoon (_03064) stamps HARPOON_CONDITION on the adversary for the
+        // remainder of the duel. Enforce "cannot move" here so the condition itself
+        // is the source of truth (not a Technique flag that dies if Harpoon leaves play).
+        // Respect unstoppable moves (e.g. Reaction_01144 forced relocation).
+        if ($this->hasCondition(Game::HARPOON_CONDITION)
+            && $event instanceof EventCardMoving
+            && $event->cardId == $this->Id
+            && ! $event->unstoppable)
+        {
+            throw new UserException(sprintf($event->theah->game->translate("%s is Harpooned and cannot move for the remainder of the duel."), $this->Name));
+        }
+
+        // WHY: Shackles (_03066) stamps SHACKLES_CONDITION while equipped. Same move
+        // gate as Harpoon (all destinations, respect unstoppable) but clears on unequip
+        // / Forced end-of-HD destroy — not on DuelEnd.
+        if ($this->hasCondition(Game::SHACKLES_CONDITION)
+            && $event instanceof EventCardMoving
+            && $event->cardId == $this->Id
+            && ! $event->unstoppable)
+        {
+            throw new UserException(sprintf($event->theah->game->translate("%s is Shackled and cannot move."), $this->Name));
+        }
+
+        // WHY: Lodestone (_03065) stamps LODESTONE_CONDITION while equipped. Gate
+        // opponent-ability moves to Home here so the condition is the source of truth.
+        // Detect opponent via source card ControllerId (initiatingPlayerId is unreliable —
+        // Maneuver_01033 sets it to the victim). Own abilities (incl. Lodestone's City
+        // Action) keep source->ControllerId == this->ControllerId and are allowed.
+        if ($this->hasCondition(Game::LODESTONE_CONDITION)
+            && $event instanceof EventCardMoving
+            && $event->cardId == $this->Id
+            && $event->toLocation == Game::LOCATION_PLAYER_HOME
+            && $event->sourceId > 0)
+        {
+            $source = $event->theah->getCardById($event->sourceId);
+            if ($source !== null && $source->ControllerId != $this->ControllerId)
+            {
+                throw new UserException($event->theah->game->translate("Lodestone prevents opponents from moving this character Home."));
+            }
+        }
     }
 
     public function canPressure(String $stat): bool
@@ -278,6 +328,8 @@ abstract class Character extends Card implements IHasTechniques
                 $destroyEvent = EventFactory::createCharacterDestroyedEvent($this->ControllerId, $this->Id, $event->reason);
                 $event->theah->queueEvent($destroyEvent);
             }
+
+            $event->characterHandled = true;
         }
 
         if ($event instanceof EventCharacterHealed && $event->characterId == $this->Id)
@@ -297,6 +349,8 @@ abstract class Character extends Card implements IHasTechniques
             }
             $this->IsUpdated = true;
 
+            $event->characterHandled = true;
+
             $event->theah->game->notify->all("characterHealed", clienttranslate('${target_inject_code} has healed ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
@@ -312,6 +366,49 @@ abstract class Character extends Card implements IHasTechniques
             $this->IsDying = false;
             $this->WoundsHealedIncoming = 0;
             $this->IsUpdated = true;
+        }
+
+        // WHY: Deal with the Devil (_03062) stamps DEAL_WITH_THE_DEVIL when mustering
+        // from The Locker. The scheme is already in the locker by DuskPhaseEnd and is
+        // not in buildCity()'s card list, so cleanup must live on the character (at Home).
+        if ($event instanceof EventDuskPhaseEnd && $this->hasCondition(Game::DEAL_WITH_THE_DEVIL))
+        {
+            $game = $event->theah->game;
+
+            // Strip gained traits before the locker notify so the client payload is clean.
+            $this->removeTrait($game, "Undead");
+            if ($this->hasCondition(Game::DEAL_WITH_THE_DEVIL_GRANTED_MONSTER))
+            {
+                $this->removeTrait($game, "Monster");
+                $this->removeCondition(Game::DEAL_WITH_THE_DEVIL_GRANTED_MONSTER);
+            }
+
+            $this->unEquipAllAttachments($event->theah);
+
+            $lockerEvent = EventFactory::createCardSentToLockerEvent($this->ControllerId, $this->Id);
+            $event->theah->queueEvent($lockerEvent);
+
+            $this->IsUpdated = true;
+        }
+
+        // WHY: Recreate after send (same as destroy→locker) so a later Muster does not
+        // inherit wounds/engagement. Condition is the correlator; fresh instance clears it.
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id && $this->hasCondition(Game::DEAL_WITH_THE_DEVIL))
+        {
+            $game = $event->theah->game;
+            $playerId = $this->ControllerId;
+            $ownerId = $this->OwnerId;
+            $location = $this->Location;
+
+            $fullClassname = get_class($this);
+            $pos = strrpos($fullClassname, '\\');
+            $className = substr($fullClassname, $pos + 2);
+            $fresh = $game->instantiateCard($className, $this->Id);
+            $fresh->ControllerId = $playerId;
+            $fresh->OwnerId = $ownerId;
+            $fresh->Location = $location;
+            $fresh->IsUpdated = true;
+            $event->theah->addCardToWorld($fresh);
         }
     }
 

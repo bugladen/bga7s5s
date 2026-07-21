@@ -61,11 +61,17 @@ class _01037 extends Character implements IHasReactions
         {
             $characters = $theah->getCharactersAtLocation($location);
         }
+        $newInfluence = count($characters) + $adjustment;
+        if ($newInfluence == $this->ModifiedInfluence)
+        {
+            return;
+        }
+
         $influenceEvent = EventFactory::createCharacterInfluenceModifiedEvent(
-            $this->ControllerId, 
-            $this->Id, 
-            $this->ModifiedInfluence, 
-            count($characters) + $adjustment,
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedInfluence,
+            $newInfluence,
             $this->getInjectCode()
         );
         $theah->queueEvent($influenceEvent);

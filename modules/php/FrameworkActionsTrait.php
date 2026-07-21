@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
@@ -50,6 +51,11 @@ trait FrameworkActionsTrait
 
     public function actHighDramaPass(): void
     {
+        if ($this->mustPerformExtraAction())
+        {
+            throw new UserException(clienttranslate("You must perform an action with the designated character."));
+        }
+
         $playerId = $this->getActivePlayerId();
 
         $event = $this->theah->createEvent(Events::HighDramaPhasePlayerPassed);
@@ -280,7 +286,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanMove($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("Moving is not allowed right now."));
+            throw new UserException(clienttranslate("Moving is not allowed right now."));
         }
 
         $this->gamestate->nextState("moveActionStart");
@@ -288,6 +294,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaMoveActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $character = $this->getCardObjectFromDb($id);
 
         $this->globals->set(GAME::CHOSEN_CARD, $character->Id);
@@ -345,7 +353,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanRecruit($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("Recruiting is not allowed right now."));
+            throw new UserException(clienttranslate("Recruiting is not allowed right now."));
         }
 
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
@@ -355,6 +363,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaRecruitActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $performer = $this->theah->getCharacterById($id);
@@ -489,7 +499,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if (!$this->handHasAttachments($playerId) && !$this->theah->playerCanEquip($playerId)) {
-            throw new \BgaUserException(clienttranslate("Equipping is not allowed right now."));
+            throw new UserException(clienttranslate("Equipping is not allowed right now."));
         }
 
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
@@ -498,6 +508,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaEquipActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
         $performer = $this->theah->getCharacterById($id);
@@ -741,7 +753,7 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         if ($this->theah->playerCanBasicClaim($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("Claim Action is not allowed right now."));
+            throw new UserException(clienttranslate("Claim Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("claimActionStart");
@@ -749,6 +761,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaClaimActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $activePlayerId = $this->getActivePlayerId();
         $this->theah->buildCity();
 
@@ -800,11 +814,11 @@ trait FrameworkActionsTrait
         $action = $this->theah->getInPlayActionById($actionId);
 
         if ($action == null) {
-            throw new \BgaUserException(clienttranslate("Action not found."));
+            throw new UserException(clienttranslate("Action not found."));
         }
 
         if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
-            throw new \BgaUserException(clienttranslate("Action is not available to player."));
+            throw new UserException(clienttranslate("Action is not available to player."));
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
@@ -814,6 +828,11 @@ trait FrameworkActionsTrait
         // This can of course be overrident by the specific card
         if ($action instanceof CharacterAction)
             $this->globals->set(GAME::CHOSEN_PERFORMER, $action->OwnerId);
+
+        if ($action instanceof CharacterAction)
+        {
+            $this->assertIsExtraActionPerformer($action->OwnerId);
+        }
 
         $this->gamestate->nextState("actionChosen");
     }
@@ -852,6 +871,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaInPlayActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $this->theah->buildCity();
         $performer = $this->getCardObjectFromDb($id);
         if ($performer == null) 
@@ -868,7 +889,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         if ($this->theah->playerHasInHandActions($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("In-Hand Action is not allowed right now."));
+            throw new UserException(clienttranslate("In-Hand Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("inHandActionStart");
@@ -881,11 +902,25 @@ trait FrameworkActionsTrait
 
         $action = $this->theah->getInHandActionById($actionId);
         if ($action == null) {
-            throw new \BgaUserException(clienttranslate("Action not found."));
+            throw new UserException(clienttranslate("Action not found."));
         }
 
         if ( ! $action->isAvailabletoPlayer($player_id, $this->theah)) {
-            throw new \BgaUserException(clienttranslate("Action is not available to player."));
+            throw new UserException(clienttranslate("Action is not available to player."));
+        }
+
+        $lockedPerformerId = $this->getExtraActionPerformerId();
+        if ($lockedPerformerId !== null)
+        {
+            if (! $this->theah->actionAvailableToPerformer($action, $player_id, $lockedPerformerId))
+            {
+                throw new UserException(clienttranslate("Action is not available to the designated character."));
+            }
+
+            if (! $action->RequiresPerformerSelected)
+            {
+                $this->globals->set(GAME::CHOSEN_PERFORMER, $lockedPerformerId);
+            }
         }
 
         $this->globals->set(GAME::CHOSEN_ACTION, $action->Id);
@@ -907,6 +942,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaInHandActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
@@ -1146,6 +1183,8 @@ trait FrameworkActionsTrait
 
     public function actHighDramaChallengeActionPerformerChosen(int $id)
     {
+        $this->assertIsExtraActionPerformer($id);
+
         $activePlayerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
 
@@ -1265,7 +1304,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState("proceed");
     }
 
     public function actHighDramaChallengeActionReject()
@@ -1284,13 +1323,39 @@ trait FrameworkActionsTrait
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 
+        if ($challengeType == Game::AJA_CHALLENGE_TYPE && $target->ModifiedFinesse < 3)
+        {
+            throw new UserException(clienttranslate("Aja: Only characters with 3 Finesse or more may refuse this challenge."));
+        }
+
+        // WHY: Mōri Daichi — refuse locked by relative Combat for ANY challenge type
+        // involving him (not a dedicated CHALLENGE_TYPE; applies when he is challenged too).
+        if (_03050::challengeRefusalBlocked($performer, $target))
+        {
+            throw new UserException(clienttranslate("Mōri Daichi: This challenge cannot be refused (greater Combat)."));
+        }
+
+        // WHY: When Least Expected — Duelist performer can only refuse by discarding a card.
+        // Route to hand-picker when hand nonempty; block refuse when empty.
+        if ($challengeType == Game::WHEN_LEAST_EXPECTED_CHALLENGE_TYPE && $performer->hasTrait("Duelist"))
+        {
+            $hand = $this->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId);
+            if (count($hand) == 0)
+            {
+                throw new UserException(clienttranslate("When Least Expected: This challenge can only be refused by discarding a card, and you have no cards in hand."));
+            }
+
+            $this->gamestate->nextState("03042");
+            return;
+        }
+
         $event = EventFactory::createChallengeRejectedEvent($performer->Id, $target->Id);
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, false);
 
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState("proceed");
     }
 
     public function actHighDramaChallengeActionIntervene(int $id)
@@ -1340,7 +1405,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHALLENGE_ACCEPTED, true);
 
-        $this->gamestate->nextState("");
+        $this->gamestate->nextState("proceed");
     }    
 
     public function actDuelActionChooseTechnique()
@@ -1555,30 +1620,50 @@ trait FrameworkActionsTrait
         $actor = $this->theah->getDuelRoundActor();
         $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
         $this->theah->eventCheck($gambleCheck);
-        $playerId = $this->getActivePlayerId();
+        // WHY: Always the duel-round actor's deck/events — not getActivePlayerId().
+        // Proper Drama (03047a) can make the Maneuver owner the active chooser while
+        // the gambled card still comes from the actor's faction deck.
+        $playerId = $actor->ControllerId;
         $deckName = $this->getPlayerFactionDeckName($playerId);
 
         $deckCard = $this->cards->getCard($id);
         if ($deckCard == null) {
-            throw new \BgaUserException(clienttranslate("Card not found."));
+            throw new UserException(clienttranslate("Card not found."));
         }
 
         $card = $this->getCardObjectFromDb($id);
         if ($card->Location != $deckName) {
-            throw new \BgaUserException(clienttranslate("Card is not in your faction deck."));
+            throw new UserException(clienttranslate("Card is not in your faction deck."));
         }
 
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
-        $cards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        $fromBottom = $this->globals->get(Game::GAMBLE_REVEAL_FROM_BOTTOM, false);
+        $cards = $fromBottom
+            ? $this->getCardsOnBottomOfPlayerFactionDeck($playerId, $count)
+            : $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         if (!in_array($id, array_column($cards, 'id'))) {
-            throw new \BgaUserException(clienttranslate("Chosen card is not in the top $count cards of your faction deck."));
+            $where = $fromBottom ? "bottom" : "top";
+            throw new UserException(clienttranslate("Chosen card is not in the $where $count cards of your faction deck."));
         }
 
-        //Sink the cards that are not chosen
+        // Sink the cards that are not chosen.
+        // WHY: When revealing from the bottom (Devil Jonah's Bones), unchosen cards
+        // sink to the top of the deck instead of the bottom.
         $cards = array_filter($cards, fn($card) => $card['id'] != $id);
-        foreach ($cards as $notChosenCard) 
+        foreach ($cards as $notChosenCard)
         {
-            $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, false);
+            $this->cards->insertCardOnExtremePosition($notChosenCard['id'], $deckName, $fromBottom);
+        }
+
+        if (count($cards) > 0)
+        {
+            $message = $fromBottom
+                ? clienttranslate('${player_name} sinks ${count} unchosen card(s) to the top of their faction deck.')
+                : clienttranslate('${player_name} sinks ${count} unchosen card(s) to the bottom of their faction deck.');
+            $this->notify->all("message", $message, [
+                "player_name" => $this->getPlayerNameById($playerId),
+                "count" => count($cards),
+            ]);
         }
 
         $this->globals->set(Game::CHOSEN_CARD, $id);
@@ -1636,6 +1721,8 @@ trait FrameworkActionsTrait
             $this->theah->eventCheck($event);
             $this->theah->queueEvent($event);
 
+            // Restore actor as active before leaving so subsequent duel UI is theirs.
+            $this->gamestate->changeActivePlayer($playerId);
             $this->gamestate->nextState("noManeuver");
             return;
         }
@@ -1659,6 +1746,10 @@ trait FrameworkActionsTrait
         $card->Location = Game::LOCATION_DUELING_LINE;
         $this->updateCardObjectInDb($card);
         $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
+
+        // Restore actor as active before useManeuver/noManeuver — chooser may have
+        // been the Proper Drama Maneuver owner, not the gambling player.
+        $this->gamestate->changeActivePlayer($playerId);
 
         if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
             $this->gamestate->nextState("useManeuver");

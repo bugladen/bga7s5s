@@ -794,7 +794,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const setNames = 
         {
              '_7s5s': _('Core'), 
-             'tac': _('Tooth and Claw')
+             'tac': _('Tooth & Claw'),
+             'faf': _('Fate & Fortune')
         };
         return setNames[expansionName] ?? expansionName ?? '';
     },
@@ -1385,8 +1386,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }),  `${divId}_image`, 'last');
         }
 
-        if (attachment.engaged) 
+        if (attachment.engaged)
             dojo.addClass(`${divId}_image`, '_7sfs-engaged');
+
+        if (attachment.conditions?.includes(this.SILVER_SPINE_ABILITY_USED)) {
+            const id = `${divId}_silver_spine_ability_used`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-silver-spine-ability-used-chip',
+            }),  `${divId}_image`, 'last');
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Silver Spine's once-per-Day ability has been used")}</div>` );
+        }
 
         this.createTooltipForCard(attachment);
     },
@@ -2044,6 +2054,39 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     removeSirensScreamUsedList: function() {
         const existing = $('sirens-scream-used-list');
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
+
+    displayCrabsInABucketUsedList: function(cardId, usedList) {
+        this.removeCrabsInABucketUsedList();
+
+        if (!usedList || usedList.length === 0) {
+            return;
+        }
+
+        const card = this.cardProperties[cardId];
+        if (!card || !card.divId) return;
+
+        const imageElement = $(`${card.divId}_image`);
+        if (!imageElement) return;
+
+        dojo.place(this.format_block('jstpl_crabs_in_a_bucket_used_list', {}), imageElement, 'last');
+
+        const container = $('crabs-in-a-bucket-used-list');
+        usedList.forEach((entry) => {
+            dojo.create('span', {
+                innerHTML: entry.playerName,
+                style: `color:#${entry.playerColor}`,
+            }, container);
+        });
+
+        this.addTippyTooltip('crabs-in-a-bucket-used-list', `<div class='_7sfs-basic-tooltip'>${_("Crabs in a Bucket - Players who have used this Action this Day")}</div>`);
+    },
+
+    removeCrabsInABucketUsedList: function() {
+        const existing = $('crabs-in-a-bucket-used-list');
         if (existing) {
             dojo.destroy(existing);
         }

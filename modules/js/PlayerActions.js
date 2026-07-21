@@ -59,6 +59,10 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_03006': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_03017': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_03030': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_03053': 'actCityLocationsForReknownSelected',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
         };
 
@@ -156,16 +160,17 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const actions = {
             'highDramaPhase01072_2'   : 'actFromCardWithId',
+            'highDramaPhase03cd03_2'  : 'actFromCardWithId',
         };
 
         const action = actions[this.gamedatas.gamestate.name];
 
         let errors = false;
-        this.bgaPerformAction(action, { 
+        this.bgaPerformAction(action, {
             'id' : card.id
         }).catch(() =>  {
             errors = true;
-        }).then(() =>  {                
+        }).then(() =>  {
             if (!errors) this.approachDeck.removeFromStockById(card.id);
         });
     },

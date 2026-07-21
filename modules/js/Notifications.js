@@ -69,6 +69,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['locationClaimed', 500],
             ['parleyInterveneListUpdated', 1],
             ['sirensScreamUsedListUpdated', 1],
+            ['crabsInABucketUsedListUpdated', 1],
             ['locationActionUsedListUpdated', 1],
             ['catsEmbargoUpdated', 1],
             ['locationUncontrolled', 500],
@@ -76,6 +77,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['maryamBenuPleromaAbilityRemoved', 500],
             ['carmellaAbilityUsed', 1],
             ['carmellaAbilityRemoved', 1],
+            ['silverSpineAbilityUsed', 500],
+            ['silverSpineAbilityRemoved', 500],
             ['indomitableWillConditionStarted', 500],
             ['indomitableWillConditionEnded', 500],
             ['contemptAndHatredConditionStarted', 1],
@@ -84,6 +87,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['solineElGatoConditionEnded', 1],
             ['epeeSanglanteConditionStarted', 1],
             ['epeeSanglanteConditionEnded', 1],
+            ['harpoonConditionStarted', 1],
+            ['harpoonConditionEnded', 1],
+            ['lodestoneConditionStarted', 1],
+            ['lodestoneConditionEnded', 1],
             ['maneuverUsed', 1],
             ['newDay', 1000],
             ['newDuelRound', 500],
@@ -888,9 +895,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = this.cardProperties[args.cardId];
         const oldDivId = card.divId;
         const oldElement = $(oldDivId);
-        
+
         card.engaged = args.engage;
         card.location = args.toLocation;
+        if (args.controllerId !== undefined) {
+            card.controllerId = args.controllerId;
+        }
 
         // Get the destination target (returns string ID, need to convert to DOM element)
         const cardId = this.createCardId(card, args.toLocation);
@@ -1610,6 +1620,51 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_silverSpineAbilityUsed: function( notif )
+    {
+        debug( 'notif_silverSpineAbilityUsed' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions.push(this.SILVER_SPINE_ABILITY_USED);
+
+            const imageElement = dojo.query('._7sfs-card', card.divId)[0];
+            const id = `${card.divId}_silver_spine_ability_used`;
+            dojo.place( this.format_block( 'jstpl_generic_chip', {
+                id: id,
+                class: '_7sfs-silver-spine-ability-used-chip',
+            }),  imageElement, 'last');
+
+            this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Silver Spine's once-per-Day ability has been used")}</div>` );
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_silverSpineAbilityRemoved: function( notif )
+    {
+        debug( 'notif_silverSpineAbilityRemoved' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.SILVER_SPINE_ABILITY_USED);
+
+            // WHY card.divId, not args.cardId: the chip was placed with id
+            // `${card.divId}_silver_spine_ability_used`. card.divId is the full
+            // DOM id (e.g. `${controllerId}-${cardId}`), not the bare card id —
+            // using args.cardId here silently no-ops because the element doesn't
+            // exist under that id.
+            const id = `${card.divId}_silver_spine_ability_used`;
+            dojo.destroy(id);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
     notif_carmellaAbilityUsed: function( notif )
     {
         debug( 'notif_carmellaAbilityUsed' );
@@ -1770,6 +1825,93 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.EPEE_SANGLANTE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_harpoonConditionStarted: function( notif )
+    {
+        debug( 'notif_harpoonConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.HARPOON_CONDITION))
+                card.conditions.push(this.HARPOON_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_harpoonConditionEnded: function( notif )
+    {
+        debug( 'notif_harpoonConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.HARPOON_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_lodestoneConditionStarted: function( notif )
+    {
+        debug( 'notif_lodestoneConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.LODESTONE_CONDITION))
+                card.conditions.push(this.LODESTONE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_lodestoneConditionEnded: function( notif )
+    {
+        debug( 'notif_lodestoneConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.LODESTONE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_shacklesConditionStarted: function( notif )
+    {
+        debug( 'notif_shacklesConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.SHACKLES_CONDITION))
+                card.conditions.push(this.SHACKLES_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_shacklesConditionEnded: function( notif )
+    {
+        debug( 'notif_shacklesConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.SHACKLES_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },
@@ -2388,6 +2530,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         this.displaySirensScreamUsedList(args.cardId, args.usedList);
+    },
+
+    notif_crabsInABucketUsedListUpdated: function( notif )
+    {
+        debug( 'notif_crabsInABucketUsedListUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayCrabsInABucketUsedList(args.cardId, args.usedList);
     },
 
     notif_locationActionUsedListUpdated: function( notif )

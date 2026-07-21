@@ -755,7 +755,7 @@ trait StatesTrait
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);
@@ -1380,13 +1380,28 @@ trait StatesTrait
         }
     }
 
+    public function stDuelGambleSetup(): void
+    {
+        $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+
+        $event = EventFactory::createGambleSetupEvent($actor->Id, $actor->ControllerId);
+        $this->theah->eventCheck($event);
+        $this->theah->queueEvent($event);
+
+        $this->gamestate->nextState("processEvents");
+    }
+
     public function stDuelGambleRevealed(): void
     {
         $this->theah->buildCity();
         $actor = $this->theah->getDuelRoundActor();
         $playerId = $actor->ControllerId;
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
-        $deckCards = $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
+        $fromBottom = $this->globals->get(Game::GAMBLE_REVEAL_FROM_BOTTOM, false);
+        $deckCards = $fromBottom
+            ? $this->getCardsOnBottomOfPlayerFactionDeck($playerId, $count)
+            : $this->getCardsOnTopOfPlayerFactionDeck($playerId, $count);
         $revealedCardIds = array_map(fn($c) => (int)$c['id'], $deckCards);
 
         $event = EventFactory::createDuelGambleCardsRevealedEvent($actor->Id, $playerId, $revealedCardIds);
@@ -1496,6 +1511,7 @@ trait StatesTrait
         $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
+        $this->globals->delete(Game::GAMBLE_REVEAL_FROM_BOTTOM);
 
         $this->gamestate->nextState();
     }
@@ -1605,6 +1621,7 @@ trait StatesTrait
         $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
         $this->globals->delete(Game::GAMBLE_REVEAL_COUNT);
         $this->globals->delete(Game::GAMBLE_REVEAL_EXPLANATIONS);
+        $this->globals->delete(Game::GAMBLE_REVEAL_FROM_BOTTOM);
         $this->globals->delete(Game::ABNORMAL_FLOW);
         $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
         $this->globals->delete(Game::PENDING_DEFENDER_THREAT);
@@ -1691,6 +1708,7 @@ trait StatesTrait
         $this->globals->delete(Game::ABNORMAL_FLOW);
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(Game::PRESSURE_BONUS);
+        $this->globals->delete(Game::LOYAL_PLAYER_ID);
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
@@ -1711,12 +1729,14 @@ trait StatesTrait
         }
         else
         {
+            $this->globals->delete(Game::EXTRA_ACTION_PERFORMER);
+
             $nextPlayerId = $this->getPlayerAfter($currentPlayerId);
             $this->globals->set(Game::CURRENT_PLAYER, $nextPlayerId);
-        }
 
-        $event = EventFactory::createPlayerTurnEndEvent($currentPlayerId);
-        $this->theah->queueEvent($event);
+            $event = EventFactory::createPlayerTurnEndEvent($currentPlayerId);
+            $this->theah->queueEvent($event);
+        }
         
         $this->gamestate->nextState("nextPlayer");
     }
@@ -2049,6 +2069,12 @@ trait StatesTrait
                 $auxScore = $this->dbGetAuxScore($playerId);
                 $auxScore += 20 - $wounds;
                 $this->dbSetAuxScore($playerId, $auxScore);
+
+                //If leader has been destroyed, set wounds to 100
+                if ($this->characterIsInDiscardOrLocker($leader))
+                {
+                    $leader->Wounds = 100;
+                }
 
                 if ($wounds < $lowestWounds)
                 {

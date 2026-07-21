@@ -7,6 +7,7 @@ class EventCharacterMustered extends Event
     public int $playerId;
     public int $characterId;
     public string $location;
+    public string $fromLocation;
 
     public function __construct()
     {
@@ -15,5 +16,6 @@ class EventCharacterMustered extends Event
         $this->playerId = 0;
         $this->characterId = 0;
         $this->location = '';
-    }    
+        $this->fromLocation = '';
+    }
 }

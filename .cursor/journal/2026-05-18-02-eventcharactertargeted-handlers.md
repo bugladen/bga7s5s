@@ -63,6 +63,37 @@ reason.
   IAbilityThatTargetsCharacters ability, not just sorceries). Same
   Location-not-Home + has-performers-at-location gating as the
   existing branch.
+- `cards/faf/reactions/Reaction_03006.php` — Premonition (Strega
+  Reaction). **Missed in the initial audit and only caught when the
+  user asked.** Card text reads "When your character at your
+  performer's location is **targeted** by an opponent…" — the most
+  literal fit for EventCharacterTargeted of any handler so far.
+  Existing `sourceAbilityTargetsCharacters()` helper gates on
+  `IAbilityThatTargetsCharacters`, and the dispatcher already had
+  branches for `EventSorcererAbilityPlayed`,
+  `EventRangedAbilityPlayed`, `EventCardEngaged/Engarded`,
+  `EventCardMoving`, `EventCharacterBeingWounded/Healed`, and
+  `EventChallengeIssued`. Added an `EventCharacterTargeted` branch
+  immediately after the SorcererAbility/RangedAbility branch that
+  routes `$event->targetId` through `maybeTrigger()` (with a
+  `$event->canceled` short-circuit since EventCharacterTargeted is an
+  in-flight event, unlike the *Played events).
+- `cards/faf/_03cd21.php` — Silver Spine (City Attachment).
+  **Missed in the initial IRiskThatTargetsCharacters audit and only
+  caught when the user asked.** Same shape as Maryam: cancel the
+  first opponent's Risk targeting the equipped character each day.
+  Uses helper `isOpponentRiskTargetingCharacters()` which contains
+  the interface check (line 135) — my first grep apparently didn't
+  surface this match; re-running it found Silver Spine plus a
+  template hit in `.claude/skills/create-city-attachment/SKILL.md`.
+  Added a parallel `EventCharacterTargeted` branch keyed on
+  `$event->targetId == $this->AttachedToId`, mirroring the existing
+  `EventCharacterBeingWounded` branch shape.
+- `.claude/skills/create-city-attachment/SKILL.md` — updated the
+  "events to repeat" comment in the skeleton to include
+  `EventCharacterTargeted (targetId)`. Without this, future cards
+  minted from the template would have the same gap that Silver Spine
+  did. (Doc-only change, no game behavior.)
 - `cards/_7s5s/reactions/Reaction_01122.php` — Torsten Vakt "Cancel a
   Sorcery or Sorcerer Ability Targeting Torsten Vakt." Added an
   `EventCharacterTargeted` branch gated on `ISorcererAbility` and
@@ -87,16 +118,45 @@ reason.
 
 ## Verified audit: IRiskThatTargetsCharacters reactors
 
-Searched `instanceof IRiskThatTargetsCharacters` across all of
-`modules/php`. Only two files actually USE the interface as a gate
-(versus just implementing it):
+Re-audited after the user surfaced Silver Spine. The correct full
+list of files that USE the interface as a gate (versus just
+implementing it):
 
 - `cards/_7s5s/_01186.php` (Maryam) — wired
 - `cards/tac/reactions/Reaction_02048.php` — wired
+- `cards/faf/_03cd21.php` (Silver Spine) — wired (added after user
+  pointed it out — my first audit missed it)
 
-All other 27 matches are Risk cards that *implement* the interface
+The other 27 matches are Risk cards that *implement* the interface
 (declare themselves as Risks that target characters). They don't react
 to events from this interface, so they're not in scope.
+
+**Audit-process note for future agents:** Don't trust a single grep
+pass for `instanceof IRiskThatTargetsCharacters`. Cards that wrap the
+check in a helper (e.g., Silver Spine's `isOpponentRiskTargetingCharacters`)
+were apparently missed by my first scoped grep, even though the text
+was present. Re-run unscoped and verify by counting matches against
+the implementer list.
+
+## Verified audit: IAbilityThatTargetsCharacters reactors
+
+Re-audited after Premonition (Reaction_03006) was missed:
+
+- `cards/_7s5s/reactions/Reaction_01008.php` (Cesca) — wired
+- `cards/_7s5s/reactions/Reaction_01014.php` (Vittoria) — wired
+- `cards/_7s5s/reactions/Reaction_01032.php` (Red Hand) — wired
+- `cards/_7s5s/reactions/Reaction_01053.php` (Hexenjagd) — wired
+- `cards/tac/reactions/Reaction_02016.php` (Diplomatic Impunity) — wired
+- `cards/faf/reactions/Reaction_03006.php` (Premonition) — wired
+
+Plus `Reaction_01122.php` (Torsten Vakt) which doesn't check the
+interface itself but cancels Sorcery/Sorcerer abilities targeting him
+— added an `EventCharacterTargeted` branch gated on `ISorcererAbility`
+to future-proof.
+
+Same lesson as the Risk audit: a sub-agent's enumeration is not
+authoritative. Always re-grep the canonical pattern unscoped before
+declaring an audit complete.
 
 **Considered and skipped (with reasoning):**
 - `Reaction_01008.php` (Cesca) — initially skipped on the reasoning

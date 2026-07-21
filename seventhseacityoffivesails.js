@@ -26,12 +26,15 @@ define([
    g_gamethemeurl + 'modules/js/OnEnteringState.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.tac.js',
+   g_gamethemeurl + 'modules/js/OnEnteringState.faf.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.7s5s.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.tac.js',
+   g_gamethemeurl + 'modules/js/OnUpdateActionButtons.faf.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.tac.js',
+   g_gamethemeurl + 'modules/js/OnLeavingState.faf.js',
    g_gamethemeurl + 'modules/js/Setup.js',
    g_gamethemeurl + 'modules/js/Utilities.js',
    g_gamethemeurl + 'modules/js/Notifications.js',
@@ -65,12 +68,15 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         seventhseacityoffivesails.onenteringstate,
         seventhseacityoffivesails.onenteringstate_7s5s,
         seventhseacityoffivesails.onenteringstate_tac,
+        seventhseacityoffivesails.onenteringstate_faf,
         seventhseacityoffivesails.onleavingstate,
         seventhseacityoffivesails.onleavingstate_7s5s,
         seventhseacityoffivesails.onleavingstate_tac,
+        seventhseacityoffivesails.onleavingstate_faf,
         seventhseacityoffivesails.onupdateactionbuttons,
         seventhseacityoffivesails.onupdateactionbuttons_7s5s,
         seventhseacityoffivesails.onupdateactionbuttons_tac,
+        seventhseacityoffivesails.onupdateactionbuttons_faf,
         seventhseacityoffivesails.setup,
         seventhseacityoffivesails.utilities,
         seventhseacityoffivesails.notifications,
@@ -130,6 +136,10 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
             this.WILHELM_DUNST_CHALLENGE_TYPE = 13;
             this.UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
+            this.AJA_CHALLENGE_TYPE = 18;
+            this.DON_CONSTANZO_CHALLENGE_TYPE = 19;
+            this.SANJAY_CHALLENGE_TYPE = 22;
+            this.WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;
@@ -144,10 +154,14 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.OLD_CATS_EMBARGO_TARGET = 'Cats Embargo Target';
             this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
             this.CARMELLA_ABILITY_USED = 'Carmella Ability Used';
+            this.SILVER_SPINE_ABILITY_USED = 'Silver Spine Ability Used';
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
             this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
             this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
+            this.HARPOON_CONDITION = 'Harpooned (-1 Finesse; cannot swap or move)';
+            this.LODESTONE_CONDITION = 'Lodestone (opponents cannot move Home)';
+            this.SHACKLES_CONDITION = 'Shackled (cannot move)';
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

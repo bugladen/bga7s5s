@@ -4,7 +4,11 @@
         "values": {
             "0": {
                 "name": "Core Set",
-                "description": "City Deck will be used from the Core Set"
+                "description": "The City Deck will use the Core Set build"
+            },
+            "1": {
+                "name": "City Deck Update 2024",
+                "description": "The City Deck will use the Fate & Fortune City Deck Update 2024 build"
             }
         }
     },

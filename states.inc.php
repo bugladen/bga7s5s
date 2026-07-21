@@ -658,6 +658,11 @@ $machinestates = [
                 "02046" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02046,
                 "02046_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02046_2,
                 "02052" => States::PLANNING_PHASE_RESOLVE_SCHEMES_02052,
+                "03005" => States::PLANNING_PHASE_RESOLVE_SCHEMES_03005,
+                "03006" => States::PLANNING_PHASE_RESOLVE_SCHEMES_03006,
+                "03017" => States::PLANNING_PHASE_RESOLVE_SCHEMES_03017,
+                "03030" => States::PLANNING_PHASE_RESOLVE_SCHEMES_03030,
+                "03053" => States::PLANNING_PHASE_RESOLVE_SCHEMES_03053,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_DRAW,
@@ -715,6 +720,7 @@ $machinestates = [
             "action" => "stRunEvents",
             "transitions" => [
                 "01098" => States::PLANNING_PHASE_END_01098,
+                "03041" => States::PLANNING_PHASE_END_03041,
                 "reaction" => States::PLANNING_PHASE_END_REACTIONS,
                 "pay" => States::PLANNING_PHASE_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_BEGINNING,
@@ -983,6 +989,55 @@ $machinestates = [
                 "02028" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "02049" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "02061" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "03cd01" => States::HIGH_DRAMA_PLAYER_TURN_03CD01,
+                "03cd01_2" => States::HIGH_DRAMA_PLAYER_TURN_03CD01_2,
+                "03cd03" => States::HIGH_DRAMA_PLAYER_TURN_03CD03,
+                "03cd03_2" => States::HIGH_DRAMA_PLAYER_TURN_03CD03_2,
+                "03cd13" => States::HIGH_DRAMA_PLAYER_TURN_03CD13,
+                "03001" => States::HIGH_DRAMA_PLAYER_TURN_03001,
+                "03002" => States::HIGH_DRAMA_PLAYER_TURN_03002,
+                "03002_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "03003" => States::HIGH_DRAMA_PLAYER_TURN_03003,
+                "03003_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "03008" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "03009" => States::HIGH_DRAMA_PLAYER_TURN_03009,
+                "03011" => States::HIGH_DRAMA_PLAYER_TURN_03011,
+                "03020" => States::HIGH_DRAMA_PLAYER_TURN_03020,
+                "03021" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "03026" => States::HIGH_DRAMA_PLAYER_TURN_03026,
+                "03026_2" => States::HIGH_DRAMA_PLAYER_TURN_03026_2,
+                "03026_3" => States::HIGH_DRAMA_PLAYER_TURN_03026_3,
+                "03029" => States::HIGH_DRAMA_PLAYER_TURN_03029,
+                "03029_2" => States::HIGH_DRAMA_PLAYER_TURN_03029_2,
+                "03029_3" => States::HIGH_DRAMA_PLAYER_TURN_03029_3,
+                "03030" => States::HIGH_DRAMA_PLAYER_TURN_03030,
+                "03030_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "03032" => States::HIGH_DRAMA_PLAYER_TURN_03032,
+                "03034" => States::HIGH_DRAMA_PLAYER_TURN_03034,
+                "03034_2" => States::HIGH_DRAMA_PLAYER_TURN_03034_2,
+                "03037" => States::HIGH_DRAMA_PLAYER_TURN_03037,
+                "03037_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "03038a" => States::HIGH_DRAMA_PLAYER_TURN_03038a,
+                "03038b" => States::HIGH_DRAMA_PLAYER_TURN_03038b,
+                "03038b_2" => States::HIGH_DRAMA_PLAYER_TURN_03038b_2,
+                "03040" => States::HIGH_DRAMA_PLAYER_TURN_03040,
+                "03042" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "03045" => States::HIGH_DRAMA_PLAYER_TURN_03045,
+                "03051" => States::HIGH_DRAMA_PLAYER_TURN_03051,
+                "03054" => States::HIGH_DRAMA_PLAYER_TURN_03054,
+                "03055" => States::HIGH_DRAMA_PLAYER_TURN_03055,
+                "03056" => States::HIGH_DRAMA_PLAYER_TURN_03056,
+                "03056_2" => States::HIGH_DRAMA_PLAYER_TURN_03056_2,
+                "03057" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "03058" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "03060" => States::HIGH_DRAMA_PLAYER_TURN_03060,
+                "03061" => States::HIGH_DRAMA_PLAYER_TURN_03061,
+                "03062" => States::HIGH_DRAMA_PLAYER_TURN_03062,
+                "03063" => States::HIGH_DRAMA_PLAYER_TURN_03063,
+                "03063_2" => States::HIGH_DRAMA_PLAYER_TURN_03063_2,
+                "03067" => States::HIGH_DRAMA_PLAYER_TURN_03067,
+                "03071" => States::HIGH_DRAMA_PLAYER_TURN_03071,
+                "03072" => States::HIGH_DRAMA_PLAYER_TURN_03072,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
@@ -1185,6 +1240,7 @@ $machinestates = [
                 "transitions" => [
                     "01063" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01063,
                     "01067" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01067,
+                    "03013" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_03013,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
@@ -1243,7 +1299,9 @@ $machinestates = [
                 "actHighDramaChallengeActionIntervene"
             ],
             "transitions" => [
-                "" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
+                "proceed" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
+                // WHY: When Least Expected Duelist refuse — discard a card before ChallengeRejected.
+                "03042" => States::HIGH_DRAMA_PLAYER_TURN_03042,
             ]
         ],
 
@@ -1918,6 +1976,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+                    "03060_2" => States::HIGH_DRAMA_PLAYER_TURN_03060_2,
                     "reaction" => States::HIGH_DRAMA_IN_HAND_ACTION_REACTIONS,
                     "pay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
@@ -2153,7 +2212,7 @@ $machinestates = [
             "transitions" => [
                 "combatCardChosen" => States::DUEL_COMBAT_CARD_EVENTS,
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
-                "chooseGambleCard" => States::DUEL_GAMBLE_REVEALED,
+                "chooseGambleCard" => States::DUEL_GAMBLE_SETUP,
                 "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
         ],
@@ -2162,7 +2221,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
-                    "01135" => States::DUEL_GAMBLE_REVEALED,
+                    "01135" => States::DUEL_GAMBLE_SETUP,
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "reaction" => States::DUEL_COMBAT_CARD_REACTIONS,
@@ -2237,6 +2296,13 @@ $machinestates = [
                         "02043b" => States::DUEL_CHOOSE_TECHNIQUE_02043b,
                         "02054" => States::DUEL_CHOOSE_TECHNIQUE_02054,
                         "02055" => States::DUEL_CHOOSE_TECHNIQUE_02055,
+                        "03013" => States::DUEL_CHOOSE_TECHNIQUE_03013,
+                        "03025b" => States::DUEL_CHOOSE_TECHNIQUE_03025B,
+                        "03039" => States::DUEL_CHOOSE_TECHNIQUE_03039,
+                        "03043" => States::DUEL_CHOOSE_TECHNIQUE_03043,
+                        "03049" => States::DUEL_CHOOSE_TECHNIQUE_03049,
+                        "03051" => States::DUEL_CHOOSE_TECHNIQUE_03051,
+                        "03052" => States::DUEL_CHOOSE_TECHNIQUE_03052,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral
@@ -2247,6 +2313,13 @@ $machinestates = [
                         "01164" => States::DUEL_RESOLVE_MANEUVER_01164,
                         "01165" => States::DUEL_RESOLVE_MANEUVER_01165,
                         "02057" => States::DUEL_RESOLVE_MANEUVER_02057,
+                        "03024" => States::DUEL_RESOLVE_MANEUVER_03024,
+                        "03035" => States::DUEL_RESOLVE_MANEUVER_03035,
+                        "03059" => States::DUEL_RESOLVE_MANEUVER_03059,
+                        "03059_2" => States::DUEL_RESOLVE_MANEUVER_03059_2,
+                        "03059_3" => States::DUEL_RESOLVE_MANEUVER_03059_3,
+                        "03059_4" => States::DUEL_RESOLVE_MANEUVER_03059_4,
+                        "03069" => States::DUEL_RESOLVE_MANEUVER_03069,
 
                         "endOfEvents" => States::DUEL_CHOOSE_ACTION,
                         "endOfGame" => States::END_GAME
@@ -2397,6 +2470,15 @@ $machinestates = [
                         "01200" => States::DUEL_RESOLVE_MANEUVER_01200,
                         "02038" => States::DUEL_RESOLVE_MANEUVER_02038,
                         "02057" => States::DUEL_RESOLVE_MANEUVER_02057,
+                        "03024" => States::DUEL_RESOLVE_MANEUVER_03024,
+                        "03035" => States::DUEL_RESOLVE_MANEUVER_03035,
+                        "03035_2" => States::DUEL_RESOLVE_MANEUVER_03035_2,
+                        "03036" => States::DUEL_RESOLVE_MANEUVER_03036,
+                        "03059" => States::DUEL_RESOLVE_MANEUVER_03059,
+                        "03059_2" => States::DUEL_RESOLVE_MANEUVER_03059_2,
+                        "03059_3" => States::DUEL_RESOLVE_MANEUVER_03059_3,
+                        "03059_4" => States::DUEL_RESOLVE_MANEUVER_03059_4,
+                        "03069" => States::DUEL_RESOLVE_MANEUVER_03069,
                         "reaction" => States::DUEL_RESOLVE_MANEUVER_REACTIONS,
                         "pay" => States::DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,
@@ -2487,10 +2569,59 @@ $machinestates = [
                 "transitions" => [
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
-                    "rollTheBones" => States::DUEL_GAMBLE_REVEALED,
+                    "rollTheBones" => States::DUEL_GAMBLE_SETUP,
                     "noMoreCombatCards" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
+
+            States::DUEL_GAMBLE_SETUP => [
+                "name" => "duelGambleSetup",
+                "type" => "game",
+                "action" => "stDuelGambleSetup",
+                "transitions" => [
+                    "processEvents" => States::DUEL_GAMBLE_SETUP_EVENTS,
+                ]
+            ],
+                States::DUEL_GAMBLE_SETUP_EVENTS => [
+                    "name" => "duelGambleSetupEvents",
+                    "type" => "game",
+                    "action" => "stRunEvents",
+                    "transitions" => [
+                        "03cd05" => States::DUEL_GAMBLE_SETUP_03CD05,
+                        "reaction" => States::DUEL_GAMBLE_SETUP_REACTIONS,
+                        "pay" => States::DUEL_GAMBLE_SETUP_PAY_FOR_REACTION,
+                        "endOfEvents" => States::DUEL_GAMBLE_REVEALED,
+                        "endOfGame" => States::END_GAME
+                    ]
+                ],
+                States::DUEL_GAMBLE_SETUP_REACTIONS => [
+                    "name" => "playerReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actReactionForState",
+                    ],
+                    "transitions" => [
+                        "done" => States::DUEL_GAMBLE_SETUP_EVENTS,
+                    ]
+                ],
+                States::DUEL_GAMBLE_SETUP_PAY_FOR_REACTION => [
+                    "name" => "playerPayForReaction",
+                    "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                    "descriptionmyturn" => "",
+                    "type" => "activeplayer",
+                    "args" => "argsForStatePrivate",
+                    "possibleactions" => [
+                        "actBack",
+                        "actPayForReaction",
+                    ],
+                    "transitions" => [
+                        "back" => States::DUEL_GAMBLE_SETUP_REACTIONS,
+                        "paid" => States::DUEL_GAMBLE_SETUP_EVENTS,
+                    ]
+                ],
 
             States::DUEL_GAMBLE_REVEALED => [
                 "name" => "duelGambleRevealed",
@@ -2505,6 +2636,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        "03047" => States::DUEL_CHOOSE_GAMBLE_CARD_03047,
                         "reaction" => States::DUEL_GAMBLE_REVEALED_REACTIONS,
                         "pay" => States::DUEL_GAMBLE_REVEALED_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_CHOOSE_GAMBLE_CARD,
@@ -2561,7 +2693,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "01135" => States::DUEL_GAMBLE_REVEALED,
+                        "01135" => States::DUEL_GAMBLE_SETUP,
                         "reaction" => States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS,
                         "pay" => States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_APPLY_COMBAT_CARD_STATS,
@@ -2612,6 +2744,7 @@ $machinestates = [
                         "01031" => States::DUEL_END_OF_ROUND_01031,
                         "01096" => States::DUEL_END_OF_ROUND_01096,
                         "01200" => States::DUEL_END_OF_ROUND_01200,
+                        "03022" => States::DUEL_END_OF_ROUND_03022,
                         "reaction" => States::DUEL_END_OF_ROUND_REACTIONS,
                         "pay" => States::DUEL_END_OF_ROUND_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_NEXT_PLAYER,
@@ -2771,6 +2904,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+                "03061" => States::HIGH_DRAMA_END_03061,
                 "reaction" => States::HIGH_DRAMA_END_REACTIONS,
                 "pay" => States::HIGH_DRAMA_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLUNDER_PHASE_BEGIN,
@@ -2984,6 +3118,7 @@ $machinestates = [
                 "01177" => States::DUSK_PHASE_BEGIN_01177,
                 "02024" => States::DUSK_PHASE_BEGIN_02024,
                 "02053" => States::DUSK_PHASE_BEGIN_02053,
+                "03052" => States::DUSK_PHASE_BEGIN_03052,
                 "reaction" => States::DUSK_PHASE_BEGIN_REACTIONS,
                 "pay" => States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_CLEANUP,

@@ -154,7 +154,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     overflow: hidden;
 }
 
-._7sfs-deck-picker-banner-image::after {
+._7sfs-deck-picker-banner-image::before {
     content: '';
     position: absolute;
     top: 50%;
@@ -165,7 +165,22 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    transform: translate(calc(-50% - 220px), -50%) rotate(-20deg);
+    transform: translate(calc(-50% - 215px), calc(-50% + 60px)) rotate(-20deg);
+    pointer-events: none;
+}
+
+._7sfs-deck-picker-banner-image::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60%;
+    height: 60%;
+    background-image: url('img/deckpicker/faf.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: translate(calc(-50% - 200px), calc(-50% + 15px)) rotate(-15deg);
     pointer-events: none;
 }
 
@@ -468,6 +483,25 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     left: 80px;
     top: 30px;
     border: 2px solid lime
+}
+
+._7sfs-silver-spine-ability-used-chip {
+    /* Attachments are splayed left under the equipped character; only the leftmost
+       strip of an unsplayed attachment is visible (see ._7sfs-attached-card,
+       left: calc(var(--attachment-index) * -15px)). Anchor the chip to the upper-left
+       so it stays visible whether or not the attachment is splayed. */
+    position: absolute;
+    background-image: url('https://dtdb.co/images/7s5s/en/03cd21.jpg');
+    background-size: 247px 337px;
+    background-position: -155px -60px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: inline-block;
+    left: -10px;
+    top: 0px;
+    z-index: 20;
+    border: 2px solid yellow
 }
 
 ._7sfs-indomitable-will-condition-chip {

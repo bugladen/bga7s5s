@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01172;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03009;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
@@ -27,6 +28,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02010;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02051;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02001;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\reactions\Reaction_03007;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -201,7 +203,9 @@ class Reaction_01008 extends CardReaction
             || $ability instanceof Action_02008
             || $ability instanceof Action_02010
             || $ability instanceof Action_02051
-            || $ability instanceof Reaction_02001;
+            || $ability instanceof Action_03009
+            || $ability instanceof Reaction_02001
+            || $ability instanceof Reaction_03007;
     }
 
     private function announceReaction(Game $game, ICardAbility $ability): void
@@ -360,11 +364,20 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_02010");
             }
 
+            //Voice of the Gods
             if ($ability instanceof Action_02051)
             {
                 $cardCopied = true;
                 $card = $this->copyCard($game, "02051", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_02051");
+            }
+
+            //Follow the Thread
+            if ($ability instanceof Action_03009)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "03009", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_03009");
             }
 
             //Adriana — Wound Non-Sorcerer (copy of Sorcerer Reaction)
@@ -382,6 +395,42 @@ class Reaction_01008 extends CardReaction
 
                 $transition = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $copy->Id);
                 $game->theah->queueEvent($transition);
+
+                $this->setUsed($game->theah, true);
+                $this->announceReaction($game, $ability);
+            }
+
+            //Matushka's Shears — Opposing Character Sent to The Locker (copy of Sorcerer Reaction)
+            //Host a transient copy of Reaction_03007 on Cesca and dispatch via beginCopy, which skips the
+            //Engage stage (Cesca's Copy click is the equivalent commitment) and drives directly into the
+            //opponent's choose/pick1/pick2 flow.
+            //
+            //Reachability: 03007's SorcererAbilityPlayed event carries no target, so Cesca's trigger only
+            //fires when she is the performer — i.e. Matushka's Shears is attached to Cesca herself.
+            //
+            //Opponent: the trigger event doesn't carry the original opponent. In a 2-player game the
+            //opponent is uniquely the other player; for 2+ players this picks "an opponent" (the first
+            //non-Cesca player) — flagged for rules-team confirmation.
+            if ($ability instanceof Reaction_03007)
+            {
+                $opponentId = 0;
+                foreach ($game->loadPlayersBasicInfos() as $pid => $_)
+                {
+                    $pid = (int)$pid;
+                    if ($pid != $cesca->ControllerId)
+                    {
+                        $opponentId = $pid;
+                        break;
+                    }
+                }
+
+                $copy = new Reaction_03007();
+                $copy->setId("Reaction_03007");
+                $copy->setOwnerId($cesca->Id);
+                $cesca->addReaction($copy, $game);
+                $this->copiedReactions[] = $copy;
+
+                $copy->beginCopy($game, $opponentId);
 
                 $this->setUsed($game->theah, true);
                 $this->announceReaction($game, $ability);

@@ -263,6 +263,10 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displaySirensScreamUsedList(gamedatas.sirensScreamUsedList.cardId, gamedatas.sirensScreamUsedList.usedList);
         }
 
+        if (gamedatas.crabsInABucketUsedList && gamedatas.crabsInABucketUsedList.usedList.length > 0) {
+            this.displayCrabsInABucketUsedList(gamedatas.crabsInABucketUsedList.cardId, gamedatas.crabsInABucketUsedList.usedList);
+        }
+
         if (gamedatas.locationActionUsedLists) {
             gamedatas.locationActionUsedLists.forEach((entry) => {
                 this.displayLocationActionUsedList(entry.actionId, entry.locationName, entry.usedList);

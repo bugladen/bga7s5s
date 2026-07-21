@@ -60,8 +60,24 @@ class DB
 
     public function deleteEventBatch(int $batchId)
     {
-        $sql = "DELETE FROM events 
+        $sql = "DELETE FROM events
                 WHERE event_serialized LIKE '%batchId\";i:{$batchId}%'";
+        $this->executeSql($sql);
+    }
+
+    public function deleteRenownAddedToLocationEventsByBatchId(int $batchId)
+    {
+        $sql = "DELETE FROM events
+                WHERE event_serialized LIKE '%EventRenownAddedToLocation%'
+                  AND event_serialized LIKE '%batchId\";i:{$batchId};%'";
+        $this->executeSql($sql);
+    }
+
+    public function deleteRenownRemovedFromLocationEventsByBatchId(int $batchId)
+    {
+        $sql = "DELETE FROM events
+                WHERE event_serialized LIKE '%EventRenownRemovedFromLocation%'
+                  AND event_serialized LIKE '%batchId\";i:{$batchId};%'";
         $this->executeSql($sql);
     }
 

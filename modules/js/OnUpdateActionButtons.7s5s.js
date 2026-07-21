@@ -939,6 +939,8 @@
             },
 
             'duelChooseTechnique_01063': () => {
+                // WHY: Escape hatch when Harpoon (or similar) blocks swap after technique pick.
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },

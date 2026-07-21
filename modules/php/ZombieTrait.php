@@ -92,8 +92,16 @@ trait ZombieTrait
                     break;
 
                 case "highDramaChallengeActionAcceptChallenge":
-                    // Default action: Reject
-                    $this->actHighDramaChallengeActionReject();
+                    // Default: Reject, unless refusal is blocked (e.g. Mōri Daichi Combat gate).
+                    $args = $this->argsHighDramaChallengeActionAcceptChallenge();
+                    if (! empty($args['cannotRefuseDueToDaichi']))
+                    {
+                        $this->actHighDramaChallengeActionAccept();
+                    }
+                    else
+                    {
+                        $this->actHighDramaChallengeActionReject();
+                    }
                     break;
 
                 case "highDramaChallengeActionChoosePerformer":
@@ -240,7 +248,6 @@ trait ZombieTrait
                 case "duelChooseTechnique_01013": // Vissenta Scarpa's Technique
                 case "duelChooseTechnique_01036": // Daniela's Technique
                 case "duelChooseTechnique_01067": // Jean Urbain's Technique
-                case "duelChooseTechnique_01063": // Bastien's Technique
                     $this->gamestate->nextState("");
                     break;
 
@@ -296,6 +303,7 @@ trait ZombieTrait
 
                 // Setup Table States
                 case "setupTable_01006_2":
+                case "duelChooseTechnique_03043":
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;
 

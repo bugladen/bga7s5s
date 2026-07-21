@@ -1654,20 +1654,6 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
-    States::DUEL_CHOOSE_TECHNIQUE_01063 => [
-        "name" => "duelChooseTechnique_01063",
-        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-        "descriptionmyturn" => clienttranslate('Bastien Girard') . clienttranslate(': Swap with a Musketeer: ${you} must choose a Musketeer:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId", 
-        ],
-        "transitions" => [
-            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
-        ]
-    ],
-
     States::DUEL_CHOOSE_TECHNIQUE_01067 => [
         "name" => "duelChooseTechnique_01067",
         "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),

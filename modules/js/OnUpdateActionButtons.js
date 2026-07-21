@@ -94,7 +94,8 @@ onUpdateActionButtons: function( stateName, args )
             if (args._private.hasBrutes)
                 this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
                         
-            this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
+            if (! args._private.mustPerformAction)
+                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
         },
 
         'highDramaMoveActionChoosePerformer': () => {
@@ -276,9 +277,20 @@ onUpdateActionButtons: function( stateName, args )
         
         'highDramaChallengeActionAcceptChallenge': () => {
             this.addActionButton(`btnAccept`, _('Accept'), () => this.bgaPerformAction('actHighDramaChallengeActionAccept', {})) 
-            this.addActionButton(`btnRefuse`, _('Refuse'), () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
+            const refuseLabel = (args.mustDiscardToRefuse && args.defenderHandCount > 0)
+                ? _('Refuse (discard a card)')
+                : _('Refuse');
+            this.addActionButton(`btnRefuse`, refuseLabel, () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
             if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+                dojo.addClass('btnRefuse', 'disabled');
+            if (args.challengeType == this.AJA_CHALLENGE_TYPE && args.defenderFinesse < 3)
+                dojo.addClass('btnRefuse', 'disabled');
+            // WHY: When Least Expected Duelist — refuse requires discarding; empty hand cannot refuse.
+            if (args.mustDiscardToRefuse && args.defenderHandCount < 1)
+                dojo.addClass('btnRefuse', 'disabled');
+            // WHY: Mōri Daichi — relative Combat blocks refuse for either participant role.
+            if (args.cannotRefuseDueToDaichi)
                 dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -290,6 +302,9 @@ onUpdateActionButtons: function( stateName, args )
                     this.statusBar.addActionButton(button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}), { id: buttonId, color: 'alert' });
                 } else {
                     this.addActionButton(buttonId, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+                }
+                if (button.disabled) {
+                    dojo.addClass(buttonId, 'disabled');
                 }
                 if (button.card) {
                     if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
@@ -415,6 +430,7 @@ onUpdateActionButtons: function( stateName, args )
     
     this.onUpdateActionButtons_7s5s( stateName, args );        
     this.onUpdateActionButtons_tac( stateName, args );
+    this.onUpdateActionButtons_faf( stateName, args );
 }
 
 })
