@@ -351,6 +351,26 @@ Composition of Leader performer + wound cost + bullet-If availability + pressure
 
 References: `_03067` / `Action_03067` / `State_highDramaPhase03067`, `Action_01141` / `Action_01206` (pressure → claim on success), `Action_03020` (Leader, no performer chooser), A.5 (claimability gate discipline — different trigger).
 
+### Pattern A.9 — Opponent-controlled location • Engage an opposing character
+
+For City Actions like **"City Action: If this location is controlled by an opponent • Engage an opposing character."** — see `_03071` (Leverage). Heroic mirror (you control → En garde *your* performer, no chooser): `_01159` Appealing to the People.
+
+Composition of bullet-If claim-control + engage opposing chooser (do not invent a challenge or Cesca target):
+
+1. **`RiskCityAction`**, `RequiresPerformerSelected = true`. **No** `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters` — printed text says "Engage an opposing character", not "Target". Private helper (e.g. `isValidEngageCharacter`) + GameState character chooser (`State_highDramaPhaseNNNNN`, JS = `highDramaPhase03011` / `03060` trio).
+2. **Performer filter** (availability + `getPerformersForAction` — bullet-If is an availability filter, same discipline as A.4 / A.6):
+   - **Location controlled by an opponent:** `getControllerForLocation($performer->Location) != 0 && != $performer->ControllerId` (same claim-control sense as Pattern B.1 / `_03045`, applied to the *current* location rather than a move destination).
+   - **≥1 valid engage target** at that location (below).
+3. **Engage pool:** `getOpposingCharactersAtLocation` filtered to **`! Engaged`**. Already-engaged characters cannot pay an Engage effect; EventHub's `EventCardEngaged` would only re-notify. Re-check the location If in the private validator so board shifts between announce and confirm still fail cleanly.
+4. **`EventActionTriggered`:** `createTransitionEvent(..., "NNNNN")` into the chooser. **`actFromActionWithId`:** validate → `createCardEngagedEvent` on the chosen opposing character → `createActionResolvedEvent` → `nextState("targetChosen")`.
+
+**Contrast:**
+- A.3 Engarde targets = *your* Engaged characters (`createCardEngardedEvent`). A.9 Engage targets = *opposing* non-Engaged (`createCardEngagedEvent`).
+- `_01159` "En garde your performer at a location you control" resolves on announce with no chooser (performer is the subject). A.9 needs a chooser because the subject is an opposing character.
+- Pattern B.1 is "move *to* an adjacent opponent-controlled location." A.9 is "you are already *at* an opponent-controlled location."
+
+References: `_03071` / `Action_03071` / `State_highDramaPhase03071`, `_01159` / `Action_01159` (control gate + engarde self), Pattern B.1 (`getControllerForLocation`), A.4/A.6 (bullet-If as filter), `_03060` (no-Target character chooser).
+
 ### Common precondition predicates
 
 A few wordings recur often:
@@ -362,4 +382,4 @@ A few wordings recur often:
   `getOpposingCharactersAtLocation` already filters via `isNotControlledByPlayer` which excludes uncontrolled — satisfies the "opposing = different controller AND controlled" memory feedback automatically. See `Action_03011`.
 - **"Your adjacent X":** any of the player's characters with trait/property X at a location in `getAdjacentCityLocations($performer->Location, $includeHome = true)`. The `$includeHome = true` is generally correct when scanning for friendly home-pool characters; for "move TO an adjacent location" use `$includeHome = false` (you don't move someone *to* home from a city slot).
 - **"If you control fewer locations than an opponent":** count `$location->Controller == $playerId` over `getCityLocations()`; require **exists** an opponent with a strictly greater count. Pattern A.8 / `_03067`.
-
+- **"If this location is controlled by an opponent":** `getControllerForLocation($performer->Location) != 0 && != $performer->ControllerId`. Pattern A.9 / `_03071` (performer filter); same helper as Pattern B.1 destinations.

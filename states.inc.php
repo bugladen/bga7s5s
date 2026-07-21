@@ -1036,6 +1036,7 @@ $machinestates = [
                 "03063" => States::HIGH_DRAMA_PLAYER_TURN_03063,
                 "03063_2" => States::HIGH_DRAMA_PLAYER_TURN_03063_2,
                 "03067" => States::HIGH_DRAMA_PLAYER_TURN_03067,
+                "03071" => States::HIGH_DRAMA_PLAYER_TURN_03071,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
