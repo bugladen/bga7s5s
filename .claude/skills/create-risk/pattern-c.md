@@ -108,7 +108,7 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat), `Maneuver_03058` (Pattern C.7 — +N Parry and Thrust per opposing at duel location).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat), `Maneuver_03070` (Pattern C.6 — Parry += excess over adversary `CHALLENGE_STAT`), `Maneuver_03058` (Pattern C.7 — +N Parry and Thrust per opposing at duel location).
 
 ### "Wound your participant" vs "Wound the adversary"
 
@@ -191,14 +191,14 @@ Do **not** hijack on `EventDuelAttemptGamble` — the adversary must still commi
 
 References: `Maneuver_03047a` / `Maneuver_03047b` (Proper Drama), `Technique_02037` (cannot-gamble Technique shape), `Maneuver_01108a`/`b` (dual a/b Maneuvers), `Maneuver_01077` (`getArgsFromManeuver` + public `cards` + `argsForState`).
 
-### Pattern C.6 — Move / remove all threat (Riposte vs Parry)
+### Pattern C.6 — Move / remove / discard-excess threat (Riposte vs Parry)
 
 In-round threat lives on `duel_round.ending_<side>_threat`. `DB::updateRoundWithCombatStats` applies Riposte / Parry / Thrust in order:
 
 | Channel | Effect on actor threat | Effect on adversary threat |
 |---|---|---|
 | **Riposte** | Subtracts (capped by current actor threat) | **Adds** the same amount — threat is *moved* |
-| **Parry** | Subtracts (capped) | None — threat is *removed* |
+| **Parry** | Subtracts (capped) | None — threat is *removed* / *discarded* |
 | **Thrust** | None | Adds |
 
 So printed threat-pool maneuvers map to calc, not globals / `PENDING_*_THREAT` (those are challenge-issuance and cross-round carry — Patterns C.2 / Final Strike):
@@ -207,25 +207,44 @@ So printed threat-pool maneuvers map to calc, not globals / `PENDING_*_THREAT` (
 |---|---|---|
 | **"Move all threat from your participant to the adversary"** | `$event->riposte += $theah->getCurrentDuelThreat($actor->Id)` | `Maneuver_03048` (Wily) |
 | **"Remove all threat from [participant]"** | `$event->parry += $theah->getCurrentDuelThreat($characterId)` | `Technique_02012` (Turais) |
+| **"Discard / remove threat … in excess of your adversary's [duel] stat"** | `$event->parry += max(0, threat - adversaryDuelStat)` | `Maneuver_03070` (Comforting) |
 
 ```php
 $actor = $event->theah->getDuelRoundActor();
 $threat = $event->theah->getCurrentDuelThreat($actor->Id);
 if ($threat > 0)
 {
-    $event->riposte += $threat; // or parry for "remove"
+    $event->riposte += $threat; // or parry for "remove all"
     $event->explanations[] = sprintf(...);
 }
 ```
 
-**WHY skip the explanation when `$threat == 0`:** avoid "moves 0 Threat" noise; activating for no effect is still legal unless the text says otherwise — do not hide the Maneuver behind `threat > 0` in `isAvailable` unless the card requires a payoff.
+**Excess-of-duel-stat (Comforting):** "Discard threat … in excess of your adversary's stat value used for the duel" is still C.6 (Parry / remove), **not** a full clear and **not** Riposte. Cap with the adversary's **Modified** duel-stat from `Game::CHALLENGE_STAT` — same `match` as Restricted Hostilities in `stDuelEndOfRound`:
 
-**Dashed Riposte does not kill Maneuver Riposte.** EventHub zeroes Technique riposte when every combat card this round has `DashedRiposte`, but `EventDuelCalculateManeuverValues` has **no** such clamp. Wily (`_03048`) prints dashed Riposte and still moves threat via Maneuver Riposte — do not "fix" that by adding a dashed check.
+```php
+$adversary = $event->theah->getDuelRoundOpponent();
+$combatStatUsed = $event->theah->game->globals->get(Game::CHALLENGE_STAT);
+$stat = match ($combatStatUsed) {
+    Game::STAT_FINESSE => $adversary->ModifiedFinesse,
+    Game::STAT_INFLUENCE => $adversary->ModifiedInfluence,
+    default => $adversary->ModifiedCombat,
+};
+$excess = max(0, $threat - $stat);
+if ($excess > 0)
+{
+    $event->parry += $excess;
+}
+```
+
+**WHY `CHALLENGE_STAT`, not hardcoded Combat:** the italic example is an Influence duel → adversary's Influence. Do not invent a free-choice button or assume Combat. Null-check actor + adversary before reading.
+
+**WHY skip the explanation when `$threat == 0` / `$excess == 0`:** avoid "moves/discards 0 Threat" noise; activating for no effect is still legal unless the text says otherwise — do not hide the Maneuver behind `threat > 0` / `excess > 0` in `isAvailable` unless the card requires a payoff.
+
+**Dashed Riposte does not kill Maneuver Riposte.** EventHub zeroes Technique riposte when every combat card this round has `DashedRiposte`, but `EventDuelCalculateManeuverValues` has **no** such clamp. Wily (`_03048`) prints dashed Riposte and still moves threat via Maneuver Riposte — do not "fix" that by adding a dashed check. Comforting's printed `DashedRiposte` is likewise irrelevant to its Maneuver **Parry** excess remove (and the card separately prints Parry on the combat-card line).
 
 No sub-state, no sticky Maneuver fields → `// EventManeuverCanceled handler not needed`. Pure-calc shape (see next section).
 
-References: `Maneuver_03048` (move via Riposte + Scoundrel gate + gambled discount), `Technique_02012` (remove via Parry), `Theah::getCurrentDuelThreat`.
-
+References: `Maneuver_03048` (move via Riposte + Scoundrel gate + gambled discount), `Technique_02012` (remove-all via Parry), `Maneuver_03070` (excess via Parry + `CHALLENGE_STAT`), `Theah::getCurrentDuelThreat`, `StatesTrait::stDuelEndOfRound` (Restricted Hostilities `match`).
 ### Pattern C.7 — "+X [stat] for each opposing character" (location-scoped, often unstated)
 
 For Maneuvers like **"Gambling Maneuver: +1[Parry] and +1[Thrust] for each opposing character."** — see `Maneuver_03058` (Courageous). The printed text often **omits** "at this location."
@@ -325,7 +344,7 @@ References: `_03069` / `Maneuver_03069a`/`b`, `Technique_03013` (duel swap in ac
 
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
-When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling).
+When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` / `Maneuver_03070` (Pattern C.6 threat move / excess remove — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling).
 
 ### Pure-resolve maneuvers (no calc branch)
 
