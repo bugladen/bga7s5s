@@ -103,7 +103,9 @@ elseif ($destroyedId == $challengerId
 
 **Heal discipline** (when the Forced effect heals): only queue `createCharacterBeingHealedEvent` when the participant is not in discard/locker **and** `$participant->Wounds > 0`. Mirror `Maneuver_01052`. Notify before queueing.
 
+**Draw discipline** (when the Forced effect draws): after the adversary-lookup succeeds, queue `createCardDrawnEvent($this->ControllerId, …)` — no participant wound/in-play gate (the draw is for the card's controller, not a heal on the survivor). Mirror `_03073`. Notify before queueing.
+
 **WHY on the Risk class:** Forced with no player input is a passive — `_01102` (Unfortunate: Forced equip from dueling line at end of round) is the same shape. Do not invent a `Forced_NNNNN` ability file.
 
-References: `_03033` (Glorious — heal on adversary destroyed), `_01102` (Unfortunate — equip from dueling line), `_02052` (scheme Forced for "any player's adversary destroyed" — same challenger/defender lookup, different scope).
+References: `_03033` (Glorious — heal on adversary destroyed), `_03073` (Victorious — draw on adversary destroyed), `_01102` (Unfortunate — equip from dueling line), `_02052` (scheme Forced for "any player's adversary destroyed" — same challenger/defender lookup, different scope).
 
