@@ -40,7 +40,6 @@ class _03cd01 extends CityCharacter implements IHasActions
 
         $this->WealthCost = 1;
         $this->CityCardNumber = 1;
-        $this->Negotiable = true;
 
         $this->Traits = [
             clienttranslate('Mercenary'),
