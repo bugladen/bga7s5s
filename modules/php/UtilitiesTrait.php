@@ -460,6 +460,7 @@ trait UtilitiesTrait
             '01' => "_7s5s",
             '02' => "tac",
             '03' => "faf",
+            '04' => "bas",
             default => "_7s5s",
         };
 

@@ -8,7 +8,11 @@
             },
             "1": {
                 "name": "City Deck Update 2024",
-                "description": "The City Deck will use the Fate & Fortune City Deck Update 2024 build"
+                "description": "The City Deck will use the Fate and Fortune City Deck Update 2024 build"
+            },
+            "2": {
+                "name": "City Deck Update 2026",
+                "description": "The City Deck will use the Blood and Salt City Deck Update 2026 build"
             }
         }
     },
