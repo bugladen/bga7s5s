@@ -2,9 +2,11 @@
 
 ## Cross-Cutting Helpers
 
-- `$theah->cardInCity($card): bool` — true when the card sits in the city deck. Gate every City Forced / City Action / City Reaction body on this. Note: inside an `EventCardMoved` handler, the card's `Location` field has NOT been updated yet (the hub handler runs after cards) — use `$theah->locationInCity($event->toLocation)` instead.
+- `$theah->cardInCity($card): bool` — true when the card sits in the city deck. Gate every City Forced / City Action / City Reaction body on this. Note: inside an `EventCardMoved` handler, the card's `Location` field has NOT been updated yet (the hub handler runs after cards) — use `$theah->locationInCity($event->toLocation)` instead. **Do not** use `cardInCity` for in-play continuous passives ("While you control …") — those gate on `$this->isControlled()` instead (Pattern F).
 - `$theah->locationInCity(string $location): bool` — true for any of the 5 city locations. The right gate when you only have a location string in hand (e.g., `$event->toLocation`).
+- `$theah->getCharactersAtLocation(string $location, …)` / `getCharactersAtHomeByPlayerId(int $playerId)` — roster for location-counting passives. Use the Home helper when `$location == LOCATION_PLAYER_HOME` (shared string across players). See Pattern F for stale-`EventCardMoved` compensation.
 - `$theah->getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false): array` — friendly characters at a city location.
+- `$card->addTrait($game, $trait)` / `removeTrait($game, $trait)` — mutate `ModifiedTraits` + notify. For conditional grants, track which traits *this* ability added (e.g. `$CopiedTraits`) so remove does not strip attachment-granted copies of the same trait.
 - `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing = different controller AND same location. Use this whenever card text says "opposing," never roll your own `ControllerId !=` filter.
 - `$theah->getAdjacentCityLocations(string $location, bool $includeHome = true): array` — adjacency for move actions.
 - `array_keys($theah->getCityLocations())` — enumerate the **active** city-location names. Respects the player-count rules that exclude Ole's Inn and Governor's Garden in smaller games. Use this for "move to any location" pickers instead of hardcoding the five constants.

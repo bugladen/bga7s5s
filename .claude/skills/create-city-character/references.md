@@ -5,6 +5,8 @@
 | File | What it demonstrates |
 |---|---|
 | `modules/php/cards/faf/_03cd01.php` | **Canonical CityCharacter.** Negotiable + dashed stats + `canIntervene` ban + `eventCheck` backstop + paired City Forced (duel and would-be-wounded) + self-listening `EventCardRemovedFromPlay` cleanup + IHasActions wiring. |
+| `modules/php/cards/bas/_04cd02.php` (Jack Trades) | **Canonical CityCharacter continuous passive (trait copy).** Negotiable + location-scoped "gains that trait" recompute via `$CopiedTraits`. Corrected `EventCharacterDestroyed` exclude. No Action/Reaction/State/JS. |
+| `modules/php/cards/faf/_03026.php` (Angeline) | **Location-counting stat passive** (faction Character, same shape as Pattern F). `EventCardMoved` stale-DB compensation + Influence recompute. Prefer Jack over Angeline for the destroy-exclude detail. |
 | `modules/php/cards/faf/actions/Action_03cd01.php` | Two-step `CharacterAction` (companion → adjacent location), `CHOSEN_TARGET` global between steps, `engage as cost / move with engage=false`. |
 | `modules/php/States/faf/State_highDramaPhase03cd01.php` | First-step state (character picker). |
 | `modules/php/States/faf/State_highDramaPhase03cd01_2.php` | Second-step state with `<` back button + location picker. |

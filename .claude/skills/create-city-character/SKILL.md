@@ -24,6 +24,7 @@ City characters are city-deck cards that are **playable Characters** (not events
 | [pattern-c.md](pattern-c.md) | City Action / Action |
 | [pattern-d.md](pattern-d.md) | Reaction |
 | [pattern-e.md](pattern-e.md) | Technique / Maneuver pointer |
+| [pattern-f.md](pattern-f.md) | Continuous location-scoped passive (stat bonus or trait copy) |
 | [wiring.md](wiring.md) | JS hooks, pre-commit, style |
 | [helpers.md](helpers.md) | cross-cutting helpers |
 | [references.md](references.md) | exemplars |
@@ -123,13 +124,14 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **`<b>Action:</b>`** (not City) — player spends an action with the character once in play | Same as City Action — `CharacterAction` is the right base class either way. The eligibility check (in city vs in play) is what differs and goes in `isAvailableToPlayer`. |
 | **`<b>City Reaction:</b>` or `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php` extending `CardReaction`. See "Pattern D — Reaction on a CityCharacter." For "City Reaction" gate triggers on `$event->theah->cardInCity($owner)`. Button-based reactions need **no** new state class, **no** `states.inc.php` edits, **no** JS wiring. |
 | **`<b>Technique:</b>` / `<b>Maneuver:</b>`** | The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. |
+| **"While you control … at \<Name\>'s location, …"** (stat bonus or gains trait; no player choice) | Continuous location-scoped passive. Override `handleEvent` and recompute — **not** Forced / Action / Reaction. No new state or JS. See "Pattern F — Continuous location-scoped passive." |
 
 
 ## Finish (short)
 
 1. Walk each printed Text clause to exactly one pattern (see shape table).
-2. Match constructor fields / Traits / CardNumber to the printed card.
-3. Put abilities in the correct subdirectory files; wire states + JS when needed - see companions.
+2. Match constructor fields / Traits / CardNumber / WealthCost to the **printed card image** (stubs are often wrong or incomplete).
+3. Put abilities in the correct subdirectory files; wire states + JS when needed - see companions. Pure passives (Pattern F) stay on the card class only.
 4. Satisfy pre-commit literals; run `php -l` on touched PHP.
 5. CityCharacter: set Negotiable, WealthCost, CityCardNumber; Traits in TraitNames.
 

@@ -70,6 +70,7 @@ class TraitNames
             "Explorer",
             "Explorer's Society",
             "Extortionist",
+            "Factotum",
             "Faith",
             "Fan",
             "Fence",
