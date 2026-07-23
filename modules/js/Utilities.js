@@ -1927,6 +1927,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     highlightCharacterChosen: function(cardId) {
         const card = this.cardProperties[cardId];
+        if (!card) return;
         const image = $(`${card.divId}_image`);
         dojo.addClass(image, '_7sfs-chosen');
     },  
@@ -1934,6 +1935,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     highlightCardsAsChosen: function(ids) {
         ids.forEach((id) => {
             const card = this.cardProperties[id];
+            if (!card) continue;
             const image = $(`${card.divId}_image`);
             dojo.addClass(image, '_7sfs-chosen');
         });
@@ -1943,6 +1945,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     highlightCardsAsSelectable: function(ids) {
         ids.forEach((id) => {
             const card = this.cardProperties[id];
+            if (!card) continue;
             const image = $(`${card.divId}_image`);
             this.clearCardAsSelectable(image);
             this.makeCardSelectable(image);
@@ -1952,6 +1955,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     unhighlightCharacterChosen: function(id) {
         const card = this.cardProperties[id];
+        if (!card) return;
         const image = $(`${card.divId}_image`);
         dojo.removeClass(image, '_7sfs-chosen');
     },
@@ -1959,6 +1963,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
     unhighlightCards: function(ids) {
         ids.forEach((id) => {
             const card = this.cardProperties[id];
+            if (!card) continue;
             const image = $(`${card.divId}_image`);
             this.clearCardAsSelectable(image);
         });
