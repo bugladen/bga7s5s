@@ -356,8 +356,12 @@ return declare('seventhseacityoffivesails.setup', null, {
         const isAlwaysHidden = alwaysHiddenStates.some(state => currentState.startsWith(state));
         const isHiddenOnDay1 = hiddenOnDay1States.some(state => currentState.startsWith(state)) && currentDay <= 1;
         const isEarlyState = isAlwaysHidden || isHiddenOnDay1;
+        // WHY: Constanzo (_01006) puts a Red Hand Thug in hand during setupTable —
+        // if the client refreshes mid-setup, those cards must still be shown even
+        // though setupTable is otherwise a hidden-hand state.
+        const hasHandCards = gamedatas.factionHand && gamedatas.factionHand.length > 0;
         
-        if (gamedatas.homeCards && gamedatas.homeCards.length > 0 && !isEarlyState) {
+        if (gamedatas.homeCards && gamedatas.homeCards.length > 0 && (!isEarlyState || hasHandCards)) {
             dojo.removeClass('factionHand-placeholder', 'hidden');
         }
 
