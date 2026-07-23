@@ -190,6 +190,11 @@ trait FrameworkActionsTrait
         }
 
         foreach ($locations as $location) {
+            $locationCheck = $this->theah->getCityLocation($location);
+            if ($locationCheck === null)
+            {
+                throw new UserException(sprintf($this->translate("Location %s does not exist."), $location));
+            }
             $event = $this->theah->createEvent(Events::RenownAddedToLocation);
             if ($event instanceof EventRenownAddedToLocation) {
                 $event->playerId = $this->getActivePlayerId();
