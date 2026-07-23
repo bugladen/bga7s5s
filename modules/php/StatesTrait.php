@@ -179,22 +179,19 @@ trait StatesTrait
 
             //First see if there is a debug value to include a specific city card
             if ($this->globals->has(Game::DEBUG_INCLUDE_CITY_CARD)) {
-                //Get the class name
-                $debugCityCard = $this->globals->get(Game::DEBUG_INCLUDE_CITY_CARD);
+                // WHY: Create at dawn from the stored class name. Creating during
+                // pickDecks fails — buildDecks runs after and any early id is gone.
+                // Also works when the class isn't in the chosen city deck.
+                $debugCityCardClass = $this->globals->get(Game::DEBUG_INCLUDE_CITY_CARD);
+                $card = $this->createCardInLocation($debugCityCardClass, $location, 0, 0);
+                $cityCard = ['id' => $card->Id];
 
-                //Grab an array by type
-                $cityCard = $this->cards->getCardsOfType($debugCityCard);
-
-                //Get the first card in the array
-                $cityCard = array_shift($cityCard);
-                
                 //Remove the debug value                
                 $this->globals->delete(Game::DEBUG_INCLUDE_CITY_CARD);
             } else {
                 $cityCard = $this->getCardsOnTopOfCityDeck(1)[0];
+                $this->cards->moveCard($cityCard['id'], $location);
             }
-
-            $this->cards->moveCard($cityCard['id'], $location);
 
             //Create the event
             $event = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], $location);
