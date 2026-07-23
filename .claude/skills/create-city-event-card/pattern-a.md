@@ -2,9 +2,17 @@
 
 ## Pattern A — Forced Ability
 
-Override `handleEvent`. Gate the body on (a) event type, (b) `cardInCity($this)`, and (c) any text-specific condition like "at this location" or "when a character equips this card."
+Override `handleEvent`. Gate each Forced clause on (a) event type, (b) the correct location/identity guard for that trigger (see below), and (c) any text-specific condition like "at this location" or "when a character equips this card."
 
-Template:
+**Location guard is trigger-dependent — do not blanket every Forced with `cardInCity($this)`:**
+
+| Printed trigger | Gate | WHY |
+|---|---|---|
+| **When this card is revealed** | `$event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id` | City events "reveal" by being placed at a city location. There is no separate `EventCardRevealed` for city cards. Do **not** also require `cardInCity($this)` — the card is mid-placement; `$event->cardId == $this->Id` is the identity check. |
+| **At the end of High Drama** / while already in play at a city location | `$event->theah->cardInCity($this)` (plus location match if needed) | Card must still be sitting in the city. See sub-patterns "At the end of High Drama". |
+| Pressure / equip / other in-play effects | `cardInCity($this)` and usually `$event->location == $this->Location` | Same as in-play city Forced. |
+
+Template (in-play / location-gated Forced):
 
 ```php
 public function handleEvent(Event $event)
@@ -23,7 +31,20 @@ public function handleEvent(Event $event)
 }
 ```
 
-If the Forced effect needs to queue further game events (wound, remove from play, transition to a custom state), use `EventFactory::create*Event(...)` and `$event->theah->queueEvent(...)`. See `_03cd05` (wound on equip) and `_03cd01` (queues `CardRemovedFromPlayEvent` and then listens for it to shuffle).
+Template (reveal Forced — note the different gate):
+
+```php
+if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id)
+{
+    // e.g. each player draws — queue createCardDrawnEvent, do not draw decks directly
+}
+```
+
+If the Forced effect needs to queue further game events (wound, draw, remove from play, transition to a custom state), use `EventFactory::create*Event(...)` and `$event->theah->queueEvent(...)`. See `_03cd05` (wound on equip), `_03cd01` (queues `CardRemovedFromPlayEvent` and then listens for it to shuffle), `_03cd13` / `bas/_04cd07` (queue `createCardDrawnEvent` per eligible player).
+
+### Multiple Forced clauses on one card
+
+A card can have several `<b>Forced:</b>` paragraphs. Put each in its own `if` branch inside a single `handleEvent`. Early-`return` after a reveal branch is fine when later branches cannot apply to the same event. Pure dual-Forced cards need **no** Action/Reaction/State/JS — see `bas/_04cd07` (Festival of Fools).
 
 ### Event ordering inside handleEvent
 

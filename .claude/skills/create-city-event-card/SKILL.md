@@ -1,13 +1,13 @@
 ---
 name: create-city-event-card
-description: Implement or finish a City Event Card (modules/php/cards/faf/_03cdNN.php and similar). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a City Event Card, or when they reference a card whose class extends CityEventCard and has unimplemented Text. Triggers on phrases like "implement this city event", "finish _03cdNN", "wire up the Forced ability", or "add a City Action to this event card."
+description: Implement or finish a City Event Card (modules/php/cards/faf/_03cdNN.php, bas/_04cdNN.php, and similar). Use this skill whenever the user asks you to implement, finish, scaffold, or wire up a City Event Card, or when they reference a card whose class extends CityEventCard and has unimplemented Text. Triggers on phrases like "implement this city event", "finish _03cdNN", "finish _04cd07", "wire up the Forced ability", or "add a City Action to this event card."
 ---
 
 # Creating a City Event Card
 
-City event cards are city-deck cards that sit at a city location and modify play through Forced abilities, City Actions, or City Reactions. This skill is the playbook for fleshing out a `_03cdNN.php` (or any `extends CityEventCard`) stub into a working card.
+City event cards are city-deck cards that sit at a city location and modify play through Forced abilities, City Actions, or City Reactions. This skill is the playbook for fleshing out a `_03cdNN.php` / `_04cdNN.php` (or any `extends CityEventCard`) stub into a working card.
 
-The `faf` branch has established a fairly rich pattern for these cards — separate State classes, dedicated JS files per expansion, multi-player sequential loops via queued transitions. Follow it, even when it feels heavier than strictly needed for a one-clause card.
+The `faf` branch established the rich interactive pattern — separate State classes, dedicated JS files per expansion, multi-player sequential loops via queued transitions. Follow that for City Actions / Reactions. **Pure Forced cards stay on the card class only** (see `bas/_04cd07`) — do not invent Action/State/JS scaffolding when every printed clause is Forced.
 
 ## How to use this skill (progressive disclosure)
 
@@ -32,10 +32,10 @@ When in doubt, mirror a reference rather than invent.
 
 ## Base Anatomy
 
-Every `CityEventCard` lives under `modules/php/cards/<expansion>/` (e.g. `faf/`) and inherits from `CityEventCard`, which itself extends `Card` and uses `CityDeckCardTrait`. Required scaffolding (already present in stubs):
+Every `CityEventCard` lives under `modules/php/cards/<expansion>/` (e.g. `faf/`, `bas/`) and inherits from `CityEventCard`, which itself extends `Card` and uses `CityDeckCardTrait`. Required scaffolding (already present in stubs):
 
 ```php
-namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf;
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf; // or bas, tac, …
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 
@@ -47,8 +47,8 @@ class _03cdNN extends CityEventCard
 
         $this->Name           = clienttranslate('...');
         $this->Image          = '03cdNN.jpg';
-        $this->ExpansionName  = 'faf';   // or _7s5s / tac
-        $this->ExpansionNumber = 3;
+        $this->ExpansionName  = 'faf';   // or bas / _7s5s / tac
+        $this->ExpansionNumber = 3;      // bas = 4
         $this->CardNumber     = 0;       // city deck cards keep CardNumber = 0
         $this->CityCardNumber = NN;      // the visible city number on the card
 
@@ -62,10 +62,11 @@ class _03cdNN extends CityEventCard
 ```
 
 Key facts:
-- The card's runtime `$this->Location` is the city location it currently occupies (e.g. `Game::LOCATION_CITY_OLES_INN`). Use `$event->theah->cardInCity($this)` before reacting.
+- The card's runtime `$this->Location` is the city location it currently occupies (e.g. `Game::LOCATION_CITY_OLES_INN`). For **in-play** Forced/Reactions use `$event->theah->cardInCity($this)`. For **"when this card is revealed"** Forced, gate on `EventCityCardAddedToLocation` + `$event->cardId == $this->Id` instead — see [pattern-a.md](pattern-a.md).
 - `CityEventCard::handleEvent` clears per-day usage tracking on `EventNewDay`. Always call `parent::handleEvent($event)` first when overriding.
 - Text tooltips for events are already wired in `modules/js/Utilities.js` (`createTextTooltipForEvent`) — no JS changes needed for a new event's tooltip.
-- File naming: leading underscore + the city-card image stem, e.g. `_03cd08.php` for `03cd08.jpg`. Class name matches the filename.
+- File naming: leading underscore + the city-card image stem, e.g. `_03cd08.php` for `03cd08.jpg`, `_04cd07.php` for `04cd07.jpg`. Class name matches the filename.
+- Interactive City Actions need expansion-scoped JS (`OnEnteringState.<exp>.js`, etc.). Pure Forced cards do not.
 
 
 ## Pick the Right Ability Shape
@@ -74,7 +75,7 @@ Read the card's `Text` and classify each clause before writing any code:
 
 | Card phrase | Pattern |
 |---|---|
-| **`<b>Forced:</b>` / `<b>City Forced:</b>`** — auto-triggers, no choice | Override `handleEvent` directly on the card class. No Action/Reaction/State files needed. |
+| **`<b>Forced:</b>` / `<b>City Forced:</b>`** — auto-triggers, no choice | Override `handleEvent` directly on the card class. No Action/Reaction/State files needed. Multiple Forced paragraphs = multiple `if` branches. Reveal uses `EventCityCardAddedToLocation`; end of High Drama uses `EventHighDramaPhaseEnd` — see [pattern-a.md](pattern-a.md). |
 | **`<b>City Action:</b>`** — player spends an action | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_03cdNN.php`. State class(es) + JS wiring if it needs interactive steps. |
 | **`<b>City Reaction:</b>`** — player chooses to trigger in response to an event while the card is in a city location | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php`. |
 | **`<b>Reaction:</b>`** (no "City" prefix) — player chooses to trigger while the card is in their **Home** | Same `IHasReactions` + `ReactionTrait` + `reactions/Reaction_03cdNN.php` plumbing as City Reaction. The only difference is the `handleEvent` location guard: check `$owner->Location == Game::LOCATION_PLAYER_HOME` instead of `cardInCity($owner)`. See `_03cd20` (Early Morning Arrangements) — first CityEventCard precedent for a Home-located reaction. Requires the card to actually be able to *land* in a player's Home, which is its own sub-pattern (below). |

@@ -72,6 +72,23 @@ These helpers (`highlightCharacterChosen` / `unhighlightCharacterChosen`) are th
 
 `03cd03` adds `_7sfs-chosen` to the city card image on enter but **has no leave handler** — that's only fine because the card is discarded immediately after the action resolves, so the DOM element vanishes. For a multi-use City Action where the card stays in play (e.g. `03cd13`), you MUST add a leave handler that removes `_7sfs-chosen`, otherwise the highlight persists into subsequent High Drama turns. Stash the cardId on `clientStateArgs` during enter so leave can find the element after `gamedatas` has moved on.
 
+### "When this card is revealed" Forced
+
+City events use **`EventCityCardAddedToLocation`**, not a generic reveal event:
+
+```php
+if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id)
+{
+    // ...
+}
+```
+
+WHY: the city deck places the card onto a location; that placement *is* the reveal. `_03cd13` (conditional draws) and `bas/_04cd07` (unconditional each-player draw) both use this gate. Do not invent `EventCardRevealed` / scheme-style reveal listeners for city events.
+
+### Queueing draws for "each player draws a card"
+
+Always `EventFactory::createCardDrawnEvent($playerId, $this->getInjectCode())` + `$theah->queueEvent(...)`. Do not call deck-draw helpers directly from the card — the draw event owns the notify / hand update path. Emit one `${card_inject_code}: ...` message before the loop (or once the first eligible player is found — see `bas/_04cd07`'s `$drewAny` so you stay silent when nobody qualifies).
+
 ### "At the end of High Drama" Forced trigger
 
 `EventHighDramaPhaseEnd` exists and is dispatched centrally by `StatesTrait` at high drama end. Listen for it directly in `handleEvent`:
@@ -83,9 +100,32 @@ if ($event instanceof EventHighDramaPhaseEnd && $event->theah->cardInCity($this)
 }
 ```
 
-Reference cards: `_03cd12` (Equal Claim, makes location uncontrolled), `_7s5s/_01025_Burden` (removes itself at end of high drama). Note `_01025_Burden` is an Attachment, not a CityEventCard, but the trigger plumbing is identical.
+Reference cards: `_03cd12` (Equal Claim, makes location uncontrolled), `bas/_04cd07` (non-controller presence draws), `_7s5s/_01025_Burden` (removes itself at end of high drama). Note `_01025_Burden` is an Attachment, not a CityEventCard, but the trigger plumbing is identical.
 
 Do **not** invent a custom "end of high drama" hook or piggyback on `EventDuskEndOfDay` / `EventPhaseHighDrama` — they fire at the wrong granularity.
+
+### "Player with a character at this location that does not control this location"
+
+Two independent checks per player from `loadPlayersBasicInfos()`:
+
+1. **Presence:** `count($theah->getCharactersAtLocationByPlayerId($this->Location, $playerId)) > 0`
+2. **Non-controller:** `$playerId != $theah->getCityLocation($this->Location)->Controller`
+
+WHY details that are easy to get wrong:
+
+- **Do not** early-return on `!$location->isControlled()`. Equal Claim (`_03cd12`) does that because its effect is "become uncontrolled" — a no-op when already uncontrolled. For non-controller draws (`bas/_04cd07`), an uncontrolled location (`Controller == 0`) means *every* present player qualifies, because nobody controls it. Skipping when uncontrolled would incorrectly suppress the Forced.
+- The controlling player never qualifies even if they have characters at the location.
+- A non-controller with zero characters there never qualifies.
+
+```php
+$location = $theah->getCityLocation($this->Location);
+foreach ($theah->game->loadPlayersBasicInfos() as $playerId => $_)
+{
+    if ($playerId == $location->Controller) continue;
+    if (count($theah->getCharactersAtLocationByPlayerId($this->Location, $playerId)) === 0) continue;
+    // qualify — e.g. queue createCardDrawnEvent
+}
+```
 
 ### "Each player has equal X" check
 
