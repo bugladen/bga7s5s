@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
@@ -1338,6 +1339,12 @@ trait FrameworkActionsTrait
         if (_03050::challengeRefusalBlocked($performer, $target))
         {
             throw new UserException(clienttranslate("Mōri Daichi: This challenge cannot be refused (greater Combat)."));
+        }
+
+        // WHY: Knives Out — characters at its location cannot refuse (any challenge type).
+        if (_04cd09::challengeRefusalBlocked($this->theah, $target))
+        {
+            throw new UserException(clienttranslate("Knives Out: Characters at this location cannot refuse challenges."));
         }
 
         // WHY: When Least Expected — Duelist performer can only refuse by discarding a card.

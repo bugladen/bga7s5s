@@ -24,16 +24,22 @@ class _03cdNN extends CityEventCard implements IHasActions
 ### 2. Action class — `modules/php/cards/<expansion>/actions/Action_03cdNN.php`
 
 Pick the base class carefully:
-- `EventCityAction` — event-card actions. Eligibility is gated by "friendly character at this location." Two flavors:
-  - **One-shot** (card is discarded after use) — Chance Meeting `_03cd03`. The action does not engage; the action handler queues `createCardAddedToCityDiscardPileEvent` once the effect resolves.
-  - **Multi-use** (card stays in play, each player can take it once per Day) — Siren's Scream `_01179`, Crabs in a Bucket `_03cd13`. The card stays; per-player usage is tracked in a private `$playersUsed` array on the Action. Call `$this->setUsed($theah, false)` defensively at the end of the handler and DO NOT queue a discard. See "Per-player once-per-Day City Action" sub-pattern below.
+- `EventCityAction` — event-card actions. Eligibility is gated by "friendly character at this location." Three flavors:
+  - **One-shot** (card is discarded after use) — Chance Meeting `_03cd03`. The action does not engage; the action handler queues `createCardAddedToCityDiscardPileEvent` once the effect resolves. `setUsed` is unnecessary because the card leaves play.
+  - **Multi-use once-per-Day per player** (card stays in play) — Siren's Scream `_01179`, Crabs in a Bucket `_03cd13`. Track `$playersUsed`; call `$this->setUsed($theah, false)` defensively; DO NOT queue a discard. See "Per-player once-per-Day City Action" in [sub-patterns.md](sub-patterns.md).
+  - **Unlimited** (card stays; reusable freely) — Knives Out `bas/_04cd09`. Printed `Unlimited.` means **no** `$playersUsed` and **do not leave `Used` stuck**. Central `actHighDramaInPlayActionConfirm` still sets `Used=true` for any `CardAction` (including `EventCityAction`), so call `$this->setUsed($theah, false)` at resolve. See "Unlimited City Action" in [sub-patterns.md](sub-patterns.md).
 - `CharacterAction` — actions performed by a specific character (the event card's owner-character if it's a CityCharacter, not a pure event). Penya `_03cd01` uses this because Penya is a CityCharacter, not a CityEventCard. Generally not used for pure event cards.
 
 **`RequiresPerformerSelected = true` and `EventCityAction`** — when set on an `EventCityAction`, the framework runs its built-in performer-selection UI **before** firing `EventActionTriggered`. The chosen performer's id is in `Game::CHOSEN_PERFORMER` when your `handleEvent` runs, so you can engage it without needing a state for the performer pick. Override `getPerformersForAction` to filter out engaged characters (or whatever the text requires).
 
+**`RequiresPerformerSelected = false`** when the printed cost has a path that needs no performer (e.g. "Engage your performer **or** discard a card"). Pick the performer in a later custom state only on the engage path. See `_04cd09` / "Engage or discard cost" in [sub-patterns.md](sub-patterns.md).
+
 `setUsed()`, `announceAction()`, and `resetPlayerPassCount()` are **NOT called** from `CharacterAction/AttachmentAction/SchemeAction/SchemeCityAction` subclasses — central code in `actHighDramaInPlayActionConfirm` / `stHighDramaInPlayActionDispatch` handles them. Per CLAUDE.md.
 
-**`EventCityAction` is different** — it is *not* on the centrally-handled list above. `resetPlayerPassCount()` SHOULD be called once from `EventCityAction` subclasses (typically in the handler for the first interactive step). Follow the precedent in `_7s5s/actions/Action_01185.php` and `_03cd03` handleTargetChosen. `setUsed()` is unnecessary because the card is discarded after one use.
+**`EventCityAction` is different** — it is *not* on the centrally-handled list above for `announceAction` / `resetPlayerPassCount`, but `actHighDramaInPlayActionConfirm` **does** call `setUsed(true)` for every `CardAction` (and `EventCityAction` extends `CardAction`). Consequences:
+- One-shot discard-after-use: `setUsed` is moot; card leaves play.
+- Once-per-Day / Unlimited (card stays): you **must** `$this->setUsed($theah, false)` after resolve or the action greys out globally.
+- `resetPlayerPassCount()` SHOULD still be called once from `EventCityAction` subclasses when not already handled by central confirm for your path — follow `_7s5s/actions/Action_01185.php` and `_03cd03` handleTargetChosen when in doubt.
 
 Required methods (from `.cursor/rules/card-action-template.mdc`): `isAvailableToPlayer`, `handleEvent`, `getArgsFromAction`, `actFromActionWithId` / `actFromActionWithIds`.
 
@@ -50,9 +56,9 @@ The transition string key (`"03cdNN"`) is what `states.inc.php` maps to your sta
 
 Each interactive step is its own class extending `Bga\GameFramework\States\GameState`. Constants live in `States.php`.
 
-State ID convention (expansion 3 / `faf`):
-- Format: `403XXXX` (4 = high drama, 03 = expansion, XX = card number).
-- Multi-step suffix: append `2` for step 2, etc. Example: `4030001` and `40300012` for Penya step 1 and step 2.
+State ID convention:
+- Expansion 3 / `faf`: `403XXXX` (4 = high drama, 03 = expansion, XX = card number). Multi-step suffix: append `2` for step 2, etc. Example: `4030001` and `40300012` for Penya.
+- Expansion 4 / `bas`: `404XXXX` the same way — e.g. Knives Out `4040009`, `40400092`, `40400093`.
 
 Template (copy from `State_highDramaPhase03cd03.php`):
 

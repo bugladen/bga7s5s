@@ -22,3 +22,5 @@
   - Action: `...\cards\<expansion>\actions`
   - Reaction: `...\cards\<expansion>\reactions`
   - State: `Bga\Games\SeventhSeaCityOfFiveSails\States\<expansion>`
+- Hand-discard interactive states: wire `factionHand.setSelectionMode('single')` in OnEntering, Confirm via `onCardDiscarded` in OnUpdateActionButtons, clear selection mode in OnLeaving, **and** add the state name to `EventHandlers.js` so `actChooseDiscardCards` enables when a card is selected (easy to miss — see `highDramaPhase03042` / `highDramaPhase04cd09_2`).
+- bas State IDs: `404XXXX` (see Knives Out `4040009` / `40400092` / `40400093`).

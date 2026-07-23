@@ -243,3 +243,59 @@ Key points:
 - Pressure engages the performer as part of resolution — that's why `getPerformersForAction` filters out engaged characters. Don't manually queue `createCardEngagedEvent`.
 
 For the "If successful, add a city card to this location" follow-up, queue `createCityCardAddedToLocationEvent((int)$topCard['id'], $location)` using `getCardsOnTopOfCityDeck(1)` (see Penya `_03cd01::triggerForcedAbility` for the exact shape).
+
+### Unlimited City Action (card stays; freely reusable)
+
+Printed `Unlimited.` on a City Action (Knives Out `bas/_04cd09`) is **not** the same as once-per-Day multi-use (`_01179` / `_03cd13`):
+
+| | Unlimited | Once-per-Day multi-use |
+|---|---|---|
+| `$playersUsed` | **No** | Yes + dusk reset + used-list UI |
+| `$this->setUsed($theah, false)` after resolve | **Yes** (required) | Yes (required) |
+| Discard the event card | No | No |
+
+WHY `setUsed(false)` even though Eddie says "Unlimited means the action does not call setUsed": `actHighDramaInPlayActionConfirm` sets `Used=true` for every `CardAction` before your handler runs. Without clearing it, `CardAction::isAvailableToPlayer` (`!$this->Used`) greys the action out for everyone. "Does not call setUsed" means do not *consume* the action — clear the central mark.
+
+Do **not** invent a used-list notify / `getAllDatas` branch for Unlimited cards.
+
+### Location-scoped "cannot refuse challenges"
+
+Text like "Characters at this location cannot refuse challenges" is a **continuous location rule**, not Forced and not a challenge issued by this card. Mirror Mōri Daichi (`_03050`), not a new `CHALLENGE_TYPE`:
+
+1. **Card class** — `public static function challengeRefusalBlocked(Theah $theah, Character $defender): bool` that returns true when Knives Out (or your card) sits at `$defender->Location` via `getCardObjectsAtLocation` + `instanceof self`. Gate with `cardInCity($defender)` so Home / locker characters are unaffected.
+2. **`ArgumentsTrait::argsHighDramaChallengeActionAcceptChallenge`** — add a bool arg (e.g. `cannotRefuseDueToKnivesOut`) so the client can disable Refuse.
+3. **`FrameworkActionsTrait::actHighDramaChallengeActionReject`** — throw `UserException` when the helper returns true (server authority).
+4. **`OnUpdateActionButtons.js`** `highDramaChallengeActionAcceptChallenge` — `dojo.addClass('btnRefuse', 'disabled')` when the arg is true.
+
+WHY not a `CHALLENGE_TYPE`: the lock applies to **any** challenge whose defender is at that location (normal claim challenges, card-issued challenges, etc.). A type only correlates challenges *this card* issues.
+
+### Engage-or-discard cost choice
+
+When the cost is "Engage your performer **or** discard a card":
+
+1. `RequiresPerformerSelected = false` — discard path needs no framework performer pick.
+2. Availability: `(has unengaged performer at location) || (hand nonempty)`, plus whatever the effect needs (e.g. another city location to move to).
+3. **State 1** — buttons via `actFromCardWithId` with **numeric** ids (`1` = engage, `2` = discard). WHY numeric: `Game::actFromCardWithId(int $id)` — string labels will not type-check cleanly.
+4. Store the choice in an Action-owned global const (e.g. `Action_04cd09::COST_MODE`).
+5. **State 2** — branch UI on `args.costMode`: highlight unengaged performers **or** `factionHand.setSelectionMode('single')` + `onCardDiscarded` (mirror `highDramaPhase03042`). Enable Confirm in `EventHandlers.js` for the discard branch.
+6. Pay the cost (queue engage or `createCardDiscardedFromHandEvent`), then see **EVENTS hop** below before the effect state.
+
+### EVENTS hop after mid-action payment
+
+If step N queues real game events (engage, discard, move) and step N+1 is another interactive picker, **do not** `nextState` straight to the next custom state. Queued events stay unprocessed until `HIGH_DRAMA_PLAYER_TURN_EVENTS` runs.
+
+```php
+$game->theah->queueEvent($engageOrDiscardEvent);
+$transition = EventFactory::createTransitionEvent($playerId, $owner->Id, "04cdNN_3", $this->Id);
+$game->theah->queueEvent($transition);
+$game->gamestate->nextState("costPaid"); // transitions to HIGH_DRAMA_PLAYER_TURN_EVENTS
+```
+
+Register **both** `"04cdNN"` (first step) and `"04cdNN_3"` (post-EVENTS step) under `HIGH_DRAMA_PLAYER_TURN_EVENTS` in `states.inc.php`. Contrast Penya `_03cd01`: intermediate steps only stash globals and queue **all** events on the final commit — no EVENTS hop needed mid-flow.
+
+### Move this event card to another City location
+
+Printed "another **City** location" (Knives Out) means any other city site in play — **not** adjacency-gated. Build destinations from `$theah->getCityLocations()` excluding `$owner->Location`. Use `createCardMovingEvent(..., $engage = false, ...)` when the cost was already paid. Do **not** discard the event unless the text says so — Unlimited move actions leave the card in play at the new site.
+
+Contrast: "adjacent City location" → `getAdjacentCityLocations($from, $includeHome = false)` (see Penya / `_04cd01`).
+

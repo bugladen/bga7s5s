@@ -292,6 +292,9 @@ onUpdateActionButtons: function( stateName, args )
             // WHY: Mōri Daichi — relative Combat blocks refuse for either participant role.
             if (args.cannotRefuseDueToDaichi)
                 dojo.addClass('btnRefuse', 'disabled');
+            // WHY: Knives Out — characters at its location cannot refuse.
+            if (args.cannotRefuseDueToKnivesOut)
+                dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
 

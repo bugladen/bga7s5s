@@ -16,6 +16,7 @@ use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
@@ -740,6 +741,8 @@ trait ArgumentsTrait
             "defenderHandCount" => count($defenderHand),
             // WHY: Mōri Daichi Combat-gate — client disables Refuse; not a CHALLENGE_TYPE flag.
             "cannotRefuseDueToDaichi" => _03050::challengeRefusalBlocked($performer, $target),
+            // WHY: Knives Out location gate — same Daichi-style client disable path.
+            "cannotRefuseDueToKnivesOut" => _04cd09::challengeRefusalBlocked($this->theah, $target),
         ];
 
     }

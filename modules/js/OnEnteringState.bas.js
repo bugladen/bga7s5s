@@ -45,6 +45,63 @@
                 }
             },
 
+            'highDramaPhase04cd09': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.cardId = args.args.args.cardId;
+                    const card = this.cardProperties[args.args.args.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, '_7sfs-chosen');
+                    }
+                }
+            },
+
+            'highDramaPhase04cd09_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.clientStateArgs.cardId = args.args.args.cardId;
+                    const card = this.cardProperties[args.args.args.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, '_7sfs-chosen');
+                    }
+
+                    if (args.args.args.costMode === 2) {
+                        var translated = dojo.string.substitute(
+                            _("(${amount} card(s) to discard)"),
+                            { amount: 1 }
+                        );
+                        $('faction_hand_info').innerHTML = translated;
+                        this.factionHand.setSelectionMode('single');
+                    } else {
+                        this.numberOfCardsSelectable = 1;
+                        this.clientStateArgs.ids = args.args.args.ids;
+                        this.highlightCardsAsSelectable(args.args.args.ids);
+                    }
+                }
+            },
+
+            'highDramaPhase04cd09_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    this.clientStateArgs.cardId = args.args.args.cardId;
+                    const eventCard = this.cardProperties[args.args.args.cardId];
+                    if (eventCard) {
+                        const image = $(`${eventCard.divId}_image`);
+                        dojo.addClass(image, '_7sfs-chosen');
+                    }
+
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+                }
+            },
+
             'highDramaPhase04cd01b_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');

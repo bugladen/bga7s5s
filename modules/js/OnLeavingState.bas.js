@@ -41,6 +41,49 @@
                 }
             },
 
+            'highDramaPhase04cd09': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const card = this.cardProperties[this.clientStateArgs.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, '_7sfs-chosen');
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04cd09_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const card = this.cardProperties[this.clientStateArgs.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, '_7sfs-chosen');
+                    }
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    if (this.clientStateArgs.ids) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04cd09_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+
+                    const card = this.cardProperties[this.clientStateArgs.cardId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, '_7sfs-chosen');
+                    }
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04cd01b_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.addClass('choose_container', 'hidden');

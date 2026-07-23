@@ -79,3 +79,7 @@ If the rule is genuinely new:
 2. Add a branch in `UtilitiesTrait::pressureLocation()` next to the existing `CLAUDE_PRESSURE_TYPE` / `CONSTANZO_PRESSURE_TYPE` blocks.
 
 Reference cards: `_01006` (Don Constanzo, Forced bonus), `tac/_02044` (Solomonia, Forced bonus), `_7s5s/_01184` Reaction (Claude — same flag as `_03cd08`, different trigger style).
+
+### Continuous location rules (not Forced)
+
+Some city events print a standing rule with **no** Forced/Action/Reaction label (e.g. Knives Out: "Characters at this location cannot refuse challenges"). That is **not** Pattern A — do not listen for challenge events in `handleEvent`. Use the Daichi-style static gate in [sub-patterns.md](sub-patterns.md) "Location-scoped cannot refuse".
