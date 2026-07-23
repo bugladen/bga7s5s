@@ -13,7 +13,8 @@
 # 8. Classes extending Maneuver must handle EventManeuverCanceled
 # 9. Classes extending Technique must handle EventTechniqueCanceled
 # 10. Classes extending AttachmentReaction must call $this->ownerIsAttached()
-# 11. Classes extending FactionAttachment or CityAttachment must set $this->Riposte =
+# 11. Classes extending FactionAttachment must set $this->Riposte =
+#     (CityAttachment is excluded — city attachments have no FactionCardTrait combat stats)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -164,13 +165,13 @@ for file in $staged_files; do
         fi
     fi
 
-    # Check if the class extends FactionAttachment or CityAttachment
-    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+(FactionAttachment|CityAttachment)'; then
+    # Check if the class extends FactionAttachment (not CityAttachment — no combat-card stats)
+    if echo "$content" | grep -qE 'class\s+\w+\s+extends\s+FactionAttachment'; then
 
-        # Attachments must explicitly set Riposte (including 0) so combat stats are never left unset
+        # Faction attachments must explicitly set Riposte (including 0) so combat stats are never left unset
         if ! echo "$content" | grep -q '\$this->Riposte\s*='; then
             echo -e "${RED}ERROR:${NC} $file"
-            echo -e "  Class extends FactionAttachment/CityAttachment but does not set ${YELLOW}\$this->Riposte =${NC}"
+            echo -e "  Class extends FactionAttachment but does not set ${YELLOW}\$this->Riposte =${NC}"
             errors_found=1
         fi
     fi
