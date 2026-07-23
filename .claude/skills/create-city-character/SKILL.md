@@ -25,6 +25,7 @@ City characters are city-deck cards that are **playable Characters** (not events
 | [pattern-d.md](pattern-d.md) | Reaction |
 | [pattern-e.md](pattern-e.md) | Technique / Maneuver pointer |
 | [pattern-f.md](pattern-f.md) | Continuous location-scoped passive (stat bonus or trait copy) |
+| [pattern-g.md](pattern-g.md) | Pressure-count Influence bonus (`getInfluencePressureValue`) |
 | [wiring.md](wiring.md) | JS hooks, pre-commit, style |
 | [helpers.md](helpers.md) | cross-cutting helpers |
 | [references.md](references.md) | exemplars |
@@ -105,7 +106,7 @@ Key runtime state inherited from `Character` / `Card`:
 - `$this->Id` — this character's card id.
 - `$this->ControllerId` — the player currently controlling the character (0 while in the city deck before muster; the mustering player once in play).
 - `$this->Location` — current location. While in the city deck this is the city location they sit at; once mustered, it's wherever they are in the city.
-- `$this->Engaged` — engagement state, same semantics as any other Character.
+- `$this->Engaged` — `true` = committed / has acted; `false` = en garde / ready. Italic *En Garde* on ability text is usually a precondition (`!$this->Engaged`), not flavor.
 - `$this->Wounds`, `$this->ModifiedResolve` — wound tracking, identical to any Character.
 
 
@@ -121,18 +122,19 @@ Read each clause of the printed Text and classify it before writing code. A sing
 | **`<b>City Forced:</b>`** — auto-triggers while in the city; no choice | Override `handleEvent`. Gate on `$event->theah->cardInCity($this)` (or the equivalent for whatever scope the trigger covers). No Action/Reaction/State files. |
 | **`<b>Forced:</b>`** (not City) — auto-triggers while in play | Same as City Forced but without the `cardInCity` gate. Gate on whatever the text scopes ("while engaged," "while at this location," etc.). |
 | **`<b>City Action:</b>`** — player spends an action while the character sits in the city | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_03cdNN.php` extending `CharacterAction` (NOT `EventCityAction` — see "Action base class" below). State class(es) + JS wiring per the City Action flow. |
-| **`<b>Action:</b>`** (not City) — player spends an action with the character once in play | Same as City Action — `CharacterAction` is the right base class either way. The eligibility check (in city vs in play) is what differs and goes in `isAvailableToPlayer`. |
+| **`<b>Action:</b>`** (not City) — player spends an action with the character once in play | Same as City Action — `CharacterAction` is the right base class either way. **Must** gate `isControlled()` in `isAvailableToPlayer` (CardAction's parent lets uncontrolled city-deck cards through for every player). See Pattern C "City Action vs in-play Action". |
 | **`<b>City Reaction:</b>` or `<b>Reaction:</b>`** | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php` extending `CardReaction`. See "Pattern D — Reaction on a CityCharacter." For "City Reaction" gate triggers on `$event->theah->cardInCity($owner)`. Button-based reactions need **no** new state class, **no** `states.inc.php` edits, **no** JS wiring. |
 | **`<b>Technique:</b>` / `<b>Maneuver:</b>`** | The Character lineage already brings `TechniqueTrait`. Add `IHasManeuvers` + `ManeuverTrait` for maneuvers. Implement under `cards/<expansion>/techniques/` or `cards/<expansion>/maneuvers/`. |
 | **"While you control … at \<Name\>'s location, …"** (stat bonus or gains trait; no player choice) | Continuous location-scoped passive. Override `handleEvent` and recompute — **not** Forced / Action / Reaction. No new state or JS. See "Pattern F — Continuous location-scoped passive." |
+| **"During pressures, … gains +N[Influence]"** / **"<i>En Garde</i> — … during pressures …"** | Pressure-count Influence via `getInfluencePressureValue` — **not** ModifiedInfluence / Pattern F. Italic En Garde → `!$this->Engaged`. Opponent-initiated → `PRESSURING_PLAYER`. See "Pattern G — Pressure-count Influence bonus." |
 
 
 ## Finish (short)
 
 1. Walk each printed Text clause to exactly one pattern (see shape table).
 2. Match constructor fields / Traits / CardNumber / WealthCost to the **printed card image** (stubs are often wrong or incomplete).
-3. Put abilities in the correct subdirectory files; wire states + JS when needed - see companions. Pure passives (Pattern F) stay on the card class only.
-4. Satisfy pre-commit literals; run `php -l` on touched PHP.
+3. Put abilities in the correct subdirectory files; wire states + JS when needed - see companions. Pure passives (Pattern F / Pattern G) stay on the card class only.
+4. Satisfy pre-commit literals; run `php -l` on touched PHP. Preserve existing line endings (do not introduce `\r\r\n`).
 5. CityCharacter: set Negotiable, WealthCost, CityCardNumber; Traits in TraitNames.
 
 **Deep checklist:** [checklist.md](checklist.md)

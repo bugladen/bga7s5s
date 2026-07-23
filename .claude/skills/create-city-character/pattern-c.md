@@ -34,7 +34,9 @@ class Action_03cdNN extends CharacterAction
 
         $owner = $this->getOwningCharacter($theah);
 
-        // City Actions: gate on being in the city deck
+        // City Actions (unmustered / city-deck scope): often gate cardInCity
+        // In-play Actions (printed Action, not City Action): MUST gate isControlled()
+        //   — CardAction parent allows uncontrolled city cards through for every player.
         if (!$theah->cardInCity($owner))
         {
             return false;
@@ -148,6 +150,10 @@ Expansion 3 (`faf`) uses `403XXXX` to avoid collisions with expansion 1 (`401XXX
 - Penya step 1: `HIGH_DRAMA_PLAYER_TURN_03CD01 = 4030001`
 - Penya step 2: `HIGH_DRAMA_PLAYER_TURN_03CD01_2 = 40300012`
 
+Expansion 4 (`bas`) uses `404XXXX` the same way:
+- `HIGH_DRAMA_PLAYER_TURN_04CD01 = 4040001`
+- `HIGH_DRAMA_PLAYER_TURN_04CD04 = 4040004`
+
 Add the constants in `modules/php/States.php` under the per-card section.
 
 ### Register state transitions
@@ -192,6 +198,31 @@ $moveEvent = EventFactory::createCardMovingEvent(
 );
 $game->theah->queueEvent($moveEvent);
 ```
+
+### City Action vs in-play Action (`isControlled`)
+
+| Printed label | Availability gate |
+|---|---|
+| **City Action** | Typically `$theah->cardInCity($owner)` (and often `!$owner->Engaged`). Works while the card is still an unmustered city mercenary. |
+| **Action** (no City) | **`$owner->isControlled()`** + usually `!$owner->Engaged` + effect-specific eligibility. |
+
+WHY `isControlled()` is mandatory for printed Action: `CardAction::isAvailableToPlayer` only rejects when the owner *is* controlled by someone else. Uncontrolled city-deck characters pass the parent check for **every** player — without an explicit `isControlled()` gate, Astrid's Action would show up for opponents while she sits unmustered. Reference: `Action_04cd04`.
+
+`cardInCity` alone is wrong for "once mustered" Actions: after muster she is still at a city location, so `cardInCity` stays true — but the critical missing piece for unmustered cards is controller, not location.
+
+### Engage • adjacent location becomes uncontrolled • move there
+
+Printed: **"Engage \<Name\> • An adjacent location becomes uncontrolled. Move \<Name\> there."**
+
+1. Availability: `isControlled()`, `!$owner->Engaged`, and ≥1 eligible adjacent location.
+2. Eligible locations = `getAdjacentCityLocations($from, $includeHome = false)` filtered to:
+   - `$location->Controller != 0` (already-uncontrolled is a no-op for "becomes")
+   - `$theah->canLocationBecomeUncontrolledBy($playerId, $name)` (Leshiye-style locks)
+3. One-step location picker state (mirror `Action_04cd01` / `State_highDramaPhase04cd01` JS).
+4. Resolve order: `createCardEngagedEvent` (cost) → `createLocationBecomesUncontrolledEvent` → `createCardMovingEvent(..., $engage = false)` → `createActionResolvedEvent`.
+5. Re-check `canLocationBecomeUncontrolledBy` at resolve time; if false, notify and still move (or follow the card — Astrid notifies then moves). Mirror `Action_01086` / `Action_01112a` notify wording.
+
+Reference: `Action_04cd04`, `State_highDramaPhase04cd04`.
 
 ### Finishing the action
 

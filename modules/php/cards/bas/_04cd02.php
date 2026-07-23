@@ -40,7 +40,7 @@ class _04cd02 extends CityCharacter
         $this->Influence = 2;
 
         $this->WealthCost = 2;
-        $this->Negotiable = true;
+        $this->Negotiable = false;
 
         $this->Traits = [
             clienttranslate('Mercenary'),
