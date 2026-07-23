@@ -37,6 +37,9 @@ trait DebugTrait
     {
         $card = $this->instantiateCard($className);
         if ($card) {
+            // WHY: Store class name only — do not create the card here. This is
+            // called during pickDecks; buildDecks runs after and the early card
+            // id would be stale/missing by dawn. stDawnCityCards creates it.
             $this->globals->set(Game::DEBUG_INCLUDE_CITY_CARD, $className);
         }
     }
