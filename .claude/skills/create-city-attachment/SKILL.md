@@ -38,7 +38,7 @@ When in doubt, mirror a reference rather than invent.
 
 ## Base Anatomy
 
-City attachments live under `modules/php/cards/<expansion>/` (e.g. `faf/`, `_7s5s/`, `tac/`) and extend `CityAttachment`. `CityAttachment` extends `Attachment` and mixes in `CityDeckCardTrait`.
+City attachments live under `modules/php/cards/<expansion>/` (e.g. `faf/`, `_7s5s/`, `tac/`, `bas/`) and extend `CityAttachment`. `CityAttachment` extends `Attachment` and mixes in `CityDeckCardTrait`.
 
 ```php
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf;
@@ -52,8 +52,9 @@ class _03cdNN extends CityAttachment
         parent::__construct();
 
         $this->Name           = clienttranslate('...');
+        $this->Title          = clienttranslate('...'); // optional subtitle on Attachment
         $this->Image          = '03cdNN.jpg';
-        $this->ExpansionName  = 'faf';     // or _7s5s / tac
+        $this->ExpansionName  = 'faf';     // or _7s5s / tac / bas
         $this->ExpansionNumber = 3;
         $this->CardNumber     = 0;          // city deck cards: keep CardNumber = 0
         $this->CityCardNumber = NN;         // visible city number on the card
@@ -65,6 +66,7 @@ class _03cdNN extends CityAttachment
         $this->CombatModifier    = 0;
         $this->FinesseModifier   = 0;
         $this->InfluenceModifier = 0;
+        // Do NOT set Riposte — CityAttachment has no FactionCardTrait.
 
         $this->Traits = [ clienttranslate('Artifact'), /* ... */ ];
 
@@ -99,7 +101,7 @@ Read each clause of the card text and classify it before writing any code:
 | **Passive grant on the equipped character** ("Gains Duelist", "Cannot be wounded by Risks") | Override `handleEvent` and react to `EventAttachmentEquipped` (add) + `EventAttachmentUnequipped` (remove). See `_01198` (Guild Triskelion) and `tac/_02047` (Temnota) for the canonical `addTrait` / `removeTrait` pair. |
 | **`<b>Forced:</b>`** — auto-triggers, no choice | Override `handleEvent` directly. No Action/Reaction class needed. See `_03cd05` Forced wound on equip. |
 | **`<b>Forced:</b> the first time an opponent's Risk targets the equipped character each Day** | Pattern G below — cancel five event types, set a once-per-Day condition, clear at `EventDuskEndOfDay`. See `_03cd21` (Silver Spine), modeled on `_01186` (Maryam). |
-| **`<b>Action:</b>` or `<b>City Action:</b>`** — player spends an action | Implement `IHasActions`, `use ActionTrait`, create `cards/<expansion>/actions/Action_NNNNN.php` extending `AttachmentAction`. |
+| **`<b>Action:</b>` or `<b>City Action:</b>`** — player spends an action | Pattern C — `IHasActions` + `ActionTrait` + `cards/<expansion>/actions/Action_NNNNN.php` extending `AttachmentAction`. Multiple printed Actions → multiple Action classes. City → `cardInCity` gate. Engage-this-card + adjacent move: `_04cd01` / `_03055`. **"Sink this card"** → City Deck bottom (not discard). Play Risk from opponent discard → RiskClone (`_04cd01b` / `_01106`). |
 | **`<b>Reaction:</b>` or `<b>City Reaction:</b>`** — opt-in response to an event | Implement `IHasReactions`, `use ReactionTrait`, create `cards/<expansion>/reactions/Reaction_NNNNN.php` extending `AttachmentReaction`. |
 | **Steady-state property of the play area** ("reveal an additional gamble card", "this character has +1 wounds capacity") | Override the matching `Card::get*` method (e.g. `getNumberOfGambleCardsToReveal`) — *not* via event mutation. See "Steady-state overrides" below. |
 
@@ -112,6 +114,6 @@ A single card commonly combines several — `_03cd05` mixes a Forced (handleEven
 2. Match constructor fields / Traits / CardNumber to the printed card.
 3. Put abilities in the correct subdirectory files; wire states + JS when needed - see companions.
 4. Satisfy pre-commit literals; run `php -l` on touched PHP.
-5. CityAttachment: WealthCost, CityCardNumber, always set Riposte (pre-commit).
+5. CityAttachment: WealthCost, CityCardNumber. (Riposte pre-commit applies only to FactionAttachment.)
 
 **Deep checklist:** [checklist.md](checklist.md)
