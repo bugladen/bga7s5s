@@ -682,7 +682,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         if (notif.args.player_id == this.player_id)
         {
+            // WHY: Constanzo (setupTable_01006) adds a thug to hand during setup,
+            // when the hand is still hidden. Reveal before addCard so HandStock
+            // lays out against a visible container — adding into display:none
+            // leaves the card invisible even after a later unhide. The normal
+            // panache draw path unhides in notif_factionResolveCardDraw instead.
+            dojo.removeClass('factionHand-placeholder', 'hidden');
             this.addCardToDeck(this.factionHand, notif.args.card);
+            if (this.checkFloatingHand) {
+                this.checkFloatingHand();
+            }
         }
 
         $(`${notif.args.player_id}-score-hand-count`).innerHTML = notif.args.handCount;
