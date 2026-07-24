@@ -66,6 +66,50 @@ Canonical engage-this-card + choose adjacent City location: **`Action_04cd01`** 
 
 **Pay engage on location resolve (with the move), not on `EventActionTriggered`.** WHY: single resolution step when the player commits to a destination.
 
+### Engage timing when there is no destination picker
+
+When the printed cost is **"Engage this card"** and the effect begins immediately after in-play confirm (no location/opponent picker first — e.g. look at your deck), **pay engage on `EventActionTriggered`**, then queue the transition. WHY: the player already committed via `actHighDramaInPlayActionConfirm`; there is nothing to back out of before the look starts. Contrast with choose-location Actions above, where engage waits for destination commit.
+
+Canonical: **`Action_04cd15`** (Syrneth Puzzle Box).
+
+### Look at top N of your deck; Sink any; Reorder rest
+
+Printed **"Look at the top [N] cards of your deck. Sink any and replace the rest in any order."** (optionally **"Then, you may discard a card to draw a card."**).
+
+Canonical city attachment: **`Action_04cd15`** + `State_highDramaPhase04cd15` / `_2` / `_3`. Peers for pieces: `Action_01134` / `Action_02002` (High Drama look + reorder), `Maneuver_03059` Academic sink-any Pass + immediate bottom insert.
+
+**Flow:**
+1. **`EventActionTriggered`**: engage attachment (if cost); `getCardsOnTopOfPlayerFactionDeck($controllerId, N)` into `Game::CHOSEN_CARD`; notify look; queue transition.
+   - Cards present → `"NNNNN"` (sink state).
+   - Empty look (0 cards) → skip sink/reorder; transition straight to the optional terminal step (`"NNNNN_3"`) if any, else `createActionResolvedEvent`.
+2. **Sink state (`NNNNN`)**: multi-select looked-at cards + **Pass**. **"Sink any" includes zero** — Pass = sink none, then `finishReplaceOrReorder` (same WHY as Maneuver_03059).
+3. **`finishReplaceOrReorder` helper**:
+   - 0 remaining → next optional step / resolve.
+   - 1 remaining → auto `insertCardOnExtremePosition(..., true)` (no reorder UI).
+   - 2+ remaining → nextState reorder.
+4. **Reorder state (`NNNNN_2`)**: player orders all remaining; each id `insertCardOnExtremePosition(..., true)`. JS: `onCardsSorted` (descending order tags — last selected ends on top).
+5. **Optional discard-to-draw (`NNNNN_3`)**: hand single-select + Pass. Discard → `createCardDiscardedFromHandEvent(..., asEffect=true)` + `createCardDrawnEvent` + `createActionResolvedEvent`. Pass → **also** `createActionResolvedEvent` + a decline notify (spectators should see both outcomes). Zombie auto-passes (optional step).
+
+**Sink looked-at faction-deck cards — immediate bottom insert, not queued events:**
+
+```php
+// WHY: Immediate bottom insert (Maneuver_03059 / Technique_01010) — queued sink
+// events would race finishReplaceOrReorder's top inserts before EVENTS drains.
+$deck->insertCardOnExtremePosition($id, $deckName, false);
+```
+
+Do **not** switch to `createCardAddedToFactionDeckEvent(..., false)` for this mid-action sink+reorder without fixing that race. (Separate from **"Sink this card"** on the attachment itself → City Deck via queued events — see above.)
+
+**Args / privacy:** High Drama deck-look peers (`01134`, `02002`, `04cd15`) put looked-at cards in **public** `getArgsFromAction` args (active player only populates `chooseList`). Dusk reactions like `Reaction_03052` use `_private` — do not mix the two conventions without cause.
+
+**JS wiring (expansion bas/tac/faf modules + `EventHandlers.js`):**
+- Sink: `chooseList` selectionMode `2`; Confirm → `onMultipleChooseListCardsConfirmed`; Pass → `actFromCardPass`; EventHandlers enable Confirm when `length > 0`.
+- Reorder: selectionMode `2`; Confirm → `onCardsSorted`; EventHandlers `addSortTagToCard` + enable when all items selected.
+- Discard: `factionHand.setSelectionMode('single')`; Confirm → `onCardDiscarded`; EventHandlers enable `actChooseDiscardCards` when hand selection `> 0`.
+- Leave: hide/clear `chooseList`; reset hand selection mode; unhighlight performer.
+
+**`states.inc.php`:** register both `"NNNNN"` and any skip target (e.g. `"NNNNN_3"`) on `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Intermediate reorder can be a direct `nextState` from the sink state without an EVENTS hop.
+
 ### "Destroy this card" cost
 
 If the action text reads "**Destroy this card** • …" (e.g. `_01187` Smuggled Item, `_01191` Duckfoot Pistol), queue the unequip + **city discard** up-front, *guarded by `isAttached()` so copied effects don't crash*:

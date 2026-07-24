@@ -307,6 +307,24 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 } else {
                     dojo.addClass('actChooseCardSelected', 'disabled');
                 }
+            },
+
+            'highDramaPhase04cd15': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase04cd15_2': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
             }
         };
 
@@ -525,6 +543,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase04cd09_2': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
+            'highDramaPhase04cd15_3': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCards', 'disabled');
                 } else {

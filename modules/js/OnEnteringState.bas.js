@@ -150,6 +150,60 @@
                 }
             },
 
+            'highDramaPhase04cd15': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+
+                    $('choose_container_name').innerHTML = _("Top Cards of Your Faction Deck");
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            'highDramaPhase04cd15_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+
+                    $('choose_container_name').innerHTML = _("Remaining Faction Deck Cards");
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            'highDramaPhase04cd15_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+
+                    var translated = dojo.string.substitute(
+                        _("(${amount} card(s) to discard)"),
+                        { amount: 1 }
+                    );
+                    $('faction_hand_info').innerHTML = translated;
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
         };
 
         if (methods[stateName])

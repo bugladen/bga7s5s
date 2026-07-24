@@ -73,6 +73,23 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase04cd15': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Sink Selected'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
+            'highDramaPhase04cd15_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase04cd15_3': () => {
+                this.addActionButton(`actChooseDiscardCards`, _('Discard to Draw'), () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCards', 'disabled');
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
         };
 
         if (methods[stateName])

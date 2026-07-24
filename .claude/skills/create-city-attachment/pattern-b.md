@@ -23,4 +23,7 @@ public function handleEvent(Event $event)
 }
 ```
 
-References: `_01198` (Guild Triskelion → Duelist), `tac/_02047` (Temnota → Sorcerer).
+References:
+- `_01198` (Guild Triskelion → Duelist) — CityAttachment
+- `bas/_04cd15` (Syrneth Puzzle Box → Sorcerer) — CityAttachment + City Action combo
+- `tac/_02047` (Temnota → Sorcerer) — FactionAttachment sibling; same equip/unequip pair
