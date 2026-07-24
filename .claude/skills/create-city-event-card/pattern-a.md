@@ -10,6 +10,7 @@ Override `handleEvent`. Gate each Forced clause on (a) event type, (b) the corre
 |---|---|---|
 | **When this card is revealed** | `$event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id` | City events "reveal" by being placed at a city location. There is no separate `EventCardRevealed` for city cards. Do **not** also require `cardInCity($this)` — the card is mid-placement; `$event->cardId == $this->Id` is the identity check. |
 | **At the end of High Drama** / while already in play at a city location | `$event->theah->cardInCity($this)` (plus location match if needed) | Card must still be sitting in the city. See sub-patterns "At the end of High Drama". |
+| **At the beginning of Dusk** / while in play | `$event instanceof EventDuskPhaseBegin && $event->theah->cardInCity($this)` | Dispatched by `stDuskPhaseBegin` before cleanup moves characters Home. See sub-patterns "At the beginning of Dusk" and "does not move Home during Dusk". |
 | Pressure / equip / other in-play effects | `cardInCity($this)` and usually `$event->location == $this->Location` | Same as in-play city Forced. |
 
 Template (in-play / location-gated Forced):
@@ -45,6 +46,20 @@ If the Forced effect needs to queue further game events (wound, draw, remove fro
 ### Multiple Forced clauses on one card
 
 A card can have several `<b>Forced:</b>` paragraphs. Put each in its own `if` branch inside a single `handleEvent`. Early-`return` after a reveal branch is fine when later branches cannot apply to the same event. Pure dual-Forced cards need **no** Action/Reaction/State/JS — see `bas/_04cd07` (Festival of Fools).
+
+### Interactive Forced ("must choose")
+
+Printed **Forced** that still requires a player to pick a target is **not** a City Action and **not** a Reaction. Do not invent `IHasActions` / Pass / Decline just because there is a picker.
+
+Recipe (canonical: `bas/_04cd11` Let Bygones Be Bygones; older single-player cousin: `_01177` Penya Shows The Way):
+
+1. **`handleEvent`** on the trigger (e.g. `EventDuskPhaseBegin` + `cardInCity`) — find eligible players (`ORDER BY turn_order`), skip anyone with no legal target, queue one `EventFactory::createTransitionEvent($playerId, $this->Id, "04cdNN")` each.
+2. **State class** under `States/<exp>/` — thin wrapper; card owns `argsFromCard` / `actFromCardWithId` / `eventCheck`. Register the transition key on the matching EVENTS state (`DUSK_PHASE_BEGIN_EVENTS` for dusk begin — **not** High Drama EVENTS).
+3. **No Pass** when the text says "must choose." Zombie handler auto-picks the first eligible target (do not `nextState` without applying the Forced).
+4. **JS** in expansion `OnEntering` / `OnUpdateActionButtons` / `OnLeaving` — character picker like `duskPhaseBegin01177`, Confirm only.
+5. After choice: queue effect events (heal, condition, etc.), then `nextState()` back to the EVENTS runner so heals process before the next player's transition.
+
+WHY not treat as Reaction: Reaction is optional ("you may"). Forced-with-choice is mandatory when eligible; declining is illegal.
 
 ### Event ordering inside handleEvent
 

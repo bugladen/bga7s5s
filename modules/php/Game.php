@@ -88,6 +88,7 @@ class Game extends \Bga\GameFramework\Table
     final const SILVER_SPINE_ABILITY_USED = "Silver Spine Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
+    final const LET_BYGONES_BE_BYGONES = "Let Bygones Be Bygones";
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";

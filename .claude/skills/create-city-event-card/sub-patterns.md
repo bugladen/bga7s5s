@@ -104,6 +104,37 @@ Reference cards: `_03cd12` (Equal Claim, makes location uncontrolled), `bas/_04c
 
 Do **not** invent a custom "end of high drama" hook or piggyback on `EventDuskEndOfDay` / `EventPhaseHighDrama` — they fire at the wrong granularity.
 
+### "At the beginning of Dusk" Forced trigger
+
+`EventDuskPhaseBegin` is queued by `stDuskPhaseBegin` and processed in `DUSK_PHASE_BEGIN_EVENTS` **before** `stDuskPhaseCleanup` moves characters Home. Gate with `cardInCity($this)` for in-play city events:
+
+```php
+if ($event instanceof EventDuskPhaseBegin && $event->theah->cardInCity($this))
+{
+    // queue transitions / apply effects
+}
+```
+
+Reference: `bas/_04cd11` (interactive Forced choose + stay Home), `_01177` (Reaction-style Penya, same event), `tac/_02053` (City Reaction stay Home). Do **not** use `EventDuskPhaseEnd` / `EventDuskEndOfDay` for "beginning of Dusk" text — those fire after cleanup.
+
+Interactive dusk Forced: register transition keys under `DUSK_PHASE_BEGIN_EVENTS` in `states.inc.php`. State IDs follow `800` + card digits (e.g. `_04cd11` → `8000411`). Modern cards use a `States/<exp>/State_duskPhaseBegin04cdNN.php` class (no `states.7s5s.php` entry); older `_01177` still lives in `states.7s5s.php`.
+
+### "Does not move Home during Dusk"
+
+Characters normally move Home in `stDuskPhaseCleanup` via `createCardMovingEvent(..., LOCATION_PLAYER_HOME, sourceId=0)`. To keep a chosen character in the city:
+
+1. Add a **card-specific** condition on the character when chosen (`Game::LET_BYGONES_BE_BYGONES`, `HELPED_BY_PENYA`, `UNDER_COVER_OF_THE_NIGHT`, …). WHY a new const per card: the condition string is shown on the character UI — do not reuse another card's flavor string.
+2. On the **event card** (or owning scheme), override `eventCheck` to throw `UserException` when `$event instanceof EventCardMoved && $event->toLocation == LOCATION_PLAYER_HOME` and the character has that condition. Remove the condition and set `IsUpdated = true` before throwing.
+3. WHY **`EventCardMoved`**, not canceling `EventCardMoving`: Penya audit — `queueEvent` catches the throw so cleanup continues; Hub never applies the physical move. Stubborn-style `$event->canceled = true` on `EventCardMoving` is a different (reaction) path.
+
+Cleanup queues move-home events **before** discarding uncontrolled city cards, so the event card is still present for `eventCheck` when stays are resolved.
+
+Exemplars: `bas/_04cd11`, `_7s5s/_01177`, `tac/_02053`.
+
+### "Heal a wound" (Forced / action follow-up)
+
+Queue `EventFactory::createCharacterBeingHealedEvent($characterId, $sourceId, 1, $reason, $abilityId)`. Do not mutate `$character->Wounds` directly. If the text does not say "if wounded," still queue the heal — `Character` clamps at 0 wounds (`actualHealed` may be 0). Only filter unwounded characters when availability text requires a wound (e.g. `_01136`).
+
 ### "Player with a character at this location that does not control this location"
 
 Two independent checks per player from `loadPlayersBasicInfos()`:
@@ -298,4 +329,15 @@ Register **both** `"04cdNN"` (first step) and `"04cdNN_3"` (post-EVENTS step) un
 Printed "another **City** location" (Knives Out) means any other city site in play — **not** adjacency-gated. Build destinations from `$theah->getCityLocations()` excluding `$owner->Location`. Use `createCardMovingEvent(..., $engage = false, ...)` when the cost was already paid. Do **not** discard the event unless the text says so — Unlimited move actions leave the card in play at the new site.
 
 Contrast: "adjacent City location" → `getAdjacentCityLocations($from, $includeHome = false)` (see Penya / `_04cd01`).
+
+### Multi-player sequential Forced pickers (initiative order)
+
+When Forced says each eligible player must choose something (Let Bygones, Chance Meeting musters):
+
+1. Build the player list with `SELECT player_id FROM player ORDER BY turn_order` (today's initiative).
+2. Filter to players who have a legal target (e.g. ≥1 of their characters at `$this->Location` via `getCharactersAtLocation` + `ControllerId == $playerId`).
+3. Queue one `createTransitionEvent($playerId, $owner->Id, "04cdNN")` per eligible player — the EVENTS runner activates each in order.
+4. On resolve of each pick: queue effect events, `nextState()` back to EVENTS (so heals/conditions process before the next picker).
+
+Same queue shape as `Action_03cd03`'s per-player muster loop; difference is the trigger is Forced `handleEvent`, not a City Action. Skip the whole Forced silently (or with no notify) when zero players qualify.
 

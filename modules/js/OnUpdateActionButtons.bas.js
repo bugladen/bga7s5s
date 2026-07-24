@@ -63,6 +63,11 @@
                 });
             },
 
+            'duskPhaseBegin04cd11': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Character'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
         };
 
         if (methods[stateName])

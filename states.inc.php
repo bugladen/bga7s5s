@@ -3124,6 +3124,7 @@ $machinestates = [
                 "02024" => States::DUSK_PHASE_BEGIN_02024,
                 "02053" => States::DUSK_PHASE_BEGIN_02053,
                 "03052" => States::DUSK_PHASE_BEGIN_03052,
+                "04cd11" => States::DUSK_PHASE_BEGIN_04CD11,
                 "reaction" => States::DUSK_PHASE_BEGIN_REACTIONS,
                 "pay" => States::DUSK_PHASE_BEGIN_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_CLEANUP,

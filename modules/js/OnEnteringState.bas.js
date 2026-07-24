@@ -102,6 +102,19 @@
                 }
             },
 
+            'duskPhaseBegin04cd11': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    args.args.args.ids.forEach((cardId) => {
+                        card = this.cardProperties[cardId];
+                        if (card && card.type === 'Character' && card.controllerId && card.controllerId == this.getActivePlayerId()) {
+                            const image = $(`${card.divId}_image`);
+                            this.makeCardSelectable(image);
+                        }
+                    });
+                }
+            },
+
             'highDramaPhase04cd01b_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');
