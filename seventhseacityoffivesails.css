@@ -154,34 +154,35 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     overflow: hidden;
 }
 
-._7sfs-deck-picker-banner-image::before {
-    content: '';
+/* WHY: real children (not ::before/::after) so more expansion badges can stack; DOM order = paint order */
+._7sfs-deck-picker-banner-badge {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 60%;
     height: 60%;
-    background-image: url('img/deckpicker/tac.jpg');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    transform: translate(calc(-50% - 215px), calc(-50% + 60px)) rotate(-20deg);
     pointer-events: none;
 }
 
-._7sfs-deck-picker-banner-image::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 60%;
-    height: 60%;
-    background-image: url('img/deckpicker/faf.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    transform: translate(calc(-50% - 200px), calc(-50% + 15px)) rotate(-15deg);
-    pointer-events: none;
+._7sfs-deck-picker-banner-tac {
+    background-image: url('img/deckpicker/tac.jpg');
+    transform: translate(calc(-50% - 215px), calc(-50% + 60px)) rotate(-20deg);
+    filter: brightness(0.50);
+}
+
+._7sfs-deck-picker-banner-faf {
+    background-image: url('img/deckpicker/faf.jpg');
+    transform: translate(calc(-50% - 200px), calc(-50% + 25px)) rotate(-16deg);
+    filter: brightness(0.75);
+}
+
+._7sfs-deck-picker-banner-bas {
+    background-image: url('img/deckpicker/bas.jpg');
+    /* 20px right of faf (-200 → -180), rotate -18deg */
+    transform: translate(calc(-50% - 180px), calc(-50% - 15px)) rotate(-12deg);
 }
 
 ._7sfs-deck-picker-faction-image {
