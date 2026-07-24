@@ -105,6 +105,22 @@
                 }
             },
 
+            'highDramaPhase04cd14': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.ids) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    if (this.clientStateArgs.sourceId) {
+                        const card = this.cardProperties[this.clientStateArgs.sourceId];
+                        if (card) {
+                            const image = $(`${card.divId}_image`);
+                            dojo.removeClass(image, '_7sfs-chosen');
+                        }
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
         };
 
         if (methods[stateName])

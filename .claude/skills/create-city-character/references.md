@@ -4,6 +4,11 @@
 
 | File | What it demonstrates |
 |---|---|
+| `modules/php/cards/bas/_04cd14.php` (Millstone Rhud) | **Interactive post-recruit Forced + dual generic Techniques.** `EventCharacterRecruited` → wound self; if opposing at location, transition picker → wound target. No Pass / zombie auto-pick. Two `Technique_PlusOneThrust` with distinct `setId`. |
+| `modules/php/States/bas/State_highDramaPhase04cd14.php` | Forced opposing-character picker; zombie calls `actFromCardWithId`. Transition returns to `HIGH_DRAMA_PLAYER_TURN_EVENTS` (recruit already ends there). |
+| `modules/php/cards/faf/_03015.php` (Joern) | **Pure** post-muster Forced wound-self only — no picker. `EventCharacterMustered` / `EventApproachCharacterPlayed`. |
+| `modules/php/cards/_7s5s/_01048.php` (Langschwert) | Dual `Technique_PlusOneThrust` with `Technique_01048_1` / `_2` Ids (attachment, same Id rule). |
+| `modules/php/cards/techniques/Technique_PlusOneThrust.php` | Generic +1 Thrust — reuse; do not copy into `bas/techniques/`. |
 | `modules/php/cards/faf/_03cd01.php` | **Canonical CityCharacter.** Negotiable + dashed stats + `canIntervene` ban + `eventCheck` backstop + paired City Forced (duel and would-be-wounded) + self-listening `EventCardRemovedFromPlay` cleanup + IHasActions wiring. |
 | `modules/php/cards/bas/_04cd02.php` (Jack Trades) | **Canonical CityCharacter continuous passive (trait copy).** Negotiable + location-scoped "gains that trait" recompute via `$CopiedTraits`. Corrected `EventCharacterDestroyed` exclude. No Action/Reaction/State/JS. |
 | `modules/php/cards/bas/_04cd04.php` (Astrid) | **Pressure-count Influence + in-play Action.** Pattern G: `getInfluencePressureValue` with italic En Garde (`!$Engaged`) + opponent `PRESSURING_PLAYER`. Pattern C: Engage → adjacent location uncontrolled → move (`Action_04cd04`). |

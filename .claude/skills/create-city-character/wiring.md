@@ -68,6 +68,8 @@ If your state uses an existing client action like `onMusterCardSelected`, extend
 
 Location confirm via `onCityLocationsSelected` defaults to `actFromCardWithLocations` when the state is not in the special `actionMap` — Astrid / Penya-style location pickers need **no** `PlayerActions.js` edit.
 
+Character Confirm via `onChooseInPlayCardConfirmed` likewise defaults to `actFromCardWithId` when the state name is absent from that map — Forced opposing pickers (`highDramaPhase04cd14`) need **no** `PlayerActions.js` edit. Do **not** add a Pass button for interactive Forced.
+
 The expansion JS files (`*.faf.js`, `*.bas.js`) are already chained from the master JS files — no extra include wiring needed for `faf` / `bas`. For a new expansion, ensure the chain is in place (`seventhseacityoffivesails.js` loads `OnEnteringState.<exp>.js`, `OnUpdateActionButtons.<exp>.js`, `OnLeavingState.<exp>.js`).
 
 ## Pre-Commit Hook (relevant subset)
