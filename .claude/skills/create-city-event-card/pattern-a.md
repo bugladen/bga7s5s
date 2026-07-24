@@ -8,9 +8,10 @@ Override `handleEvent`. Gate each Forced clause on (a) event type, (b) the corre
 
 | Printed trigger | Gate | WHY |
 |---|---|---|
-| **When this card is revealed** | `$event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id` | City events "reveal" by being placed at a city location. There is no separate `EventCardRevealed` for city cards. Do **not** also require `cardInCity($this)` — the card is mid-placement; `$event->cardId == $this->Id` is the identity check. |
+| **When this card is revealed** | `$event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id` | City events "reveal" by being placed at a city location. There is no separate `EventCardRevealed` for city cards. Do **not** also require `cardInCity($this)` — the card is mid-placement; `$event->cardId == $this->Id` is the identity check. Effects that need "this location" use **`$event->location`**, not `$this->Location` — see sub-patterns "Add a Renown to this location" / `bas/_04cd19`. |
 | **At the end of High Drama** / while already in play at a city location | `$event->theah->cardInCity($this)` (plus location match if needed) | Card must still be sitting in the city. See sub-patterns "At the end of High Drama". |
 | **At the beginning of Dusk** / while in play | `$event instanceof EventDuskPhaseBegin && $event->theah->cardInCity($this)` | Dispatched by `stDuskPhaseBegin` before cleanup moves characters Home. See sub-patterns "At the beginning of Dusk" and "does not move Home during Dusk". |
+| **After a character at this location becomes engaged** | `$event instanceof EventCardEngaged && !$event->canceled && cardInCity($this)` + Character + location match | `EventCardEngaged` also fires for **attachments**. Filter with `getCharacterById` (null → skip). Check `canceled` — cards run before EventHub for this event (`runEventHubAfterCards=true`); impervious cancelers may set canceled in the same pass. See sub-patterns and `bas/_04cd19`. |
 | Pressure / equip / other in-play effects | `cardInCity($this)` and usually `$event->location == $this->Location` | Same as in-play city Forced. |
 
 Template (in-play / location-gated Forced):
@@ -38,14 +39,31 @@ Template (reveal Forced — note the different gate):
 if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id)
 {
     // e.g. each player draws — queue createCardDrawnEvent, do not draw decks directly
+    // e.g. add Renown here — createRenownAddedToLocationEvent(..., $event->location, ...)
 }
 ```
 
-If the Forced effect needs to queue further game events (wound, draw, remove from play, transition to a custom state), use `EventFactory::create*Event(...)` and `$event->theah->queueEvent(...)`. See `_03cd05` (wound on equip), `_03cd01` (queues `CardRemovedFromPlayEvent` and then listens for it to shuffle), `_03cd13` / `bas/_04cd07` (queue `createCardDrawnEvent` per eligible player).
+Template (engage-at-location Forced — Character filter required):
+
+```php
+if ($event instanceof EventCardEngaged
+    && ! $event->canceled
+    && $event->theah->cardInCity($this))
+{
+    $character = $event->theah->getCharacterById($event->cardId);
+    if ($character === null || $character->Location != $this->Location)
+    {
+        return;
+    }
+    // queue createCharacterBeingWoundedEvent(...) — do not mutate Wounds directly
+}
+```
+
+If the Forced effect needs to queue further game events (wound, draw, renown, remove from play, transition to a custom state), use `EventFactory::create*Event(...)` and `$event->theah->queueEvent(...)`. See `_03cd05` (wound on equip), `_03cd01` (queues `CardRemovedFromPlayEvent` and then listens for it to shuffle), `_03cd13` / `bas/_04cd07` (queue `createCardDrawnEvent` per eligible player), `bas/_04cd19` (reveal Renown + engage wound).
 
 ### Multiple Forced clauses on one card
 
-A card can have several `<b>Forced:</b>` paragraphs. Put each in its own `if` branch inside a single `handleEvent`. Early-`return` after a reveal branch is fine when later branches cannot apply to the same event. Pure dual-Forced cards need **no** Action/Reaction/State/JS — see `bas/_04cd07` (Festival of Fools).
+A card can have several `<b>Forced:</b>` paragraphs. Put each in its own `if` branch inside a single `handleEvent`. Early-`return` after a reveal branch is fine when later branches cannot apply to the same event. Pure dual-Forced cards need **no** Action/Reaction/State/JS — see `bas/_04cd07` (Festival of Fools: reveal + end HD draws) and `bas/_04cd19` (Blood in the Water: reveal Renown + engage wound).
 
 ### Interactive Forced ("must choose")
 
@@ -64,6 +82,8 @@ WHY not treat as Reaction: Reaction is optional ("you may"). Forced-with-choice 
 ### Event ordering inside handleEvent
 
 For events with `runEventHubAfterCards = false` (the default), EventHub processes the event first, then every card's `handleEvent` fires. This means you can queue `createCardRemovedFromPlayEvent` and have another `handleEvent` branch on this same card listen for the resulting `EventCardRemovedFromPlay` to do follow-up work (e.g., Penya shuffling the city deck after moving into it).
+
+For events with `runEventHubAfterCards = true` (notably **`EventCardEngaged`** / **`EventCardEngarded`**), cards run **before** EventHub. Cancelers (Maryam impervious, etc.) set `$event->canceled = true` during that card pass; EventHub then no-ops. Forced "After … becomes engaged" should gate on `!$event->canceled`. Residual race if this card's `handleEvent` runs *before* the canceler in the same foreach — same limitation as other engage listeners; do not invent a post-hub engage-done event.
 
 ### Pressure-modifying Forced (very common)
 

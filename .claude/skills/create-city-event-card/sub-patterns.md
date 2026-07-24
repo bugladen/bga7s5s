@@ -83,7 +83,27 @@ if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->I
 }
 ```
 
-WHY: the city deck places the card onto a location; that placement *is* the reveal. `_03cd13` (conditional draws) and `bas/_04cd07` (unconditional each-player draw) both use this gate. Do not invent `EventCardRevealed` / scheme-style reveal listeners for city events.
+WHY: the city deck places the card onto a location; that placement *is* the reveal. `_03cd13` (conditional draws), `bas/_04cd07` (unconditional each-player draw), and `bas/_04cd19` (add Renown to this location) all use this gate. Do not invent `EventCardRevealed` / scheme-style reveal listeners for city events.
+
+When the effect needs the placement site ("this location"), use **`$event->location`**. WHY: even though `EventCityCardAddedToLocation` has `runEventHubAfterCards = false` (so Hub sets `$this->Location` before cards), the event field is the durable source of truth for mid-placement Forced and matches the skill's "do not rely on cardInCity" guidance.
+
+### "Add a Renown to this location" (reveal / in-play Forced)
+
+Queue — do not mutate location Renown directly:
+
+```php
+$renownEvent = EventFactory::createRenownAddedToLocationEvent(
+    $this->ControllerId, // 0 for uncontrolled city events; Hub does not use playerId for the add
+    $event->location,     // reveal Forced: use event location
+    1,
+    $this->getInjectCode()
+);
+$event->theah->queueEvent($renownEvent);
+```
+
+EventHub already notifies `"${amount} Renown ADDED to ${location} from …"`. An extra Forced announce (like `_04cd07` / `_04cd19`) is optional spectator clarity and slightly redundant — fine to keep for parity with other Forced cards. Leshiye (`_01126`) and similar `eventCheck` blockers still apply via `queueEvent`'s check path.
+
+Canonical: `bas/_04cd19` (reveal → Renown). Scheme "when revealed" peers use the same factory with `$this->ControllerId` and a fixed / chosen location string.
 
 ### Queueing draws for "each player draws a card"
 
@@ -134,6 +154,37 @@ Exemplars: `bas/_04cd11`, `_7s5s/_01177`, `tac/_02053`.
 ### "Heal a wound" (Forced / action follow-up)
 
 Queue `EventFactory::createCharacterBeingHealedEvent($characterId, $sourceId, 1, $reason, $abilityId)`. Do not mutate `$character->Wounds` directly. If the text does not say "if wounded," still queue the heal — `Character` clamps at 0 wounds (`actualHealed` may be 0). Only filter unwounded characters when availability text requires a wound (e.g. `_01136`).
+
+### "Wound them" (Forced follow-up)
+
+Queue `EventFactory::createCharacterBeingWoundedEvent($characterId, $sourceId, 1, $reason, $abilityId)`. Do not mutate `$character->Wounds` directly. Same factory as equip Forced on Devil Jonah's Bones (`_03cd05`) and Legion's Caress en garde Forced (`_01021`).
+
+### "After a character at this location becomes engaged" Forced
+
+Listen for **`EventCardEngaged`** while the event card is in the city. Pure Forced — no State/JS.
+
+```php
+if ($event instanceof EventCardEngaged
+    && ! $event->canceled
+    && $event->theah->cardInCity($this))
+{
+    $character = $event->theah->getCharacterById($event->cardId);
+    if ($character === null || $character->Location != $this->Location)
+    {
+        return;
+    }
+    // notify + queue createCharacterBeingWoundedEvent(...)
+}
+```
+
+WHY details that are easy to get wrong:
+
+- **`getCharacterById` is required.** `EventCardEngaged` fires for attachments too (e.g. Syrneth Puzzle Box engages itself). Text that says "a character" must not wound attachments — null from `getCharacterById` means skip.
+- **`!$event->canceled`.** `EventCardEngaged` sets `runEventHubAfterCards = true`, so cards handle before Hub applies `Engaged = true`. Impervious cancelers (Maryam) set `canceled` in that pass; EventHub then no-ops. "After becomes engaged" should not fire on a canceled engage. Legion's Caress (`_01021`) omits this check — prefer the canceled gate for city-event "After" wording.
+- **Location match on the character**, not on `$event` (engage events have no location field): `$character->Location == $this->Location`.
+- There is **no** separate post-hub "engage done" event — peers all listen on `EventCardEngaged` itself.
+
+Canonical: `bas/_04cd19` (Blood in the Water). Cousin: `_01021` (wound on equipped character en gardes via `EventCardEngarded`).
 
 ### "Player with a character at this location that does not control this location"
 

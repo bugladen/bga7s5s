@@ -75,7 +75,7 @@ Read the card's `Text` and classify each clause before writing any code:
 
 | Card phrase | Pattern |
 |---|---|
-| **`<b>Forced:</b>` / `<b>City Forced:</b>`** — auto-triggers, **no player choice** | Override `handleEvent` on the card class only. No Action/Reaction/State/JS. Multiple Forced paragraphs = multiple `if` branches. Reveal → `EventCityCardAddedToLocation`; end of High Drama → `EventHighDramaPhaseEnd`; beginning of Dusk → `EventDuskPhaseBegin` — see [pattern-a.md](pattern-a.md). Exemplar: `bas/_04cd07`. |
+| **`<b>Forced:</b>` / `<b>City Forced:</b>`** — auto-triggers, **no player choice** | Override `handleEvent` on the card class only. No Action/Reaction/State/JS. Multiple Forced paragraphs = multiple `if` branches. Reveal → `EventCityCardAddedToLocation`; end of High Drama → `EventHighDramaPhaseEnd`; beginning of Dusk → `EventDuskPhaseBegin`; character becomes engaged → `EventCardEngaged` — see [pattern-a.md](pattern-a.md). Exemplars: `bas/_04cd07` (reveal + end HD draws), `bas/_04cd19` (reveal → Renown; engage → wound). |
 | **`<b>Forced:</b>` that says "must choose" / each player picks a target** | Still Forced (not a City Action/Reaction). Card `handleEvent` queues per-player `createTransitionEvent`s; State class + expansion JS for the picker. No Pass if "must"; zombie auto-picks. See [pattern-a.md](pattern-a.md) "Interactive Forced" and [sub-patterns.md](sub-patterns.md). Exemplar: `bas/_04cd11`. |
 | **Continuous location rule** (no Forced/Action label) — e.g. "Characters at this location cannot refuse challenges" | Static helper on the card class + wire into challenge accept args / refuse handler / JS Refuse disable. **Do not** mint a `CHALLENGE_TYPE`. See [sub-patterns.md](sub-patterns.md) "Location-scoped cannot refuse". Exemplar: `bas/_04cd09`. |
 | **`<b>City Action:</b>`** — player spends an action | Implement `IHasActions`, `use ActionTrait`, create `actions/Action_03cdNN.php`. State class(es) + JS wiring if it needs interactive steps. See [pattern-b.md](pattern-b.md). |
@@ -83,7 +83,7 @@ Read the card's `Text` and classify each clause before writing any code:
 | **`<b>City Reaction:</b>`** — player chooses to trigger in response to an event while the card is in a city location | Implement `IHasReactions`, `use ReactionTrait`, create `reactions/Reaction_03cdNN.php`. |
 | **`<b>Reaction:</b>`** (no "City" prefix) — player chooses to trigger while the card is in their **Home** | Same `IHasReactions` + `ReactionTrait` + `reactions/Reaction_03cdNN.php` plumbing as City Reaction. The only difference is the `handleEvent` location guard: check `$owner->Location == Game::LOCATION_PLAYER_HOME` instead of `cardInCity($owner)`. See `_03cd20` (Early Morning Arrangements) — first CityEventCard precedent for a Home-located reaction. Requires the card to actually be able to *land* in a player's Home, which is its own sub-pattern (below). |
 
-A single card can combine these (e.g. Penya `_03cd01` has both a City Forced and a City Action; `_03cd20` has a Reaction at end of Planning while in Home AND a City Action that puts itself into Home; `_04cd09` has a continuous refuse lock AND an Unlimited City Action; `_04cd11` is interactive Forced only).
+A single card can combine these (e.g. Penya `_03cd01` has both a City Forced and a City Action; `_03cd20` has a Reaction at end of Planning while in Home AND a City Action that puts itself into Home; `_04cd09` has a continuous refuse lock AND an Unlimited City Action; `_04cd11` is interactive Forced only; `_04cd19` is pure dual Forced only).
 
 
 ## Finish (short)
