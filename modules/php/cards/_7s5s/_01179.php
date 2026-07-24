@@ -2,17 +2,16 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01179;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReknownAddedToCard;
 
 class _01179 extends CityEventCard implements IHasActions
 {
@@ -52,12 +51,17 @@ class _01179 extends CityEventCard implements IHasActions
         return $this->Actions[0]->getUsedListData($game);
     }
 
+    public function canBeDiscardedFromCity(): bool
+    {
+        return $this->Reknown == 0;
+    }
+
     public function eventCheck($event)
     {
         parent::eventCheck($event);
 
         if ($event instanceof EventCardAddedToCityDiscardPile && $event->cardId == $this->Id && $this->Reknown > 0)
-            throw new \BgaUserException($event->theah->game->translate("Siren's Scream will not be discarded while it has Renown on it."));
+            throw new UserException($event->theah->game->translate("Siren's Scream will not be discarded while it has Renown on it."));
     }
 
     public function handleEvent(Event $event)

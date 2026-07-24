@@ -130,7 +130,10 @@
 
             'highDramaPhase02007': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                this.addActionButton(`actNone`, _('Pass'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
                 dojo.addClass('actChooseCardSelected', 'disabled');
+                if (args.args.ids.length > 0)
+                    dojo.addClass('actNone', 'disabled');
             },
 
             'highDramaPhase02008': () => {

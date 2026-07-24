@@ -117,7 +117,7 @@ class Action_01072 extends CardAction
             //Get a list of City Cards at the leader's location
             $leader = $game->theah->getLeaderByPlayerId($game->getActivePlayerId());
             $cards = $game->theah->getCardObjectsAtLocation($leader->Location);
-            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard));
+            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
             $ids = array_map(fn($card) => $card->Id, $cards);
 
             $args["targetCardIds"] = $ids;
@@ -149,7 +149,7 @@ class Action_01072 extends CardAction
             if ($id == 0)
             {
                 $cards = $game->theah->getCardObjectsAtLocation($leader->Location);
-                $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard));
+                $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
                 if (count($cards) > 0)
                 {
                     throw new UserException($game->translate("There are available City Cards at the Leader's location"));
@@ -174,6 +174,11 @@ class Action_01072 extends CardAction
             if ($leader->Location != $card->Location)
             {
                 throw new UserException($game->translate("Card is not at the Leader's location"));
+            }
+
+            if (! $card->canBeDiscardedFromCity())
+            {
+                throw new UserException($game->translate("Card cannot be discarded"));
             }
 
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);

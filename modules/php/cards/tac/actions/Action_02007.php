@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -40,7 +41,7 @@ class Action_02007 extends RiskCityAction
             }
 
             $cards = $theah->getCardObjectsAtLocation($character->Location);
-            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled()));
+            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
             if (count($cards) > 0)
             {
                 return true;
@@ -62,7 +63,7 @@ class Action_02007 extends RiskCityAction
             }
 
             $cards = $theah->getCardObjectsAtLocation($character->Location);
-            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled()));
+            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
             return count($cards) > 0;
         }));
         return $performers;
@@ -86,7 +87,7 @@ class Action_02007 extends RiskCityAction
             $event->theah->queueEvent($renownRemovedEvent);
 
             $cards = $game->theah->getCardObjectsAtLocation($performer->Location);
-            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled()));
+            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
             if (count($cards) > 0)
             {
                 $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, "02007", $this->Id);
@@ -111,7 +112,7 @@ class Action_02007 extends RiskCityAction
             $args["performerId"] = $performerId;
 
             $cards = $game->theah->getCardObjectsAtLocation($performer->Location);
-            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled()));
+            $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
             $args["ids"] = array_map(fn($card) => $card->Id, $cards);
         }
 
@@ -124,15 +125,34 @@ class Action_02007 extends RiskCityAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02007)
         {
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+
+            // WHY: Escape hatch when the chooser was entered with no discardable
+            // city cards (e.g. only Siren's Scream with Renown, or an in-progress
+            // game that transitioned before the discardability filter). Mirrors 01072.
+            if ($id == 0)
+            {
+                $cards = $game->theah->getCardObjectsAtLocation($performer->Location);
+                $cards = array_values(array_filter($cards, fn($card) => ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
+                if (count($cards) > 0)
+                {
+                    throw new UserException($game->translate("There are available City Cards at the performer's location"));
+                }
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+
+                $game->gamestate->nextState();
+                return;
+            }
+
             $owner = $this->getOwningCard($game->theah);
             $card = $game->getCardObjectFromDb($id);
             if ($card == null)
             {
                 throw new UserException(sprintf($game->translate("Card not found: %d"), $id));
             }
-
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
 
             if ($card->Location != $performer->Location)
             {
@@ -142,6 +162,16 @@ class Action_02007 extends RiskCityAction
             if ($card->isControlled())
             {
                 throw new UserException(sprintf($game->translate("Card is not available: %d"), $id));
+            }
+
+            if (! $card instanceof ICityDeckCard)
+            {
+                throw new UserException($game->translate("Card is not a City Card"));
+            }
+
+            if (! $card->canBeDiscardedFromCity())
+            {
+                throw new UserException($game->translate("Card cannot be discarded"));
             }
 
             $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($performer->ControllerId, $card->Id, $performer->Location, $owner->Id, $asEffect = true);
