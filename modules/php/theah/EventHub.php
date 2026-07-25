@@ -1223,7 +1223,7 @@ trait EventHub
                     'i18n' => ['location'],
                     "location" => $event->location,
                     "amount" => $event->amount,
-                    "source" => empty($event->description) ? "" : "from {$event->description}",
+                    "source" => empty($event->description) ? "" : clienttranslate("by") . " " . $event->description
                 ]);
 
                 break;
@@ -1243,7 +1243,7 @@ trait EventHub
                     'i18n' => ['location'],
                     "location" => $event->location,
                     "amount" => $event->amount,
-                    "source" => empty($event->source) ? "" : "from {$event->source}",
+                    "source" => empty($event->source) ? "" : clienttranslate("by") . " " . $event->source
                 ]);
 
                 break;
