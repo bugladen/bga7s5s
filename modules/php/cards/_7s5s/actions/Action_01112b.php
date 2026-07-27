@@ -4,7 +4,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityEventCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatDependsOnNotBeingFirstPlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -31,13 +30,12 @@ class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingF
         }
 
         $cards = $theah->getAllCards();
-        $cards = array_filter($cards, fn($card) => $theah->cardInCity($card) && ! $card->isControlled() && $card instanceof ICityDeckCard);
+        $cards = array_filter($cards, fn($card) => $theah->cardInCity($card) && ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity());
         if (count($cards) == 0)
         {
             return false;
         }
 
-        $owner = $this->getOwningCard($theah);
         $forcedNotFirstPlayer = $theah->game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
         $isFirstPlayer = $theah->game->globals->get(Game::FIRST_PLAYER) == $playerId && ! $forcedNotFirstPlayer;
         return ! $isFirstPlayer;
@@ -50,6 +48,15 @@ class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingF
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
+            $cards = $event->theah->getAllCards();
+            $cards = array_filter($cards, fn($card) => $event->theah->cardInCity($card) && ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity());
+            if (count($cards) == 0)
+            {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
+                $event->theah->queueEvent($actionResolvedEvent);
+                return;
+            }
+
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01112", $this->Id);
             $event->theah->queueEvent($transition);
         }
@@ -62,7 +69,7 @@ class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingF
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01112)
         {
             $cards = $game->theah->getAllCards();
-            $cards = array_values(array_filter($cards, fn($card) => $game->theah->cardInCity($card) && ! $card->isControlled() && $card instanceof ICityDeckCard && ! $card instanceof CityEventCard));
+            $cards = array_values(array_filter($cards, fn($card) => $game->theah->cardInCity($card) && ! $card->isControlled() && $card instanceof ICityDeckCard && $card->canBeDiscardedFromCity()));
             $args["ids"] = array_map(fn($card) => $card->Id, $cards);
         }
 
@@ -86,11 +93,6 @@ class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingF
                 throw new UserException($game->translate("Card is not a City Card"));
             }
 
-            if ($card instanceof CityEventCard)
-            {
-                throw new UserException($game->translate("City Event Card cannot be discarded"));
-            }
-
             if ($card->isControlled())
             {
                 throw new UserException($game->translate("Card is controlled"));
@@ -99,6 +101,11 @@ class Action_01112b extends RiskAction implements IAbilityThatDependsOnNotBeingF
             if (! $game->theah->cardInCity($card))
             {
                 throw new UserException($game->translate("Card is not in the city"));
+            }
+
+            if (! $card->canBeDiscardedFromCity())
+            {
+                throw new UserException($game->translate("Card cannot be discarded"));
             }
 
             $owner = $this->getOwningCard($game->theah);
