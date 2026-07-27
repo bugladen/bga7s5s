@@ -794,8 +794,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const setNames = 
         {
              '_7s5s': _('Core'), 
-             'tac': _('Tooth & Claw'),
-             'faf': _('Fate & Fortune')
+             'tac': _('Tooth and Claw'),
+             'faf': _('Fate and Fortune'),
+             'bas': _('Blood and Salt')
         };
         return setNames[expansionName] ?? expansionName ?? '';
     },

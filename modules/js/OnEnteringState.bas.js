@@ -130,6 +130,21 @@
                 }
             },
 
+            'highDramaPhase04cd29': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+
+                    const card = this.cardProperties[args.args.args.performerId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.addClass(image, '_7sfs-chosen');
+                    }
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
             'highDramaPhase04cd01b_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');

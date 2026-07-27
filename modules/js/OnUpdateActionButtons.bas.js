@@ -73,6 +73,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase04cd29': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Character'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase04cd15': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Sink Selected'), () => this.onMultipleChooseListCardsConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

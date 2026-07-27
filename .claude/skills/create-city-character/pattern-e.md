@@ -45,3 +45,26 @@ $this->Techniques[] = $technique;
 `setId("Technique_04cdNN_N")` sets **both** `Id` and `ClassId` to that string; later `setOwnerId` yields `{ownerId}_Technique_04cdNN_N` — unique per copy.
 
 Single-copy generics still call `setId("Technique_04cdNN")` (or `Technique_01042`-style) so the ClassId is card-scoped rather than the shared generic class name — see Terrell `_01042`.
+
+Custom (non-generic) techniques live under `cards/<expansion>/techniques/Technique_04cdNN.php`. Still call `setId("Technique_04cdNN")` after `new` before pushing onto `$this->Techniques`.
+
+### Gambling Technique
+
+"**Gambling Technique:** …" is a **duel-round gate**, not a Trait. On top of the usual in-duel actor check (`IN_DUEL` + `getDuelRoundActor()->Id == owner.Id`):
+
+```php
+if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false))
+{
+    return false;
+}
+```
+
+WHY the global (not `duel_round.gambled` SQL): set in `actChooseGambleCard`, cleared in `stDoneRound`; `isAvailableToPlayer` is a hot path. Fuller notes live in the sibling skill `create-character` [pattern-e.md](../create-character/pattern-e.md) "Gambling Technique gate".
+
+### Gambling Technique: If adversary has lower [Finesse] • Wound them
+
+Printed (Tijani `_04cd29`): gate availability on `adversary->ModifiedFinesse < owner->ModifiedFinesse` (strictly lower — equal fails). On `EventDuelCalculateTechniqueValues` when `$event->techniqueId == $this->Id`, queue `createCharacterBeingWoundedEvent($adversary->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id)` and append an explanation. Optional explicit `$this->setUsed($event->theah, true)` (idempotent with base Technique activation).
+
+No new state / JS — pure resolve wound. Mirror `Technique_03004` / `Technique_03014` wound-on-calc shape; Finesse "If" gate mirrors `Technique_03043`'s greater-Finesse check (flipped inequality).
+
+Reference: `Technique_04cd29`; Gambling Lethal sibling `Technique_03002`.

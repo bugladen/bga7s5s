@@ -224,6 +224,35 @@ Printed: **"Engage \<Name\> • An adjacent location becomes uncontrolled. Move 
 
 Reference: `Action_04cd04`, `State_highDramaPhase04cd04`.
 
+### En Garde City Action / En Garde Action (precondition, not Engage cost)
+
+Printed: **`<b>En Garde City Action:</b> …`** or **`<b>En Garde Action:</b> …`**, often with italic clarification *(En Garde abilities require an en garde performer.)*.
+
+| Printed cue | Meaning in code |
+|---|---|
+| **En Garde** in the ability label / italic note | Availability: `!$owner->Engaged`. Performer must already be ready. |
+| **Engage \<Name\>** before the `•` | Cost: queue `createCardEngagedEvent` on resolve (Penya, Astrid). |
+
+**Do not** treat "En Garde City Action" as an implicit Engage. Only engage when the card prints Engage as a cost. Elina `_01118` similarly moves with `engage=false` when Engage is not printed.
+
+Contrast Pattern G italic *En Garde* — that is a **passive** pressure gate (`getInfluencePressureValue` + `!$Engaged`), not an Action shape.
+
+### Target engaged at adjacent City • If lower [Stat], wound
+
+Printed (Tijani `_04cd29`): **"Target an engaged character at an adjacent City location • If they have lower [Finesse] than \<Name\>, wound them."**
+
+1. Availability / City Action gates: `cardInCity($owner)`, `!$owner->Engaged` (En Garde label).
+2. Eligible targets = characters at `getAdjacentCityLocations($owner->Location, $includeHome = false)` with:
+   - `$character->Engaged == true`
+   - **Do not invent "opposing"** — printed text without "opposing" means any engaged character (friend or foe).
+   - Stat "If" comparison (`ModifiedFinesse < $owner->ModifiedFinesse`, etc.)
+3. **Gate the "If \<stat\>" into eligibility** (availability + picker ids), not only at resolve. WHY: Actions are once-per-day (`Used`); offering a target that cannot be wounded burns the action for a no-op. Same Used-economy as Technique_03002 / Technique_03043 gating "If" into `isAvailableToPlayer`. Re-check the comparison at resolve anyway (board can change).
+4. One-step character picker: `IAbilityThatTargetsCharacters` + `actFromCardWithId`; JS `highlightCardsAsSelectable` + Confirm Character (same as Millstone picker UI, but Pass is fine to omit for voluntary Actions too — action already announced).
+5. Resolve: `createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id)` → `createActionResolvedEvent` → `nextState("targetChosen")`.
+6. For unmustered city mercenaries, `$owner->ControllerId` may be `0` — use `$owner->ControllerId ?: (int)$game->getActivePlayerId()` for `createActionResolvedEvent`. Transition active player: `$event->playerId` from `EventActionTriggered`.
+
+Reference: `Action_04cd29`, `State_highDramaPhase04cd29`, `Technique_04cd29` (duel sibling for the Finesse "If").
+
 ### Finishing the action
 
 End every successful `actFromActionWith*` path with:

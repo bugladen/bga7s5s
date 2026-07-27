@@ -101,6 +101,7 @@ class TraitNames
             "Immovable",
             "Innkeeper",
             "Inspiring",
+            "Jaragua",
             "Kannushi",
             "Knife",
             "Knight",

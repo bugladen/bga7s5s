@@ -10,6 +10,8 @@ For printed text that grants **+N Influence during pressures** (not a continuous
 | **"<i>En Garde</i> — … gains +N[Influence] during pressures …"** | Italic En Garde = precondition: `!$this->Engaged` |
 | **"... during pressures initiated by an opponent"** | `PRESSURING_PLAYER != 0 && PRESSURING_PLAYER != $this->ControllerId` |
 
+Do **not** route **`<b>En Garde City Action:</b>`** / **`<b>En Garde Action:</b>`** here — those are Pattern C Actions (En Garde = performer ready; usually no Engage cost). See Pattern C "En Garde City Action / En Garde Action" (Tijani `_04cd29`).
+
 **Canonical exemplars:**
 - Unconditional: `modules/php/cards/_7s5s/_01184.php` (Claude)
 - En Garde + opponent-initiated: `modules/php/cards/bas/_04cd04.php` (Astrid)

@@ -5,6 +5,10 @@
 | File | What it demonstrates |
 |---|---|
 | `modules/php/cards/bas/_04cd14.php` (Millstone Rhud) | **Interactive post-recruit Forced + dual generic Techniques.** `EventCharacterRecruited` → wound self; if opposing at location, transition picker → wound target. No Pass / zombie auto-pick. Two `Technique_PlusOneThrust` with distinct `setId`. |
+| `modules/php/cards/bas/_04cd29.php` (Tijani) | **En Garde City Action + Gambling Technique.** En Garde = `!$Engaged` precondition (no Engage cost). Target engaged at adjacent City (not inventing opposing) with lower Finesse → wound. Custom `Technique_04cd29`: `DUEL_GAMBLED` + adversary Finesse < Tijani → wound on calc. |
+| `modules/php/cards/bas/actions/Action_04cd29.php` | En Garde City Action: `cardInCity`, Finesse "If" in eligibility, `IAbilityThatTargetsCharacters`, no `createCardEngagedEvent`. |
+| `modules/php/cards/bas/techniques/Technique_04cd29.php` | CityCharacter Gambling Technique wound-on-lower-Finesse. |
+| `modules/php/States/bas/State_highDramaPhase04cd29.php` | One-step character picker for Tijani's City Action. |
 | `modules/php/States/bas/State_highDramaPhase04cd14.php` | Forced opposing-character picker; zombie calls `actFromCardWithId`. Transition returns to `HIGH_DRAMA_PLAYER_TURN_EVENTS` (recruit already ends there). |
 | `modules/php/cards/faf/_03015.php` (Joern) | **Pure** post-muster Forced wound-self only — no picker. `EventCharacterMustered` / `EventApproachCharacterPlayed`. |
 | `modules/php/cards/_7s5s/_01048.php` (Langschwert) | Dual `Technique_PlusOneThrust` with `Technique_01048_1` / `_2` Ids (attachment, same Id rule). |
@@ -30,7 +34,7 @@
 | `modules/php/cards/_7s5s/_01098.php` (Cat's Embargo) | "Reveal a random card from a hand" reference implementation. |
 | `modules/php/cards/tac/actions/Action_02045.php` (Path to Poluchatel) | "Search your deck for a card matching a Trait, reveal it, add to hand, shuffle" reference (Scheme City Action, but the search recipe applies anywhere). |
 | `modules/php/cards/_7s5s/actions/Action_01174.php` | "Destroy a non-Unique attachment in play" reference — the canonical unequip + discard sequence. |
-| `modules/php/Traits.php` | `TraitNames::$TraitsJson` — canonical Trait list for "Name a Trait" pickers. Add new Traits in alphabetical order. |
+| `modules/php/TraitNames.php` | `TraitNames::$TraitsJson` — canonical Trait list for "Name a Trait" pickers **and** every printed Trait on a new card. Add missing Traits in alphabetical order (e.g. Jaragua for Tijani). |
 | `modules/php/cards/CityCharacter.php` | Base class. Read for the `Negotiable` field and inheritance chain. |
 | `modules/php/cards/Character.php` | Parent. `canIntervene` / `canChallenge` defaults and wound/heal handling live here. |
 | `modules/php/theah/Theah.php::interventionCheck` (~line 1651) | Where `canIntervene` is consumed by the engine. |

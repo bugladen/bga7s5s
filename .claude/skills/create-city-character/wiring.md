@@ -96,4 +96,5 @@ The Card class itself (the `_03cdNN extends CityCharacter` file) has no hook-man
   - Card class: `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>`
   - Action:     `...\cards\<expansion>\actions`
   - Reaction:   `...\cards\<expansion>\reactions`
+  - Technique:  `...\cards\<expansion>\techniques` (custom only; generics stay in `cards/techniques/`)
   - State:      `Bga\Games\SeventhSeaCityOfFiveSails\States\<expansion>`
