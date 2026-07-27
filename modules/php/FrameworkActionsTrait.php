@@ -189,6 +189,7 @@ trait FrameworkActionsTrait
             throw new UserException($this->translate("You must choose different locations."));
         }
 
+        $this->theah->buildCity();
         foreach ($locations as $location) {
             $locationCheck = $this->theah->getCityLocation($location);
             if ($locationCheck === null)
