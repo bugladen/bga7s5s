@@ -47,8 +47,63 @@ if ($event instanceof EventSorcererAbilityPlayed && $this->isAvailable())
 Only if the card text says "**Sorcerer** Reaction" or "**Sorcerer** City Reaction." Examples:
 - `Reaction_02001` (Andriana, "**Sorcerer** Reaction: …") implements `ISorcererAbility`.
 - `Reaction_03001` (Cesca del Rosso, "**City Reaction**: …") does NOT — the text doesn't carry the Sorcerer keyword.
+- `Reaction_04003b` (Desideria, "**City Reaction**: After Desideria performs a Sorcerer ability…") does NOT — same rule; wound+draw must not re-emit Sorcerer-played.
 
 This matters because if a Reaction is a Sorcerer ability and it wounds, that wound's `EventSorcererAbilityPlayed` would re-trigger the same "after a Sorcerer ability" type reaction in a loop. `setUsed` breaks the loop in practice, but the cleaner answer is: **follow the card text literally.** If the keyword isn't printed, the ability isn't Sorcerer.
+
+When `implements ISorcererAbility`, you MUST also call both:
+- `createSorcererAbilityStartEvent()` at the start of resolution
+- `createSorcererAbilityPlayedEvent()` at the end of resolution
+
+The pre-commit hook enforces this.
+
+### En Garde City Reaction / En Garde Reaction (precondition)
+
+Printed: **`<b>En Garde City Reaction:</b>`** or **`<b>En Garde Reaction:</b>`**.
+
+- Gate `!$owner->Engaged` in `handleEvent` (and re-check in `performReaction` if you want belt-and-suspenders).
+- **Do not** queue `createCardEngagedEvent` unless Engage is printed as a cost.
+- City variant also needs `cardInCity($owner)`.
+
+Same En Garde semantics as Pattern C En Garde City Action (Tijani `_04cd29`). Reference: `Reaction_04003a`.
+
+### Destroyed ally → hand (duel or opponent's effect)
+
+Printed shape (Desideria `_04003`): **"After your Thug at this location is destroyed during a duel or by an opponent's effect, wound <Owner> • Put the Thug in your hand."**
+
+**Trigger:** `EventCharacterDestroyed` with Odette/Vissenta gates (`isAvailable`, `cardInCity` if City, your Trait/controller, `$destroyed->Location == $owner->Location`). WHY Location still matches during `handleEvent`: `runEventHubAfterCards = true` — locker/discard move runs after card handlers (same as `Reaction_03027a`).
+
+**Cause gate — `EventCharacterDestroyed` has no `sourceId`:**
+
+| Arm | How |
+|---|---|
+| "during a duel" | `$globals->get(Game::IN_DUEL)` at Destroyed time (covers duel threat wounds **and** direct destroys like Dante `Maneuver_01031`) |
+| "by an opponent's effect" | On `EventCharacterWounded`, if the wound would kill (`Wounds + event.wounds >= ModifiedResolve + WoundsHealedIncoming`) **and** `source.ControllerId` is a live opponent, mark `$opponentLethalThugId`. Destroyed qualifies if id matches. |
+
+Crew Cap / Dawn / own self-wound outside duel do **not** qualify (no mark, not `IN_DUEL`).
+
+**Hand return recipe** (after EventHub has reinjected a fresh card into locker or discard):
+
+- Brute → discard; everyone else → locker (`EventHub` CharacterDestroyed).
+- Locker: `createCardRemovedFromLockerEvent` then `createCardAddedToHandEvent`.
+- Discard: `createCardRemovedFromPlayerDiscardPileEvent` then `createCardAddedToHandEvent`.
+
+**CRITICAL — defer Hand while `IN_DUEL`:**
+
+`stDuelNextPlayer` only preserves leftover threat when the dead participant is still in `Locker-` / `Discard-`. Moving them to Hand makes `!$actorIsDead && locations differ` → nullify remaining adversary threat → duel can end with threat still on the board (`_results/2026-07-28-duel-continue-on-death.md`).
+
+Do **not** copy Object of Wonder's reaction-instance `WaitAfterDuel` alone:
+
+- Locker cards are **not** loaded by `Theah::buildCity`, so EventDuelEnd on the Thug never fires across requests.
+- If Owner's wound cost kills her, EventHub reinstantiates the card and wipes private reaction fields.
+
+Canonical deferral (Desideria):
+
+1. On accept during `IN_DUEL`: queue Owner wound now; stash thug id in a **per-player game global**; leave Thug in Locker/Discard.
+2. Outside duel: Hand return immediate.
+3. `StatesTrait::stDuelEnd` (after clearing `IN_DUEL`) calls a static `flushPendingRecovers($game)` on the Reaction class to move any pending ids to hand.
+
+Reference: `Reaction_04003a`; attachment deferral sibling `Reaction_01202` (OK to use instance flags — attachment stays in play).
 
 When `implements ISorcererAbility`, you MUST also call both:
 - `createSorcererAbilityStartEvent()` at the start of resolution
@@ -463,4 +518,6 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of 
 | `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
 | `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
 | `Reaction_03040` (Soline el Gato — any character arrives) | **"After a character moves here"** without enemy gate — allies trigger too. Effect: button-per-other-city-location + Pass; `createCardMovingEvent(engage=false)` for Soline herself. Contrast `Reaction_03016b` (enemy-only) and `Reaction_01089` (adjacent-only after Action resolves). |
+| `Reaction_04003a` (Desideria — Thug destroy → hand) | **En Garde City Reaction** + duel/opponent cause gate + **deferred mid-duel Hand return**. `EventCharacterWounded` marks opponent lethal; Destroyed ORs `IN_DUEL`; locker/discard → hand; `stDuelEnd` flush. |
+| `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |
 

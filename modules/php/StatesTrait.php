@@ -14,6 +14,7 @@
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04003a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -1600,6 +1601,12 @@ trait StatesTrait
     {
         $duelId = $this->globals->get(Game::DUEL_ID);
         $this->globals->set(GAME::IN_DUEL, false);
+
+        // WHY: Desideria _04003a defers Thug→hand until duel end so stDuelNextPlayer
+        // still sees Locker/Discard (death). If Desideria died from her wound cost,
+        // her reaction instance was reinstantiated and EventDuelEnd may miss her —
+        // flush any leftover per-player globals here.
+        Reaction_04003a::flushPendingRecovers($this);
 
         $this->globals->delete(Game::CHALLENGE_CANCELLED);
         $this->globals->delete(Game::DUEL_CURRENT_PLAYER);
