@@ -58,13 +58,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['crystalEyeTargetChosen', 500],
             ['crystalEyeTargetRemoved', 500],
             ['defenderSwapped', 500],
-            ['drawCard', 2000],
+            ['drawCard', 500],
             ['drawCardMessage', 100],
             ['duelActorSwapped', 500],
             ['duelEnd', 500],
             ['duelStarted', 500],
             ['duelStatChanged', 500],
-            ['factionResolveCardDraw', 1000],
+            ['factionResolveCardDraw', 500],
             ['factionResolveCardDrawPublic', 500],
             ['firstPlayer', 2000],
             ['locationClaimed', 500],
@@ -150,19 +150,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = this.createCardId(args.leader, this.LOCATION_PLAYER_HOME);
         this.createCard(cardId, args.leader, target);
 
-        // Animate the card growing from nothing to full size with a pulse
-        const cardImage = $(`${cardId}_image`);
-        if (cardImage && this.animationManager && this.animationManager.animationsActive()) {
-            cardImage.style.transition = 'none';
-            await cardImage.animate([
-                { transform: 'scale(0)', opacity: 0 },
-                { transform: 'scale(1.1)', opacity: 1 },
-                { transform: 'scale(1)', opacity: 1 }
-            ], {
-                duration: 500,
-                easing: 'ease-out'
-            }).finished;
-        }
+        // WHY: Seal FLIP (same as drawCard) — origin is the player-panel seal.
+        await this.animateCardFromPlayerSeal($(cardId), args.player_id);
 
         // Update the player panel
         //Fishing for what is currently called overall_player_board_${playerId}
@@ -412,7 +401,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
             // Create the new card
             this.createCard(cardId, args.scheme, anchorId);
             const cardElement = $(cardId);
-            const cardImage = $(`${cardId}_image`);
             
             // FLIP: Last - get new positions after DOM change
             // FLIP: Invert & Play - animate from old positions to new
@@ -436,19 +424,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
                     );
                 }
             });
-            
-            // Animate the new card growing
-            if (cardImage) {
-                cardImage.style.transition = 'none';
-                animations.push(
-                    cardImage.animate([
-                        { transform: 'scale(0)', opacity: 0 },
-                        { transform: 'scale(1)', opacity: 1 }
-                    ], {
-                        duration: 400,
-                        easing: 'ease-out'
-                    }).finished
-                );
+
+            // WHY: Seal FLIP for the new scheme (same as drawCard / playLeader).
+            if (cardElement) {
+                animations.push(this.animateCardFromPlayerSeal(cardElement, args.player_id, { duration: 400 }));
             }
             
             await Promise.all(animations);
@@ -477,17 +456,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = `${args.player_id}-${args.character.id}`;
         this.createCard(cardId, args.character, `${args.player_id}-home-anchor`);
 
-        // Animate the card growing from nothing to full size
-        const cardElement = $(cardId);
-        if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
-            await cardElement.animate([
-                { transform: 'scale(0)', opacity: 0 },
-                { transform: 'scale(1)', opacity: 1 }
-            ], {
-                duration: 400,
-                easing: 'ease-out'
-            }).finished;
-        }
+        // WHY: Seal FLIP (same as drawCard / playLeader) instead of scale-from-zero.
+        await this.animateCardFromPlayerSeal($(cardId), args.player_id, { duration: 400 });
 
         var translated = dojo.string.substitute(
             _("${player_name} has selected <strong>${character_name}</strong> as their Approach Character today"),
@@ -641,21 +611,36 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_factionResolveCardDraw: function( notif )
+    notif_factionResolveCardDraw: async function( notif )
     {
         debug( 'notif_factionResolveCardDraw' );
         debug( notif );
+
+        // WHY: Unhide + float before add so HandStock lays out against a visible
+        // container and the destination rect for the slide is correct (same as notif_drawCard).
+        dojo.removeClass('factionHand-placeholder', 'hidden');
+        if (this.checkFloatingHand) {
+            this.checkFloatingHand();
+        }
 
         notif.args.cards.forEach((card) => {
             this.addCardToDeck(this.factionHand, card);
         });
 
-        // Show faction hand when cards are drawn
-        dojo.removeClass('factionHand-placeholder', 'hidden');
-        
-        // Trigger floating check after revealing the placeholder
-        if (this.checkFloatingHand) {
-            this.checkFloatingHand();
+        // WHY: Same seal FLIP as notif_drawCard — hand cards only get their
+        // background after addCardToDeck, so animate the already-styled elements.
+        // Parallel for multi-draw (panache) so total wait stays ~500ms.
+        if (this.animationManager && this.animationManager.animationsActive()) {
+            const animations = [];
+            notif.args.cards.forEach((card) => {
+                const cardElement = this.factionHand.getCardElement(card);
+                if (cardElement) {
+                    animations.push(this.animateCardFromPlayerSeal(cardElement, this.player_id));
+                }
+            });
+            if (animations.length > 0) {
+                await Promise.all(animations);
+            }
         }
 
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
@@ -698,7 +683,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         $(`${notif.args.player_id}-score-hand-count`).innerHTML = notif.args.handCount;
     },
 
-    notif_drawCard: function( notif )
+    notif_drawCard: async function( notif )
     {
         debug( 'notif_drawCard' );
         debug( notif );
@@ -707,14 +692,23 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const card = args.card;
         this.cardProperties[card.id] = card;
-        this.addCardToDeck(this.factionHand, card);
-        
-        // Ensure faction hand is visible and floating check is triggered
+
+        // WHY: Unhide + float before add so HandStock lays out against a visible
+        // container and the destination rect for the slide is correct.
         dojo.removeClass('factionHand-placeholder', 'hidden');
         if (this.checkFloatingHand) {
             this.checkFloatingHand();
         }
-        
+
+        this.addCardToDeck(this.factionHand, card);
+
+        // WHY: Same gate/pattern as notif_cardMoved —
+        // FLIP-animate the already-styled hand card from the score-panel seal.
+        // bga-cards addCard({ fromElement }) looked like no animation because
+        // applyFactionHandCardStyle (background image) runs after create, so the
+        // library was sliding a transparent empty card.
+        await this.animateCardFromPlayerSeal(this.factionHand.getCardElement(card), this.player_id);
+
         $(`${this.player_id}-score-hand-count`).innerHTML = this.factionHand.getCards().length;
 
     },
@@ -760,17 +754,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
             card.location = this.LOCATION_CITY_DISCARD;
 
             const cardElement = $(card.divId);
-            
-            // Animate the card shrinking to nothing
-            if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
-                await cardElement.animate([
-                    { transform: 'scale(1)', opacity: 1 },
-                    { transform: 'scale(0)', opacity: 0 }
-                ], {
-                    duration: 400,
-                    easing: 'ease-in'
-                }).finished;
-            }
+
+            // WHY: Fly into the city discard icon (no reparent — pile is a tiny marker).
+            await this.animateCardToElement(cardElement, $('city-discard'), { duration: 400 });
 
             dojo.destroy(card.divId);
             card.divId = null;
@@ -1120,7 +1106,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( 'notif_characterDestroyed' );
         debug( notif );
 
-        const args = notif.args;        
+        const args = notif.args;
         const card = this.cardProperties[args.characterId];
         if (card)
         {
@@ -1129,22 +1115,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
             const cardElement = $(card.divId);
             const cardImage = $(`${card.divId}_image`);
-            
-            // Animate the card shrinking to nothing
-            if (cardImage && cardElement && this.animationManager && this.animationManager.animationsActive()) {
-                // Disable CSS transition on the image element
-                cardImage.style.transition = 'none';
-                
-                // Animate both the image shrinking and the container collapsing
+            const lockerElement = $(`${args.playerId}-locker`);
+
+            // WHY: Fly into the player locker icon; collapse width so city-row siblings don't jump on destroy.
+            if (cardElement && lockerElement && this.animationManager && this.animationManager.animationsActive()) {
+                if (cardImage) {
+                    cardImage.style.transition = 'none';
+                }
+
                 await Promise.all([
-                    cardImage.animate([
-                        { transform: 'scale(1)', opacity: 1 },
-                        { transform: 'scale(0)', opacity: 0 }
-                    ], {
-                        duration: 400,
-                        easing: 'ease-in',
-                        fill: 'forwards'
-                    }).finished,
+                    this.animateCardToElement(cardElement, lockerElement, { duration: 400 }),
                     cardElement.animate([
                         { width: cardElement.offsetWidth + 'px', marginLeft: '25px', marginRight: '5px' },
                         { width: '0px', marginLeft: '0px', marginRight: '0px' }
@@ -1250,22 +1230,16 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
             const cardElement = $(card.divId);
             const cardImage = $(`${card.divId}_image`);
-            
-            // Animate the card shrinking to nothing
-            if (cardImage && cardElement && this.animationManager && this.animationManager.animationsActive()) {
-                // Disable CSS transition on the image element
-                cardImage.style.transition = 'none';
-                
-                // Animate both the image shrinking and the container collapsing
+            const lockerElement = $(`${args.playerId}-locker`);
+
+            // WHY: Fly into the player locker icon; collapse width so row siblings don't jump on destroy.
+            if (cardElement && lockerElement && this.animationManager && this.animationManager.animationsActive()) {
+                if (cardImage) {
+                    cardImage.style.transition = 'none';
+                }
+
                 await Promise.all([
-                    cardImage.animate([
-                        { transform: 'scale(1)', opacity: 1 },
-                        { transform: 'scale(0)', opacity: 0 }
-                    ], {
-                        duration: 400,
-                        easing: 'ease-in',
-                        fill: 'forwards'
-                    }).finished,
+                    this.animateCardToElement(cardElement, lockerElement, { duration: 400 }),
                     cardElement.animate([
                         { width: cardElement.offsetWidth + 'px', marginLeft: '25px', marginRight: '5px' },
                         { width: '0px', marginLeft: '0px', marginRight: '0px' }
@@ -1278,7 +1252,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }
 
             dojo.destroy(card.divId);
-            card.divId = null;    
+            card.divId = null;
         }
         else
         {
@@ -1346,17 +1320,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const cardId = this.createCardId(card, args.location);
         this.createCard(cardId, card, target);
 
-        // Animate the card growing from nothing to full size
-        const cardElement = $(cardId);
-        if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
-            await cardElement.animate([
-                { transform: 'scale(0)', opacity: 0 },
-                { transform: 'scale(1)', opacity: 1 }
-            ], {
-                duration: 400,
-                easing: 'ease-out'
-            }).finished;
-        }
+        // WHY: City deck lives under the UL tower — FLIP from that origin (same math as seal draws).
+        await this.animateCardFromElement($(cardId), $('city-ul-tower'), { duration: 400 });
     },
 
     notif_playerReknownUpdated: async function( notif )

@@ -2174,5 +2174,87 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.destroy(existing);
         }
     },
+
+    /**
+     * FLIP-animate an already-placed card from an origin element to its
+     * current layout rect. Call after createCard / addCardToDeck so
+     * backgrounds are applied (bga-cards fromElement slides a blank card).
+     * Resolves immediately when animations are gated off or elements missing.
+     *
+     * @param {HTMLElement} cardElement
+     * @param {HTMLElement} fromElement
+     * @param {{duration?: number}} [options]
+     * @returns {Promise<void>}
+     */
+    animateCardFromElement: async function(cardElement, fromElement, options)
+    {
+        const duration = (options && options.duration) || 500;
+        if (! cardElement || ! fromElement || ! this.animationManager || ! this.animationManager.animationsActive()) {
+            return;
+        }
+
+        const fromRect = fromElement.getBoundingClientRect();
+        const toRect = cardElement.getBoundingClientRect();
+        const deltaX = fromRect.left - toRect.left;
+        const deltaY = fromRect.top - toRect.top;
+
+        cardElement.style.transition = 'none';
+        await cardElement.animate([
+            { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.2)`, opacity: 0.8 },
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 }
+        ], {
+            duration: duration,
+            easing: 'ease-out'
+        }).finished;
+    },
+
+    /**
+     * FLIP-animate a card from its current layout rect toward a destination
+     * element (e.g. a discard pile icon). Does not reparent — call after
+     * this to destroy or move the card. Resolves immediately when animations
+     * are gated off or elements missing.
+     *
+     * WHY not slideAndAttach for pile icons: targets like #city-discard are
+     * tiny absolute-positioned markers; attaching a full card would blow out layout.
+     *
+     * @param {HTMLElement} cardElement
+     * @param {HTMLElement} toElement
+     * @param {{duration?: number}} [options]
+     * @returns {Promise<void>}
+     */
+    animateCardToElement: async function(cardElement, toElement, options)
+    {
+        const duration = (options && options.duration) || 500;
+        if (! cardElement || ! toElement || ! this.animationManager || ! this.animationManager.animationsActive()) {
+            return;
+        }
+
+        const fromRect = cardElement.getBoundingClientRect();
+        const toRect = toElement.getBoundingClientRect();
+        const deltaX = toRect.left - fromRect.left;
+        const deltaY = toRect.top - fromRect.top;
+
+        cardElement.style.transition = 'none';
+        await cardElement.animate([
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.2)`, opacity: 0.8 }
+        ], {
+            duration: duration,
+            easing: 'ease-in'
+        }).finished;
+    },
+
+    /**
+     * FLIP-animate a styled card from the player's score-panel seal into place.
+     *
+     * @param {HTMLElement} cardElement
+     * @param {string|number} playerId
+     * @param {{duration?: number}} [options]
+     * @returns {Promise<void>}
+     */
+    animateCardFromPlayerSeal: async function(cardElement, playerId, options)
+    {
+        return this.animateCardFromElement(cardElement, $(`${playerId}-score-seal`), options);
+    },
 })
 });
