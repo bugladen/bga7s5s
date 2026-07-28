@@ -372,6 +372,8 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_03072 = 403072;
 
         // Expansion 4: Blood & Steel
+        const HIGH_DRAMA_PLAYER_TURN_04002 = 404002;
+            const HIGH_DRAMA_PLAYER_TURN_04002_3 = 4040023;
         const HIGH_DRAMA_PLAYER_TURN_04CD01 = 4040001;
         const HIGH_DRAMA_PLAYER_TURN_04CD01B = 4040012;
             const HIGH_DRAMA_PLAYER_TURN_04CD01B_2 = 40400122;

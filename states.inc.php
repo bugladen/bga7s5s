@@ -1038,6 +1038,8 @@ $machinestates = [
                 "03067" => States::HIGH_DRAMA_PLAYER_TURN_03067,
                 "03071" => States::HIGH_DRAMA_PLAYER_TURN_03071,
                 "03072" => States::HIGH_DRAMA_PLAYER_TURN_03072,
+                "04002" => States::HIGH_DRAMA_PLAYER_TURN_04002,
+                "04002_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
                 "04cd01" => States::HIGH_DRAMA_PLAYER_TURN_04CD01,
                 "04cd01b" => States::HIGH_DRAMA_PLAYER_TURN_04CD01B,
                 "04cd04" => States::HIGH_DRAMA_PLAYER_TURN_04CD04,
@@ -1329,6 +1331,8 @@ $machinestates = [
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION,
+                    // WHY: Danilo intervene wound-or-draw choice (queued from EventCharacterIntervened).
+                    "04002_3" => States::HIGH_DRAMA_PLAYER_TURN_04002_3,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION,
                     "endOfGame" => States::END_GAME
                     ]

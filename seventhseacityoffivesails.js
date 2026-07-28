@@ -146,6 +146,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.DON_CONSTANZO_CHALLENGE_TYPE = 19;
             this.SANJAY_CHALLENGE_TYPE = 22;
             this.WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
+            this.DANILO_CHALLENGE_TYPE = 25;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;

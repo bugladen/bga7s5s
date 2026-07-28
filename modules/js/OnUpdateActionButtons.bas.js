@@ -95,6 +95,16 @@
                 this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
             },
 
+            'highDramaPhase04002': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase04002_3': () => {
+                this.addActionButton(`actWound`, _('Wound Intervener'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
+                this.addActionButton(`actDraw`, _('Draw a Card'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
+            },
+
             'duelChooseTechnique_04001': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Sink Selected'), () => this.onMultipleChooseListCardsConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

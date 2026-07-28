@@ -195,6 +195,7 @@ class Game extends \Bga\GameFramework\Table
     final const SANJAY_CHALLENGE_TYPE = 22;
     final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
     final const CENSURE_CHALLENGE_TYPE = 24;
+    final const DANILO_CHALLENGE_TYPE = 25;
 
     //Duel global variables
     //Duel Names
@@ -266,15 +267,6 @@ class Game extends \Bga\GameFramework\Table
         $this->cards = $this->deckFactory->createDeck('card');
         $this->theah = new Theah($this);
     }
-       
-    /**
-     * Player action, example content.
-     *
-     * In this scenario, each time a player plays a card, this method will be called. This method is called directly
-     * by the action trigger on the front side with `bgaPerformAction`.
-     *
-     * @throws BgaUserException
-     */
 
     /**
      * Compute and return the current game progression.
@@ -456,6 +448,7 @@ class Game extends \Bga\GameFramework\Table
         $gameinfos = $this->getGameinfos();
         $default_colors = $gameinfos['player_colors'];
 
+        $query_values = [];
         foreach ($players as $player_id => $player) {
             $query_values[] = vsprintf("('%s', '%s', '%s')", [
                 $player_id,

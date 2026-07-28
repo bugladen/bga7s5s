@@ -174,6 +174,23 @@
                 }
             },
 
+            'highDramaPhase04002': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04002_3': () => {
+                if (this.isCurrentPlayerActive() && this.clientStateArgs.intervenerId)
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.intervenerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'duelChooseTechnique_04001': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.addClass('choose_container', 'hidden');

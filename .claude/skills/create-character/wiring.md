@@ -112,6 +112,20 @@ Symptom if missing reorder wiring: cards select but **no number-order chips** ap
 
 Private Look states read cards from `args.args._private.args.cards` (from `argsForStatePrivate`), not `args.args.args.cards`.
 
+## Resolve chip — `characterResolveModified`
+
+Resolve has **no** EventHub factory/notif (unlike Finesse/Combat/Influence). After mutating `ModifiedResolve`, emit:
+
+```js
+// setupNotifications:
+['characterResolveModified', 1],
+
+// handler — mirror notif_characterFinesseModifed; keep modified class when wounds > 0
+notif_characterResolveModified: function(notif) { … }
+```
+
+Server args: `characterId`, `oldResolve`, `newResolve`, `reason`. Without this, `IsUpdated` persists to DB but the Resolve chip stays flat (Danilo `_04002` playtest). See Pattern A "Resolve client sync".
+
 ## Pre-Commit Hook (relevant subset)
 
 `.githooks/pre-commit` enforces, for the files you touch when implementing a Character or Leader:

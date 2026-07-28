@@ -48,6 +48,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['characterCombatModified', 1],
             ['characterFinesseModifed', 1],
             ['characterInfluenceModified', 1],
+            ['characterResolveModified', 1],
             ['characterIntervened', 500],
             ['cardMustered', 1000],
             ['characterRecruited', 1000],
@@ -1209,6 +1210,24 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const element = $(`${card.divId}_influence_value`);
         element.innerHTML = card.modifiedInfluence;
         if (card.modifiedInfluence != card.influence)
+            dojo.addClass(element, '_7sfs-modified-stat-value');
+        else
+            dojo.removeClass(element, '_7sfs-modified-stat-value');
+    },
+
+    notif_characterResolveModified: function( notif )
+    {
+        debug( 'notif_characterResolveModified' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.modifiedResolve = args.newResolve;
+
+        const element = $(`${card.divId}_resolve_value`);
+        element.innerHTML = card.modifiedResolve;
+        // WHY: Wounds also mark Resolve as modified visually (see createCard / wound notifs).
+        if (card.modifiedResolve != card.resolve || card.wounds > 0)
             dojo.addClass(element, '_7sfs-modified-stat-value');
         else
             dojo.removeClass(element, '_7sfs-modified-stat-value');

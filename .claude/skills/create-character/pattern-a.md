@@ -339,6 +339,38 @@ WHY `setId` before `setOwnerId`: `setId` overwrites both `Id` and `ClassId`; `se
 
 Reference: `_03051` Yepikhodov (no trait filter; granted Technique is interactive), `_01067` Jean (`Technique_PlusOneRiposte` with ClassId `Technique_01067`), `_02022` Stranahan (`Technique_GainLethal`).
 
+### Location trait-stat aura — "Your <Trait>s at Home and <Owner>'s location gain +N[Stat] / +M Resolve"
+
+For text like Danilo `_04002` ("Your **Thugs** at **Home** and Danilo's location gain +1[Finesse] and +1 Resolve"). This is **not** a Technique grant (Jean) — it buffs **stats** on other controlled characters that match a trait and location predicate.
+
+**Shape:**
+
+1. Track `$BuffedIds` (list of character ids currently holding the aura) on the aura source — survive via `IsUpdated`.
+2. On relevant events, recompute the eligible set and apply/remove only on set transitions (same idea as Weapon count-transition / Ise flag — avoid stacking).
+3. Finesse/Combat/Influence → `createCharacter<Stat>ModifiedEvent` (Finesse factory typo `Modifed`).
+4. Resolve → **direct** `$thug->ModifiedResolve ±1` (no factory) **and** emit `characterResolveModified` client notif — see "Resolve client sync" under Phase-conditional Resolve below. Without the notif the chip stays flat while Finesse updates (Danilo playtest).
+
+**Eligibility:**
+
+- Controlled by aura source's controller, `hasTrait(<printed trait>)`, not the aura source (unless the source also has the trait and the text includes him — Danilo is not a Thug).
+- Location is **Home OR aura source's current location**. When printed "at Home and X's location", Home is **always** in scope even when the aura source is in the city. When the aura source is at Home the two locations collapse (set membership — no double-apply).
+- Home lookup: `getCharactersAtHomeByPlayerId($controllerId)` / effective-location `== LOCATION_PLAYER_HOME`. **Never** `getCharactersAtLocation(HOME)` — shared string across players (Benci / opposing-count lesson).
+
+**Lifecycle hooks (same family as Jean / Angeline):**
+
+| Event | What to do |
+|---|---|
+| `EventCardMoved` | Recompute with move-event compensation (effective `toLocation` for mover; include-in / exclude-out) |
+| `EventCharacterMustered` / `EventApproachCharacterPlayed` / `EventCharacterRecruited` | Recompute; force-include newly entered Thug when ControllerId may still be unset |
+| `EventCharacterDestroyed` (aura source) | `clearAll` — strip every buffed id |
+| `EventCharacterDestroyed` (other) | Exclude the destroyed id (`runEventHubAfterCards` — still looks in-play during card `handleEvent`) |
+
+On Resolve **remove**, run the Joern destruction check if `Wounds >= ModifiedResolve`.
+
+Contrast Technique aura (Jean): Home usually **excluded**; grant/remove Techniques by ClassId rather than ±1 stats.
+
+Reference: `_04002` Danilo.
+
 ### Forced muster/approach triggers — hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`
 
 For any "after X musters" / "when X musters" / "Forced after X musters" trigger, the conditional MUST hook both events:
@@ -462,6 +494,37 @@ WHY `EventDuskEndOfDay` for the restore (not `EventDuskPhaseEnd`):
 - `EventDuskPhaseEnd` would work too (Brute discard at end-of-day doesn't read Resolve), but EndOfDay is the strict latest safe point.
 
 Reference: `_03015` Joern Kietelsson. Note that the same pattern applies in reverse for "+N Resolve" phase-conditional buffs.
+
+### Resolve client sync — `characterResolveModified` notif (required for live chip)
+
+Finesse / Combat / Influence factories run through EventHub handlers that call `notify->all("characterFinesseModifed"|…)` and `Notifications.js` updates the chip. **Resolve has no such pipeline.** Mutating `ModifiedResolve` + `IsUpdated` persists to DB but the Resolve number on the card stays flat until something else redraws it (Danilo `_04002` playtest: Finesse moved, Resolve did not).
+
+Whenever a passive/aura changes Resolve and the player must see it immediately:
+
+```php
+$oldResolve = $character->ModifiedResolve;
+$character->ModifiedResolve += 1; // or -= 1
+$character->IsUpdated = true;
+
+$theah->game->notify->all(
+    "characterResolveModified",
+    clienttranslate('The resolve of ${character_name} went from ${oldResolve} to ${newResolve} due to: ${reason}.'),
+    [
+        'i18n' => ['character_name'],
+        "character_name" => $character->Name,
+        "characterId" => $character->Id,
+        "oldResolve" => $oldResolve,
+        "newResolve" => $character->ModifiedResolve,
+        "reason" => $this->getInjectCode(),
+    ]
+);
+```
+
+Client: subscribe `['characterResolveModified', 1]` in `Notifications.js` `setupNotifications` and implement `notif_characterResolveModified` mirroring `notif_characterFinesseModifed` (set `modifiedResolve`, update `${divId}_resolve_value`, keep `_7sfs-modified-stat-value` when `modifiedResolve != resolve || wounds > 0`).
+
+WHY not invent a factory yet: Joern-style direct mutation remains the server truth; the notif is the missing half. A future `createCharacterResolveModifiedEvent` could centralize both — until then, emit the notif at every Resolve mutation that should be visible. Joern's phase penalty historically used `message`-only (chip may lag); prefer `characterResolveModified` for new work.
+
+Reference: `_04002` Danilo (aura); `_03015` Joern (phase Resolve — add the notif if live chip matters).
 
 ### Wound-prevention passive — `eventCheck` on `EventCharacterBeingWounded`
 

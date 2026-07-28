@@ -184,6 +184,27 @@ WHY not `eventCheck` on `EventChallengeRejected` alone: the established refuse-b
 
 Reference: `_03050` Daichi. Contrast: `Action_03002` Aja / `Action_01071` Épée (type-owned).
 
+### Intervene follow-up choice — "If another character intervenes, wound them or draw"
+
+For text like Danilo `_04002`: challenge Action with a **player choice after intervention** (wound intervener **or** draw). Auto-wound-only sibling is Cornered `_03021` (Risk — queues wound in `handleEvent`, no choice state).
+
+**Mint a `*_CHALLENGE_TYPE` even with no intervene/refuse restrictions** — needed to key `EventCharacterIntervened` so BASIC challenges from the same character do not fire the follow-up. Engage printed → trichotomy (a): add type to `stIssueChallenge` auto-engage list + require `!Engaged`. Files: `Game.php` + matching JS int + auto-engage list (skip Theah/args/Refuse wiring).
+
+**Where the choice interrupts:**
+
+`actHighDramaChallengeActionIntervene` queues `EventCharacterIntervened` then `nextState("proceed")` → `GENERATE_THREAT` → `GENERATE_THREAT_EVENTS` (`stRunEvents`). The intervene event is processed **there**, not in `HIGH_DRAMA_PLAYER_TURN_EVENTS`.
+
+1. On `EventCharacterIntervened` + your challenge type: store `$IntervenerId` on the Action (persist via owning card `IsUpdated`), queue `createTransitionEvent(controllerId, ownerId, "NNNNN_3", actionId)`.
+2. Map `"NNNNN_3"` on **`HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS.transitions`** → choice state (not PLAYER_TURN_EVENTS).
+3. Choice state: Wound (`id: 0`) / Draw (`id: 1`) buttons; queue wound or draw; `nextState("done")` → **back to GENERATE_THREAT_EVENTS** so remaining queue (threat calc, etc.) finishes → RESOLUTION.
+4. Transition priority is 8 (after medium-priority intervene/engage/threat events) — choice typically runs after threat is queued; that is fine for wound/draw.
+
+WHY not PLAYER_TURN_EVENTS: a transition named `"NNNNN_3"` only resolves if the **current** events state's transition map has that key. Intervene never re-enters player-turn events mid-challenge.
+
+Zombie: prefer Draw (avoids hanging if intervener already left play).
+
+Reference: `Action_04002` Danilo; auto-wound `_03021` Cornered; refuse-cost interrupt sibling `Action_03042` (When Least Expected — different entry: ACCEPT_CHALLENGE → discard state).
+
 ### IAbilityThatTargetsCharacters
 
 Always implement this interface on a challenge-issuing action — challenge target *is* a targeted character, so other cards' "before being targeted" hooks need to see it. Implement `isValidTargetForAbility(Game $game, Character $character): array` returning `[bool, string]`.
@@ -199,4 +220,5 @@ Always implement this interface on a challenge-issuing action — challenge targ
 | `Action_03037` (Sanjay) | Single-step Influence challenge with **no engage at all**. `SANJAY_CHALLENGE_TYPE` out of auto-engage AND no `createCardEngagedEvent`. Hand-size target filter (`opponent hand < your hand`). Exemplar for "not a basic challenge — never engages." |
 | `Action_01083` (Legendary Reputation) | RiskCityAction variant — sets `LEGENDARY_REPUTATION_CHALLENGE_TYPE` (only Leaders may intervene). |
 | `_03050` (Mōri Daichi) | **Character-scoped refuse** via relative Combat — no new challenge type; helper + reject/args/JS/zombie. |
+| `Action_04002` (Danilo Danini) | Engage + Influence challenge + **intervene wound-or-draw choice**. `DANILO_CHALLENGE_TYPE` on auto-engage; `"04002_3"` on GENERATE_THREAT_EVENTS. |
 
