@@ -84,6 +84,9 @@ class Technique_01036 extends Technique
             $owner->IsUpdated = true;
         }
 
+        // WHY: Move on EventDuelEndOfRound AFTER stDuelEndOfRound commits adversary
+        // pool threat (location check while still co-located). Fleeing must not wipe
+        // leftover adversary threat — see stDuelEndOfRound ordering.
         if ($event instanceof EventDuelEndOfRound && $this->MoveDaniela)
         {
             $owner = $this->getOwningCharacter($event->theah);
