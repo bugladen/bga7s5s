@@ -1429,7 +1429,48 @@ trait StatesTrait
         //Will get last known state of the opponent if they are in the discard or locker
         $adversary = $this->theah->getDuelRoundOpponent();
 
-        //Any threat remaining for the actor is applied
+        // WHY order (location → adversary threat → actor wounds → EventDuelEndOfRound):
+        // 1) Location check must see the board as it was during the round (mid-round
+        //    moves like Maneuver_01033 already applied; EndOfRound movers like
+        //    Technique_01036 have NOT moved yet).
+        // 2) If still co-located, adversary pool threat is kept for the next round.
+        //    Daniella then moves on EventDuelEndOfRound AFTER this commit — her flee
+        //    must not wipe that pool.
+        // 3) Actor leftover wounds run before EndOfRound moves so a same-location
+        //    death still leaves adversary threat already committed (duel continues).
+        $actorIsDead = strpos($actor->Location, "Locker-") !== false;
+        if ($actor->hasTrait("Brute"))
+            $actorIsDead = strpos($actor->Location, "Discard-") !== false;
+
+        $adversaryIsDead = strpos($adversary->Location, "Locker-") !== false;
+        if ($adversary->hasTrait("Brute"))
+            $adversaryIsDead = strpos($adversary->Location, "Discard-") !== false;
+
+        $bothDead = $actorIsDead && $adversaryIsDead;
+
+        // If the actor is not in the same location as the adversary, adversary threat
+        // is nullified. If the actor is in the locker, threat remains. If both are in
+        // the locker, the duel will end when pools are empty.
+        if ($bothDead || ($actor->Location != $adversary->Location && !$actorIsDead))
+        {
+            $adversaryThreatField = ($actorId == $challengerId)
+                ? "ending_defender_threat"
+                : "ending_challenger_threat";
+            $sql = "UPDATE duel_round SET $adversaryThreatField = 0 WHERE duel_id = $duelId AND round = $round";
+            $this->DbQuery($sql);
+
+            $this->notifyAllPlayers("message", clienttranslate('Due to the challenger and defender not sharing the same location, any threat from ${actor_name} to ${adversary_name} is nullified.'), [
+                'i18n' => ['actor_name', 'adversary_name'],
+                "actor_name" => $actor->Name,
+                "adversary_name" => $adversary->Name
+            ]);
+        }
+
+        // Re-read after possible adversary-threat nullify
+        $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
+        $values = $this->getObjectListFromDB($sql)[0];
+
+        // Any threat remaining for the actor is applied as wounds
         $threat = 0;
         $field = "";
         $lethalField = "";
@@ -1491,6 +1532,8 @@ trait StatesTrait
             $this->theah->queueEvent($event);
         }
 
+        // EndOfRound movers (Technique_01036, Maneuver_01164, Escape, etc.) run after
+        // adversary threat was committed above.
         $event = EventFactory::createDuelEndOfRoundEvent($actor->ControllerId, $actor->Id);
         $this->theah->queueEvent($event);
 
@@ -1524,43 +1567,11 @@ trait StatesTrait
 
         $actor = $this->theah->getDuelRoundActor();
         $actorId = $actor->Id;
-        $adversaryId = $this->theah->getDuelOpponentId($actor->Id);
-        $adversary = $this->theah->getCharacterById($adversaryId);
         $challengerId = $this->theah->getDuelChallengerId();
 
-        $actorIsDead = strpos($actor->Location, "Locker-") !== false;
-        if ($actor->hasTrait("Brute"))
-            $actorIsDead = strpos($actor->Location, "Discard-") !== false;
-
-        $adversaryIsDead = strpos($adversary->Location, "Locker-") !== false;
-        if ($adversary->hasTrait("Brute"))
-            $adversaryIsDead = strpos($adversary->Location, "Discard-") !== false;
-
-        $bothDead = $actorIsDead && $adversaryIsDead;
-
-        //If the actor not in the same location as the adversary, then any adversary threat is nullified
-        //If the actor is in the locker, then threat remains
-        //If both are in the locker, then obviously the duel will end
-        if ($bothDead || ($actor->Location != $adversary->Location && !$actorIsDead))
-        {
-            $field = "";
-            if ($actorId == $challengerId)
-                $field = "ending_defender_threat";
-            else
-                $field = "ending_challenger_threat";
-            $sql = "UPDATE duel_round SET $field = 0 WHERE duel_id = $duelId AND round = $round";
-            $this->DbQuery($sql);
-
-            //Also make sure the threat read from the database is 0
-            $values[$field] = 0;
-
-            $this->notifyAllPlayers("message", clienttranslate('Due to the challenger and defender not sharing the same location, any threat from ${actor_name} to ${adversary_name} is nullified.'), [
-                'i18n' => ['actor_name', 'adversary_name'],
-                "actor_name" => $actor->Name,
-                "adversary_name" => $adversary->Name
-            ]);
-        }
-        
+        // WHY: Location / adversary-threat nullify already ran in stDuelEndOfRound
+        // BEFORE EventDuelEndOfRound movers (e.g. Technique_01036). Re-checking here
+        // would wipe adversary threat after Daniella flees.
         $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
         $values = $this->getObjectListFromDB($sql)[0];
         $endingChallengerThreat = $values['ending_challenger_threat'];
