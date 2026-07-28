@@ -738,6 +738,21 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     /**
+     * Places card art beside a text-tooltip body (image left, table right).
+     * WHY: Text hover preference still shows the full stats/text table, but players
+     * also want the card image. Side-by-side avoids running off the bottom of the
+     * viewport (which happened when the image was stacked above the table).
+     * Reuses ._7sfs-card-tooltip-img; CSS keeps the text column at the same width
+     * it had when stacked. Does NOT use buildImageTooltipHtml — conditions already
+     * appear in the text table.
+     */
+    prependCardImageToTextTooltip: function(card, textHtml) {
+        if (!card?.image) return textHtml;
+        const img = `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`;
+        return `<div class="_7sfs-text-tooltip-with-image">${img}${textHtml}</div>`;
+    },
+
+    /**
      * Rebuilds the hover tooltip for a card at whatever element it currently lives in
      * (in-play character/attachment/etc, approach deck stock, or faction hand bga-cards).
      * Call this after mutating card.conditions so the tooltip reflects the new state.
@@ -858,7 +873,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
         }
 
-        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        const html = this.prependCardImageToTextTooltip(card, `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`);
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
     },
 
@@ -897,7 +912,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
         }
 
-        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        const html = this.prependCardImageToTextTooltip(card, `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`);
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
     },
 
@@ -957,7 +972,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
         }
 
-        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        const html = this.prependCardImageToTextTooltip(card, `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`);
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
     },
 
@@ -996,7 +1011,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             rows.push(row(_('Available&nbsp;Techniques'), card.techniques.map(t => strikeIf(!t.available, _(t.shortName))).join('<br>'), true));
         }
 
-        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        const html = this.prependCardImageToTextTooltip(card, `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`);
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
     },
 
@@ -1025,7 +1040,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
-        const html = `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`;
+        const html = this.prependCardImageToTextTooltip(card, `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`);
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
     },
 
