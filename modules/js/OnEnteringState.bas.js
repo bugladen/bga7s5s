@@ -219,6 +219,44 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04004': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'planningPhaseResolveSchemes_04004_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    if (args.args.args.characterId) {
+                        this.highlightCharacterChosen(args.args.args.characterId);
+                        this.clientStateArgs.characterId = args.args.args.characterId;
+                    }
+                }
+            },
+
+            'highDramaPhase04004': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+                }
+            },
+
             'highDramaPhase04002': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

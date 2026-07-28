@@ -162,3 +162,22 @@ Card text:
 7. **Pre-commit.** `createActionResolvedEvent()`; no `ISorcererAbility`. After Write tool, verify single CRLF (`doubleCR=0`).
 
 Full implementation: `modules/php/cards/faf/_03063.php`, `modules/php/cards/faf/actions/Action_03063.php`, `modules/php/States/faf/State_highDramaPhase03063{,_2}.php`.
+
+## Walkthrough: implementing `_04004` (Blood Money)
+
+Card text:
+
+> Add a Renown to [City Docks] and [The Grand Bazaar].
+> Then, move your **Duelist** to a **City** location.
+> **Duelist City Action:** Move your performer to a location with a wounded enemy.
+> **Duelist Reaction:** When an opposing character is destroyed • Draw a card.
+
+1. **Constructor.** `initializeFaction('Vodacce')`. **Verify Initiative against art** (scaffold had 64 — sun icon is 8). Panache 0. Traits Assassination + Fortune — add `Assassination` to `TraitNames` if missing. Register `IHasActions` + `IHasReactions` + `Action_04004` + `Reaction_04004`.
+2. **Resolve.** Queue Renown to Docks + Bazaar. Collect eligible Duelists (in play, has ≥1 other City dest). If none: notify and stop. Else `createTransitionEvent(..., "04004")` at `MEDIUM_PRIORITY`.
+3. **Planning states.** `PLANNING_PHASE_RESOLVE_SCHEMES_04004 = 2604004` (pick Duelist → `CHOSEN_CARD` → `"duelistChosen"`); `_2 = 26040042` (pick City → move `engage=false` → `"locationChosen"`). State 2 must **not** use `""` alongside `"back"`/`"zombie"`.
+4. **City Action.** Duelist performers with ≥1 destination City that has an opposing wounded character. One HD state (`404004`); same transition key `"04004"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` (distinct from planning map). Named `"locationChosen"`.
+5. **Reaction.** `EventCharacterDestroyed`: enemy + controlled Duelist at `$destroyed->Location` (opposing = same location). Draw + Pass; `setUsed` only on draw.
+6. **JS (bas).** Planning: character highlight / city locations + Back. HD: city locations from `locationIds` + performer highlight.
+7. **Studio bug hit:** `nextState("")` on state 2 → "More than one possible transition". Fix: `"locationChosen"`.
+
+Full implementation: `modules/php/cards/bas/_04004.php`, `actions/Action_04004.php`, `reactions/Reaction_04004.php`, `States/bas/State_planningPhaseResolveSchemes04004{,_2}.php`, `State_highDramaPhase04004.php`.

@@ -59,3 +59,9 @@
 | `modules/php/States/faf/State_highDramaPhase03063_2.php` | HD state 2: destination location (`locationChosen` + `back`). |
 | `modules/php/cards/_7s5s/_01092.php` (Makepeace) | Character parallel for `getEquipDiscount` -= 1 when opposing character equips. |
 | `modules/php/cards/_7s5s/actions/Action_01105.php` | Resolve-pressure success → engage pick (no wound cost). Useful parallel; **do not** copy its missing ActionResolved-on-failure. |
+| `modules/php/cards/bas/_04004.php` (Blood Money) | **Fixed dual Renown (Docks + Bazaar) + Then move your Duelist (two planning states) + Duelist City Action + Duelist Reaction.** Initiative/Traits verified against art (`Assassination` added to TraitNames). |
+| `modules/php/cards/bas/actions/Action_04004.php` | Duelist gate; move to other City location with wounded enemy; `engage=false`; named `"locationChosen"`. |
+| `modules/php/cards/bas/reactions/Reaction_04004.php` | Opposing destroyed → draw. Opposing = enemy **at same location as your Duelist** (not any enemy). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04004.php` | Planning state 1: Duelist pick (`duelistChosen`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04004_2.php` | Planning state 2: City dest (`locationChosen` + `back` — no `""`). |
+| `modules/php/States/bas/State_highDramaPhase04004.php` | HD location pick for City Action. |

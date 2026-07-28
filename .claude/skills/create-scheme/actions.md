@@ -142,6 +142,23 @@ Use when the City Action musters a character from The Locker (often with a wound
 
 Reference: `Action_03062`, `State_highDramaPhase03062`, Character dusk condition path.
 
+### Move performer to a location with a wounded enemy
+
+Use when the City Action is **"Move your performer to a location with a wounded enemy"** (often **Duelist City Action**). Canonical: `_04004` (Blood Money).
+
+**Flow:**
+
+1. `SchemeCityAction` + `RequiresPerformerSelected = true`. Trait gate in `getPerformersForAction`.
+2. Destinations helper: other City locations (`Name != performer->Location`) that have ≥1 character with `ControllerId != performer->ControllerId` and `Wounds > 0`.
+3. Availability = `count(getPerformersForAction) > 0` where performers also have `count(destinations) > 0` — do not offer a dead move.
+4. `EventActionTriggered` → re-validate → `createTransitionEvent(..., "NNNNN", $this->Id)` into one HD location-pick state.
+5. Args expose `performerId` + `locationIds`. On confirm: `createCardMovingEvent(..., engage=false)` + `createActionResolvedEvent`.
+6. Named success (`"locationChosen"`) if the state also has `"zombie"` (or `"back"`) — do not use `""` alongside siblings.
+
+**JS:** city location select from `locationIds` + highlight performer + Confirm. Leave: `resetCityLocations` + unhighlight.
+
+Reference: `Action_04004`, `State_highDramaPhase04004`. Adjacent-only move parallel: `Action_01059`.
+
 ### High Drama action sub-states (City Action / Sorcerer City Action)
 
 Planning resolve sub-states use `PLANNING_PHASE_RESOLVE_SCHEMES_*` (`26<NNNNN>`) and `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`. **Scheme actions played during High Drama use a different map:**

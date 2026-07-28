@@ -191,6 +191,22 @@ Both the `getCardById->getAbilityById` AND `getInPlayActionById` lookups are nee
 
 Wrap the whole `handleEvent` body with an `if (! $this->isAvailable()) return;` near the top. The once-per-day reset handles "one ability fires multiple effect events" — the reaction only triggers on the first event; after the player resolves, `setUsed` blocks further events from the same ability.
 
+### "When an opposing character is destroyed • …"
+
+**"Opposing" is not "any enemy."** Helpers.md: different controller **and same location**. A gate of only `$destroyed->ControllerId != $owner->ControllerId` is wrong — it fires for destroys across the board.
+
+For a **trait-prefixed** scheme Reaction with no named performer in the trigger (e.g. **"Duelist Reaction: When an opposing character is destroyed • Draw a card"**):
+
+1. On `EventCharacterDestroyed` + `isAvailable()`.
+2. Reject if `$destroyed->ControllerId == $owner->ControllerId`.
+3. Require a controlled traited character **at `$destroyed->Location`** (`getCharactersAtLocation` + `hasTrait("Duelist")`). That is both the trait gate and the opposing-location rule.
+4. Destroy-time Location is still readable during `handleEvent` (`runEventHubAfterCards = true`) — no need to capture location unless the resolve branch needs it later.
+5. Buttons: Resolve/Draw + Pass. `setUsed` only on success. Surface destroyed name in `getReactionDescription` if useful.
+
+**Regression:** First Blood Money draft gated "any Duelist in play anywhere" + any enemy destroy. Eddie corrected: opposing = same location as your Duelist.
+
+Reference: `Reaction_04004`. Contrast friendly-destroy-at-city: `Reaction_03017`. Contrast "any opposing sent to Locker" with no same-location requirement when the printed text does not say opposing-at-location (re-read the card — `_03007` uses Locker, not "opposing" in the same sense).
+
 ### "Your performer's location" on a scheme
 
 Schemes don't have a fixed performer like character actions do. When the printed text says "your performer's location" (e.g. Premonition's "your character at your performer's location"), interpret it as: **the scheme controller picks/identifies a character to act as the performer**, and that character's location is "your performer's location".

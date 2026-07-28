@@ -22,6 +22,7 @@ class TraitNames
             "Artisan",
             "Ashur",
             "Assassin",
+            "Assassination",
             "Attire",
             "Avalon",
             "Bard",

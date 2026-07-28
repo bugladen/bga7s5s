@@ -200,6 +200,39 @@ Cleanup:
 
 Reference: `_01071`, `_01072`, `_02046`.
 
+### Character-then-City-location resolve (planning)
+
+Two states. State 1 highlights in-play characters (`ids` from args); Confirm → `onChooseInPlayCardConfirmed` → `actFromCardWithId`. State 2 is a filtered city-location chooser (`locationIds`) with Back.
+
+```js
+'planningPhaseResolveSchemes_<NNNNN>': () => {
+    if (this.isCurrentPlayerActive()) {
+        this.numberOfCardsSelectable = 1;
+        this.clientStateArgs.ids = args.args.args.ids;
+        this.highlightCardsAsSelectable(args.args.args.ids);
+    }
+},
+
+'planningPhaseResolveSchemes_<NNNNN>_2': () => {
+    if (this.isCurrentPlayerActive()) {
+        this.numberOfCityLocationsSelectable = 1;
+        (args.args.args.locationIds || []).forEach((locationId) => {
+            this.makeCityLocationSelectable(this.getCityLocationElement(locationId));
+        });
+        if (args.args.args.characterId) {
+            this.highlightCharacterChosen(args.args.args.characterId);
+            this.clientStateArgs.characterId = args.args.args.characterId;
+        }
+    }
+},
+```
+
+Buttons: state 1 Confirm only; state 2 Back + Confirm Location (`onCityLocationsSelected` → default `actFromCardWithLocations`). Leave: unhighlight cards / `resetCityLocations` + unhighlight character.
+
+**Server:** state 2 success transition must be named (`"locationChosen"`) when `"back"` / `"zombie"` exist — see helpers.md / `_04004`.
+
+Reference: `_04004` bas JS triple.
+
 ### Multi-card hand discard (Planning End Forced / draw-then-discard)
 
 ```js

@@ -174,6 +174,35 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04004': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseResolveSchemes_04004_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    if (this.clientStateArgs.characterId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04004': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04002': () => {
                 if (this.isCurrentPlayerActive())
                 {

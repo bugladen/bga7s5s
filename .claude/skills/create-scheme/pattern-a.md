@@ -153,3 +153,19 @@ public function actFromCardWithIds(Game $game, int $state, string $stateName, st
 ```
 
 Reference: `_01071`, `_02014`, `_02046`, `_02052`.
+
+### Character-then-City-location resolve (move your \<Trait\>)
+
+When the scheme says **"Then, move your Duelist to a City location"** (or another trait) after automatic Renown:
+
+1. Queue fixed Renown events as usual.
+2. Collect eligible characters: `getCharactersInPlayByPlayerId` + `hasTrait(...)` + ≥1 City destination ≠ current location (Home Duelists qualify — any City is valid).
+3. **Only** queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` when the list is non-empty. Otherwise notify that there is no traited character to move and stop (contingent "Then").
+4. **State 1** (`PLANNING_PHASE_RESOLVE_SCHEMES_NNNNN`): highlight `ids` via `argsFromCard` / `actFromCardWithId`. Stash pick in `Game::CHOSEN_CARD`. Transition `"duelistChosen"` (or `"characterChosen"`) → state 2. Do **not** use `CHOSEN_PERFORMER` here — that global belongs to HD City Actions.
+5. **State 2** (`…_NNNNN_2`): `locationIds` from city locations excluding the chosen character's current location. `actFromCardWithLocations` → `actFromCardWithIds` on the scheme. `createCardMovingEvent(..., engage=false)` unless Engage is printed.
+6. **Named success** on state 2 (`"locationChosen"`) whenever `"back"` / `"zombie"` also exist — `nextState("")` throws "More than one possible transition" (same as Pattern G / `_03042`).
+7. JS: state 1 = `highlightCardsAsSelectable` + Confirm; state 2 = city locations + Back + Confirm; leave cleans highlights / `resetCityLocations`.
+
+Same card-number key `"NNNNN"` may also appear under `HIGH_DRAMA_PLAYER_TURN_EVENTS` for a City Action on the same scheme — distinct maps, intentional (see `_03030`, `_04004`).
+
+Reference: `_04004` / `State_planningPhaseResolveSchemes04004{,_2}`.
