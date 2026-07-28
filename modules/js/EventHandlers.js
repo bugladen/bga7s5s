@@ -325,6 +325,26 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 } else {
                     dojo.addClass('actChooseCardSelected', 'disabled');
                 }
+            },
+
+            // WHY: Multi-select sink — default else branch only enables Confirm when exactly 1 selected.
+            'duelChooseTechnique_04001': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            // WHY: Reorder numbers come from addSortTagToCard — must be wired like 04cd15_2 / 03052_2.
+            'duelChooseTechnique_04001_2': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
             }
         };
 

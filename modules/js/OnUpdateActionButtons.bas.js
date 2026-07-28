@@ -95,6 +95,17 @@
                 this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
             },
 
+            'duelChooseTechnique_04001': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Sink Selected'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
+            'duelChooseTechnique_04001_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onCardsSorted());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
         };
 
         if (methods[stateName])

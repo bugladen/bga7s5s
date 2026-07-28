@@ -72,6 +72,60 @@ On `EventResolveTechnique`, queue `createTransitionEvent($owner->ControllerId, $
 
 Reference: `Technique_03052`; public-reveal contrast `Technique_03043`.
 
+### Look / sink / reorder own Faction Deck (Technique)
+
+For Benci `_04001`: **"Technique: Look at the top two cards of your deck. You may sink one or both and return the others in any order."**
+
+Sibling shapes:
+- **Action_04cd15** (Syrneth Puzzle Box) — High Drama City Action, same Faction Deck sink+reorder, public args.
+- **Reaction_03052** — City Deck look/sink/reorder, private args.
+- **Technique_01010** — look adversary deck, sink any, **no** reorder ("same order" / leave remainder in place).
+
+**Availability:** `IN_DUEL` + actor-is-owner + `count(getCardsOnTopOfPlayerFactionDeck(controller, N)) > 0`. Empty deck → hide.
+
+**On `EventResolveTechnique`:**
+1. Snapshot top N property arrays into `Game::CHOSEN_CARD`.
+2. Public notify that a look occurred (do **not** name the cards — Look ≠ Reveal).
+3. `createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)` — HIGHEST_PRIORITY before other resolve noise.
+4. `$this->setUsed($theah, true)`. Skip the transition if the snapshot is empty (deck emptied between availability and resolve).
+
+**Sink step (`DUEL_CHOOSE_TECHNIQUE_NNNNN`):**
+- State `getArgs()` → `argsForStatePrivate()`.
+- `#[PossibleAction]` `actFromCardWithIds` + `actFromCardPass` (Pass = sink none → finishReplaceOrReorder). Do **not** use bare `actPass` — that skips reorder.
+- Validate ids ⊆ snapshot; **immediately** `$deck->insertCardOnExtremePosition($id, $deckName, false)` per sink. WHY immediate: queued `createCardAddedToFactionDeckEvent` races `finishReplaceOrReorder`'s top inserts before EVENTS drains (04cd15 comment).
+- Update `CHOSEN_CARD` to remaining; call finish helper.
+
+**finishReplaceOrReorder:**
+- 0 remaining → `nextState("done")` back to `DUEL_CHOOSE_TECHNIQUE_EVENTS`.
+- 1 remaining → top-insert that card; `nextState("done")` (order forced).
+- 2+ remaining → `nextState("reorder")` → `DUEL_CHOOSE_TECHNIQUE_NNNNN_2`.
+
+**Reorder step:** validate complete permutation of remaining ids; top-insert in JS sort order (`onCardsSorted` — last selected ends on top); `nextState("cardsSorted")`.
+
+**states.inc.php:** only `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS` — step 2 is reached via the sink state's own `"reorder"` transition, not `createTransitionEvent("NNNNN_2")`.
+
+**JS (`OnEntering` / `OnUpdate` / `OnLeaving`.<expansion>):**
+- Sink: chooseList `setSelectionMode(2)`, Sink Selected → `onMultipleChooseListCardsConfirmed`, Pass → `actFromCardPass`. Private path: `args.args._private.args.cards`.
+- Reorder: same chooseList, Confirm → `onCardsSorted()`.
+
+**CRITICAL — `EventHandlers.js` `onChooseCardClicked`:** without an entry, the default branch only enables Confirm when **exactly one** card is selected, and **never** calls `addSortTagToCard` — so multi-sink Confirm stays broken and reorder number chips never appear. Wire:
+
+```js
+'duelChooseTechnique_NNNNN': () => {
+    // multi-select sink — enable when length > 0
+},
+'duelChooseTechnique_NNNNN_2': () => {
+    this.addSortTagToCard(item_id);
+    // enable Confirm when all items selected (ordered)
+},
+```
+
+Mirror `highDramaPhase04cd15` / `highDramaPhase04cd15_2` / `duskPhaseBegin03052_2`.
+
+**"same order" vs "any order":** if the text says return others in the **same** order, omit the reorder state and only sink (01010). If **any** order, include the reorder step (04001 / 04cd15).
+
+Reference: `Technique_04001`, `Action_04cd15`, `Reaction_03052`, sink-only `Technique_01010`.
+
 ### −N Thrust / Riposte cost ("combat card must have at least N")
 
 Parenthetical "(Your combat card must have at least N [Thrust].)" is the printed clarification of a −N technique cost. Gate `isAvailableToPlayer` with `$theah->getCurrentRoundThrust() < N` (or `getCurrentRoundRiposte()` for Riposte costs). Apply the reduction on `EventDuelCalculateTechniqueValues`: `$event->thrust -= N` plus an explanation string.

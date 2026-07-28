@@ -99,6 +99,19 @@ public function actFromCardWithLocations(string $locations): void
 
 There is no `clearCityLocationAsSelectable` function — that's a hallucinated name. The existing helper is `resetCityLocations()` (in `modules/js/Utilities.js`), which strips `_7sfs-selectable` / `_7sfs-selected` / `_7sfs-chosen` and the pointer cursor from every active city location element (plus the player Home endcap). Every existing location-picker cleanup in `OnLeavingState.tac.js` uses it; mirror that.
 
+### chooseList sink / reorder — `EventHandlers.js` is mandatory
+
+`OnEnteringState` + `OnUpdateActionButtons` alone are **not** enough for chooseList multi-select or reorder chips. Selection clicks route through `EventHandlers.js` → `onChooseCardClicked`. The **default** else branch only enables Confirm when `getSelectedItems().length === 1` and never calls `addSortTagToCard`.
+
+| State purpose | Required `onChooseCardClicked` behavior | Mirror |
+|---|---|---|
+| Multi-select sink ("sink any / one or both") | Enable Confirm when `length > 0` | `highDramaPhase04cd15`, `duelChooseTechnique_04001` |
+| Reorder ("return in any order") | `this.addSortTagToCard(item_id)` + enable when all items selected | `highDramaPhase04cd15_2`, `duskPhaseBegin03052_2`, `duelChooseTechnique_04001_2` |
+
+Symptom if missing reorder wiring: cards select but **no number-order chips** appear. Symptom if missing multi-sink wiring: Confirm stays disabled when 2+ cards are selected.
+
+Private Look states read cards from `args.args._private.args.cards` (from `argsForStatePrivate`), not `args.args.args.cards`.
+
 ## Pre-Commit Hook (relevant subset)
 
 `.githooks/pre-commit` enforces, for the files you touch when implementing a Character or Leader:
@@ -125,5 +138,5 @@ The card class itself (`_NNNNN extends Character` / `extends Leader`) has no hoo
   - Reaction:   `...\cards\<expansion>\reactions`
   - State:      `Bga\Games\SeventhSeaCityOfFiveSails\States\<expansion>`
 - **"Opposing"** means BOTH different controller AND same location. Never roll your own `ControllerId !=` filter.
-- **`TraitNames::$TraitsJson`** (`modules/php/Traits.php`) is the canonical Trait list for "Name a Trait" pickers. Add new Traits in alphabetical order.
+- **`TraitNames::$TraitsJson`** (`modules/php/TraitNames.php`) is the canonical Trait list for "Name a Trait" pickers. Add new Traits in alphabetical order when a card introduces one (e.g. Protégé on `_04001`).
 

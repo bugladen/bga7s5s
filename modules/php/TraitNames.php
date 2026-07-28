@@ -135,6 +135,7 @@ class TraitNames
             "Poluchatel",
             "Porté",
             "Prepared",
+            "Protégé",
             "Provocation",
             "Punctual",
             "Ranged",

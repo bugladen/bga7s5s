@@ -284,6 +284,22 @@ WHY not just hook the post-tense `EventCardMoved` differently — there's no lat
 
 Reference: `_03026` Angeline (binary bonus), `_01037` Edeline (per-character count via `$adjustment` int).
 
+### Opposed by N+ wounded characters — location count + wound state
+
+For text like "While Benci is opposed by two or more wounded characters, he gains +1[Combat]" (`_04001` Benci). Combine:
+
+1. **Ise flag ±1** for the Combat bonus (attachments also mutate `ModifiedCombat` — do **not** set absolute `Combat + bonus`).
+2. **Angeline/Edeline location recount** on `EventCardMoved` / muster / approach / destroy / recruit, counting **opposing** characters (`isNotControlledByPlayer`) with wounds.
+3. **Wound/heal recount** on `EventCharacterWounded` / `EventCharacterHealed` when the event character is at Owner's location (or is Owner — usually irrelevant for opposing counts).
+
+**Home short-circuit (load-bearing):** `Game::LOCATION_PLAYER_HOME` is one location string for every player. `getOpposingCharactersAtLocation(HOME, …)` returns enemies sitting at *their* Homes. You cannot be "opposed" at Home — if `$location == LOCATION_PLAYER_HOME`, return count `0`.
+
+**Wound-event order:** cards handle `EventCharacterWounded` in foreach order; the wounded character may not have run yet when Owner recounts. If `$event->characterId == $character->Id && ! $event->characterHandled`, add `$event->wounds` (or subtract for heal) when testing `Wounds > 0`.
+
+**Move stale-DB:** same Angeline exclude-out / include-in when the moving card is an opposing wounded character.
+
+Reference: `_04001` Benci; Ise `_03016` (flag); Angeline `_03026` (location timing).
+
 ### Location Technique grant aura — "Your other characters at this location gain: Technique: …"
 
 For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"), Stranahan `_02022` ("Your Musketeers … gain Lethal"), or Yepikhodov `_03051` ("Your other characters … gain Technique: Engage … Copy …"). This is a **card-class `handleEvent` passive**, not a Reaction and not a Technique mounted on the aura source himself (unless the printed text also gives him the Technique).
