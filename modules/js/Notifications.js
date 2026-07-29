@@ -968,22 +968,32 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
-    notif_characterRecruited: function( notif )
+    notif_characterRecruited: async function( notif )
     {
         debug( 'notif_characterRecruited' );
         debug( notif );
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
+        const oldDivId = card.divId;
+        const oldElement = $(oldDivId);
+
         card.controllerId = args.player_id;
 
-        //Remove from this.cardProperties
-        delete this.cardProperties[args.characterId];
-        dojo.destroy(card.divId);
-
+        // WHY: Recruiting claims a city merc — for the recruiting player the
+        // target switches from the right of the city-image to my-cards on the
+        // left. Reuse slideAndAttach (same as notif_cardMoved) so the card
+        // visibly crosses the city-image instead of teleporting.
         const cardId = this.createCardId(card, card.location);
-        const target = this.getTargetElementForLocation(card.location, card.controllerId);
-        this.createCard(cardId, card, target);
+        const targetId = this.getTargetElementForLocation(card.location, card.controllerId);
+        const targetElement = $(targetId);
+
+        if (oldElement && targetElement && this.animationManager && this.animationManager.animationsActive()) {
+            await this.animationManager.slideAndAttach(oldElement, targetElement);
+        }
+
+        dojo.destroy(oldDivId);
+        this.createCard(cardId, card, targetId);
     },
 
     notif_characterWounded: async function( notif )
