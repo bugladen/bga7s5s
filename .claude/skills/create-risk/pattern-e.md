@@ -25,9 +25,20 @@ Combat-card cost discounts ("this card has -1 cost when …") live on the **Mane
 |---|---|
 | "While the adversary is engaged" | `$adversary->Engaged` — `Maneuver_01084` |
 | "If your participant has more [Finesse] than the adversary" | `$actor->ModifiedFinesse > $adversary->ModifiedFinesse` — `Maneuver_03036` |
+| "While the adversary has more wounds than your participant" | `$adversary->Wounds > $actor->Wounds` — `Maneuver_04007a` |
 | "If this card was gambled" | `$theah->game->globals->get(Game::DUEL_GAMBLED, false)` — `Maneuver_03048` |
 
-Use Modified stats and parse the comparison literally (`>` vs `>=`). For the gambled predicate, `DUEL_GAMBLED` is set in `actChooseGambleCard` before `PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD`, so it is live at discount time. Push a translated explanation into `$explanations` when the discount applies.
+Use Modified stats for Combat/Finesse/Influence comparisons and parse the operator literally (`>` vs `>=`). **Wounds are not Modified stats** — compare `$character->Wounds` directly (`_04007`). For the gambled predicate, `DUEL_GAMBLED` is set in `actChooseGambleCard` before `PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD`, so it is live at discount time. Push a translated explanation into `$explanations` when the discount applies.
+
+### Dual Maneuvers + one card-level "-1 cost" clause
+
+`Card::getManeuverFromCombatCardDiscount` iterates **every** Maneuver on the Risk and **sums** their discounts. A printed card-level clause ("While … this card has -1 cost") must live on **exactly one** Maneuver — typically the first (`Maneuver_NNNNNa`). Putting the same `+= 1` on both `a` and `b` double-counts to −2.
+
+**WHY not put it on the Risk class instead:** combat-card pay only consults Maneuver (and Reaction) discount hooks via that Card loop — there is no separate Risk-class channel at pay time. Pattern E.2 Action discounts are a different path (`getActionFromHandDiscount`).
+
+**WHY not invent a third "discount-only" Maneuver:** the card already prints real Maneuvers; hang the shared clause on one of them (same as single-Maneuver cards `_01084` / `_03036` / `_03048`).
+
+Reference: `_04007` / `Maneuver_04007a` (discount) + `Maneuver_04007b` (calc only).
 
 ### Pattern E.2 — Action-only "-1 cost if your Leader is …" (no Maneuver printed)
 
@@ -62,7 +73,7 @@ public function getActionFromHandDiscount(Theah $theah, ?Character $performer, C
 
 **Gates:** `$action->Id == $this->Id` (sticky discount must not leak to other hand Actions); null-check `getLeaderByPlayerId` (Leader can be destroyed mid-game — `_01160` historically skipped this; new cards should not).
 
-**Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader-trait discounts on Action-only cards belong on the Action.
+**Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, wounds comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader-trait discounts on Action-only cards belong on the Action.
 
 References: `Action_03071`, `Action_01160`, `Action_01159`.
 

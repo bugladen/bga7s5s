@@ -344,7 +344,11 @@ References: `_03069` / `Maneuver_03069a`/`b`, `Technique_03013` (duel swap in ac
 
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
-When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` / `Maneuver_03070` (Pattern C.6 threat move / excess remove — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling).
+When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Negative deltas are fine (`$event->thrust -= 3`, `$event->parry -= 1` — same as `Maneuver_03009`'s −1 Thrust).
+
+**Two distinct pure-calc Maneuvers on one Risk** (even with the **same** trait prefix, e.g. two Duelist Maneuvers): still split `Maneuver_NNNNNa` / `Maneuver_NNNNNb` — do not merge into one class with a mode. Each gets its own Duelist/`DUEL_GAMBLED` gate + calc branch + `EventManeuverCanceled handler not needed` comment. If the card also prints a shared "-1 cost while …" clause, hang `getManeuverFromCombatCardDiscount` on **exactly one** of them (Pattern E dual-Maneuver footgun — `Card` sums).
+
+Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` / `Maneuver_03070` (Pattern C.6 threat move / excess remove — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling), `Maneuver_04007a`/`b` (dual Duelist pure-calc ± Riposte/Parry/Thrust + wounds discount on `a` only).
 
 ### Pure-resolve maneuvers (no calc branch)
 

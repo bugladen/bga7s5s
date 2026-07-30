@@ -30,6 +30,7 @@ class TraitNames
             "Battle Standard",
             "Berserker",
             "Betrayal",
+            "Bernoulli",
             "Bodyguard",
             "Brawl",
             "Bureaucracy",
