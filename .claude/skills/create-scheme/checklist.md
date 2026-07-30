@@ -36,3 +36,6 @@
 25. **"Then, move your \<Trait\> to a City location":** skip the resolve transition when no eligible character; two planning states; `CHOSEN_CARD`; `engage=false` unless Engage printed. Reference: `_04004`.
 26. **"Opposing" on destroy Reactions:** different controller **and** same location as your traited performer (not any enemy on the board). Reference: `Reaction_04004`.
 27. **"Move … to a location with a wounded enemy":** destinations = other City locs with opposing `Wounds > 0`; filter performers by legal dest count. Reference: `Action_04004`.
+28. **Pattern L (destroy controlled → claim → each discards):** destroy the **target** not the performer; unequip before `createCharacterDestroyedEvent`; claimability gates performers; ActionResolved **before** discard Transition; `"Each player"` multi-state includes acting player (not sans-initiating); hand-filter via `getGameDeckObject` in State `onEnteringState`; skip discard Transition if nobody has cards. Reference: `_04005`.
+29. **Back from first HD sub-state to performer chooser:** `"back" => HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH`, never bare `CHOOSE_PERFORMER` — DISPATCH re-queues `EventActionTriggered`. No Back on post-commit multi-discard. Reference: `State_highDramaPhase04005`.
+30. **Scaffold Traits / Initiative:** verify art + `TraitNames` (`Purge`, `Assassination`, …).

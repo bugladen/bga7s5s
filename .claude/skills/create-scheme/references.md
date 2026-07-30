@@ -65,3 +65,9 @@
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04004.php` | Planning state 1: Duelist pick (`duelistChosen`). |
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04004_2.php` | Planning state 2: City dest (`locationChosen` + `back` — no `""`). |
 | `modules/php/States/bas/State_highDramaPhase04004.php` | HD location pick for City Action. |
+| `modules/php/cards/bas/_04005.php` (Denounced, Disgraced) | **Trivial Docks Renown + Pattern L Red Hand City Action** (destroy controlled → claim → each player discards). Traits Villainous+Purge (`Purge` added to TraitNames). |
+| `modules/php/cards/bas/actions/Action_04005.php` | Red Hand gate; destroy **target** (not performer); unequip before destroy; claimability filter; ActionResolved before multi-discard Transition. |
+| `modules/php/States/bas/State_highDramaPhase04005.php` | HD destroy pick; `"back" => DISPATCH` (not bare CHOOSE_PERFORMER); named `"characterChosen"`. |
+| `modules/php/States/bas/State_highDramaPhase04005_2.php` | Concurrent multi-discard for **each player** (incl. acting); hand-filter via `getGameDeckObject`; not sans-initiating. |
+| `modules/php/cards/_7s5s/actions/Action_01095b.php` | Opponents-only multi-discard contrast (`MULTI_STATE_INITIATING_PLAYER` + sans-initiating). ActionResolved-before-Transition priority ordering. |
+| `modules/php/cards/_7s5s/actions/Action_01015.php` | Scheme destroy parallel — destroys the **performer** as cost (opposite of `_04005` target destroy). |

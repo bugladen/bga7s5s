@@ -24,3 +24,13 @@ if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_NNNNN_PLAYER1)
 ```
 
 Reference: `_01151` — first state is the owner's pick, second state (`"01151_2"`) is each opponent's pick, queued per-opponent in turn order with `HIGH_PRIORITY` so they fire in order.
+
+### Contrast: concurrent multi-player discard (Pattern L)
+
+| "Each opponent does X" (this pattern) | "Each player discards a card" (Pattern L / `_04005`) |
+|---|---|
+| Sequential `activeplayer` transitions, one per opponent | One `MULTIPLE_ACTIVE_PLAYER` state |
+| Skip self | **Include** acting player |
+| Turn-order queue with `HIGH_PRIORITY` | `setPlayersMultiactive` of everyone with a hand card |
+
+Do not stretch Pattern C into concurrent each-player discard — see **Pattern L** in [actions.md](actions.md).

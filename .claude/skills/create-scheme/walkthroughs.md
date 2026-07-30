@@ -181,3 +181,20 @@ Card text:
 7. **Studio bug hit:** `nextState("")` on state 2 → "More than one possible transition". Fix: `"locationChosen"`.
 
 Full implementation: `modules/php/cards/bas/_04004.php`, `actions/Action_04004.php`, `reactions/Reaction_04004.php`, `States/bas/State_planningPhaseResolveSchemes04004{,_2}.php`, `State_highDramaPhase04004.php`.
+
+## Walkthrough: implementing `_04005` (Denounced, Disgraced)
+
+Card text:
+
+> Add a Renown to [City Docks].
+> **Red Hand City Action:** Destroy another character you control at your performer's location • Claim this location. Each player discards a card.
+
+1. **Constructor.** Vodacce, Init 35 / Panache 0 (match art). Traits Villainous + Purge — add `Purge` to `TraitNames` if missing. Register `IHasActions` + `Action_04005`.
+2. **Resolve.** Trivial Docks Renown. No planning sub-state.
+3. **Action (Pattern L).** `SchemeCityAction` + `IAbilityThatTargetsCharacters`. Red Hand trait gate (not Sorcerer). `getPerformersForAction`: Red Hand + ≥1 other controlled character at location + claimable location.
+4. **HD state 1 (`404005`).** Destroy-target pick. Unequip + `createCharacterDestroyedEvent` on **target** (not performer — contrast `Action_01015`). Claim (recheck; notify if blocked). Queue `createActionResolvedEvent` then Transition `"04005_2"` only if someone has a hand card.
+5. **Back on state 1.** `"back" => HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH` (re-queues Triggered). Do **not** use bare `CHOOSE_PERFORMER` — second performer pick would silently end the action.
+6. **HD state 2 (`4040052`, MULTIPLE_ACTIVE_PLAYER).** Each player with a hand card discards one. Custom `onEnteringState` with `getGameDeckObject` hand filter — include acting player; not sans-initiating. `getCurrentPlayerId` on discard. JS: hand single-select + EventHandlers Confirm enable (mirror `01095`).
+7. **Pre-commit.** `createActionResolvedEvent()` literal; no `ISorcererAbility`. Named transitions (`characterChosen` / `back` / `zombie` / `multipleOk`).
+
+Full implementation: `modules/php/cards/bas/_04005.php`, `actions/Action_04005.php`, `States/bas/State_highDramaPhase04005{,_2}.php`.

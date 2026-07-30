@@ -203,6 +203,18 @@
                 }
             },
 
+            'highDramaPhase04005': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04005_2': () => {
+                this.factionHand.setSelectionMode('none');
+            },
+
             'highDramaPhase04002': () => {
                 if (this.isCurrentPlayerActive())
                 {

@@ -139,6 +139,7 @@ class TraitNames
             "Protégé",
             "Provocation",
             "Punctual",
+            "Purge",
             "Ranged",
             "Raven",
             "Recuperation",

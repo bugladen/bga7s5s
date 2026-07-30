@@ -17,23 +17,29 @@
 - **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order. Scaffolds may invent traits not yet in the JSON (`Assassination` on `_04004`).
 - **Initiative from card art** — sun/hat icons; do not trust scaffold copy-paste values.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
-- **"Strega" / "Mercenary" / "Diplomat" / "Duelist" / "Hero" / "Villain" / "Scoundrel" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait(...)` on the chosen performer (or, for no-pick Reactions, a controlled traited character at the trigger location). They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
+- **"Strega" / "Mercenary" / "Diplomat" / "Duelist" / "Hero" / "Villain" / "Scoundrel" / "Red Hand" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait(...)` on the chosen performer (or, for no-pick Reactions, a controlled traited character at the trigger location). They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both).
 - **Action field persistence:** mutating `$MoveMode` / `$pendingMusterId` / similar on an Action requires `$game->updateCardObjectInDb($owner)`. `$owner->IsUpdated = true` alone is not flushed before `stRunEvents` rebuilds from DB.
 - **`getEquipDiscount` cost increase:** return `$discount -= 1` (negative discount). On schemes, also gate `Location == LOCATION_PLAYER_HOME` and **`cardInCity($performer)`** — Home shares one location string across players.
 - **Renown-vs-attachment pick sentinel:** use `actFromCardWithId` id `0` for "Move Renown". Card ids are never 0, so no collision with attachment picks.
 - **"Available attachment"** at a location = `$theah->getAvailableAttachmentsAtLocation($location)` (unattached `Attachment` at that location).
 - **End-of-Dusk effects on mustered characters:** put the handler on the **Character** (condition), not the scheme Action — chosen schemes are already in the locker before `EventDuskPhaseEnd`.
 - **Windows line endings:** PHP files in this repo use single CRLF (`\r\n`). Agent-written files sometimes land as `\r\r\n` (double carriage return), which displays as a blank line after every line (and doubles reported line counts). After writing scheme/action PHP, verify `doubleCR=0` with a byte scan. PowerShell string `-replace "`r`r`n"` is unreliable on some hosts — prefer a byte-list walk that collapses `13,13,10` → `13,10`. Match existing files — do not convert LF-only.
-- **GameState transitions with Back / zombie:** never pair `""` with `"back"` / `"zombie"` / any second key. Use named success transitions (`"locationChosen"`, `"duelistChosen"`, `"cardDiscarded"`, `"done"`, …). Studio error if you don't: "More than one possible transition at this state" (`_03042`, `_04004` planning state 2).
+- **GameState transitions with Back / zombie:** never pair `""` with `"back"` / `"zombie"` / any second key. Use named success transitions (`"locationChosen"`, `"duelistChosen"`, `"cardDiscarded"`, `"done"`, `"characterChosen"`, …). Studio error if you don't: "More than one possible transition at this state" (`_03042`, `_04004` planning state 2).
+- **Back from first HD sub-state to performer chooser:** `"back" => HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH`, not bare `CHOOSE_PERFORMER`. DISPATCH re-queues `EventActionTriggered`; bare CHOOSE_PERFORMER breaks re-entry (`_04005`). See Pattern L in actions.md.
 - **Planning character→location:** stash the character in `Game::CHOSEN_CARD`, not `CHOSEN_PERFORMER` (HD City Action owns the latter). Skip the resolve transition when the contingent "Then" has no legal character (`_04004`).
 - **Card-specific challenge sub-transitions** off `HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE` use the card number string (`"03042"`), not a reusable semantic name. Same discipline as HD_EVENTS / resolve maps.
 - **Challenge-type JS int:** if Refuse/Intervene UI needs the type, add the matching constant in `seventhseacityoffivesails.js`. Types with no client gate can omit it (server-only), but discard-to-refuse needs the client disable.
 - **Two-location resolve JS:** faf/tac/_7s5s triple is not enough — `PlayerActions.js` `actionMap` must map `planningPhaseResolveSchemes_<NNNNN>` → `'actCityLocationsForReknownSelected'`. Without it Confirm falls through to `actFromCardWithLocations` and breaks.
-- **"Spend a Renown"** without a named location is always player score (`createPlayerLosesReknownEvent`), never a location token.- **"Unequipped"** = `count($character->Attachments) == 0` (not a trait). Re-check on trigger; JS can be ignored.
+- **"Spend a Renown"** without a named location is always player score (`createPlayerLosesReknownEvent`), never a location token.
+- **"Unequipped"** = `count($character->Attachments) == 0` (not a trait). Re-check on trigger; JS can be ignored.
 - **Ability pressure must `createActionResolvedEvent` on failure** (and on success with no legal payoff). Hub auto-resolve is only for `highDramaBasicAction`. Mirror `Action_03040` / `Action_03cd20` / `Action_03054`, not the incomplete failure path on `Action_01105`.
 - **Wound-then-pressure:** always `CHOSEN_LOCATION` + `CHOSEN_PERFORMER = 0` (+ `CHOSEN_CARD` for UI) before queuing the performer wound and `"pressureLocation"`. See Pattern I.
 - **Wound + move Home on the same target:** skip the Home move when `$Wounds + 1 >= ModifiedResolve` so destroy stays at the city (no locker→Home yank).
 - **Printed location names drift:** cross-check JPG / Eddie corrections before shipping Renown adds (Forum vs Bazaar is a common swap).
+- **"Each player discards"** ≠ **"each opponent discards"**. Each player → include acting player; concurrent `MULTIPLE_ACTIVE_PLAYER` (Pattern L / `_04005`). Each opponent → `stMultiPlayerInitSansInitiatingPlayer` or Pattern C sequential (`01095` / `_01151`).
+- **Direct `createCharacterDestroyedEvent`:** always `$character->unEquipAllAttachments($theah)` first — destroy recreates the card and skips auto-unequip (`Action_01018`, `Action_04005`).
+- **State classes reading hands:** use `$game->getGameDeckObject()`, not `$game->cards` (private on Game).
+- **Traits scaffolds invent:** `_04004` Assassination, `_04005` Purge — always check `TraitNames::$TraitsJson` before shipping.
 
 ## Cross-Cutting Helpers
 
@@ -66,6 +72,7 @@ Event factories you'll likely need:
 - `createCardRemovedFromPlayerDiscardPileEvent($playerId, $cardId)` (notification-only)
 - `createCardAddedToHandEvent($playerId, $cardId)` (does the actual move)
 - `createLocationClaimedEvent($playerId, ?int $performerId, $location)`
+- `createCharacterDestroyedEvent($playerId, $characterId, $reason)` — always unequip attachments on the target first when calling this directly
 - `createPressureOccuringEvent($playerId, $performerId, $location, $pressureTypes)` — then transition `"pressureLocation"`; listen for `EventLocationPressureResult` with matching `$abilityId`
 - `createCardMovingEvent($playerId, $cardId, $from, $to, $engage, $sourceId, $abilityId)` — Home moves use `Game::LOCATION_PLAYER_HOME` and usually `$engage = false`
 - `createTransitionEvent($playerId, $sourceId, string $internalId)` — for moving into a sub-state.
