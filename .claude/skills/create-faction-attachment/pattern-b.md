@@ -135,3 +135,67 @@ if ($event instanceof EventHighDramaPhaseEnd && $this->isAttached())
 - Trigger: `EventHighDramaPhaseEnd` (not `EventDuskEndOfDay` / phase-start). Mirror `_01025_Burden`.
 - Destroy chain: unequip then discard (`_01153` / `_01050`). Unequip clears the while-equipped condition.
 - Use `$this->ControllerId` (equipper) for both events — correct even when attached to an opponent.
+
+## Pattern B''' — Duel-scoped conditional stat / gamble reveal
+
+When printed text is **passive** (no Forced / Action / Reaction / Technique keyword) and scoped to a duel condition — e.g. Assassin's Garb `_04006`:
+
+> During a duel, while their adversary is wounded, the equipped character gains +1[Finesse] and reveals an additional card when they gamble.
+
+Implement on the **attachment card class** only. Do **not** invent an Action/Reaction/Technique file.
+
+### Do not use constructor `*Modifier`
+
+`FinesseModifier` / `CombatModifier` / etc. are **always-on while equipped**. Conditional "during a duel / while X" bonuses must be applied and cleared dynamically.
+
+### Stat half — Benci-style applied flag
+
+Mirror character `_04001` (Benci) / Elena `_03004`: keep a `public bool $…BonusApplied` (or int delta like Elena's `$FinesseBonus`) on the attachment. Apply/clear via `createCharacterFinesseModifedEvent` / `createCharacterCombatModifiedEvent` (note factory typo `Modifed`).
+
+**Recompute when the condition can change:**
+
+| Event | Why |
+|---|---|
+| `EventDuelStarted` | Challenge wounds may already be on the adversary before the duel; IN_DUEL is set in `stDuelStarted` before this event queues |
+| `EventCharacterWounded` / `EventCharacterHealed` | Adversary wound state flips mid-duel |
+| `EventChallengerSwapped` / `EventDefenderSwapped` | Equipped character left the duel, or adversary identity changed |
+| `EventAttachmentEquipped` | Mid-duel equip edge case |
+| `EventDuelEnd` | Clear if still applied |
+| `EventAttachmentUnequipped` | Clear if still applied |
+
+**Gate for "should have bonus":** `isAttached()` + `Game::IN_DUEL` + equipped character is challenger or defender (`getDuelChallengerId` / `getDuelDefenderId`) + condition (e.g. adversary `Wounds > 0` via `getDuelOpponentId`).
+
+**Stale wounds (WHY):** `EventCharacterWounded` / `EventCharacterHealed` run card `handleEvent` without guaranteed order. If the wounded character has not handled yet, `$character->Wounds` is stale — apply the event delta when `! $event->characterHandled` (same helper shape as Benci).
+
+**Unequip AttachedToId footgun (WHY):** `EventAttachmentUnequipped` does **not** set `runEventHubAfterCards`, so EventHub runs **first** and zeroes `$this->AttachedToId` before the attachment's `handleEvent`. Undo the bonus using `$event->characterId`, not `$this->AttachedToId`. Skip restore/undo when `characterIsInDiscardOrLocker`.
+
+**No Game condition / JS by default:** Benci does not stamp a `Game::*_CONDITION` for the combat bonus — the `*Modified` event updates the stat UI. Add a Soline/Harpoon condition only if Eddie wants a tooltip string.
+
+**Not challenge-phase:** "During a duel" starts at `EventDuelStarted`. Do not hook only `EventGenerateChallengeThreat` — that misses mid-duel Finesse uses (gamble cap via `ModifiedFinesse - gamblesCount`, comparisons, UI).
+
+### Gamble +1 half — `getNumberOfGambleCardsToReveal`
+
+Base reveal count is **2** + sum of every card's `getNumberOfGambleCardsToReveal` (`Theah::getNumberOfGambleCardsToReveal`). Override on the attachment:
+
+```php
+public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, array &$explanations): int
+{
+    $count = parent::getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
+
+    if ($this->isAttached()
+        && $actor->Id == $this->AttachedToId
+        && /* same duel condition, e.g. adversary wounded */)
+    {
+        $count += 1;
+        $explanations[] = sprintf($theah->game->translate("%s: +1 …"), $this->getInjectCode());
+    }
+
+    return $count;
+}
+```
+
+No applied-flag needed — evaluated at gamble time. Unconditional "when equipped character gambles" exemplars: Gallegos Blade `_01101`, Devil Jonah `_03cd05`, Ivy `_02042`, Sarafina `_01010`.
+
+**Both halves can stack on one card** (`_04006`): +1 Finesse (more gambles allowed) **and** +1 card revealed per gamble — they are separate systems; implementing only one is wrong when both are printed.
+
+References: `bas/_04006.php` (canonical attachment B'''), `_04001` (flag + wound delta — character host), `_01101` (always-on gamble +1), `_03004` (duel Finesse recomputed from dueling line).

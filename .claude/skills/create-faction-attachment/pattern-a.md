@@ -30,9 +30,24 @@ public function canAttachTo(Character $character): bool
 }
 ```
 
-References: `_01073` (Duelist), `_01075` (non-Diplomat — note the inversion), `_03007` (Strega).
+References: `_01073` (Duelist), `_01075` (non-Diplomat — note the inversion), `_03007` (Strega), `_04006` (Duelist **or** Spy **or** Assassin).
 
 **Use `\Bga\GameFramework\UserException`, not `\BgaUserException`.** Older code uses `BgaUserException`; new code should use the framework path. (Memory feedback.) Older files (`_01050`, `_01073`, `_01075`, `_02006`, …) still throw `\BgaUserException` for historical reasons — don't follow that example, follow memory.
+
+### Multi-trait OR ("Duelist, Spy, or Assassin")
+
+When printed text lists several allowed traits with **or**, any one matching trait is enough. Share one helper between `eventCheck` and `canAttachTo` so the lists cannot drift:
+
+```php
+private function characterHasEquipTrait(Character $character): bool
+{
+    return $character->hasTrait("Duelist")
+        || $character->hasTrait("Spy")
+        || $character->hasTrait("Assassin");
+}
+```
+
+Reference: `_04006` (Assassin's Garb).
 
 ### Compound restriction ("must have a Weapon")
 

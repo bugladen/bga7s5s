@@ -12,6 +12,13 @@
     - Shackles-style **"cannot move"** (all destinations): `_03066` / `SHACKLES_CONDITION` — Harpoon-shaped `EventCardMoving` gate + `unstoppable`; **no** swap gate unless text says so; clear on unequip (not DuelEnd).
     - Activate-time checks only on abilities that always do the blocked thing; move-only → skip swap techniques.
 4c. **Forced destroy at end of High Drama:** `EventHighDramaPhaseEnd` + `isAttached()` → unequip → discard (`asEffect=true`). Mirror `_01025_Burden` trigger + `_01153` destroy. Unequip clears B'' conditions.
+4d. For **duel-scoped conditional** bonuses (Pattern B''' — `_04006`):
+    - Do **not** set constructor `*Modifier` for conditional "during a duel / while …" text.
+    - Stat half: applied flag + `createCharacter*ModifiedEvent`; recompute on DuelStarted / Wounded / Healed / Swapped / Equipped; clear on DuelEnd / Unequipped.
+    - Wound/heal: apply `characterHandled` delta (Benci) so stale `Wounds` does not miss the flip.
+    - Unequip undo uses `$event->characterId` — EventHub clears `AttachedToId` before card `handleEvent`.
+    - Gamble +1: `getNumberOfGambleCardsToReveal` with the **same** condition gate (no flag). If text prints both +Stat and +reveal, implement **both** — Finesse also caps gambles-left separately from reveal count.
+    - No Action/Reaction/Technique file unless a keyword is also printed. No Game condition/JS unless a tooltip is requested.
 5. **Parse keyword(s) literally** before picking interfaces:
    - "Sorcerer …" → `implements ISorcererAbility` + emit Start/Played events in the Action/Reaction class.
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` on the equipped character or chosen performer). NOT a Sorcerer ability.

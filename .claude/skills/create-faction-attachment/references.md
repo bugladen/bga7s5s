@@ -8,6 +8,8 @@
 | `modules/php/cards/Attachment.php` | Grand-parent base. `AttachedToId`, `isAttached`, `attachedTo`, `canAttachTo`, `getRequiredAttachTargetId`. |
 | `modules/php/cards/_7s5s/_01021.php` (Legion's Caress) | **`CanEquipToOpponents` + equip restriction** (non-Leader + City). Forced wound on en garde. No Finesse/performer compare — simplest opponent-equip exemplar. |
 | `modules/php/cards/_7s5s/_01073.php` + `actions/Action_01073.php` (Cavalier Hat) | **Equip restriction (Duelist) + City Action.** Cleanest dual-gate template. |
+| `modules/php/cards/bas/_04006.php` (Assassin's Garb) | **Multi-trait OR equip (A) + Pattern B'''.** Duelist/Spy/Assassin gate; during duel while adversary wounded → +1 Finesse (Benci flag + `createCharacterFinesseModifedEvent`) and +1 gamble reveal (`getNumberOfGambleCardsToReveal`). No keyword ability class. Unequip clears via `$event->characterId`. |
+| `modules/php/cards/_7s5s/_01101.php` (Gallegos Blade) | **Always-on gamble +1** while equipped character is the actor — simplest `getNumberOfGambleCardsToReveal` on a FactionAttachment. Pair with `_04006` when the +1 is conditional. |
 | `modules/php/cards/_7s5s/_01075.php` + `actions/Action_01075.php` (Tabard of the Fallen Musketeer) | **Equip restriction (non-Diplomat — inversion case) + passive Musketeer-trait grant + City Action.** |
 | `modules/php/cards/_7s5s/_01050.php` + `techniques/Technique_01050.php` (Unsavory Salve) | **Equip restriction (must have Weapon) + auto-destroy when prerequisite is lost + Technique.** |
 | `modules/php/cards/_7s5s/_01022.php` + `reactions/Reaction_01022.php` | **AttachmentReaction with engage cost.** Simple three-button reaction (Wound Challenger / Wound Challenged / Pass). |

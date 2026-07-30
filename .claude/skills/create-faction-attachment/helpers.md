@@ -19,10 +19,14 @@
 - `$card->addCondition($condition)` / `hasCondition($condition)` / `removeCondition($condition)` — lasting stamped state (Harpoon remainder-of-duel, Lodestone/Shackles while-equipped, Soline, Indomitable Will). Define the string on `Game` as `final const`. JS constant must match exactly.
 - `$game->updateCardObjectInDb($card)` — flush condition / property stamps when the next event rebuild must see them (do not rely on `IsUpdated` alone for mid-resolve stamps).
 - `$game->characterIsInDiscardOrLocker(Character $character): bool` — skip restoring duel-end conditions on already-removed characters.
-- `$theah->getDuelRoundActor()` / `getDuelRoundOpponent()` — current duel participants for Gambling / remainder-of-duel effects.
+- `$theah->getDuelRoundActor()` / `getDuelRoundOpponent()` — current duel **round** actor/opponent for Gambling Techniques / remainder-of-duel effects.
+- `$theah->getDuelChallengerId()` / `getDuelDefenderId()` / `getDuelOpponentId($participantId)` — duel **roster** ids for Pattern B''' "is this character in the duel / who is their adversary" gates (`_04006`). Prefer these over round-actor helpers when the bonus is participant-scoped, not round-actor-scoped.
+- `$theah->getNumberOfGambleCardsToReveal(Character $actor): array` — returns `[$count, $explanationsHtml]`; base count is **2** plus every card's `getNumberOfGambleCardsToReveal` override. Attachments that add reveals implement the per-card override (Gallegos `_01101`, Assassin's Garb `_04006`).
 - `$theah->swapParticipantsInDuel($duelId, $round, $oldId, $newId)` — mid-duel participant replace. Harpoon-style "cannot be swapped" must throw here *before* DB mutate.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${attachment_inject_code}` placeholder).
 - **Attachment `ControllerId` after equip:** `EventHub` sets it to the **equipping player**. For `CanEquipToOpponents`, that is *not* the equipped character's controller — use `$attachedTo->ControllerId` for the victim.
+
+**`EventAttachmentUnequipped` + `AttachedToId`:** EventHub clears `$attachment->AttachedToId = 0` **before** card `handleEvent` (event does not set `runEventHubAfterCards`). Any unequip cleanup that needs the former host must use `$event->characterId` (Pattern B trait remove, B'' condition clear, B''' bonus undo — `_04006`).
 
 **`EventCardMoving` opponent detection:** use `$event->sourceId` → source card `ControllerId`, **not** `$event->initiatingPlayerId`. WHY: `Maneuver_01033` sets initiatingPlayerId to the victim. Own abilities pass the owner's card as `sourceId` and must still be allowed (Lodestone City Action).
 
