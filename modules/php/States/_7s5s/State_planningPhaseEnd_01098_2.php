@@ -41,7 +41,7 @@ class State_planningPhaseEnd_01098_2 extends GameState
 
     public function onEnteringState(int $activePlayerId) 
     {
-        $this->game->stMultiPlayerInit();
+        $this->game->stMultiPlayerInitCardRevealAcknowledge();
     }
     
     #[PossibleAction]

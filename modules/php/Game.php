@@ -33,6 +33,7 @@ class Game extends \Bga\GameFramework\Table
 
     //User preferences
     final const USER_PREFERENCES_CARD_HOVER_TYPE = 100;
+    final const USER_PREFERENCES_AUTO_ACKNOWLEDGE_CARD_REVEALS = 110;
 
     //Game options
     final const OPTIONS_CITY_DECK = 100;
