@@ -19,7 +19,7 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Discard cards to Engage or Wound an Opposing Character");
+        $this->Name = clienttranslate("Discard cards to Engage or Wound an Opposing Mercenary");
         $this->RequiresPerformerSelected = true;
     }
 
