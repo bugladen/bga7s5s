@@ -255,7 +255,29 @@ abstract class Character extends Card implements IHasTechniques
         if ($index !== false) {
             unset($this->Attachments[$index]);
 
-            $this->ModifiedResolve -= $attachment->ResolveModifier;
+            // WHY: Locked stats overwrite ModifiedX (see setLockedValues) instead of
+            // applying a delta. Subtracting ResolveModifier/etc. cannot restore the
+            // pre-lock value — Corpse Speak (_01154) has InfluenceModifier=0 and
+            // InfluenceLockedValue=0, so unequip left Influence stuck at 0.
+            // Rebuild any stat the removed attachment was locking from base +
+            // remaining modifiers, then re-apply locks from attachments that remain.
+            // Same rationale as Sigurd's recalculateCappedCombat (_01190).
+            if ($attachment->ResolveLocked)
+            {
+                $this->ModifiedResolve = $this->Resolve;
+                foreach ($this->Attachments as $attachmentId)
+                {
+                    $att = $theah->getAttachmentById($attachmentId);
+                    if ($att)
+                    {
+                        $this->ModifiedResolve += $att->ResolveModifier;
+                    }
+                }
+            }
+            else
+            {
+                $this->ModifiedResolve -= $attachment->ResolveModifier;
+            }
 
             if ($this->DashedCombat) $this->ModifiedCombat = 0;
             if ($this->DashedFinesse) $this->ModifiedFinesse = 0;
@@ -263,15 +285,60 @@ abstract class Character extends Card implements IHasTechniques
 
             if (!$this->DashedCombat)
             {
-                $this->ModifiedCombat -= $attachment->CombatModifier;
+                if ($attachment->CombatLocked)
+                {
+                    $this->ModifiedCombat = $this->Combat;
+                    foreach ($this->Attachments as $attachmentId)
+                    {
+                        $att = $theah->getAttachmentById($attachmentId);
+                        if ($att)
+                        {
+                            $this->ModifiedCombat += $att->CombatModifier;
+                        }
+                    }
+                }
+                else
+                {
+                    $this->ModifiedCombat -= $attachment->CombatModifier;
+                }
             }
             if (!$this->DashedFinesse)
             {
-                $this->ModifiedFinesse -= $attachment->FinesseModifier;
+                if ($attachment->FinesseLocked)
+                {
+                    $this->ModifiedFinesse = $this->Finesse;
+                    foreach ($this->Attachments as $attachmentId)
+                    {
+                        $att = $theah->getAttachmentById($attachmentId);
+                        if ($att)
+                        {
+                            $this->ModifiedFinesse += $att->FinesseModifier;
+                        }
+                    }
+                }
+                else
+                {
+                    $this->ModifiedFinesse -= $attachment->FinesseModifier;
+                }
             }
             if (!$this->DashedInfluence)
             {
-                $this->ModifiedInfluence -= $attachment->InfluenceModifier;
+                if ($attachment->InfluenceLocked)
+                {
+                    $this->ModifiedInfluence = $this->Influence;
+                    foreach ($this->Attachments as $attachmentId)
+                    {
+                        $att = $theah->getAttachmentById($attachmentId);
+                        if ($att)
+                        {
+                            $this->ModifiedInfluence += $att->InfluenceModifier;
+                        }
+                    }
+                }
+                else
+                {
+                    $this->ModifiedInfluence -= $attachment->InfluenceModifier;
+                }
             }
 
             $this->setLockedValues($theah);
