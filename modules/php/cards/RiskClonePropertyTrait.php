@@ -5,7 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 /**
- * Shared by temporary Risk shells (01106 / 01124 / 01154_RiskClone).
+ * Shared by temporary Risk shells (01106 / 01124 / 01154 / 04cd01_RiskClone).
  * Requires the using class to expose public int $ClonedCardId.
  */
 trait RiskClonePropertyTrait

@@ -284,7 +284,9 @@ class Action_04cd01b extends AttachmentAction implements IAbilityThatTargetsCard
             }
             else
             {
-                $event = EventFactory::createEnteringPayStateEvent($controllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
+                // WHY: pass the clone's Id, not $riskCard->Id. Discount reactions key DiscountedCardId
+                // off this event and match it to $action->OwnerId (the clone). Same fix as Action_01106/01124/01154.
+                $event = EventFactory::createEnteringPayStateEvent($controllerId, $card->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
                 $transition = EventFactory::createTransitionEvent($controllerId, $attachment->Id, "inHandActionPay", $this->Id);
