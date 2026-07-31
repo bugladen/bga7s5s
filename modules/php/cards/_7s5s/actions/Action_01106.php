@@ -253,7 +253,9 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
             }
             else
             {
-                $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $riskCard->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
+                // WHY: pass the clone's Id, not $riskCard->Id. Discount reactions key DiscountedCardId
+                // off this event and match it to $action->OwnerId (the clone).
+                $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $card->Id, Game::PAY_STATE_IN_HAND_ACTION, $newActionId);
                 $game->theah->queueEvent($event);
 
                 $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "inHandActionPay", $this->Id);
