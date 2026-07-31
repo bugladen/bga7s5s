@@ -145,6 +145,21 @@ class DB
         $this->executeSql($sql);
     }
 
+    // WHY: Tight sourceId match (trailing ;) so card 1 does not match card 12.
+    // Used by Night of Drinking to detect Risk Reaction plays on EventRiskPlayed
+    // without also re-offering cancel on Risk Action plays (which already fired
+    // EventActionActivated).
+    public function areRiskReactionTriggeredEventsQueuedForSource(int $sourceId): bool
+    {
+        if ($sourceId <= 0)
+        {
+            return false;
+        }
+        $sql = "SELECT COUNT(*) FROM events
+                WHERE (event_serialized LIKE '%EventRiskReactionTriggered%' AND event_serialized LIKE '%sourceId\";i:{$sourceId};%')";
+        return $this->getUniqueValue($sql) > 0;
+    }
+
     public function deleteRiskPlayedEvents(int $riskId)
     {
         if ($riskId <= 0)

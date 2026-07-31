@@ -1581,6 +1581,11 @@ class Theah
         $this->db->deleteRiskReactionTriggeredEvents($reactionId);
     }
 
+    public function areRiskReactionTriggeredEventsQueuedForSource(int $sourceId): bool
+    {
+        return $this->db->areRiskReactionTriggeredEventsQueuedForSource($sourceId);
+    }
+
     public function deleteRiskPlayedEvents(int $riskId)
     {
         $this->db->deleteRiskPlayedEvents($riskId);
