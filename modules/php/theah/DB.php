@@ -279,7 +279,8 @@ class DB
         r.ending_challenger_threat, r.ending_defender_threat, 
         r.challenger_threat_is_lethal, r.defender_threat_is_lethal,
         COALESCE(r.combat_riposte, 0) as combat_riposte, COALESCE(r.combat_parry, 0) as combat_parry, COALESCE(r.combat_thrust, 0) as combat_thrust,
-        COALESCE(r.maneuver_riposte, 0) as maneuver_riposte, COALESCE(r.maneuver_parry, 0) as maneuver_parry, COALESCE(r.maneuver_thrust, 0) as maneuver_thrust
+        COALESCE(r.maneuver_riposte, 0) as maneuver_riposte, COALESCE(r.maneuver_parry, 0) as maneuver_parry, COALESCE(r.maneuver_thrust, 0) as maneuver_thrust,
+        COALESCE(r.technique_riposte, 0) as technique_riposte, COALESCE(r.technique_parry, 0) as technique_parry, COALESCE(r.technique_thrust, 0) as technique_thrust
         FROM duel_round r JOIN duel d ON r.duel_id = d.duel_id WHERE r.duel_id = $duelId AND r.round = $round";
 
         $result = $this->getObjectList($sql)[0];
@@ -290,16 +291,19 @@ class DB
         $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
         $wounds = 0;
 
-        // For maneuvers, start from scratch with starting threats and sum combat + maneuver before applying
+        // For maneuvers, start from scratch with starting threats and sum all R/P/T before applying
         if ($mode == 'maneuver')
         {
             $endingChallengerThreat = $result['starting_challenger_threat'];
             $endingDefenderThreat = $result['starting_defender_threat'];
             
-            // Sum combat + maneuver (event params) stats
-            $totalRiposte = (int)$result['combat_riposte'] + $eventRiposte;
-            $totalParry = (int)$result['combat_parry'] + $eventParry;
-            $totalThrust = (int)$result['combat_thrust'] + $eventThrust;
+            // WHY: Include stored maneuver_* + technique_* so a second maneuver calc
+            // (e.g. Technique_02043a clone, Katain) stacks instead of overwriting ending
+            // threats as combat + this event only. Event values are the new contribution
+            // and are added into maneuver_* by the UPDATE below.
+            $totalRiposte = (int)$result['combat_riposte'] + (int)$result['maneuver_riposte'] + (int)$result['technique_riposte'] + $eventRiposte;
+            $totalParry = (int)$result['combat_parry'] + (int)$result['maneuver_parry'] + (int)$result['technique_parry'] + $eventParry;
+            $totalThrust = (int)$result['combat_thrust'] + (int)$result['maneuver_thrust'] + (int)$result['technique_thrust'] + $eventThrust;
 
             if ($actorId == $challengerId)
             {
@@ -387,10 +391,12 @@ class DB
             $endingChallengerThreat = $result['starting_challenger_threat'];
             $endingDefenderThreat = $result['starting_defender_threat'];
             
-            // Sum all stats: combat + maneuver + technique (event params)
-            $totalRiposte = (int)$result['combat_riposte'] + (int)$result['maneuver_riposte'] + $eventRiposte;
-            $totalParry = (int)$result['combat_parry'] + (int)$result['maneuver_parry'] + $eventParry;
-            $totalThrust = (int)$result['combat_thrust'] + (int)$result['maneuver_thrust'] + $eventThrust;
+            // WHY: Include stored technique_* so a second technique calc in the same
+            // round stacks. Event values are the new contribution and are added into
+            // technique_* by the UPDATE below.
+            $totalRiposte = (int)$result['combat_riposte'] + (int)$result['maneuver_riposte'] + (int)$result['technique_riposte'] + $eventRiposte;
+            $totalParry = (int)$result['combat_parry'] + (int)$result['maneuver_parry'] + (int)$result['technique_parry'] + $eventParry;
+            $totalThrust = (int)$result['combat_thrust'] + (int)$result['maneuver_thrust'] + (int)$result['technique_thrust'] + $eventThrust;
 
             if ($actorId == $challengerId)
             {

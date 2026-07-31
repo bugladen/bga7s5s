@@ -6,7 +6,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
@@ -20,9 +19,6 @@ class Technique_02043a extends Technique
 {
     public bool $maneuverPerformed = false;
     public string $lastManeuverId = '';
-    public int $copiedRiposte = 0;
-    public int $copiedParry = 0;
-    public int $copiedThrust = 0;
     public bool $pendingLockerSend = false;
     public string $lockerCombatCardId = '';
     public string $clonedManeuverId = '';
@@ -98,15 +94,6 @@ class Technique_02043a extends Technique
             }
 
             $game = $event->theah->game;
-
-            // Read the maneuver's combat values from the DB before re-firing resolve
-            $duelId = $game->globals->get(Game::DUEL_ID);
-            $round = $game->globals->get(Game::DUEL_ROUND);
-            $sql = "SELECT COALESCE(maneuver_riposte, 0) as maneuver_riposte, COALESCE(maneuver_parry, 0) as maneuver_parry, COALESCE(maneuver_thrust, 0) as maneuver_thrust FROM duel_round WHERE duel_id = $duelId AND round = $round";
-            $result = $game->getObjectFromDB($sql);
-            $this->copiedRiposte = (int)$result['maneuver_riposte'];
-            $this->copiedParry = (int)$result['maneuver_parry'];
-            $this->copiedThrust = (int)$result['maneuver_thrust'];
             $owner->IsUpdated = true;
 
             // WHY: Create a temporary clone of the maneuver on this character rather
@@ -116,6 +103,13 @@ class Technique_02043a extends Technique
             // Maneuver_02039), and because it's registered on this character via
             // addManeuver, it receives EventDuelEndOfRound through normal Card dispatch
             // and fires its delayed effect independently of the original.
+            //
+            // WHY NOT also mirror R/P/T through EventDuelCalculateTechniqueValues:
+            // The clone's EventDuelCalculateManeuverValues is the sole combat-value
+            // path for the copy. Dual-pathing (technique channel + clone calc) made
+            // the Technique column show a confusing duplicate thrust while the last
+            // maneuver recalc (pre-accumulation fix) wiped ending threat back to a
+            // single application. Delayed/non-RPT effects still come from the clone.
             $combatCards = $event->theah->getCombatCardsForCurrentRound();
             $originalManeuver = null;
             foreach ($combatCards as $combatCard)
@@ -165,9 +159,6 @@ class Technique_02043a extends Technique
 
         if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
         {
-            $this->copiedRiposte = 0;
-            $this->copiedParry = 0;
-            $this->copiedThrust = 0;
             $this->pendingLockerSend = false;
             $this->lockerCombatCardId = '';
             $this->removeClonedManeuver($event->theah);
@@ -189,23 +180,6 @@ class Technique_02043a extends Technique
             }
         }
 
-        // Add the copied maneuver values through the technique channel
-        if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
-        {
-            $event->riposte += $this->copiedRiposte;
-            $event->parry += $this->copiedParry;
-            $event->thrust += $this->copiedThrust;
-
-            if ($this->copiedRiposte > 0 || $this->copiedParry > 0 || $this->copiedThrust > 0)
-            {
-                $owner = $this->getOwningCharacter($event->theah);
-                $event->explanations[] = sprintf(
-                    $event->theah->game->translate('Technique [%s]: Copied maneuver effects.'),
-                    $event->theah->game->translate($this->Name)
-                );
-            }
-        }
-
         if ($event instanceof EventDuelEnd && $this->pendingLockerSend)
         {
             $this->pendingLockerSend = false;
@@ -222,9 +196,6 @@ class Technique_02043a extends Technique
             $this->removeClonedManeuver($event->theah);
             $this->maneuverPerformed = false;
             $this->lastManeuverId = '';
-            $this->copiedRiposte = 0;
-            $this->copiedParry = 0;
-            $this->copiedThrust = 0;
             $this->pendingLockerSend = false;
             $this->lockerCombatCardId = '';
 
