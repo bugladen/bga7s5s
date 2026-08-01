@@ -4,7 +4,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01012;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01025;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01030;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01068;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01076;
@@ -12,7 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01085;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01132;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01133;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01134;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01161;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01172;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
@@ -187,9 +185,12 @@ class Reaction_01008 extends CardReaction
     //1-wound cost (lines 187-189) for no effect. Keep this in sync with the instanceof branches in performReaction.
     private function isCopyable(?ICardAbility $ability): bool
     {
+        // WHY: Action_01025 (Fate's Burden) and Action_01161 (Boon) are excluded —
+        // card text says "This ability cannot be copied." performReaction has no
+        // copy branches for them (comments at those spots); including them here
+        // would open the copy window, charge Cesca 1 wound, and do nothing.
         return $ability instanceof Action_01008
             || $ability instanceof Action_01012
-            || $ability instanceof Action_01025
             || $ability instanceof Action_01030
             || $ability instanceof Action_01068
             || $ability instanceof Action_01076
@@ -197,7 +198,6 @@ class Reaction_01008 extends CardReaction
             || $ability instanceof Action_01132
             || $ability instanceof Action_01133
             || $ability instanceof Action_01134
-            || $ability instanceof Action_01161
             || $ability instanceof Action_01172
             || $ability instanceof Action_02001
             || $ability instanceof Action_02008
@@ -256,13 +256,7 @@ class Reaction_01008 extends CardReaction
                 if ($cesca instanceof IHasActions) $cesca->addAction($action, $game);
             }
 
-            //Fates' Burden
-            if ($ability instanceof Action_01025)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01025", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01025");
-            }
+            //Fates' Burden cannot be copied
 
             //Pull the Strand
             if ($ability instanceof Action_01030)
@@ -322,13 +316,7 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_01134");
             }
 
-            //Boon
-            if ($ability instanceof Action_01161)
-            {
-                $cardCopied = true;
-                $card = $this->copyCard($game, "01161", $cesca->ControllerId);
-                $ability = $card->getAbilityById("{$card->Id}_Action_01161");
-            }
+            //Boon cannot be copied
 
             //Pull
             if ($ability instanceof Action_01172)
