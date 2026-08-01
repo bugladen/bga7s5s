@@ -22,8 +22,10 @@ class State_duelChooseTechnique_01063 extends GameState
 
             description: clienttranslate('${actplayer} is choosing their Duel Action options.'),
             descriptionMyTurn: clienttranslate('Bastien Girard') . clienttranslate(': Swap with a Musketeer: ${you} must choose a Musketeer:'),
+            // WHY: Named success transition — bare nextState() throws "More than one
+            // possible transition" once "back" exists (same trap as 03042 / 04004_2).
             transitions: [
-                "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+                "characterChosen" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
                 "back" => States::DUEL_CHOOSE_TECHNIQUE,
             ],
             updateGameProgression: false,
