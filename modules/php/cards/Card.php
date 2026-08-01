@@ -366,6 +366,13 @@ abstract class Card
 
     public function eventCheck(Event $event)
     {
+        // WHY: Fate's Silence blanks the character's text box — ability objects on the
+        // Character must not eventCheck. Attachment cards keep their own ability loops.
+        if ($this instanceof Character && $this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($this instanceof IHasTechniques) {
             foreach ($this->getTechniques() as $technique) {
                 $technique->eventCheck($event);
@@ -390,6 +397,13 @@ abstract class Card
     
     public function handleEvent(Event $event)
     {
+        // WHY: Same blanking gate as eventCheck — skip Action/Reaction/Technique/Maneuver
+        // objects owned by a silenced Character. See Character::abilitiesAreBlanked.
+        if ($this instanceof Character && $this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($this instanceof IHasTechniques) {
             foreach ($this->getTechniques() as $technique) {
                 $technique->handleEvent($event);

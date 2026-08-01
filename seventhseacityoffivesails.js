@@ -170,6 +170,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.HARPOON_CONDITION = 'Harpooned (-1 Finesse; cannot swap or move)';
             this.LODESTONE_CONDITION = 'Lodestone (opponents cannot move Home)';
             this.SHACKLES_CONDITION = 'Shackled (cannot move)';
+            this.FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

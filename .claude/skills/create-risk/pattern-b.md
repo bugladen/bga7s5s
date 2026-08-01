@@ -56,3 +56,44 @@ WHY exclude `0`: uncontrolled city locations are not controlled by anyone, so th
 
 **Location chooser ≠ character chooser:** do not `implements IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters` for B.1 Actions. JS is the `highDramaPhase03009` / `03032` / `03045` trio (`makeCityLocationSelectable` + Confirm Location).
 
+### Pattern B.2 — "Equip this card to …" (RiskAttachment)
+
+Some Risks are played from hand as an Action that **equips a FakeAttachment stand-in** onto a character. The original Risk moves to `LOCATION_PERMANENTLY_HIDDEN`; while equipped, its while-equipped Forced / continuous effects live on the attachment class — **not** on the Risk (E.1). Combat-card play of the Risk (Riposte/Parry/Thrust) is unrelated and stays on the Risk constructor.
+
+**Files:**
+
+| Piece | Location |
+|---|---|
+| Risk | `cards/<expansion>/_NNNNN.php` — `IHasActions` + Action; `IRiskThatTargetsCharacters` only if printed **"target"** |
+| Action | `cards/<expansion>/actions/Action_NNNNN.php` — `RiskAction` (± `ISorcererAbility`, ± `IAbilityThatTargetsCharacters`) |
+| FakeAttachment | `cards/<expansion>/_NNNNN_<Suffix>.php` — `Attachment implements IRiskAttachment` + `RiskAttachmentTrait` |
+
+**Action shape (mirror `Action_01025` / `Action_04008`):**
+
+1. **Performers:** usually city + opposed (`getCharactersInCityWithOpposingCharacters`) + trait gates (`Sorcerer`/`Strega`). Filter performers that have ≥1 legal equip target at their location.
+2. **Targets:** opposing at performer location (`isNotControlledByPlayer`). Layer printed filters (`! hasTrait("Leader")`, etc.).
+3. **`EventActionTriggered`:** transition `"NNNNN"` to a character-chooser GameState (bas/faf JS trio: highlight performer + `highlightCardsAsSelectable` + Confirm).
+4. **On confirm:** `createSorcererAbilityStartEvent` (if Sorcerer) → `$game->createRiskAttachment($game, "NNNNN_Suffix", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id, $this->Id)` → `createActionResolvedEvent` → `createSorcererAbilityPlayedEvent` (pass `$character->Id` / location as target for Cesca/sorcery observers).
+5. **`createRiskAttachment` class name** is the suffix only (`"04008_Silence"`) — `getCardClassName` prepends expansion from the first two digits.
+
+**FakeAttachment constructor:** `$this->FakeAttachment = true;` `$this->ShowStatModifiers = false;` copy Name/Image/Traits from the Risk as needed. Do **not** set Riposte on the attachment for pre-commit FactionAttachment rules — this is not a `FactionAttachment`.
+
+**Forced "At the end of High Drama, if this card is equipped • Destroy it":** on the attachment:
+
+```php
+if ($event instanceof EventHighDramaPhaseEnd && $this->isAttached())
+{
+    $this->removeRiskAttachment($event->theah);
+}
+```
+
+`removeRiskAttachment` queues unequip → discard FakeAttachment → hide FakeAttachment → restore original Risk to the owner's discard. Mirror `_01025_Burden` / `_04008_Silence`. Do **not** put this Forced on the Risk class (Risk is hidden while equipped).
+
+**"This ability cannot be copied":** Cesca's `Reaction_01008::isCopyable` is an **opt-in allow-list**. Printed "cannot be copied" → **do not** add `Action_NNNNN` to that list and do not add a `copyCard` branch. Historical exceptions (`Action_01025`, `Action_01161`) remain allow-listed despite the same wording — do not expand. Printed **"target"** still requires `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters` (Rules Team / Maryam / other targeted reactions); Cesca copy is a separate gate.
+
+**While-equipped continuous effects** (blank text box, Forced engarde-destroy, stat grants) belong on the FakeAttachment's `handleEvent`. Blank text box → Pattern E.3.
+
+**WHY not invent Maneuvers:** stubs sometimes import leftover `Maneuver_NNNNNa/b` from adjacent cards. If Text has no Maneuver clause, do not create Maneuver files.
+
+References: `_01025` / `Action_01025` / `_01025_Burden` (equip opposing, no printed "target", engarde-destroy Forced), `_04008` / `Action_04008` / `_04008_Silence` (equip **target** opposing non-Leader + E.3 blanking), `_01161` / `Action_01161` / `_01161_Boon` (Sorcerer City Action equip + engage cost + dusk discard).
+

@@ -34,6 +34,14 @@ abstract class CardAction extends Action implements ICardAbility
             return false;
         }
 
+        // WHY: Fate's Silence blanks the character's text box — Actions printed on the
+        // Character (OwnerId = character) cannot be used. Attachment-owned Actions keep
+        // working; their text box is the attachment's, not the character's.
+        if ($owner instanceof Character && $owner->abilitiesAreBlanked())
+        {
+            return false;
+        }
+
         return ! $this->Used;
     }
 

@@ -120,3 +120,30 @@ elseif ($destroyedId == $challengerId
 
 References: `_03033` (Glorious — heal on adversary destroyed), `_03073` (Victorious — draw on adversary destroyed), `_01102` (Unfortunate — equip from dueling line), `_02052` (scheme Forced for "any player's adversary destroyed" — same challenger/defender lookup, different scope).
 
+**Not E.1:** Forced that only applies **while this Risk is equipped as a RiskAttachment** (e.g. "At the end of High Drama, if this card is equipped • Destroy it") lives on the FakeAttachment — Pattern B.2. The Risk is in `LOCATION_PERMANENTLY_HIDDEN` and will not see `EventHighDramaPhaseEnd` usefully for that clause.
+
+### Pattern E.3 — "Treats their text box as blank" / cannot use abilities
+
+When an equipped RiskAttachment blanks the host character's text box, stamp a **condition** on the Character (Harpoon/Shackles source-of-truth pattern) and gate ability use centrally. Do **not** delete Actions/Reactions from the Character's arrays.
+
+**Constant:** `Game::FATES_SILENCE_CONDITION` (string shown in tooltips). Client mirror in `seventhseacityoffivesails.js` + `notif_fatesSilenceConditionStarted` / `Ended` in `Notifications.js` (push/filter `card.conditions` + `refreshTooltipForCard`).
+
+**Stamp / clear on the FakeAttachment** (mirror `_03066` Shackles):
+
+- `EventAttachmentEquipped` + `$event->attachmentId == $this->Id` → `addCondition` + DB update + notify
+- `EventAttachmentUnequipped` → `removeCondition` + notify
+- End-of-HD `removeRiskAttachment` already queues unequip first, so the clear path runs
+
+**Central gates (already wired for `_04008` — reuse, do not re-invent):**
+
+1. **`Character::abilitiesAreBlanked()`** → `hasCondition(FATES_SILENCE_CONDITION)`
+2. **`Theah::runEvents` / `eventCheck`:** when blanked, call `handleCoreCharacterEvent` / `eventCheckCore` only — skip polymorphic `handleEvent`/`eventCheck` so **subclass Forced/passives** (Maryam cancel, Yevgeni thrust, etc.) do not fire, while wounds/Harpoon/Shackles/Lodestone condition gates still run
+3. **`Card::handleEvent` / `eventCheck`:** early-return ability-object loops when the card is a blanked Character (defense in depth)
+4. **Availability:** `CardAction` / `Maneuver` / `Technique` `isAvailableToPlayer` returns false when **`$owner instanceof Character && abilitiesAreBlanked()`**. Attachment-owned abilities (`OwnerId` = attachment) keep working — blanking is the **character's** text box, not equipped attachments'
+
+**WHY condition + Theah skip (not array-stripping):** Turais Dall's cited counterplay is a **Reaction** (ability object) — skipping Character ability loops covers that. Character-class Forced/passives run *after* `parent::handleEvent` in subclasses, so only Theah's core-only dispatch blanks those without touching every Character file.
+
+**WHY not blank attachment abilities:** reminder text "their abilities" = the equipped character's printed abilities. Attachments retain their own text boxes.
+
+Reference: `_04008_Silence`, `Character::abilitiesAreBlanked` / `handleCoreCharacterEvent` / `eventCheckCore`, `Theah` blanked branches, `CardAction` / `Maneuver` / `Technique` availability gates.
+

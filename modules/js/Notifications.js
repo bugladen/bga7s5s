@@ -1919,6 +1919,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_fatesSilenceConditionStarted: function( notif )
+    {
+        debug( 'notif_fatesSilenceConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.FATES_SILENCE_CONDITION))
+                card.conditions.push(this.FATES_SILENCE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_fatesSilenceConditionEnded: function( notif )
+    {
+        debug( 'notif_fatesSilenceConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.FATES_SILENCE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
     notif_crystalEyeTargetChosen: function( notif )
     {
         debug( 'notif_crystalEyeTargetChosen' );

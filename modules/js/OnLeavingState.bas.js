@@ -211,6 +211,14 @@
                 }
             },
 
+            'highDramaPhase04008': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04005_2': () => {
                 this.factionHand.setSelectionMode('none');
             },

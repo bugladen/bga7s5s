@@ -235,7 +235,16 @@ class Theah
                 continue;
             }
             $event->theah = $this;
-            $card->eventCheck($event);
+            // WHY: Fate's Silence blanks text box — run attachment condition gates
+            // (Harpoon/Shackles/Lodestone) without subclass Forced eventChecks.
+            if ($card instanceof Character && $card->abilitiesAreBlanked())
+            {
+                $card->eventCheckCore($event);
+            }
+            else
+            {
+                $card->eventCheck($event);
+            }
             unset($event->theah);
         }
     }
@@ -295,6 +304,13 @@ class Theah
                 // WHY: Skip zombie-controlled cards — their reactions would
                 // queue interactive states the zombie handler can't resolve.
                 if ($card->ControllerId !== 0 && $this->isPlayerZombie($card->ControllerId)) {
+                    continue;
+                }
+                // WHY: Fate's Silence blanks the character's text box. Skip polymorphic
+                // handleEvent (subclass Forced/passives + Card ability objects) and run
+                // only core wound/heal/destroy/threat. Attachment cards are unaffected.
+                if ($card instanceof Character && $card->abilitiesAreBlanked()) {
+                    $card->handleCoreCharacterEvent($event);
                     continue;
                 }
                 $card->handleEvent($event);

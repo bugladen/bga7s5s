@@ -96,6 +96,10 @@ class Game extends \Bga\GameFramework\Table
     final const HARPOON_CONDITION = "Harpooned (-1 Finesse; cannot swap or move)";
     final const LODESTONE_CONDITION = "Lodestone (opponents cannot move Home)";
     final const SHACKLES_CONDITION = "Shackled (cannot move)";
+    // WHY: Fate's Silence (_04008) blanks the equipped character's text box while attached.
+    // Condition is the source of truth (Harpoon/Shackles pattern) so ability gates survive
+    // if the FakeAttachment leaves $theah->cards mid-resolve; tooltip shows the blanking.
+    final const FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
     final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 

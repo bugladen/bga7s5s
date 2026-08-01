@@ -84,10 +84,25 @@ abstract class Character extends Card implements IHasTechniques
         return $this->isControlled();
     }
 
+    // WHY: Fate's Silence (_04008) stamps FATES_SILENCE_CONDITION while equipped.
+    // Central predicate so ability availability, Card ability loops, and Theah's
+    // blanked-character dispatch all share one source of truth.
+    public function abilitiesAreBlanked(): bool
+    {
+        return $this->hasCondition(Game::FATES_SILENCE_CONDITION);
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
+        $this->eventCheckCore($event);
+    }
 
+    // WHY: Extracted so Theah can run Harpoon/Shackles/Lodestone condition gates when
+    // the character is text-box-blanked without also running subclass Forced eventChecks
+    // (Maryam cancel, Sigurd must-be-target, etc. — those are text-box abilities).
+    public function eventCheckCore(Event $event): void
+    {
         // WHY: Harpoon (_03064) stamps HARPOON_CONDITION on the adversary for the
         // remainder of the duel. Enforce "cannot move" here so the condition itself
         // is the source of truth (not a Technique flag that dies if Harpoon leaves play).
@@ -350,8 +365,17 @@ abstract class Character extends Card implements IHasTechniques
 
     public function handleEvent(Event $event)
     {
+        // WHY: When blanked, Card::handleEvent early-returns (no ability objects).
+        // Core systems (wounds/heals/destroy/threat) must still run.
         parent::handleEvent($event);
+        $this->handleCoreCharacterEvent($event);
+    }
 
+    // WHY: Extracted so Theah can run wound/heal/destroy/threat when the character is
+    // text-box-blanked without also running subclass Forced/passives that live in
+    // overridden handleEvent after parent::handleEvent.
+    public function handleCoreCharacterEvent(Event $event): void
+    {
         if ($event instanceof EventGenerateChallengeThreat && $event->actorId == $this->Id)
         {
             switch ($event->statUsed)
