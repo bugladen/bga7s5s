@@ -140,8 +140,13 @@ onUpdateActionButtons: function( stateName, args )
         'highDramaInPlayActionChooseAction'  : () => {
             this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             args._private.actions.forEach((action, index) => {
+                const perform = () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id});
+                // WHY: Kaspar (Action_01035) engages + reveals on confirm — warn when picking the action, before that commit.
+                const onClick = String(action.id).includes('Action_01035')
+                    ? () => this.withCrewCapWarning(perform)
+                    : perform;
                 this.addActionButton(
-                    `btnChooseAction_${action.id}`, action.name, () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id}))
+                    `btnChooseAction_${action.id}`, action.name, onClick)
             });
     },
 
@@ -301,10 +306,15 @@ onUpdateActionButtons: function( stateName, args )
         'playerReaction': () => {
             args._private.args.buttons.forEach((button, index) => {
                 const buttonId = `actReaction-${index}`;
+                const perform = () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction});
+                // WHY: Filling the Ranks (fillRanks) recruits a Mercenary — same crew-cap warn as basic Recruit.
+                const onClick = button.reaction === 'fillRanks'
+                    ? () => this.withCrewCapWarning(perform)
+                    : perform;
                 if (button.text.includes('Pass') || button.text.includes('Decline')) {
-                    this.statusBar.addActionButton(button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}), { id: buttonId, color: 'alert' });
+                    this.statusBar.addActionButton(button.text, onClick, { id: buttonId, color: 'alert' });
                 } else {
-                    this.addActionButton(buttonId, button.text, () => this.bgaPerformAction('actReactionForState', {reactionId: button.reaction}));
+                    this.addActionButton(buttonId, button.text, onClick);
                 }
                 if (button.disabled) {
                     dojo.addClass(buttonId, 'disabled');

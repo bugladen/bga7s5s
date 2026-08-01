@@ -26,7 +26,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Don Contanzo Scarpa') . clienttranslate(': ${you} must must acknowlege revealed card:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInitSansInitiatingPlayer",
+        "action" => "stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -65,7 +65,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Plans Within Plans') . clienttranslate(': ${you} must must acknowlege revealed card:'),
         "type" => "multipleactiveplayer",
         "args" => "argsPlanningPhaseResolveSchemes_01016_3",
-        "action" => "stMultiPlayerInitSansInitiatingPlayer",
+        "action" => "stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -292,7 +292,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Let\'s Haggle') . clienttranslate(': ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInit",
+        "action" => "stMultiPlayerInitCardRevealAcknowledge",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -391,7 +391,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} must must acknowlege revealed card:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInitSansInitiatingPlayer",
+        "action" => "stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -661,7 +661,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Kaspar') . clienttranslate(': ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInit",
+        "action" => "stMultiPlayerInitCardRevealAcknowledge",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -713,7 +713,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Otto Streit') . clienttranslate(': ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInit",
+        "action" => "stMultiPlayerInitCardRevealAcknowledge",
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -1335,7 +1335,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Kaj Kousei') . clienttranslate(': ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInit",    
+        "action" => "stMultiPlayerInitCardRevealAcknowledge",    
         "possibleactions" => [
             "actMultipleOk", 
         ],
@@ -1430,7 +1430,7 @@ $machinestates += [
         "descriptionmyturn" => clienttranslate('Gustavo') . clienttranslate(': ${you} must acknowledge revealed cards:'),
         "type" => "multipleactiveplayer",
         "args" => "argsForState",
-        "action" => "stMultiPlayerInitSansInitiatingPlayer",
+        "action" => "stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer",
         "possibleactions" => [
             "actMultipleOk", 
         ],

@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -79,6 +80,31 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
                         $this->RiskId = $risk->Id;
                         $owner->IsUpdated = true;
                     }
+                }
+            }
+        }
+
+        // WHY: Risk Reactions never fire EventActionActivated — they queue
+        // EventRiskPlayed + EventRiskReactionTriggered after payment. Guard on
+        // a pending RiskReactionTriggered so Action plays (already handled
+        // above) do not offer cancel a second time on EventRiskPlayed.
+        if ($event instanceof EventRiskPlayed && $this->isAvailable())
+        {
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner->Location == Game::LOCATION_HAND)
+            {
+                $risk = $event->theah->getCardById($event->riskId);
+                if ($risk instanceof Risk
+                    && $event->playerId != $owner->ControllerId
+                    && ! $risk->hasTrait("Sorcery")
+                    && $event->theah->areRiskReactionTriggeredEventsQueuedForSource($event->riskId)
+                    && ! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
+                {
+                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($transitionEvent);
+
+                    $this->RiskId = $risk->Id;
+                    $owner->IsUpdated = true;
                 }
             }
         }
@@ -152,10 +178,11 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
             }
 
             //Delete any cancel Risk ActionTriggered or RiskReactionTriggered events.
-            //Also delete the queued EventRiskPlayed for this risk — the trigger is now
-            //EventActionActivated (which fires before EventRiskPlayed), so the played
-            //event is still in the queue and would otherwise let other "after a Risk
-            //is played" reactions fire on the cancelled card.
+            //Also delete the queued EventRiskPlayed for Action-path cancels —
+            //EventActionActivated fires before EventRiskPlayed, so the played
+            //event is still queued and would otherwise let other "after a Risk
+            //is played" reactions fire on the cancelled card. (Reaction-path
+            //cancels see EventRiskPlayed as the current event, already dequeued.)
             $game->theah->deleteActionTriggeredEvents($this->RiskId);
             $game->theah->deleteRiskReactionTriggeredEvents($this->RiskId);
             $game->theah->deleteRiskPlayedEvents($this->RiskId);

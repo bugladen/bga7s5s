@@ -2003,18 +2003,26 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const leader = player.leader;
         const crewCap = leader.modifiedCrewCap;
 
+        // WHY: Exclude Brutes — they do not count against Crew Cap (matches getCharacterCountByPlayerId).
         const characters = Object.values(this.cardProperties).filter((card) => 
-            (card.type === 'Character' ||card.type === 'Leader') && card.controllerId === this.player_id && this.isCardInPlay(card.id));
+            (card.type === 'Character' || card.type === 'Leader')
+            && card.controllerId === this.player_id
+            && this.isCardInPlay(card.id)
+            && !(card.traits && card.traits.includes('Brute')));
         return characters.length + 1 <= crewCap; // +1 for the character being recruited
     },
 
+    // WHY: Shared confirm dialog for any recruit-style path (basic Recruit, Cirilo, Kaspar, Filling the Ranks).
+    withCrewCapWarning: function(callback) {
+        if (!this.crewCapCheck()) {
+            this.confirmationDialog(_("You will exceed your crew cap if you Recruit. Are you sure you want to continue?"), callback);
+        } else {
+            callback();
+        }
+    },
+
     basicRecruitActionCrewCapCheck: function() {
-        if (!this.crewCapCheck()) 
-            this.confirmationDialog(_("You will exceed your crew cap if you Recruit. Are you sure you want to continue?"),
-                () => {this.bgaPerformAction('actHighDramaRecruitActionStart', {})}
-            );
-            else
-                this.bgaPerformAction('actHighDramaRecruitActionStart', {}) 
+        this.withCrewCapWarning(() => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
     },
 
     displayForumInterveneList: function(interveneList) {

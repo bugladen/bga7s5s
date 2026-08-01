@@ -38,6 +38,7 @@ class State_duelResolveManeuver_01077 extends GameState
     function onEnteringState(int $activePlayerId) {
         $this->game->gamestate->setAllPlayersMultiactive();
         $this->gamestate->setPlayerNonMultiactive($activePlayerId, 'multipleOk');
+        $this->game->clearCardRevealAcknowledgeForPlayersWithPreference();
     }
 
     #[PossibleAction]

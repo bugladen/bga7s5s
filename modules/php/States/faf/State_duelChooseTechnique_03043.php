@@ -31,8 +31,9 @@ class State_duelChooseTechnique_03043 extends GameState
 
     function onEnteringState(int $activePlayerId): void
     {
-        // WHY: Mirror SETUP_TABLE_01006_2 — initiator already saw the reveal; others must Ok.
-        $this->game->stMultiPlayerInitSansInitiatingPlayer();
+        // WHY: Mirror SETUP_TABLE_01006_2 — initiator already saw the reveal; others must Ok
+        // unless they have Auto-Acknowledge Card Reveals (pref 110).
+        $this->game->stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer();
     }
 
     public function getArgs(): array

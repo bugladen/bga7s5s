@@ -153,6 +153,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
 
             //User preferences
             this.USER_PREFERENCES_CARD_HOVER_TYPE = 100;
+            this.USER_PREFERENCES_AUTO_ACKNOWLEDGE_CARD_REVEALS = 110;
 
             //Card conditions
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';

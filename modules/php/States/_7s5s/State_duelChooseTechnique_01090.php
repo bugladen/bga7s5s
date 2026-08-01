@@ -32,7 +32,7 @@ class State_duelChooseTechnique_01090 extends GameState
     
     function onEnteringState(int $activePlayerId) 
     {
-        $this->game->gamestate->setAllPlayersMultiactive();
+        $this->game->stMultiPlayerInitCardRevealAcknowledge();
     }   
     
     public function getArgs(): array

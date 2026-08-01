@@ -51,6 +51,35 @@ trait StatesTrait
         $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
     }
 
+    // WHY: Card-reveal acknowledge states only. Players with pref 110=Yes never become
+    // (or stay) multiactive, so BGA never sends them a "your turn / go to table" nudge.
+    // Do NOT use for other multiplayer states (e.g. Patricia discard 01095).
+    public function clearCardRevealAcknowledgeForPlayersWithPreference(): void
+    {
+        foreach ($this->gamestate->getActivePlayerList() as $playerId) {
+            $playerId = (int) $playerId;
+            $pref = $this->bga->userPreferences->get($playerId, Game::USER_PREFERENCES_AUTO_ACKNOWLEDGE_CARD_REVEALS) ?? 2;
+            if ($pref === 1) {
+                $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+            }
+        }
+    }
+
+    public function stMultiPlayerInitCardRevealAcknowledge(): void
+    {
+        $this->gamestate->setAllPlayersMultiactive();
+        $this->clearCardRevealAcknowledgeForPlayersWithPreference();
+    }
+
+    public function stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer(): void
+    {
+        $this->gamestate->setAllPlayersMultiactive();
+
+        $playerId = $this->globals->get(Game::MULTI_STATE_INITIATING_PLAYER);
+        $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+        $this->clearCardRevealAcknowledgeForPlayersWithPreference();
+    }
+
     public function stPickDecksInit() 
     {
         $this->gamestate->setAllPlayersMultiactive();

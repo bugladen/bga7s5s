@@ -11,5 +11,18 @@
         }
       },
       "default": 1
+    },
+    "110": {
+      "name": "Auto-Acknowledge Card Reveals",
+      "needReload": false,
+      "values": {
+        "1": {
+          "name": "Yes"
+        },
+        "2": {
+          "name": "No"
+        }
+      },
+      "default": 2
     }
   }
