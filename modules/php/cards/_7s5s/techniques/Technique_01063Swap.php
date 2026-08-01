@@ -197,7 +197,16 @@ class Technique_01063Swap extends Technique
             $this->swapId = $musketeer->Id;
             $game->updateCardObjectInDb($owner);
 
-            $game->gamestate->nextState();
+            // WHY: Duel chooser has "back" + "characterChosen"; bare nextState() is ambiguous.
+            // Challenge resolve still has a single "" transition.
+            if ($state == States::DUEL_CHOOSE_TECHNIQUE_01063)
+            {
+                $game->gamestate->nextState("characterChosen");
+            }
+            else
+            {
+                $game->gamestate->nextState();
+            }
         }
     }
 }
