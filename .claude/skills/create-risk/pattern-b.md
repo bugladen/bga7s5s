@@ -97,3 +97,37 @@ if ($event instanceof EventHighDramaPhaseEnd && $this->isAttached())
 
 References: `_01025` / `Action_01025` / `_01025_Burden` (equip opposing, no printed "target", engarde-destroy Forced), `_04008` / `Action_04008` / `_04008_Silence` (equip **target** opposing non-Leader + E.3 blanking), `_01161` / `Action_01161` / `_01161_Boon` (Sorcerer City Action equip + engage cost + dusk discard).
 
+### Pattern B.3 — En Garde Action: Target opponent forces a challenge onto your performer
+
+Printed (Rattle the Rigging `_04009`): **`<b>En Garde Action:</b> Target opponent chooses one of their characters opposing your performer. The chosen character issues a [Combat] challenge to your performer. If your performer is a <b>Duelist</b>, their first combat card gains +1[Riposte].`**
+
+This is the **invert** of Defending Honor `_01078` ("Target enemy character issues a challenge to one of your characters — their choice"):
+
+| | `_01078` Defending Honor | `_04009` Rattle the Rigging |
+|---|---|---|
+| Ability target wording | **Target enemy character** | **Target opponent** (player) |
+| Cesca interfaces | Yes (`IRiskThatTargetsCharacters`) | **No** — player Target; opponent's character pick is not your ability target |
+| Who picks the challenger | You (enemy is `CHOSEN_PERFORMER`) | Opponent (among their opposing `canChallenge` characters) |
+| Who picks the defender | Opponent (shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`) | Fixed = your En Garde performer |
+| Challenge type | `DEFENDING_HONOR_CHALLENGE_TYPE` off auto-engage | Fresh type off auto-engage |
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true`. **En Garde** heading → filter performers `!$Engaged` **and** ≥1 opposing character at their location with `canChallenge($theah)`. Start from `parent::getPerformersForAction` (home eligible in principle; opposing usually forces city).
+2. **No `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters`.** "Target opponent" is a player chooser (`CHOSEN_OPPONENT` + opponent name buttons). Opponent then picks a character — that chooser is **their** selection, not the ability's Cesca target. Contrast `_01078` which prints "Target enemy character."
+3. **`EventActionTriggered`:** stash `$DefenderId = CHOSEN_PERFORMER` (will be overwritten). Collect opponent ids who have ≥1 `canChallenge` character at the defender's location. One opponent → auto-set `CHOSEN_OPPONENT` and transition `"NNNNN_2"` with **that opponent** as the transition `playerId`. Multiple → transition `"NNNNN"` (you pick opponent) then from `actFromActionWithId` queue `"NNNNN_2"` via EVENTS so `EventTransition` changes active player.
+4. **Opponent character confirm:** validate opposing + same location + `ControllerId == CHOSEN_OPPONENT` + `canChallenge`. Then:
+   - `CHOSEN_PERFORMER` = chosen enemy (challenger)
+   - `CHOSEN_TARGET` = `$DefenderId` (your performer)
+   - `CHALLENGE_STAT` = printed bracket (`STAT_COMBAT`)
+   - Mint a fresh `CHALLENGE_TYPE` and keep it **off** `stIssueChallenge` auto-engage list
+   - Transition `"NNNNN_3"` → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE` (skip shared choose-target — defender is fixed)
+5. **WHY custom type off auto-engage:** forced *enemy* "issues a challenge" must not free-engage them for you. Same trichotomy seat as Defending Honor / Sanjay. Contrast Arrogant `_03008` / Courageous `_03058` where **your** performer issues → `NORMAL` auto-engage is correct. Do **not** add Engage unless printed.
+6. **Optional "If your performer is a Duelist, their first combat card gains +X[Riposte]":** on confirm, if `$defender->hasTrait("Duelist")`, set sticky `$FirstCombatCardRiposteCharacterId = $defender->Id` on the Action (`IsUpdated`). On `EventDuelCalculateCombatCardStats` when `$event->actorId` matches, `addRiposte(X)` once and clear. Clear unused arm on `EventDuelEnd` and on `EventActionResolved` when `!IN_DUEL` (cancel/refuse — arm must not leak into a later duel; discard is in `buildCity` so the Action still receives events).
+7. **Pre-commit:** `// createActionResolvedEvent() is called when the challenge is resolved` comment (same as other challenge-issuing Actions).
+8. **Wire:** `"NNNNN"` / `"NNNNN_2"` → GameState classes; `"NNNNN_3"` → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Matching JS int for the new `CHALLENGE_TYPE`. bas/faf JS trio: opponent buttons on step 1; character highlight+Confirm on step 2.
+
+**Do not** route through shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` when the defender is fixed — that state is for picking the challenge target. `_01078` uses it because the *defender* is the free choice; here the *challenger* is.
+
+References: `_04009` / `Action_04009` / `State_highDramaPhase04009` + `_2`; invert sibling `_01078` / `Action_01078` / `DEFENDING_HONOR_CHALLENGE_TYPE`.
+

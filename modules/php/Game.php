@@ -201,6 +201,7 @@ class Game extends \Bga\GameFramework\Table
     final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
     final const CENSURE_CHALLENGE_TYPE = 24;
     final const DANILO_CHALLENGE_TYPE = 25;
+    final const RATTLE_THE_RIGGING_CHALLENGE_TYPE = 26;
 
     //Duel global variables
     //Duel Names

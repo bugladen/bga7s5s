@@ -279,6 +279,25 @@
                 }
             },
 
+            'highDramaPhase04009': () => {
+                if (this.isCurrentPlayerActive() && args.args.args.performerId) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'highDramaPhase04009_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
             'highDramaPhase04005_2': () => {
                 this.factionHand.setSelectionMode('single');
             },
