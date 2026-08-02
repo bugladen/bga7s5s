@@ -291,6 +291,13 @@ class DB
         $defenderThreatIsLethal = $result['defender_threat_is_lethal'];
         $wounds = 0;
 
+        // WHY live character (not getDuelRoundOpponent last-known): Riposte/Thrust put
+        // threat on the adversary. If they are in discard/locker they cannot receive it —
+        // discard instead. Last-known still has city Location/Engaged from before death.
+        $adversaryId = ($actorId == $challengerId) ? $defenderId : $challengerId;
+        $adversary = $this->game->theah->getCharacterById($adversaryId);
+        $adversaryAbsent = $adversary === null || $this->game->characterIsInDiscardOrLocker($adversary);
+
         // For maneuvers, start from scratch with starting threats and sum all R/P/T before applying
         if ($mode == 'maneuver')
         {
@@ -314,7 +321,8 @@ class DB
                 if ($riposte < 0)
                     $riposte = 0;
                 $endingChallengerThreat -= $riposte;
-                $endingDefenderThreat += $riposte;
+                if (! $adversaryAbsent)
+                    $endingDefenderThreat += $riposte;
 
                 // Apply total Parry
                 $parry = $totalParry;
@@ -326,10 +334,14 @@ class DB
 
                 // Apply total Thrust — clamp so opponent threat cannot go below 0
                 // WHY: negative thrust is intentional (e.g. Technique_01050), but must not drive threat negative
-                $thrust = $totalThrust;
-                if ($endingDefenderThreat + $thrust < 0)
-                    $thrust = -$endingDefenderThreat;
-                $endingDefenderThreat += $thrust;
+                // Absent adversary: discard thrust (same as Riposte bounce).
+                if (! $adversaryAbsent)
+                {
+                    $thrust = $totalThrust;
+                    if ($endingDefenderThreat + $thrust < 0)
+                        $thrust = -$endingDefenderThreat;
+                    $endingDefenderThreat += $thrust;
+                }
             }
             else if ($actorId == $defenderId)
             {
@@ -340,7 +352,8 @@ class DB
                 if ($riposte < 0)
                     $riposte = 0;
                 $endingDefenderThreat -= $riposte;
-                $endingChallengerThreat += $riposte;
+                if (! $adversaryAbsent)
+                    $endingChallengerThreat += $riposte;
 
                 // Apply total Parry
                 $parry = $totalParry;
@@ -351,10 +364,13 @@ class DB
                 $endingDefenderThreat -= $parry;
 
                 // Apply total Thrust — clamp so opponent threat cannot go below 0
-                $thrust = $totalThrust;
-                if ($endingChallengerThreat + $thrust < 0)
-                    $thrust = -$endingChallengerThreat;
-                $endingChallengerThreat += $thrust;
+                if (! $adversaryAbsent)
+                {
+                    $thrust = $totalThrust;
+                    if ($endingChallengerThreat + $thrust < 0)
+                        $thrust = -$endingChallengerThreat;
+                    $endingChallengerThreat += $thrust;
+                }
             }
 
             // Store the computed values in results (maneuver's contribution is already included in totals)
@@ -407,7 +423,8 @@ class DB
                 if ($riposte < 0)
                     $riposte = 0;
                 $endingChallengerThreat -= $riposte;
-                $endingDefenderThreat += $riposte;
+                if (! $adversaryAbsent)
+                    $endingDefenderThreat += $riposte;
 
                 // Apply total Parry
                 $parry = $totalParry;
@@ -419,10 +436,14 @@ class DB
 
                 // Apply total Thrust — clamp so opponent threat cannot go below 0
                 // WHY: negative thrust is intentional (e.g. Technique_01050), but must not drive threat negative
-                $thrust = $totalThrust;
-                if ($endingDefenderThreat + $thrust < 0)
-                    $thrust = -$endingDefenderThreat;
-                $endingDefenderThreat += $thrust;
+                // Absent adversary: discard thrust (same as Riposte bounce).
+                if (! $adversaryAbsent)
+                {
+                    $thrust = $totalThrust;
+                    if ($endingDefenderThreat + $thrust < 0)
+                        $thrust = -$endingDefenderThreat;
+                    $endingDefenderThreat += $thrust;
+                }
             }
             else if ($actorId == $defenderId)
             {
@@ -433,7 +454,8 @@ class DB
                 if ($riposte < 0)
                     $riposte = 0;
                 $endingDefenderThreat -= $riposte;
-                $endingChallengerThreat += $riposte;
+                if (! $adversaryAbsent)
+                    $endingChallengerThreat += $riposte;
 
                 // Apply total Parry
                 $parry = $totalParry;
@@ -444,10 +466,13 @@ class DB
                 $endingDefenderThreat -= $parry;
 
                 // Apply total Thrust — clamp so opponent threat cannot go below 0
-                $thrust = $totalThrust;
-                if ($endingChallengerThreat + $thrust < 0)
-                    $thrust = -$endingChallengerThreat;
-                $endingChallengerThreat += $thrust;
+                if (! $adversaryAbsent)
+                {
+                    $thrust = $totalThrust;
+                    if ($endingChallengerThreat + $thrust < 0)
+                        $thrust = -$endingChallengerThreat;
+                    $endingChallengerThreat += $thrust;
+                }
             }
 
             // Store the computed values in results (technique's contribution is already included in totals)
@@ -493,11 +518,13 @@ class DB
         if ($actorId == $challengerId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
+            // If adversary is absent (discard/locker), the bounced threat is discarded instead.
             $riposte = $eventRiposte;
             if ($riposte > $endingChallengerThreat) 
                 $riposte = $endingChallengerThreat;
             $endingChallengerThreat -= $riposte;
-            $endingDefenderThreat += $riposte;
+            if (! $adversaryAbsent)
+                $endingDefenderThreat += $riposte;
             $results['riposte'] = $eventRiposte;
 
             //Parry reduces threat
@@ -509,10 +536,14 @@ class DB
 
             //Thrust adds threat — clamp so opponent threat cannot go below 0
             // WHY: negative thrust is intentional, but must not drive threat negative
-            $thrust = $eventThrust;
-            if ($endingDefenderThreat + $thrust < 0)
-                $thrust = -$endingDefenderThreat;
-            $endingDefenderThreat += $thrust;
+            // Absent adversary: discard thrust (same as Riposte bounce).
+            if (! $adversaryAbsent)
+            {
+                $thrust = $eventThrust;
+                if ($endingDefenderThreat + $thrust < 0)
+                    $thrust = -$endingDefenderThreat;
+                $endingDefenderThreat += $thrust;
+            }
             $results['thrust'] = $eventThrust;
 
             $wounds = $endingChallengerThreat;
@@ -520,11 +551,13 @@ class DB
         else if ($actorId == $defenderId)
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
+            // If adversary is absent (discard/locker), the bounced threat is discarded instead.
             $riposte = $eventRiposte;
             if ($riposte > $endingDefenderThreat) 
                 $riposte = $endingDefenderThreat;
             $endingDefenderThreat -= $riposte;
-            $endingChallengerThreat += $riposte;
+            if (! $adversaryAbsent)
+                $endingChallengerThreat += $riposte;
             $results['riposte'] = $eventRiposte;
          
             //Parry reduces threat
@@ -535,10 +568,13 @@ class DB
             $results['parry'] = $eventParry;
 
             //Thrust adds threat — clamp so opponent threat cannot go below 0
-            $thrust = $eventThrust;
-            if ($endingChallengerThreat + $thrust < 0)
-                $thrust = -$endingChallengerThreat;
-            $endingChallengerThreat += $thrust;
+            if (! $adversaryAbsent)
+            {
+                $thrust = $eventThrust;
+                if ($endingChallengerThreat + $thrust < 0)
+                    $thrust = -$endingChallengerThreat;
+                $endingChallengerThreat += $thrust;
+            }
             $results['thrust'] = $eventThrust;
 
             $wounds = $endingDefenderThreat;

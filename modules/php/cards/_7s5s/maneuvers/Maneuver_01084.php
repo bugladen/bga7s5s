@@ -43,8 +43,15 @@ class Maneuver_01084 extends Maneuver
         $owner = $this->getOwningCard($theah);
         if ($owner->Id == $combatCard->Id)
         {
-            $adversary = $theah->getDuelRoundOpponent();
-            if ($adversary->Engaged)
+            // WHY live getCharacterById, not getDuelRoundOpponent(): last-known restores
+            // Engaged from when the adversary was still in play. Engaged is board state —
+            // a dead/locker adversary cannot grant the -1 cost.
+            $actor = $theah->getDuelRoundActor();
+            $adversaryId = $theah->getDuelOpponentId($actor->Id);
+            $adversary = $theah->getCharacterById($adversaryId);
+            if ($adversary
+                && ! $theah->game->characterIsInDiscardOrLocker($adversary)
+                && $adversary->Engaged)
             {
                 $discount += 1;
                 $explanations[] = sprintf($theah->game->translate("%s reduces the cost of Maneuver by 1 because your Adversary is engaged."), $owner->getInjectCode());
