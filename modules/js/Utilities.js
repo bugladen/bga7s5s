@@ -1392,6 +1392,30 @@ return declare('seventhseacityoffivesails.utilities', null, {
             dojo.removeClass($(`${divId}_finesse_box`), '_7sfs-card-stat-box _7sfs-card-finesse-box');
             dojo.removeClass($(`${divId}_influence_box`), '_7sfs-card-stat-box _7sfs-card-influence');
 
+            // WHY: Combat/finesse/influence icon + value styles live on nested
+            // divs, so stripping the box classes alone still left icons/dashes.
+            dojo.query(`#${divId}_combat_box ._7sfs-card-combat-value`).forEach((node) => {
+                dojo.removeClass(node, '_7sfs-card-combat-value _7sfs-attachment-combat-value');
+                node.innerHTML = '';
+            });
+            dojo.query(`#${divId}_combat_box ._7sfs-card-combat-image`).forEach((node) => {
+                dojo.removeClass(node, '_7sfs-card-combat-image');
+            });
+            dojo.query(`#${divId}_finesse_box ._7sfs-card-finesse-value`).forEach((node) => {
+                dojo.removeClass(node, '_7sfs-card-finesse-value _7sfs-attachment-finesse-value');
+                node.innerHTML = '';
+            });
+            dojo.query(`#${divId}_finesse_box ._7sfs-card-finesse-image`).forEach((node) => {
+                dojo.removeClass(node, '_7sfs-card-finesse-image');
+            });
+            dojo.query(`#${divId}_influence_box ._7sfs-card-influence-value`).forEach((node) => {
+                dojo.removeClass(node, '_7sfs-card-influence-value _7sfs-attachment-influence-value');
+                node.innerHTML = '';
+            });
+            dojo.query(`#${divId}_influence_box ._7sfs-card-influence-image`).forEach((node) => {
+                dojo.removeClass(node, '_7sfs-card-influence-image');
+            });
+
             dojo.addClass(divId, '_7sfs-attached-card-no-modifiers');
         }
         
