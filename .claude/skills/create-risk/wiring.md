@@ -16,6 +16,8 @@ For Pattern C Maneuvers that transition to a sub-state (e.g., `Maneuver_01115`),
 
 For Pattern C.5 "you choose their combat card" hijacks, wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** (after reveal), not resolve-maneuver. State id convention near the choose family: `5270NNNNN` (see `States::DUEL_CHOOSE_GAMBLE_CARD_03047`).
 
+For Pattern D.5 deck-reveal Reactions that must show chooseList **before** Use/Pass, also wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** with a distinct key (`"04010"`). State id: `52730NNNNN` (see `States::DUEL_GAMBLE_REVEALED_04010 = 527304010`). Use `createTransitionEvent` (priority 8), **not** `createReactionTransitionEvent` (priority 6 → early `playerReaction` before chooseList). Both Use and Pass must return to `DUEL_GAMBLE_REVEALED_EVENTS` so leftover transitions (C.5 `"03047"`) and `endOfEvents` → choose still run. Public `cards` via `getArgsFromReaction` + `argsForState`. JS: display-only chooseList + Use/Pass (mirror `duelChooseGambleCard_03047` enter/leave). On the Risk class, `addCardToWorld($this)` before `actFromCard*` so deck-card `setUsed` persists.
+
 ### GameState class vs legacy array state
 
 Two formats coexist for sub-state definitions:
@@ -78,6 +80,7 @@ The `.githooks/pre-commit` hook checks staged PHP files. Risk-related rules:
 | `extends RiskAction` | Same as RiskCityAction. |
 | `extends Maneuver` | An `EventManeuverCanceled` handler OR the comment `// EventManeuverCanceled handler not needed`. |
 | `extends RiskReaction` | `Location == Game::LOCATION_HAND` check, plus `$this->setUsed(` and `$this->isAvailable(` literal calls. |
+| `extends CardReaction` / `AttachmentReaction` | `$this->setUsed(` and `$this->isAvailable(` — **no** hand guard (Pattern D.5 deck-reveal uses this). |
 | `implements ISorcererAbility` | `createSorcererAbilityStartEvent()` AND `createSorcererAbilityPlayedEvent()` literal calls. |
 | Mixing `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` on the **same** class | **Forbidden** — split into separate ability classes if the card text demands both. |
 

@@ -100,6 +100,10 @@ class Game extends \Bga\GameFramework\Table
     // Condition is the source of truth (Harpoon/Shackles pattern) so ability gates survive
     // if the FakeAttachment leaves $theah->cards mid-resolve; tooltip shows the blanking.
     final const FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
+    // WHY: Unravel the Thread (_04010) Sorceries +1 Parry this round. Source Risk often
+    // returns to the faction deck after gamble choose and leaves $theah->cards — sticky
+    // on the Reaction would miss EventDuelCalculateCombatCardStats. Cleared end of round.
+    final const UNRAVEL_THE_THREAD_CONTROLLER_ID = "unravelTheThreadControllerId";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
     final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 

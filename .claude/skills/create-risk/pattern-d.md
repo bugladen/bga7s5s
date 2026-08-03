@@ -239,6 +239,57 @@ Reach for `Reaction_01014` (Vittoria — Thug-only redirect) or `Reaction_02016`
 
 References: `Reaction_03031` (Altruistic), `Reaction_02016` (structural template on attachments), `Reaction_01053` (Hexenjagd — "performer at that location" chooser semantics on a Risk).
 
+### Pattern D.5 — Deck-reveal Sorcerer Reaction (`CardReaction`, not `RiskReaction`)
+
+Printed (Unravel the Thread `_04010`): **`<b>Sorcerer Reaction:</b> When your performer reveals this card while gambling • Reveal additional cards equal to their [Influence]. Their <b>Sorceries</b> gain +1[Parry] this round.`**
+
+This is **not** a hand-paid RiskReaction. The Risk is peeked from the **faction deck** during gamble; there is no hand pay and no `LOCATION_HAND` guard.
+
+| | Pattern D / `RiskReaction` | Pattern D.5 / `CardReaction` |
+|---|---|---|
+| Base class | `RiskReaction` | `CardReaction` (+ usually `ISorcererAbility`) |
+| Card location at trigger | Hand (cost) | Still in faction deck (revealed peek) |
+| Pre-commit | `Location == LOCATION_HAND` + `setUsed` + `isAvailable` | `setUsed` + `isAvailable` only — **no** hand guard |
+| Offer UI | `createReactionTransitionEvent` → `playerReaction` | `createTransitionEvent` → dedicated GameState under `DUEL_GAMBLE_REVEALED_EVENTS` |
+| When the player chooses | Often **before** combat-card chooseList | **After** revealed cards are visible in chooseList |
+
+#### Hub prerequisite (load-bearing)
+
+`buildCity()` does **not** load faction-deck cards. Without EventHub `addCardToWorld` on each id in `EventDuelGambleCardsRevealed` (hub runs **before** cards — `runEventHubAfterCards=false`), a Reaction on the gambled card never receives the event. This is already in `EventHub` for Unravel; keep it if you add sibling deck-reveal Reactions.
+
+#### Timing — after chooseList, not early `playerReaction`
+
+Ivy-style "before choosing" Reactions use `createReactionTransitionEvent` (priority **6**) → `DUEL_GAMBLE_REVEALED_REACTIONS`. That window is **before** `duelChooseGambleCard` shows chooseList.
+
+Unravel must let the player **see** the revealed cards (including this card) before Use/Pass:
+
+1. On `EventDuelGambleCardsRevealed` when **this** card's id is in `$event->revealedCardIds`, actor is controller's Sorcerer, `isAvailable()` → queue `createTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)`.
+2. `EventTransition` sets priority **8** (`TRANSITION_PRIORITY`) — runs **after** reaction transitions (6). Proper Drama C.5 choose-hijack uses the same priority band.
+3. Wire `"NNNNN" => States::DUEL_GAMBLE_REVEALED_NNNNN` under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`**. State id near the gamble family: `52730NNNNN` (see `DUEL_GAMBLE_REVEALED_04010 = 527304010`). Contrast C.5 choose seat `5270NNNNN`.
+4. **Public** `cards` via `getArgsFromReaction` + State `argsForState` (client `args.args.args.cards`) — peek with current `GAMBLE_REVEAL_COUNT` / `GAMBLE_REVEAL_FROM_BOTTOM` from the **duel-round actor's** deck (same edge as choose).
+5. JS: show chooseList (`selectionMode` 0 — display only) + Use / Pass. Mirror `duelChooseGambleCard_03047` enter/leave; buttons call `actFromCardWithId({id:1})` / `actFromCardPass`.
+6. **Both Use and Pass → `DUEL_GAMBLE_REVEALED_EVENTS`**, not straight to `DUEL_CHOOSE_GAMBLE_CARD`. WHY: leftover transitions (e.g. Proper Drama `"03047"`) and then `endOfEvents` → choose must still run; Use also needs the events path for additional-card reveal + Ivy.
+
+**Do not** fire D.5 in the early `playerReaction` window — that is the regression Eddie hit on `_04010`.
+
+#### On Use
+
+1. `createSorcererAbilityStartEvent` (performer = duel actor).
+2. Bump `GAMBLE_REVEAL_COUNT` by `max(0, actor->ModifiedInfluence)`; peek the new cards; `addCardToWorld` each.
+3. Re-queue `createDuelGambleCardsRevealedEvent(actor, controller, $additionalIdsOnly)` — **only new ids** so this Reaction does not re-offer; Ivy can still react to newly revealed Sorceries.
+4. Round-lasting "Sorceries gain +N Parry": set a **Game global** (controller id), apply in EventHub on `EventDuelCalculateCombatCardStats` for that controller's Sorcery combat cards, clear in `stDuelEndOfRound`. WHY not sticky on the Reaction: after resolve the card often sinks back into the deck and leaves `$theah->cards`.
+5. `createSorcererAbilityPlayedEvent` + `setUsed(true)`.
+
+#### Deck-card `setUsed` pitfall
+
+Faction-deck cards are not in `buildCity()`. `FrameworkActionsTrait::actFromCardWithId` loads a fresh instance; `setUsed` → `getCardById` would load a **second** copy and persist `Used=false`. On the Risk class, override `actFromCardWithId` / `actFromCardPass` to `$game->theah->addCardToWorld($this)` before `parent::…` (mirror `_02045` / `_04010`).
+
+#### Cesca
+
+Deck-reveal Sorcerer Reactions are not Cesca-copyable as hand Risks. The **Action** half of the same card may still be (`Reaction_01008` allow-list + `copyCard`) when Cesca is the performer — see `_04010` Action / journal `2026-08-03-04`.
+
+References: `Reaction_04010`, `State_duelGambleRevealed_04010`, EventHub `EventDuelGambleCardsRevealed`, contrast C.5 `Maneuver_03047a` / Ivy `Reaction_02042`.
+
 ### `EventHighDramaPhasePlayerPassed` trigger semantics
 
 Fired by `FrameworkActionsTrait::actHighDramaPass` after the player elects to pass their High Drama Action. Field:

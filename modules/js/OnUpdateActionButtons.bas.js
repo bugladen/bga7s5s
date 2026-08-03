@@ -133,6 +133,26 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase04010': () => {
+                args.args.piles.forEach((pile) => {
+                    this.addActionButton(`actChoosePile-${pile.id}`, pile.name, () => this.bgaPerformAction('actFromCardWithId', {id: pile.id}));
+                });
+            },
+
+            'highDramaPhase04010_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
+            'duelGambleRevealed_04010': () => {
+                if (!this.isCurrentPlayerActive()) {
+                    return;
+                }
+                this.addActionButton(`actUse`, _('Use'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
             'highDramaPhase04005_2': () => {
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCard', 'disabled');

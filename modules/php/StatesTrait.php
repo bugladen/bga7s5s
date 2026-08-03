@@ -1572,6 +1572,8 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_CARD);
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
         $this->globals->delete(GAME::NEXT_COMBAT_CARD);
+        // WHY: Unravel the Thread Sorceries +1 Parry is "this round" only.
+        $this->globals->delete(Game::UNRAVEL_THE_THREAD_CONTROLLER_ID);
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
         $this->globals->delete(Game::DUEL_GAMBLED);

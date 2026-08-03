@@ -131,3 +131,25 @@ This is the **invert** of Defending Honor `_01078` ("Target enemy character issu
 
 References: `_04009` / `Action_04009` / `State_highDramaPhase04009` + `_2`; invert sibling `_01078` / `Action_01078` / `DEFENDING_HONOR_CHALLENGE_TYPE`.
 
+### Pattern B.4 — Sink up to N from a discard pile • draw • sink this card
+
+Printed (Unravel the Thread `_04010`): **`<b>Sorcerer Action:</b> Sink up to two cards from a single discard pile. Then, draw a card and sink this card.`**
+
+`RiskAction` (+ `ISorcererAbility` when Sorcerer). The Risk is already in discard as a played hand Action by resolve time — exclude **self** from the "up to N" pick.
+
+**Recipe:**
+
+1. **Performers:** `parent::getPerformersForAction` + Sorcerer (or printed trait) gate. Home eligible unless text says City.
+2. **Always enter a pile-chooser state** (`"NNNNN"`). List **every** player discard pile **and City Discard**, even when empty. Do **not** auto-skip when 0/1 non-empty piles, and do **not** hide empty piles (Eddie: City Discard must stay visible when empty).
+3. **Second state** (`"NNNNN_2"`): multi-select up to N from the chosen pile. **Pass = sink none** (0 cards), then still draw + sink self. Exclude the played Risk's own id from the pick pool.
+4. **Sink destinations:**
+   - Player discard card → bottom of **that card's owner's** faction deck (`createCardAddedToFactionDeck` / sink helpers).
+   - City Discard card → bottom of **City Deck** (not a player faction deck).
+5. Then `createCardDrawnEvent` → sink **this** Risk to the bottom of the owner's faction deck → `createActionResolvedEvent`. Bracket with Sorcerer start/played when applicable.
+6. **Wire** under `HIGH_DRAMA_PLAYER_TURN_EVENTS`; GameState classes + bas/faf JS trio (pile name buttons; chooseList multi-select + Pass). `EventHandlers.js` if multi-confirm needs a shared helper.
+7. **Cesca:** if Sorcerer Action with no character Target, Cesca copies when she is the **performer** — add `Action_NNNNN` to `Reaction_01008` allow-list + `copyCard("NNNNN")` (card copy, not host Action on Cesca — wealth pay + sink-self need a real hand Risk).
+
+**Do not** invent a Maneuver for this clause. No `IRiskThatTargetsCharacters` (discard/card chooser, not character Target).
+
+References: `_04010` / `Action_04010` / `State_highDramaPhase04010` + `_2`.
+

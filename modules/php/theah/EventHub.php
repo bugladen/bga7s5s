@@ -1772,6 +1772,21 @@ trait EventHub
                     $playerId = $card->ControllerId;
                     $playerName = $theah->game->getPlayerNameById($playerId);
 
+                    // WHY: Unravel the Thread (_04010) may already be back in the faction
+                    // deck (not in $theah->cards) when combat stats calc. Global survives.
+                    // Hub runs after cards (runEventHubAfterCards=true) — apply before DB write.
+                    $unravelControllerId = $theah->game->globals->get(Game::UNRAVEL_THE_THREAD_CONTROLLER_ID, 0);
+                    if ($unravelControllerId
+                        && $card->ControllerId == $unravelControllerId
+                        && $card->hasTrait("Sorcery"))
+                    {
+                        $event->addParry(1);
+                        $event->explanations[] = sprintf(
+                            $theah->game->translate("Unravel the Thread: %s gains +1 Parry (Sorcery this round)."),
+                            $card->getInjectCode()
+                        );
+                    }
+
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
                     }
@@ -1901,12 +1916,16 @@ trait EventHub
                     // WHY: Gamble is a reveal — names belong in the public log so
                     // opponents/spectators/history see them even though the stock
                     // choose UI keeps cards in _private args (active player only).
+                    // WHY addCardToWorld: faction-deck cards are not in buildCity();
+                    // deck-card Reactions (e.g. Unravel the Thread _04010) must receive
+                    // this event. Hub runs before cards (runEventHubAfterCards=false).
                     $names = [];
                     foreach ($event->revealedCardIds as $cardId)
                     {
                         $card = $theah->game->getCardObjectFromDb($cardId);
                         if ($card)
                         {
+                            $theah->addCardToWorld($card);
                             $names[] = $card->getInjectCode();
                         }
                     }

@@ -236,6 +236,33 @@
                 }
             },
 
+            'highDramaPhase04010': () => {
+                if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04010_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'duelGambleRevealed_04010': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+
             'highDramaPhase04005_2': () => {
                 this.factionHand.setSelectionMode('none');
             },

@@ -298,6 +298,49 @@
                 }
             },
 
+            'highDramaPhase04010': () => {
+                if (this.isCurrentPlayerActive() && args.args.args.performerId) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
+            'highDramaPhase04010_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+
+                    $('choose_container_name').innerHTML = args.args.args.discardPileLabel || _("Discard Pile");
+                    this.chooseList.setSelectionMode(2);
+                }
+            },
+
+            // WHY: Show revealed gamble cards BEFORE Use/Pass (public args, like 03047).
+            // Selection mode 0 — display only; decision is Use/Pass buttons.
+            'duelGambleRevealed_04010': () => {
+                if (!args.args.args || !args.args.args.cards) {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Gamble Cards');
+
+                args.args.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(0);
+            },
+
             'highDramaPhase04005_2': () => {
                 this.factionHand.setSelectionMode('single');
             },

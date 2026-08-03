@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01172;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04010;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03009;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
@@ -204,6 +205,7 @@ class Reaction_01008 extends CardReaction
             || $ability instanceof Action_02010
             || $ability instanceof Action_02051
             || $ability instanceof Action_03009
+            || $ability instanceof Action_04010
             || $ability instanceof Reaction_02001
             || $ability instanceof Reaction_03007;
     }
@@ -366,6 +368,14 @@ class Reaction_01008 extends CardReaction
                 $cardCopied = true;
                 $card = $this->copyCard($game, "03009", $cesca->ControllerId);
                 $ability = $card->getAbilityById("{$card->Id}_Action_03009");
+            }
+
+            //Unravel the Thread
+            if ($ability instanceof Action_04010)
+            {
+                $cardCopied = true;
+                $card = $this->copyCard($game, "04010", $cesca->ControllerId);
+                $ability = $card->getAbilityById("{$card->Id}_Action_04010");
             }
 
             //Adriana — Wound Non-Sorcerer (copy of Sorcerer Reaction)
