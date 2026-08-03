@@ -199,10 +199,22 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         format_string_recursive_with_injection: function (log, args) 
         {
             if (args) {
+                // WHY also scan arrays: multi-card log notifies pass cards[] (gamble
+                // reveal, Otto/Gustavo reveals). Old code skipped Array.isArray so
+                // logCardCache never got those objects and text tooltips fell back.
+                const cacheCard = (item) => {
+                    if (item && typeof item === 'object' && !Array.isArray(item) && item.id && item.type && !this.logCardCache[item.id]) {
+                        this.logCardCache[item.id] = item;
+                    }
+                };
                 for (const key in args) {
                     const val = args[key];
-                    if (val && typeof val === 'object' && !Array.isArray(val) && val.id && val.type && !this.logCardCache[val.id]) {
-                        this.logCardCache[val.id] = val;
+                    if (Array.isArray(val)) {
+                        for (const item of val) {
+                            cacheCard(item);
+                        }
+                    } else {
+                        cacheCard(val);
                     }
                 }
             }

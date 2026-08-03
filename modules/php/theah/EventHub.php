@@ -1919,7 +1919,12 @@ trait EventHub
                     // WHY addCardToWorld: faction-deck cards are not in buildCity();
                     // deck-card Reactions (e.g. Unravel the Thread _04010) must receive
                     // this event. Hub runs before cards (runEventHubAfterCards=false).
+                    // WHY cards[]: opponents never had these deck cards in cardProperties;
+                    // format_string_recursive_with_injection seeds logCardCache from
+                    // notify args (objects with id+type, including arrays) so text/image
+                    // log tooltips hydrate. Same pattern as Risk-play notify (May 2026).
                     $names = [];
+                    $cards = [];
                     foreach ($event->revealedCardIds as $cardId)
                     {
                         $card = $theah->game->getCardObjectFromDb($cardId);
@@ -1927,12 +1932,14 @@ trait EventHub
                         {
                             $theah->addCardToWorld($card);
                             $names[] = $card->getInjectCode();
+                            $cards[] = $card->getPropertyArray($theah->game);
                         }
                     }
 
                     $theah->game->notify->all("message", clienttranslate('${player_name} reveals the following cards for their Gamble: ${names}.'), [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "names" => implode(', ', $names),
+                        "cards" => $cards,
                     ]);
                 };
                 $handler($this, $event);
