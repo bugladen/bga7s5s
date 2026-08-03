@@ -50,6 +50,47 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     /**
+     * Shared Tippy/Popper options so large Hover Text tooltips stay on-screen.
+     * WHY strategy fixed + explicit preventOverflow: default tether keeps a wide
+     * tippy glued to edge cards, which clips past the viewport on mobile. Fixed
+     * + viewport rootBoundary + tether:false lets Popper slide the box fully in.
+     */
+    _getTippyBaseOptions: function(html, delay) {
+        return {
+            content: html,
+            allowHTML: true,
+            delay: [delay, 0],
+            interactive: true,
+            appendTo: document.body,
+            maxWidth: 'none',
+            theme: '7sfs',
+            placement: 'auto',
+            zIndex: 10000,
+            popperOptions: {
+                strategy: 'fixed',
+                modifiers: [
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            padding: 8,
+                            rootBoundary: 'viewport',
+                            tether: false,
+                            altAxis: true,
+                        },
+                    },
+                    {
+                        name: 'flip',
+                        options: {
+                            padding: 8,
+                            rootBoundary: 'viewport',
+                        },
+                    },
+                ],
+            },
+        };
+    },
+
+    /**
      * Internal method to actually create a tippy tooltip
      */
     _createTippyTooltip: function(elementId, html, delay) {
@@ -64,17 +105,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             element._tippy.destroy();
         }
 
-        const instance = window.tippy(element, {
-            content: html,
-            allowHTML: true,
-            delay: [delay, 0],
-            interactive: true,
-            appendTo: document.body,
-            maxWidth: 'none',
-            theme: '7sfs',
-            placement: 'auto',
-            zIndex: 10000,
-        });
+        const instance = window.tippy(element, this._getTippyBaseOptions(html, delay));
 
         this._tippyInstances.push(instance);
         return instance;
@@ -91,17 +122,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 element._tippy.destroy();
             }
 
-            const instance = window.tippy(element, {
-                content: html,
-                allowHTML: true,
-                delay: [delay, 0],
-                interactive: true,
-                appendTo: document.body,
-                maxWidth: 'none',
-                theme: '7sfs',
-                placement: 'auto',
-                zIndex: 10000,
-            });
+            const instance = window.tippy(element, this._getTippyBaseOptions(html, delay));
 
             this._tippyInstances.push(instance);
         });

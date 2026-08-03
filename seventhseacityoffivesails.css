@@ -1902,6 +1902,9 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
     border: 2px solid #c9a227;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    /* WHY border-box: width rules (esp. mobile 75vw) must include the 2px border
+       or the box is ~4px wider than intended and clips the viewport edge. */
+    box-sizing: border-box;
 }
 
 .tippy-box[data-theme~='7sfs'][data-placement^='top'] > .tippy-arrow::before {
@@ -2004,20 +2007,33 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
     }
 
     /* WHY stack on mobile: side-by-side is too wide for phone viewports.
-       Use nearly full viewport width so the text box fits any screen size. */
+       WHY 95% width: Eddie tuned up from 50%→75%→95% for readability.
+       Cap with 100vw-16 so borders/padding never push past the screen. */
     .tippy-box[data-theme~='7sfs']:has(._7sfs-text-tooltip-with-image) {
-        max-width: calc(100vw - 16px) !important;
-        width: calc(100vw - 16px);
+        max-width: min(calc((100vw - 16px) * 0.95), calc(100vw - 16px)) !important;
+        width: min(calc((100vw - 16px) * 0.95), calc(100vw - 16px));
+    }
+
+    /* Keep the positioned tippy root itself from exceeding the visual viewport. */
+    [data-tippy-root]:has(._7sfs-text-tooltip-with-image) {
+        max-width: calc(100vw - 16px);
     }
 
     .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image {
         flex-direction: column;
         gap: 8px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
+    /* WHY 50% image: full-width art ate vertical space and clipped the text
+       table at the bottom. Half width (height scales with it) leaves room for text;
+       container stays 95vw. */
     .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image ._7sfs-card-tooltip-img {
-        width: 100%;
-        max-width: min(248px, 100%);
+        width: 50%;
+        max-width: 50%;
+        height: auto;
         flex: none;
         align-self: center;
     }
@@ -2026,6 +2042,8 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
         width: 100%;
         max-width: 100%;
         flex: none;
+        /* WHY 9pt on mobile: Eddie — Hover Text body was too large stacked with card art. */
+        font-size: 8pt;
     }
 }
 
