@@ -915,39 +915,9 @@ trait UtilitiesTrait
 
     public function hasEquipRestrictions(Character $character, Attachment $attachment) : array
     {
-        if ($attachment->hasTrait("Armor") && $this->characterHasAttachmentOfType($character, "Armor", $attachment->OffHand)) 
-        {
-            if ($attachment->OffHand)
-            {
-                return [true, $this->translate("Character cannot have more than one Offhand attachment.")];
-            }
-            else
-            {
-                return [true, $this->translate("Character cannot have more than one Armor attachment.")];
-            }
-        }
-        if ($attachment->hasTrait("Attire") && $this->characterHasAttachmentOfType($character, "Attire", $attachment->OffHand)) 
-        {
-            if ($attachment->OffHand)
-            {
-                return [true, $this->translate("Character cannot have more than one Offhand attachment.")];
-            }
-            else
-            {
-                return [true, $this->translate("Character cannot have more than one Attire attachment.")];
-            }
-        }
-        if ($attachment->hasTrait("Weapon") && $this->characterHasAttachmentOfType($character, "Weapon", $attachment->OffHand)) 
-        {
-            if ($attachment->OffHand)
-            {
-                return [true, $this->translate("Character cannot have more than one Offhand attachment.")];
-            }
-            else
-            {
-                return [true, $this->translate("Character cannot have more than one Weapon attachment.")];
-            }
-        }
+        // WHY: Weapon/Armor/Attire/OffHand duplicates are no longer blocked here —
+        // Reaction_AttachmentTypeLimit lets the player choose which to discard after equip.
+        // OffHands still do not count against Weapon/Armor/Attire limits (handled in that reaction).
         return [false, ""];
     }
 

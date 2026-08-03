@@ -28,6 +28,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_AttachmentTypeLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_CrewCapLimit;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions\Reaction_NameGate;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
@@ -113,6 +114,7 @@ class Theah
         $this->Reactions = [
             new Reaction_CrewCapLimit(),
             new Reaction_NameGate(),
+            new Reaction_AttachmentTypeLimit(),
         ];
 
         $this->buildCityLocations();

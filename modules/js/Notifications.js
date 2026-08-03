@@ -573,41 +573,97 @@ return declare('seventhseacityoffivesails.notifications', null, {
             character.modifiedInfluence = args.modifiedInfluence;
         }
 
-        if (attachment && character)
+        if ( ! attachment || ! character)
         {
-            this.unattachCard(character, attachment);
-            
-            //Create a placeholder html element in front of the performer
-            const placeholderId = "unequip-placeholder";
-            dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
+            return;
+        }
 
-            //Destroy attachment element
-            if (attachment.divId)
+        this.unattachCard(character, attachment);
+
+        // WHY: Do not destroy/recreate the character — dojo.place on a stale
+        // character.divId caused the ownerDocument crash. Patch the live
+        // character in place, then re-seat the attachment as a city-row sibling
+        // so the following discard/sink notification can animate it away.
+        if (attachment.divId)
+        {
+            dojo.destroy(attachment.divId);
+            attachment.divId = null;
+        }
+
+        const characterElement = character.divId ? $(character.divId) : null;
+        if (characterElement)
+        {
+            const resolveEl = $(`${character.divId}_resolve_value`);
+            if (resolveEl)
             {
-                dojo.destroy(attachment.divId);
+                resolveEl.innerHTML = character.modifiedResolve;
+                if (character.modifiedResolve != character.resolve || character.wounds > 0)
+                    dojo.addClass(resolveEl, '_7sfs-modified-stat-value');
+                else
+                    dojo.removeClass(resolveEl, '_7sfs-modified-stat-value');
             }
 
-            //Destroy old character element
-            dojo.destroy(character.divId);
-
-            // WHY: Unequip-then-discard flows (e.g. Breastplate _01153) queue
-            // cardDiscardedFromPlay immediately after attachmentUnequipped. Recreating
-            // the attachment DOM between those notifications is unnecessary, and
-            // crashes if cardDiscardedFromPlay already ran (same cardProperties
-            // object, divId nulled) or if args.card replaced client state without
-            // a divId. Flows that leave the attachment in play (e.g. Technique_02055)
-            // still recreate here because location is not yet Player Discard.
-            if (attachment.location !== this.LOCATION_PLAYER_DISCARD)
+            const combatEl = $(`${character.divId}_combat_value`);
+            if (combatEl)
             {
-                const divId = attachment.divId ?? this.createCardId(attachment, attachment.location);
-                this.createCard(divId, attachment, placeholderId);
+                combatEl.innerHTML = character.modifiedCombat;
+                if (character.modifiedCombat != character.combat)
+                    dojo.addClass(combatEl, '_7sfs-modified-stat-value');
+                else
+                    dojo.removeClass(combatEl, '_7sfs-modified-stat-value');
             }
 
-            //Create the new character element
-            this.createCard(character.divId, character, placeholderId);
+            const finesseEl = $(`${character.divId}_finesse_value`);
+            if (finesseEl)
+            {
+                finesseEl.innerHTML = character.modifiedFinesse;
+                if (character.modifiedFinesse != character.finesse)
+                    dojo.addClass(finesseEl, '_7sfs-modified-stat-value');
+                else
+                    dojo.removeClass(finesseEl, '_7sfs-modified-stat-value');
+            }
 
-            //Destroy the placeholder
-            dojo.destroy(placeholderId);
+            const influenceEl = $(`${character.divId}_influence_value`);
+            if (influenceEl)
+            {
+                influenceEl.innerHTML = character.modifiedInfluence;
+                if (character.modifiedInfluence != character.influence)
+                    dojo.addClass(influenceEl, '_7sfs-modified-stat-value');
+                else
+                    dojo.removeClass(influenceEl, '_7sfs-modified-stat-value');
+            }
+
+            const attachmentCount = character.attachedCards?.length ?? 0;
+            characterElement.style.setProperty('--attachment-count', attachmentCount);
+            if (attachmentCount === 0)
+            {
+                dojo.removeClass(character.divId, '_7sfs-attachment-container');
+            }
+
+            character.attachedCards?.forEach((att) => {
+                if (att.divId && $(att.divId))
+                {
+                    $(att.divId).style.setProperty('--attachment-index', att.attachmentIndex);
+                }
+            });
+        }
+
+        // WHY: attachedToId is already null, so createAttachmentCard places as a
+        // sibling ('before') without _7sfs-attached-card absolute positioning —
+        // card sits in the city row in front of the character for the discard fly.
+        const anchorId = characterElement
+            ? character.divId
+            : this.getTargetElementForLocation(
+                character.location || attachment.location,
+                character.controllerId || attachment.controllerId
+            );
+        if (anchorId && $(anchorId))
+        {
+            const divId = this.createCardId(
+                attachment,
+                character.location || attachment.location
+            );
+            this.createCard(divId, attachment, anchorId);
         }
     },
 
@@ -791,13 +847,25 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        const card = this.cardProperties[args.cardId];        
+        const card = this.cardProperties[args.cardId];
+        if ( ! card)
+        {
+            return;
+        }
+
         card.location = this.LOCATION_PLAYER_DISCARD;
 
-        const cardElement = $(card.divId);
-        
-        // Animate the card shrinking to nothing
-        if (cardElement && this.animationManager && this.animationManager.animationsActive()) {
+        const cardElement = card.divId ? $(card.divId) : null;
+        const discardElement = $(`${args.playerId}-discard`);
+
+        // WHY: Same fly+shrink as city discard — attachmentUnequipped leaves the
+        // card as a city-row sibling so this has a real from-rect to animate from.
+        if (cardElement && discardElement)
+        {
+            await this.animateCardToElement(cardElement, discardElement, { duration: 400 });
+        }
+        else if (cardElement && this.animationManager && this.animationManager.animationsActive())
+        {
             await cardElement.animate([
                 { transform: 'scale(1)', opacity: 1 },
                 { transform: 'scale(0)', opacity: 0 }
@@ -807,8 +875,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }).finished;
         }
 
-        dojo.destroy(card.divId);
-        card.divId = null;
+        if (card.divId)
+        {
+            dojo.destroy(card.divId);
+            card.divId = null;
+        }
 
         const player = this.gamedatas.players[args.playerId];
         player.discard.push(card);
