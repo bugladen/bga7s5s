@@ -572,42 +572,84 @@ return declare('seventhseacityoffivesails.notifications', null, {
             character.modifiedInfluence = args.modifiedInfluence;
         }
 
-        if (attachment && character)
+        if ( ! attachment || ! character)
         {
-            this.unattachCard(character, attachment);
-            
-            //Create a placeholder html element in front of the performer
-            const placeholderId = "unequip-placeholder";
-            dojo.place(`<div id="${placeholderId}"></div>`, character.divId, 'before');
-
-            //Destroy attachment element
-            if (attachment.divId)
-            {
-                dojo.destroy(attachment.divId);
-            }
-
-            //Destroy old character element
-            dojo.destroy(character.divId);
-
-            // WHY: Unequip-then-discard flows (e.g. Breastplate _01153) queue
-            // cardDiscardedFromPlay immediately after attachmentUnequipped. Recreating
-            // the attachment DOM between those notifications is unnecessary, and
-            // crashes if cardDiscardedFromPlay already ran (same cardProperties
-            // object, divId nulled) or if args.card replaced client state without
-            // a divId. Flows that leave the attachment in play (e.g. Technique_02055)
-            // still recreate here because location is not yet Player Discard.
-            if (attachment.location !== this.LOCATION_PLAYER_DISCARD)
-            {
-                const divId = attachment.divId ?? this.createCardId(attachment, attachment.location);
-                this.createCard(divId, attachment, placeholderId);
-            }
-
-            //Create the new character element
-            this.createCard(character.divId, character, placeholderId);
-
-            //Destroy the placeholder
-            dojo.destroy(placeholderId);
+            return;
         }
+
+        this.unattachCard(character, attachment);
+
+        // WHY: Destroy/recreate via dojo.place(character.divId) crashes when the
+        // character node is already gone (stale divId after a prior unequip in a
+        // multi-detach death batch, or character already left play). Discard/sink
+        // flows also queue remove immediately after unequip, so rebuilding the
+        // character (and briefly recreating the attachment) is unnecessary.
+        // Update the live character DOM in place instead.
+        if (attachment.divId)
+        {
+            dojo.destroy(attachment.divId);
+            attachment.divId = null;
+        }
+
+        const characterElement = character.divId ? $(character.divId) : null;
+        if ( ! characterElement)
+        {
+            return;
+        }
+
+        const resolveEl = $(`${character.divId}_resolve_value`);
+        if (resolveEl)
+        {
+            resolveEl.innerHTML = character.modifiedResolve;
+            if (character.modifiedResolve != character.resolve || character.wounds > 0)
+                dojo.addClass(resolveEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(resolveEl, '_7sfs-modified-stat-value');
+        }
+
+        const combatEl = $(`${character.divId}_combat_value`);
+        if (combatEl)
+        {
+            combatEl.innerHTML = character.modifiedCombat;
+            if (character.modifiedCombat != character.combat)
+                dojo.addClass(combatEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(combatEl, '_7sfs-modified-stat-value');
+        }
+
+        const finesseEl = $(`${character.divId}_finesse_value`);
+        if (finesseEl)
+        {
+            finesseEl.innerHTML = character.modifiedFinesse;
+            if (character.modifiedFinesse != character.finesse)
+                dojo.addClass(finesseEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(finesseEl, '_7sfs-modified-stat-value');
+        }
+
+        const influenceEl = $(`${character.divId}_influence_value`);
+        if (influenceEl)
+        {
+            influenceEl.innerHTML = character.modifiedInfluence;
+            if (character.modifiedInfluence != character.influence)
+                dojo.addClass(influenceEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(influenceEl, '_7sfs-modified-stat-value');
+        }
+
+        const attachmentCount = character.attachedCards?.length ?? 0;
+        characterElement.style.setProperty('--attachment-count', attachmentCount);
+        if (attachmentCount === 0)
+        {
+            dojo.removeClass(character.divId, '_7sfs-attachment-container');
+        }
+
+        character.attachedCards?.forEach((att) => {
+            if (att.divId && $(att.divId))
+            {
+                $(att.divId).style.setProperty('--attachment-index', att.attachmentIndex);
+            }
+        });
     },
 
     notif_factionResolveCardDraw: async function( notif )
