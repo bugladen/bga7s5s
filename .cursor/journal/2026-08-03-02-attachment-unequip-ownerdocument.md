@@ -1,40 +1,34 @@
 # attachmentUnequipped ownerDocument crash
 
 ## Symptom
-`dojo.place` in `notif_attachmentUnequipped` (Notifications.js:581) threw
+`dojo.place` in `notif_attachmentUnequipped` threw
 `Cannot read properties of null (reading 'ownerDocument')`. Stack from type-limit
-discard testing after yesterday's Reaction_AttachmentTypeLimit work.
+discard testing after Reaction_AttachmentTypeLimit.
 
 ## Root cause
-Handler always destroy/recreated the character via
-`dojo.place(placeholder, character.divId, 'before')`. That requires a live DOM
-node. When `character.divId` is null or stale (node already gone), dojo.byId
-returns null → ownerDocument crash.
+Handler destroy/recreated the *character* via
+`dojo.place(placeholder, character.divId, 'before')`. Stale/missing character
+node → dojo.byId null → ownerDocument crash.
 
-WHY the old recreate path was fragile:
-- Multi-attachment death batches: unequip N destroys character DOM, recreate can
-  fail mid-batch → later unequips hit stale divId
-- Breastplate fix (2026-07-01) only skipped *attachment* recreate when location
-  was already Player Discard — but at unequip time location usually isn't discard
-  yet, and city-discard path never matched. Didn't guard character.divId at all
-- Discard/sink/locker always queue remove right after unequip, so recreating
-  character + briefly placing the attachment was pointless work
+## Fix (take 2 — Eddie wants visible unequip + discard fly)
 
-## Fix
-In-place update instead of destroy/recreate:
-1. unattachCard + clear attachment DOM
-2. If character element missing → return (data already updated)
-3. Else patch resolve/combat/finesse/influence, `--attachment-count`,
-   `--attachment-index` on remaining attachments, drop attachment-container class
-   when empty
+Keep character in-place updates (stats, `--attachment-count`, indices). Do **not**
+destroy/recreate the character.
 
-WHY in-place over "just guard dojo.place": guarding would still leave the
-fragile recreate path for the common discard case. In-place matches what the
-client actually needs and covers AttachmentMoved (unequip then equip recreates
-on the destination).
+After detaching, re-create the attachment as a city-row sibling (`attachedToId`
+already null → `createAttachmentCard` uses placement `before`, no absolute
+`_7sfs-attached-card`). Anchor on live character.divId; fall back to location
+endcap if character DOM is gone.
+
+`notif_cardDiscardedFromPlay` now `animateCardToElement` toward
+`${playerId}-discard` (same fly+shrink as city discard). Shrink-in-place only
+as fallback when discard icon missing.
+
+WHY recreate attachment but not character: Eddie wants to see the card in the
+city briefly, then watch it fly to discard. Character recreate was the crash
+vector and wasn't needed for that UX.
 
 ## Related
-- 2026-07-01-01-breastplate-unequip-notif-crash.md (partial, location-gated)
-- 2026-04-19-01-unequipped-attachment-positioning.md (detached sibling CSS —
-  no longer relevant if we don't recreate detached on unequip)
-- 2026-08-02-03-attachment-type-limit-reaction.md (trigger for this report)
+- 2026-07-01-01-breastplate-unequip-notif-crash.md
+- 2026-04-19-01-unequipped-attachment-positioning.md (detached sibling CSS still applies)
+- 2026-08-02-03-attachment-type-limit-reaction.md
