@@ -318,8 +318,9 @@ trait FrameworkActionsTrait
         }
 
         $this->theah->buildCity();
-        $locationCheck = $this->theah->getCityLocation($location);
-        if ($locationCheck === null)
+        // WHY: Player Home is a valid Move destination (adjacent from any city location) but
+        // is not in cityLocations — getCityLocation() would throw a fatal Exception.
+        if ($location !== Game::LOCATION_PLAYER_HOME && ! $this->theah->locationInCity($location))
         {
             throw new UserException(sprintf($this->translate("Location %s does not exist."), $location));
         }
