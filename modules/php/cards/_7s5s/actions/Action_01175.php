@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\GameFramework\UserException;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,7 +13,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01175 extends CardAction implements IAbilityThatTargetsCharacters
+// WHY: Must extend RiskAction (not CardAction) so isAvailableToPlayer requires LOCATION_HAND.
+// CardAction has no hand check; getInPlayActionsAvailableToPlayer scans non-hand locations
+// (including discard), so a CardAction Risk would wrongly appear while discarded.
+class Action_01175 extends RiskAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
