@@ -841,6 +841,75 @@ WHY "opposing" = controller-mismatch + location-match: this matches `Theah::getO
 
 Scope boundary for untagging: the scope is whatever the card text says. Daniella's "while using your abilities" reads as "for the duration of your turn" once you map ability-use to turn-scope — `EventPlayerTurnEnd` is the natural clear. Add `EventCardMoved` / `EventCharacterDestroyed` cleanups for the owner so an outstanding tag set doesn't get orphaned on a character that no longer opposes her.
 
+### Cost +1 taxes (equip vs recruit)
+
+Printed cost increases ("gains +1 cost") are implemented as **negative discounts**. The hook depends on *what* is being paid for — there is no generic `getCostDiscount`.
+
+| Printed trigger | Override | Call sites |
+|---|---|---|
+| **Equips** an attachment | `getEquipDiscount` | `Theah::getEquipDiscount` (equip / Let's Haggle / etc.) |
+| **Recruits** a Mercenary | **`getParleyDiscount`** | `FrameworkActionsTrait` recruit parley yes/no + `stRecruitComputeDiscount` / undo paths |
+
+**There is no `getRecruitDiscount`.** Do not invent one. Recruit cost is always `$WealthCost - getParleyDiscount(...)` (Cirilo's flat-cost type overrides *after* the discount global is set).
+
+```php
+// Recruit +1 cost — Hans Offenheim _04011
+public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, array &$explanations): int
+{
+    $discount = parent::getParleyDiscount($theah, $performer, $parleying, $explanations);
+
+    // WHY: Italic En Garde = Engaged=false (Astrid _04cd04 pressure sibling).
+    // Opposing + cardInCity: Home shares one location string across players.
+    if (
+        ! $this->Engaged
+        && $this->isControlled()
+        && $performer->isNotControlledByPlayer($this->ControllerId)
+        && $performer->Location == $this->Location
+        && $theah->cardInCity($performer)
+    )
+    {
+        $discount -= 1;
+        $explanations[] = sprintf(
+            $theah->game->translate("%s: +1 because performer is opposing Hans Offenheim."),
+            $this->getInjectCode()
+        );
+    }
+
+    return $discount;
+}
+```
+
+```php
+// Equip +1 cost — Makepeace _01092 (no En Garde on that print)
+public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, array &$explanations): int
+{
+    $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
+
+    if (
+        $performer->isNotControlledByPlayer($this->ControllerId)
+        && $performer->Location == $this->Location
+        && $theah->cardInCity($performer)
+    )
+    {
+        $discount -= 1;
+        $explanations[] = sprintf(
+            $theah->game->translate("%s: +1 because performer is opposing Makepeace Botwighte."),
+            $this->getInjectCode()
+        );
+    }
+
+    return $discount;
+}
+```
+
+WHY gate on `$parleying` is usually unnecessary for a recruit tax: `getParleyDiscount` is **only** called from recruit flows in this codebase (Kaspar/Song-of-Eisen *self* discounts also live here and *do* gate on `$parleying` / performer-is-self). A tax on "when an opposing character recruits" applies whether or not they Parley.
+
+Italic *En Garde* on a Character (not CityCharacter) is still `!$this->Engaged` — same precondition as Pattern G on city characters and En Garde Actions/Reactions. It is not flavor and not an Engage cost.
+
+Contrast: Leader *self* Parley discounts (Kaspar `_01035`, Character base Influence-while-parleying) use `$discount += N` when `$performer->Id == $this->Id && $parleying`. Cost *taxes* use `-= 1` on opposing performers.
+
+Reference: `_04011` Hans (recruit), `_01092` Makepeace (equip), scheme sibling `_03063` (equip onto character opposing your Scoundrel).
+
 ### Continuous Action — passive ability that lives on an `Action` class but never appears in the UI
 
 For passive abilities that the framework should treat as an ability but the player never directly activates (e.g., Daniella Dietrich `_03013`'s trait-tagging passive), mount the logic on a `CharacterAction` subclass attached via `IHasActions` / `ActionTrait`. Make `isAvailableToPlayer` return false so it never shows in the action menu — the Action is purely a `handleEvent` listener.

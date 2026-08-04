@@ -240,6 +240,37 @@ Destination may be **Home** when the Leader is Home — City Action only require
 
 Reference: `Action_03051`, attachment-button sibling `Action_03038b_2` / `Action_01194`.
 
+### Move target Mercenary Home ("in play and not available")
+
+Printed: **City Action: Move target Mercenary at this location Home. *(The Mercenary must be in play and not available)***
+
+One-step Pattern C character picker (Makepeace `_01092` UX).
+
+| Printed phrase | Implementation |
+|---|---|
+| **target** | `implements IAbilityThatTargetsCharacters` + `isValidTargetForAbility` |
+| **Mercenary at this location** | `hasTrait("Mercenary")` + same `Location` as owner |
+| **in play and not available** | **`isControlled()`** — recruited/controlled. Uncontrolled city Mercenaries are "available" recruit fodder and are **not** legal targets. |
+| No "opposing" | Own Mercenaries at the location are legal — do not invent an enemy-controller gate |
+| Move Home, Engage not printed | `createCardMovingEvent(..., Game::LOCATION_PLAYER_HOME, $engage = false, …)` |
+
+```php
+private function getEligibleMercenaries(Theah $theah, Character $owner): array
+{
+    $characters = $theah->getCharactersAtLocation($owner->Location);
+    return array_values(array_filter(
+        $characters,
+        fn(Character $c) => $c->hasTrait("Mercenary") && $c->isControlled()
+    ));
+}
+```
+
+Availability: `cardInCity($owner)` + `count(getEligibleMercenaries) > 0`. Transition `"NNNNN"` → highlight `ids` + Confirm. Always `createActionResolvedEvent` after the move.
+
+Sibling: Makepeace `Action_01092` moves an **opposing engaged** character with ≤ Influence — same move-Home / Confirm shape, different eligibility filters.
+
+Reference: `Action_04011` Hans, `Action_01092` Makepeace.
+
 ### City-location picker for CharacterActions — override `actFromActionWithIds`
 
 For step-N states where the player picks a city location (the JS submits via `onCityLocationsSelected → bgaPerformAction('actFromCardWithLocations', ...)`):
