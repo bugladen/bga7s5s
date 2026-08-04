@@ -1547,6 +1547,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
     setupNewStockCard: function( cardDiv, cardTypeId, cardId )
     {
         const card = this.cardProperties[cardTypeId];
+        // WHY: Mobile #approachDeck uses flex + relative positioning (see
+        // 2026-04-07-06-approach-deck-mobile-stacking-bug.md), so ebg.stock
+        // weight only affects desktop absolute left/top — not flex visual
+        // order. Mirror addCardToDeck weight via CSS order so schemes (and
+        // attachments) stay before characters on mobile.
+        if (card) {
+            cardDiv.style.order = (card.type === 'Scheme' || card.type === 'Attachment') ? '1' : '2';
+        }
         if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
             if (card.type === 'Character') {
                 this.createTextTooltipForCharacter(card, cardDiv.id);

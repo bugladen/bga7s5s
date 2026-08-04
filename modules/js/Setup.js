@@ -287,6 +287,15 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.approachDeck.onItemCreate = dojo.hitch( this, 'setupNewStockCard' ); 
         this.approachDeck.setSelectionAppearance( 'class' )
         dojo.connect( this.approachDeck, 'onChangeSelection', this, 'onApproachCardClicked' );
+        // WHY: Sort schemes first before insert so DOM order matches the
+        // ebg.stock weight / mobile flex CSS order (see setupNewStockCard).
+        // Desktop absolute layout already sorted by weight; mobile flex uses DOM.
+        gamedatas.approachDeck.sort((a, b) => {
+            const weightA = (a.type === 'Scheme' || a.type === 'Attachment') ? 1 : 2;
+            const weightB = (b.type === 'Scheme' || b.type === 'Attachment') ? 1 : 2;
+            if (weightA !== weightB) return weightA - weightB;
+            return a.id - b.id;
+        });
         // For each card in the approach deck, create a stock item
         gamedatas.approachDeck.forEach((card) => {
             this.addCardToDeck(this.approachDeck, card);
