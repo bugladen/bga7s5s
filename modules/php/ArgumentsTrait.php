@@ -725,6 +725,13 @@ trait ArgumentsTrait
         {
             $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->hasTrait("Duelist"));
         }
+        // WHY: Raven/Valeri/Torvo — no intervene. Empty the picker (UX); interventionCheck enforces.
+        else if ($challengeType == Game::RAVEN_CHALLENGE_TYPE
+            || $challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE
+            || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
+        {
+            $charactersCanIntervene = [];
+        }
 
         $mustDiscardToRefuse = $challengeType == Game::WHEN_LEAST_EXPECTED_CHALLENGE_TYPE
             && $performer->hasTrait("Duelist");

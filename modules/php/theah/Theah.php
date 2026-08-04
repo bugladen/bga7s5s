@@ -1967,6 +1967,10 @@ class Theah
         {
             throw new UserException($this->game->translate("Torvo Espada: No characters can intervene in this challenge."));
         }
+        else if ($challengeType == Game::RAVEN_CHALLENGE_TYPE)
+        {
+            throw new UserException($this->game->translate("Raven: No characters can intervene in this challenge."));
+        }
         else if ($challengeType == Game::AJA_CHALLENGE_TYPE && $character->ModifiedFinesse < 3)
         {
             throw new UserException($this->game->translate("Aja: Only characters with 3 Finesse or more may intervene in this challenge."));

@@ -83,7 +83,7 @@ The challenge resolution flow fires `createActionResolvedEvent` itself — eithe
 
 ### Engage-as-cost is automatic — when (engagement trichotomy)
 
-`StatesTrait::stIssueChallenge` auto-engages the performer for challenges of type `NORMAL`, `SERVO_SCARPA`, `TORVO_ESPADA`, and `AJA_CHALLENGE_TYPE` (the auto-engage list). Engagement for Pattern F actions is a **trichotomy** — read the printed cost and pick exactly one:
+`StatesTrait::stIssueChallenge` auto-engages the performer for challenges of type `NORMAL`, `SERVO_SCARPA`, `TORVO_ESPADA`, `AJA_CHALLENGE_TYPE`, `DANILO_CHALLENGE_TYPE`, and `RAVEN_CHALLENGE_TYPE` (the auto-engage list — grow it whenever trichotomy case (a) applies). Engagement for Pattern F actions is a **trichotomy** — read the printed cost and pick exactly one:
 
 | Printed cost / shape | Eligibility | Auto-engage list | Manual `createCardEngagedEvent` |
 |---|---|---|---|
@@ -135,11 +135,34 @@ A new `*_CHALLENGE_TYPE` constant is justified when the card imposes restriction
 | `modules/php/ArgumentsTrait.php::argsHighDramaChallengeActionAcceptChallenge` | Post-filter `$charactersCanIntervene` so disallowed characters never appear in the picker. Add any extra args (e.g., `defenderFinesse`) the client needs to gate UI. |
 | `modules/php/FrameworkActionsTrait.php::actHighDramaChallengeActionReject` | Throw `UserException` if the card forbids refusal under its conditions. |
 | `modules/js/OnUpdateActionButtons.js::highDramaChallengeActionAcceptChallenge` | Add a `dojo.addClass('btnRefuse', 'disabled')` branch for the new type — mirror the existing `EPEE_SANGLANTE` / `UNSANCTIONED_DUEL` block. Use the server-supplied args (e.g., `args.defenderFinesse`) to compute the condition. |
+| `modules/php/cards/tac/reactions/Reaction_02058.php` | **Only for full no-intervene types** (Valeri / Torvo / Raven): add the type to the early-return skip list so Jump In never prompts on a challenge that bans all intervention. |
 
 The intervention-restriction story specifically:
 - The args function filters the *visible* intervener list (UX).
 - `interventionCheck` enforces the same rule on the server (security).
 - For refusal, `actHighDramaChallengeActionReject` enforces server-side; the JS disable is UX. Always both.
+
+### Other characters cannot intervene
+
+For text like Raven `_04012` / Valeri `_01123` / Torvo `_02034`: **"Other characters cannot intervene"** on the challenge this Action issues.
+
+Mint a dedicated `*_CHALLENGE_TYPE` (action-owned restriction). Wire these in lockstep:
+
+| Integration | What |
+|---|---|
+| `Game.php` + JS int | New constant (next free int). |
+| `stIssueChallenge` auto-engage | **Only** if Engage is printed (trichotomy a) — Raven yes; Torvo's type is already on the list for its own engage path. |
+| `Theah::interventionCheck` | Unconditional throw for the type (no Finesse/trait filter — *all* characters banned). |
+| `ArgumentsTrait` | `$charactersCanIntervene = []` for the type. WHY empty (not leave the list and rely on throw): Pattern F requires args filter + server check; empty picker is the no-intervene UX filter. Raven also folded Valeri/Torvo into this empty branch. |
+| `Reaction_02058` | Skip the type — Jump In must not offer a dead prompt. |
+| Refuse / JS Refuse disable | **Skip** unless the card also restricts refusal. |
+
+Do **not** confuse with:
+- Ambush `Reaction_01023` — in-hand Reaction that sets a sticky `$PreventIntervention` on `EventCharacterIntervened` (no challenge type).
+- Aja — *conditional* intervene (Finesse ≥ 3), not a full ban.
+- Danilo — mint a type with **no** intervene ban (type only keys a follow-up).
+
+Canonical single-step Engage + Finesse + no-intervene: `Action_04012` Raven (mirrors `Action_03002`/`Action_04002` picker shape; `STAT_FINESSE`; `"04012_2"` → challenge machine).
 
 ### Character-scoped refuse restriction (NOT a new challenge type)
 
@@ -221,4 +244,6 @@ Always implement this interface on a challenge-issuing action — challenge targ
 | `Action_01083` (Legendary Reputation) | RiskCityAction variant — sets `LEGENDARY_REPUTATION_CHALLENGE_TYPE` (only Leaders may intervene). |
 | `_03050` (Mōri Daichi) | **Character-scoped refuse** via relative Combat — no new challenge type; helper + reject/args/JS/zombie. |
 | `Action_04002` (Danilo Danini) | Engage + Influence challenge + **intervene wound-or-draw choice**. `DANILO_CHALLENGE_TYPE` on auto-engage; `"04002_3"` on GENERATE_THREAT_EVENTS. |
+| `Action_04012` (Raven) | Engage + Finesse challenge + **other characters cannot intervene**. `RAVEN_CHALLENGE_TYPE` on auto-engage; empty interveners + `interventionCheck` + `Reaction_02058` skip. |
+| `Action_01123` (Valeri Mikhailov) | Move-to-adjacent + Combat challenge + no intervene (`VALERI_MIKHAILOV_CHALLENGE_TYPE`). Engage via move `$engage=true`, not auto-engage list. |
 

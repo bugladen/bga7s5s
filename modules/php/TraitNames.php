@@ -129,6 +129,7 @@ class TraitNames
             "Noble",
             "Numa",
             "Oathsworn",
+            "Ontoquas",
             "Orphan",
             "Pact",
             "Penance",

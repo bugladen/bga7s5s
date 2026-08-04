@@ -138,6 +138,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase04012': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase04010': () => {
                 args.args.piles.forEach((pile) => {
                     this.addActionButton(`actChoosePile-${pile.id}`, pile.name, () => this.bgaPerformAction('actFromCardWithId', {id: pile.id}));

@@ -244,6 +244,14 @@
                 }
             },
 
+            'highDramaPhase04012': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04010': () => {
                 if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

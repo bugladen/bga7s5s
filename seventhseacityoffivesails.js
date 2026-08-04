@@ -148,6 +148,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
             this.DANILO_CHALLENGE_TYPE = 25;
             this.RATTLE_THE_RIGGING_CHALLENGE_TYPE = 26;
+            this.RAVEN_CHALLENGE_TYPE = 27;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;

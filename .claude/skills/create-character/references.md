@@ -73,6 +73,10 @@
 | `modules/php/cards/bas/reactions/Reaction_04003b.php` | Wound+draw after `EventSorcererAbilityPlayed`; not `ISorcererAbility`; Pass before `setUsed`. |
 | `modules/php/cards/bas/_04011.php` (Hans Offenheim) | **En Garde recruit +1 cost via `getParleyDiscount`** + City Action move target Mercenary Home. Canonical recruit-tax (no `getRecruitDiscount`). Italic En Garde = `!$Engaged`. |
 | `modules/php/cards/bas/actions/Action_04011.php` | **Move target Mercenary Home.** `IAbilityThatTargetsCharacters`; eligibility = Mercenary + `isControlled()` ("in play and not available"); no opposing gate; `engage=false`. |
+| `modules/php/cards/bas/_04012.php` (Raven) | **Adversary cannot Maneuver while Ranged in dueling line** (`eventCheck` `EventResolveManeuver` + participant gate) + Engage/Finesse City Action with no intervene. |
+| `modules/php/cards/bas/actions/Action_04012.php` | **Pattern F Engage + Finesse + no intervene.** `RAVEN_CHALLENGE_TYPE` on auto-engage; empty interveners + `interventionCheck` + `Reaction_02058` skip. |
+| `modules/php/cards/_7s5s/techniques/Technique_01186.php` (Maryam) | **Armed Technique flag** blocking adversary Maneuvers via `EventResolveManeuver` + `adversaryId` — sticky `$CancelOpponentManeuvers` until Owner's next round. Live-condition sibling is Raven `_04012`. |
+| `modules/php/cards/_7s5s/actions/Action_01123.php` (Valeri) | **Move-to-adjacent + Combat + no intervene.** `VALERI_MIKHAILOV_CHALLENGE_TYPE`; engage via move event `$engage=true`. |
 | `modules/php/cards/_7s5s/_01092.php` (Makepeace Botwighte) | **Equip +1 cost via `getEquipDiscount`** + City Action move opposing engaged character Home. Equip-tax sibling of Hans's recruit tax. |
 | `modules/php/cards/_7s5s/actions/Action_01092.php` | **Move opposing engaged ≤Influence Home.** One-step Confirm picker UX that Hans reuses with different filters. |
 | `modules/php/cards/_7s5s/_01067.php` (Jean Urbain) | **Canonical location Technique grant aura.** Recruited / Destroyed / CardMoved lifecycle; grants `Technique_PlusOneRiposte` with ClassId `Technique_01067` to Musketeers. Trait-filtered sibling of Yepikhodov. |

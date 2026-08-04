@@ -94,7 +94,8 @@ class Reaction_02058 extends RiskReaction
                     // Challenge types that prohibit all intervention
                     $challengeType = $event->theah->game->globals->get(Game::CHALLENGE_TYPE);
                     if ($challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE ||
-                        $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
+                        $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE ||
+                        $challengeType == Game::RAVEN_CHALLENGE_TYPE)
                     {
                         return;
                     }

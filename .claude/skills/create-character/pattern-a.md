@@ -200,6 +200,59 @@ Edge cases (Elena journal `2026-05-16-01-elena-agnelli-03004-implementation.md` 
 - **Owner swapped into / out of an in-progress duel.** Not handled by the basic pattern. The next `EventDuelEndOfRound` recomputes from the player's line, which may already contain cards played by a prior duelist. Flag for QA if the text is sensitive to this; usually unimportant.
 - **Owner destroyed mid-duel.** `EventDuelEnd` still fires and resets the bonus. `ModifiedFinesse` on a discarded card doesn't affect anything else, so no special handling needed.
 
+### Adversary cannot Maneuver while trait in dueling line
+
+For text like **"While Raven has a Ranged card in her dueling line, the adversary cannot perform Maneuvers"** — a **live condition** ban (not a Technique that arms a sticky flag). Override `eventCheck` on the **card class**:
+
+```php
+public function eventCheck(Event $event)
+{
+    parent::eventCheck($event);
+
+    // WHY EventResolveManeuver + adversaryId (Maryam Technique_01186): blocks only the
+    // adversary's Maneuvers. Owner's own Maneuvers stay legal.
+    if ($event instanceof EventResolveManeuver && $event->adversaryId == $this->Id)
+    {
+        if ($this->hasTraitCardInDuelingLine($event->theah, "Ranged"))
+        {
+            throw new UserException(/* … */);
+        }
+    }
+}
+
+private function hasTraitCardInDuelingLine(Theah $theah, string $trait): bool
+{
+    // WHY participant gate (Elena): LOCATION_DUELING_LINE is per-player.
+    $challengerId = $theah->getDuelChallengerId();
+    $defenderId = $theah->getDuelDefenderId();
+    if ($this->Id != $challengerId && $this->Id != $defenderId)
+    {
+        return false;
+    }
+
+    foreach ($theah->getCardObjectsAtLocation(Game::LOCATION_DUELING_LINE, $this->ControllerId) as $card)
+    {
+        if ($card->hasTrait($trait))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+```
+
+| Shape | When | Event | Scope |
+|---|---|---|---|
+| **Live dueling-line condition** (Raven `_04012`) | While trait card is in Owner's line | `EventResolveManeuver` + `adversaryId == Owner.Id` | Re-check line each resolve — no sticky flag |
+| **Armed Technique flag** (Maryam `Technique_01186`) | After Technique resolves, until Owner's next round / duel end | Same Resolve + `adversaryId` gate + `$CancelOpponentManeuvers` | Sticky bool on the Technique |
+| **Global ban while Maneuver active** (Maneuver_01129) | After that Maneuver resolves for the rest of the duel | `EventManeuverActivated` (and Techniques) when `$IsActive` | Blocks **everyone**, including the Owner |
+
+WHY not `EventManeuverActivated` for Raven/Maryam: Activated has no `adversaryId` — you'd invent controller comparisons and still need the participant/line gates. Resolve's `adversaryId` is the established adversary-scoped backstop.
+
+Acceptable UX gap (Maryam too): the adversary may still *select* a Maneuver and fail at resolve. An Activated-time block would be an enhancement, not the mirror.
+
+Reference: `_04012` Raven; `Technique_01186` Maryam; contrast `Maneuver_01129`.
+
 ### Location-counting passives — `EventCardMoved` fires BEFORE the DB updates
 
 For "while you control another X at <Owner>'s location, she has +N [Stat]" (Angeline Dèmone `_03026`) or any other passive that **counts who is at a location** in response to `EventCardMoved` — the DB location field hasn't been updated yet when card->handleEvent runs. `EventCardMoved` sets `runEventHubAfterCards = true`, so the EventHub's location update runs AFTER every card's `handleEvent`. A naive `getCharactersAtLocation($this->Location)` returns the *pre-move* state: the moving card is still at `fromLocation`, not at `toLocation`.
@@ -994,6 +1047,7 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventCharacterCombatModified` / `EventCharacterInfluenceModified` | A character's modified stat changed (`$event->CharacterId`, `$event->OldCombat`/`NewCombat` or `OldInfluence`/`NewInfluence`) | Re-sync a "set [StatA] equal to [StatB]" link when the source stat changes, or re-apply the link when an external effect mutates the target stat during the override. EventHub applies the new stat **before** card `handleEvent` runs (`runEventHubAfterCards = false`). Reference: `_03028` Térence. |
 | `EventAttachmentEquipped` | An attachment was equipped (`$event->characterId`, `$event->attachmentId`; `$event->asAction` distinguishes action-equip vs passive) | "After a character equips an attachment at [location] …" City Reactions. Look up equipping character via `getCharacterById($event->characterId)` and compare `.Location` to the named city constant. Skip `$attachment->FakeAttachment`. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01039` (owner self-equip only). |
 | `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
+| `EventResolveManeuver` | A Maneuver is resolving (`$event->playerId` actor, `$event->adversaryId` opponent, `$event->maneuverId`) | "Adversary cannot perform Maneuvers" backstop — gate `adversaryId == Owner.Id`. `_04012` Raven (live line condition); `Technique_01186` Maryam (armed flag). |
 | `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel (`$event->gambled` is set from `duel_round.gambled`) | "+X to combat card stats" — `_01116` Yevgeni (every card); gambled-only — `_03037` Sanjay (`$event->gambled` gate) |
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
 | `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006` |
