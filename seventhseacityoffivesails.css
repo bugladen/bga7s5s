@@ -2010,8 +2010,8 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
        WHY 95% width: Eddie tuned up from 50%→75%→95% for readability.
        Cap with 100vw-16 so borders/padding never push past the screen. */
     .tippy-box[data-theme~='7sfs']:has(._7sfs-text-tooltip-with-image) {
-        max-width: min(calc((100vw - 16px) * 0.95), calc(100vw - 16px)) !important;
-        width: min(calc((100vw - 16px) * 0.95), calc(100vw - 16px));
+        max-width: min(calc((100vw - 16px) * 0.85), calc(100vw - 16px)) !important;
+        width: min(calc((100vw - 16px) * 0.85), calc(100vw - 16px));
     }
 
     /* Keep the positioned tippy root itself from exceeding the visual viewport. */
@@ -2027,12 +2027,12 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
         box-sizing: border-box;
     }
 
-    /* WHY 50% image: full-width art ate vertical space and clipped the text
-       table at the bottom. Half width (height scales with it) leaves room for text;
-       container stays 95vw. */
+    /* WHY 60% image: full-width art ate vertical space and clipped the text
+       table at the bottom. Half was too small; Eddie settled on 60% of
+       container (height scales with it). Container stays ~85vw. */
     .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image ._7sfs-card-tooltip-img {
-        width: 50%;
-        max-width: 50%;
+        width: 70%;
+        max-width: 70%;
         height: auto;
         flex: none;
         align-self: center;

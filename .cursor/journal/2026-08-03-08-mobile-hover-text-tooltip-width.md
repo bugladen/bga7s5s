@@ -31,9 +31,13 @@ CSS assists: `box-sizing: border-box` on `.tippy-box[data-theme~='7sfs']` so the
 Mobile Hover Text body (`._7sfs-text-tooltip-with-image ._7sfs-basic-tooltip` in the mobile tippy media query) set to **9pt** (file may show Eddie's later tweak). Desktop stays 10pt. Scoped to the combined image+text tooltip only.
 
 ## Image vs text vertical fit
-Eddie set container to **95%**. Full-width stacked image still ate vertical space → text clipped at bottom.
+Eddie set container to **95%** (later tuned to **85%** in CSS). Full-width stacked image still ate vertical space → text clipped at bottom.
 
-Fix: image in combined mobile tooltip is **50%** of container width (`width/max-width: 50%; height: auto`), centered. Container stays 95%. Height scales with width so text gets more room below.
+Image width in combined mobile tooltip: **60%** of container (`width/max-width: 60%; height: auto`), centered. Was 50%, then bumped to 60% per Eddie.
 
 ## Unfinished
 If text still clips on very short landscape phones, next options: max-height + scroll on the text column, or shrink image further.
+
+## Related (2026-08-04)
+Mobile selection vs tippy: see `2026-08-04-01-mobile-tippy-blocks-card-select.md` — `touch: ['hold', 500]` so taps select and long-press shows tooltip.
+
