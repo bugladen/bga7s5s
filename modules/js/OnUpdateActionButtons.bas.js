@@ -189,6 +189,12 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'duelChooseTechnique_04013': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
         };
 
         if (methods[stateName])

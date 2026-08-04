@@ -359,6 +359,33 @@ if ($event instanceof EventGenerateChallengeThreat
 
 WHY split the work this way (vs. mirroring Bastien's all-in-events approach in `Technique_01063Swap`): Bastien defers the condition swap into `EventGenerateChallengeThreat` (with a `CHALLENGE_ACCEPTED` guard) so the swap doesn't fire if the challenge is rejected. That's a stricter, more conservative shape. The in-`actFromTechniqueWithId` shape is cleaner to read and matches the user's preference (see project history), but if your card text says the swap is *conditional on the challenge being accepted*, prefer Bastien's pattern instead so a rejection doesn't leave a stuck DUEL_CHALLENGER condition on a character that never enters a duel.
 
+### Destroy Owner's attachment for +N Thrust
+
+Printed shape (Tomas `_04013`): **"Technique: Destroy an attachment equipped to Tomas • +2[Thrust]."**
+
+Sibling shapes:
+- **`Technique_DestroyPlusOneThrust`** (Improvised Weapon `_01155`) — destroy **self** (the attachment that owns the Technique) on Calculate; no picker.
+- **`Technique_02026b`** — destroy **adversary's** engaged attachment via picker; no thrust bonus.
+- **`Technique_02011`** — engage own attachment via the same button-list picker UX.
+
+**Availability:** `IN_DUEL` + `getDuelRoundActor()->Id == owner.Id` + ≥1 non-`FakeAttachment` in `$owner->Attachments`.
+
+**Resolve → picker → Calculate:**
+
+1. On `EventResolveTechnique`: `createTechniqueTransitionEvent(..., "NNNNN", ...)` (HIGHEST_PRIORITY so the picker runs before Calculate).
+2. State `DUEL_CHOOSE_TECHNIQUE_NNNNN` (`521` + cardId): args list `{id, name}` for destroyable attachments; JS one button per attachment (`actFromCardWithId`) — mirror `duelChooseTechnique_02011` / `02026b`. No OnEntering highlight needed.
+3. In `actFromTechniqueWithId`: validate id ∈ `$owner->Attachments` and not Fake; then destroy recipe:
+   - `createAttachmentUnequippedEvent` → `eventCheck` → queue
+   - CityAttachment → `createCardAddedToCityDiscardPileEvent(..., $asEffect = true)`
+   - else → `createCardDiscardedFromPlayEvent(..., $asEffect = true)`
+4. On `EventDuelCalculateTechniqueValues`: `$event->thrust += N` + explanation. Also handle `EventGenerateChallengeThreat` (`adversaryThreat += N`) like `Technique_PlusTwoThrust` for challenge-time activation.
+
+**Card class wiring:** `Character` already `implements IHasTechniques` + `use TechniqueTrait`. Set `$this->Techniques = [new Technique_NNNNN()]` only — do **not** re-declare the interface/trait on the Character subclass (contrast `IHasReactions` / `ReactionTrait`, which Characters do **not** inherit).
+
+**Interaction note:** if the Owner also has a "would be discarded → salvage" City Reaction (Tomas), the Technique's discard can immediately offer that Reaction the same day if unused — intentional when both are printed; do not special-case suppress.
+
+Reference: `Technique_04013`; picker UX `Technique_02011` / `Technique_02026b`; self-destroy `Technique_DestroyPlusOneThrust`; thrust helper `Technique_PlusTwoThrust`.
+
 ### Optional engage Artifact for upgraded Parry ("+1 Parry. You may engage an Artifact … for +2 instead.")
 
 For text like Ekaterina's Technique (`Technique_03049`): a base stat bonus that can be upgraded by engaging an equipped Artifact. Sibling: Katain `Technique_02011` is **mandatory** engage of a Ranged Weapon for +1 Parry (availability requires the attachment; no base option).

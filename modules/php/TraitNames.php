@@ -15,6 +15,7 @@ class TraitNames
             "Ambush",
             "Anatol Ayh",
             "Animal",
+            "Antiquarian",
             "Aragosta",
             "Aristocrat",
             "Armor",

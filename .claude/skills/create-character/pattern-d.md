@@ -475,12 +475,47 @@ WHY `stackEvent` (not `queueEvent`) for the transition: stacking puts the reacti
 
 Reference: `Reaction_03016a` (Ise Dusk opt-out, on a Character in play), `Reaction_01140` (in-hand RiskReaction sibling — same dance for player-driven moves).
 
+**Discard events also support `cancelDeclinedByCardIds`.** `EventCardDiscardedFromPlay` and `EventCardAddedToCityDiscardPile` carry the same array field as `EventCardMoving` (added for Tomas `_04013`). Clone before `$event->canceled = true`, Decline re-queues with `cancelDeclinedByCardIds[] = $owner->Id`. Do not invent a parallel marker.
+
+### Would-be-discarded attachment → equip paying costs
+
+Printed shape (Tomas `_04013`): **"City Reaction: When a non-Artifact attachment equipped to your character at this location would be put into a discard pile • Equip it to your character at this location instead, paying all costs."**
+
+This is cancel-and-reissue **plus** click-to-pay equip — not a past-tense "after discarded" Reaction (the card must never reach the discard pile on Accept).
+
+**Trigger both discard pipelines:**
+
+| Pipeline | Event |
+|---|---|
+| Faction / Risk attachments | `EventCardDiscardedFromPlay` |
+| City attachments | `EventCardAddedToCityDiscardPile` |
+
+Both set `runEventHubAfterCards = true`, so `$event->canceled = true` in card `handleEvent` prevents the Hub move (same as Mysta `_02037` Forced sink).
+
+**WHY stash on `EventAttachmentUnequipped` (map `attachmentId => hostId`):**
+
+1. Destroy/type-limit/death always queue **unequip then discard**. Unequip has `runEventHubAfterCards = false` → Hub clears `AttachedToId` **before** discard card handlers run.
+2. Discard `sourceId` is **not** reliably the host — `Technique_02026b` / destroy effects pass the ability owner; only `Character::unEquipAllAttachments` / `Reaction_AttachmentTypeLimit` pass the character id.
+3. A single pending id loses multi-attachment death chains (A/B/C unequip then discard FIFO). Use a **map**; clear entries on equip of that id, dusk end, Accept, Decline.
+
+Gates on discard: `isAvailable`, `cardInCity($owner)`, non-Artifact, not `FakeAttachment`, `fromLocation == owner.Location`, host was your character at that location (stash or still-attached fallback), **and** ≥1 affordable eligible equip target (`canAttachTo` + `!hasEquipRestrictions` + `handWealthCount >= equipCost`). Skip the prompt when nobody can be paid for.
+
+**Stages:** `'pick'` (button per eligible character with printed cost) → `'pay'` (Don Constanzo click-to-pay) → finalize. Cost 0 skips pay. Cost = `max(0, WealthCost - getEquipDiscount(performer, attachment))`.
+
+**Do NOT use `PAY_STATE_EQUIP_ATTACHMENT`.** That success path returns to High Drama player-turn; discard salvage fires mid-duel / type-limit / character death. Roll payment inside the Reaction.
+
+**Finalize:** queue payment hand discards (`asPayment = true`) atomically → `getRequiredAttachTargetId` → `createAttachmentEquippedEvent(..., $asAction = true, discount, cost, explanations)` → `eventCheck` → queue. `setUsed(true)` only on Accept.
+
+**Decline:** re-queue cloned discard with `cancelDeclinedByCardIds[] = owner.Id`; do **not** `setUsed` (another attachment the same day can still salvage). Use `stackEvent` for the reaction transition so the prompt jumps ahead of later discards in the same batch.
+
+Reference: `Reaction_04013`; payment sibling `Reaction_03003`; cancel-dance sibling `Reaction_03016a`; Forced discard-cancel sibling `_02037` Mysta.
+
 ### Reactions that need to pay a wealth cost — click-to-pay
 
-For Reactions where the effect costs Wealth (e.g., Don Constanzo's "at -1 cost"), the framework's `PAY_STATE_PLAY_BRUTE` / `actPayForBrute` is usually NOT a fit because:
+For Reactions where the effect costs Wealth (e.g., Don Constanzo's "at -1 cost", Tomas's "paying all costs" re-equip), the framework's `PAY_STATE_PLAY_BRUTE` / `actPayForBrute` / **`PAY_STATE_EQUIP_ATTACHMENT`** is usually NOT a fit because:
 
-- Its success transition is hard-coded to `HIGH_DRAMA_PLAYER_TURN_EVENTS`, but reactions can fire outside high drama (dawn cleanup, pressure, duel cleanup) and must return to whatever state cycle invoked them.
-- It requires the paid-for card to be in `LOCATION_HAND`. Reactions like "from hand or discard pile" don't fit.
+- Its success transition is hard-coded to `HIGH_DRAMA_PLAYER_TURN_EVENTS`, but reactions can fire outside high drama (dawn cleanup, pressure, duel cleanup, mid-duel discard) and must return to whatever state cycle invoked them.
+- It requires the paid-for card to be in `LOCATION_HAND`. Reactions like "from hand or discard pile" or "already in play, about-to-discard" don't fit.
 
 Instead, do the payment **inside the Reaction class** using the standard `playerReaction` loop. Pattern:
 
@@ -499,7 +534,7 @@ Instead, do the payment **inside the Reaction class** using the standard `player
 7. **Always set `$owner->IsUpdated = true`** on every reaction-instance state mutation so the framework persists the running totals across reaction-loop iterations.
 8. **Skip the `'pay'` stage entirely when `cost == 0`** — go straight to finalize.
 
-Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of this pattern.
+Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay implementation. Equip-paying sibling: `Reaction_04013` (Tomas) — same click-to-pay loop, cost from `getEquipDiscount`, finalize via `createAttachmentEquippedEvent`.
 
 ### Reaction examples
 
@@ -515,6 +550,7 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of 
 | `Reaction_02001` | Andriana — Sorcerer Reaction (so implements `ISorcererAbility`); button-prompts to wound a non-Sorcerer. |
 | `Reaction_03001` | Cesca del Rosso's "after Cesca performs a Sorcerer ability, wound an opposing character" — button-per-opposing-character target picker, with a Pass button. |
 | `Reaction_03003` (Don Constanzo) | Multi-stage Reaction with hand/discard source selection, **incremental click-to-pay wealth handling** rolled inside the reaction (no PAY_STATE_PLAY_BRUTE coupling), and muster-at-Home. Canonical reference for cost-bearing Reactions and "put into play from hand or discard pile." |
+| `Reaction_04013` (Tomas — salvage attachment) | **Would-be-discard → equip paying costs.** Cancel both discard events; unequip-stash map for host identity; pick character + click-to-pay (`getEquipDiscount`); Decline re-queues discard via `cancelDeclinedByCardIds`. No `PAY_STATE_EQUIP_ATTACHMENT`. |
 | `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
 | `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
 | `Reaction_03040` (Soline el Gato — any character arrives) | **"After a character moves here"** without enemy gate — allies trigger too. Effect: button-per-other-city-location + Pass; `createCardMovingEvent(engage=false)` for Soline herself. Contrast `Reaction_03016b` (enemy-only) and `Reaction_01089` (adjacent-only after Action resolves). |
