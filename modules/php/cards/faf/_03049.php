@@ -42,6 +42,8 @@ class _03049 extends Leader implements IHasReactions, IHasTechniques
 
         $this->initializeFaction("Ussura");
 
+        $this->InPlayXImageOffset = 10;
+
         $this->Resolve = 6;
         $this->Combat = 1;
         $this->Finesse = 2;
