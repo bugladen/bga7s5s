@@ -50,6 +50,53 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     /**
+     * Shared Tippy/Popper options so large Hover Text tooltips stay on-screen.
+     * WHY strategy fixed + explicit preventOverflow: default tether keeps a wide
+     * tippy glued to edge cards, which clips past the viewport on mobile. Fixed
+     * + viewport rootBoundary + tether:false lets Popper slide the box fully in.
+     * WHY touch hold: default tippy touch:true shows on first tap and steals the
+     * click from selectable in-play cards (tooltip on `${divId}_image`, same node
+     * as onCardInPlayClicked). Hold = long-press for tooltip, short tap selects.
+     */
+    _getTippyBaseOptions: function(html, delay) {
+        return {
+            content: html,
+            allowHTML: true,
+            delay: [delay, 0],
+            interactive: true,
+            appendTo: document.body,
+            maxWidth: 'none',
+            theme: '7sfs',
+            placement: 'auto',
+            zIndex: 10000,
+            // 250ms is long enough to distinguish from a selection tap, short enough
+            // that checking card text on mobile still feels intentional.
+            touch: ['hold', 250],
+            popperOptions: {
+                strategy: 'fixed',
+                modifiers: [
+                    {
+                        name: 'preventOverflow',
+                        options: {
+                            padding: 8,
+                            rootBoundary: 'viewport',
+                            tether: false,
+                            altAxis: true,
+                        },
+                    },
+                    {
+                        name: 'flip',
+                        options: {
+                            padding: 8,
+                            rootBoundary: 'viewport',
+                        },
+                    },
+                ],
+            },
+        };
+    },
+
+    /**
      * Internal method to actually create a tippy tooltip
      */
     _createTippyTooltip: function(elementId, html, delay) {
@@ -64,17 +111,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             element._tippy.destroy();
         }
 
-        const instance = window.tippy(element, {
-            content: html,
-            allowHTML: true,
-            delay: [delay, 0],
-            interactive: true,
-            appendTo: document.body,
-            maxWidth: 'none',
-            theme: '7sfs',
-            placement: 'auto',
-            zIndex: 10000,
-        });
+        const instance = window.tippy(element, this._getTippyBaseOptions(html, delay));
 
         this._tippyInstances.push(instance);
         return instance;
@@ -91,17 +128,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 element._tippy.destroy();
             }
 
-            const instance = window.tippy(element, {
-                content: html,
-                allowHTML: true,
-                delay: [delay, 0],
-                interactive: true,
-                appendTo: document.body,
-                maxWidth: 'none',
-                theme: '7sfs',
-                placement: 'auto',
-                zIndex: 10000,
-            });
+            const instance = window.tippy(element, this._getTippyBaseOptions(html, delay));
 
             this._tippyInstances.push(instance);
         });
@@ -826,11 +853,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const finesse = card.dashedFinesse ? '-' : card.finesse;
         const influence = card.dashedInfluence ? '-' : card.influence;
 
+        // WHY: Title sits with Name — players look for "Name, Title" as one identity
+        // block; burying Title under Cost/Set made it easy to miss.
+        // WHY: Card # is catalog reference, not identity — park it last among card
+        // fields. City Card # stays near Set (city-deck index players look up early).
         let rows = [
             row(_('Name'), _(card.name)),
+            row(_('Title'), _(card.title)),
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            row(_('Card #'), card.cardNumber ?? ''),
             ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
         ];
 
@@ -839,7 +870,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
 
         rows.push(
-            row(_('Title'), _(card.title)),
             row(_('Resolve'), card.resolve),
             row(_('Combat'), combat),
             row(_('Finesse'), finesse),
@@ -858,6 +888,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
+
+        rows.push(row(_('Card #'), card.cardNumber ?? ''));
 
         if (card.controllerId && card.location !== 'Approach' && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.techniques?.length;
@@ -888,7 +920,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Traits'), traits),
             row(_('Initiative'), card.initiative),
             row(_('Panache&nbsp;Modifier'), card.panacheModifier),
@@ -897,6 +928,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
+
+        rows.push(row(_('Card #'), card.cardNumber ?? ''));
 
         if (card.controllerId && card.location !== 'Approach') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.techniques?.length;
@@ -927,20 +960,15 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const parry = card.dashedParry ? '-' : (card.parry ?? '-');
         const thrust = card.dashedThrust ? '-' : (card.thrust ?? '-');
 
+        // WHY: Title sits with Name — same identity block as character tooltips.
+        // WHY: Card # last among card fields; City Card # stays near Set.
         let rows = [
             row(_('Name'), _(card.name)),
+            ...(card.title ? [row(_('Title'), _(card.title))] : []),
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            row(_('Card #'), card.cardNumber ?? ''),
             ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
             row(_('Cost'), card.wealthCost ?? ''),
-        ];
-
-        if (card.title) {
-            rows.push(row(_('Title'), _(card.title)));
-        }
-
-        rows.push(
             row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
             row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
             row(_('Finesse&nbsp;Modifier'), fmtMod(card.finesseModifier)),
@@ -950,10 +978,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Thrust'), thrust),
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
-        );
+        ];
 
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
+
+        rows.push(row(_('Card #'), card.cardNumber ?? ''));
 
         if (card.controllerId && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;
@@ -987,7 +1017,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            row(_('Card&nbsp;#'), card.cardNumber ?? ''),
             ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
@@ -995,6 +1024,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
+
+        rows.push(row(_('Card&nbsp;#'), card.cardNumber ?? ''));
 
         const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;
         if (hasAbilities) rows.push('<tr><td colspan="2"><hr></td></tr>');
@@ -1028,7 +1059,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
             row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            row(_('Card #'), card.cardNumber ?? ''),
             row(_('Cost'), card.wealthCost ?? ''),
             row(_('Riposte'), riposte),
             row(_('Parry'), parry),
@@ -1039,6 +1069,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
+
+        rows.push(row(_('Card #'), card.cardNumber ?? ''));
 
         const html = this.prependCardImageToTextTooltip(card, `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`);
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);
@@ -1527,6 +1559,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
     setupNewStockCard: function( cardDiv, cardTypeId, cardId )
     {
         const card = this.cardProperties[cardTypeId];
+        // WHY: Mobile #approachDeck uses flex + relative positioning (see
+        // 2026-04-07-06-approach-deck-mobile-stacking-bug.md), so ebg.stock
+        // weight only affects desktop absolute left/top — not flex visual
+        // order. Mirror addCardToDeck weight via CSS order so schemes (and
+        // attachments) stay before characters on mobile.
+        if (card) {
+            cardDiv.style.order = (card.type === 'Scheme' || card.type === 'Attachment') ? '1' : '2';
+        }
         if (this.getGameUserPreference(this.USER_PREFERENCES_CARD_HOVER_TYPE) == 2) {
             if (card.type === 'Character') {
                 this.createTextTooltipForCharacter(card, cardDiv.id);
