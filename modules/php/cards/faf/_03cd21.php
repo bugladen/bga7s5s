@@ -31,6 +31,8 @@ class _03cd21 extends CityAttachment
         $this->WealthCost = 2;
         $this->ResolveModifier = 1;
 
+        $this->InPlayXImageOffset = -20;
+
         $this->Traits = [
             clienttranslate('Artifact'),
             clienttranslate('Syrneth'),
