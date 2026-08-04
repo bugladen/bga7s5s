@@ -54,6 +54,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
      * WHY strategy fixed + explicit preventOverflow: default tether keeps a wide
      * tippy glued to edge cards, which clips past the viewport on mobile. Fixed
      * + viewport rootBoundary + tether:false lets Popper slide the box fully in.
+     * WHY touch hold: default tippy touch:true shows on first tap and steals the
+     * click from selectable in-play cards (tooltip on `${divId}_image`, same node
+     * as onCardInPlayClicked). Hold = long-press for tooltip, short tap selects.
      */
     _getTippyBaseOptions: function(html, delay) {
         return {
@@ -66,6 +69,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             theme: '7sfs',
             placement: 'auto',
             zIndex: 10000,
+            // 250ms is long enough to distinguish from a selection tap, short enough
+            // that checking card text on mobile still feels intentional.
+            touch: ['hold', 250],
             popperOptions: {
                 strategy: 'fixed',
                 modifiers: [
