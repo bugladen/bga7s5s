@@ -962,9 +962,14 @@ trait EventHub
                 $handler = function (Theah $theah, EventCombatCardAnnounced $event)
                 {
                     $card = $theah->getCardById($event->cardId);
+                    // WHY card: combat cards live in the announcer's private hand, so
+                    // opponents never have them in cardProperties. format_string_recursive_with_injection
+                    // seeds logCardCache from notify args (objects with id+type) so the
+                    // announce log hover hydrates before reactions like Reaction_02039 fire.
                     $theah->game->notify->all("message", clienttranslate('${player_name} announces ${card_inject_code} as their Combat Card.'), [
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
+                        "card" => $card->getPropertyArray($theah->game),
                     ]);
                 };
                 $handler($this, $event);
