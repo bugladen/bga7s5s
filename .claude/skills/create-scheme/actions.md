@@ -6,17 +6,39 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 | Card phrase | Action base class |
 |---|---|
+| **`<b>Action:</b>`** on a scheme (not City Action) | `SchemeAction` — `RequiresPerformerSelected = false`; no city-performer gate |
 | **`<b>City Action:</b>`** on a scheme | `SchemeCityAction` |
 | **`<b>Leader City Action:</b>`** on a scheme | `SchemeCityAction` (with a `hasTrait("Leader")` performer-filter) |
 | **`<b>Risk City Action:</b>`** | `RiskCityAction` (the Risk shape — pressures/wagers; see `create-character`) |
 
-`SchemeCityAction extends Scheme` — so the action class IS the scheme. (Same shape as `CharacterAction extends Character`.) The action class is what gets registered in `$this->Actions = [new Action_NNNNN()]` on the scheme card.
+`SchemeCityAction extends SchemeAction extends CardAction`. The action object is registered on the scheme via `$this->Actions = [new Action_NNNNN()]` (`IHasActions` + `ActionTrait`).
 
-Pre-commit hook: `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
+**WHY not collapse Action into City Action:** `SchemeCityAction::isAvailableToPlayer` requires `count(getCharactersInCityByPlayerId) > 0`. A plain **Action:** that targets a location (or other non-performer thing) must use `SchemeAction` or it stays unavailable when you have no city characters — even if Kaspar/Daniella are at Home. Reference: `_04015`.
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`.
+Pre-commit hook: `SchemeAction` / `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
+
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`.
 
 **Action-object persistence:** public fields on the Action (`$MoveMode`, `$pendingMusterId`, …) survive only if you call `$game->updateCardObjectInDb($owner)` after mutating them. `$owner->IsUpdated = true` alone is **not** flushed before `stRunEvents` rebuilds cards from DB (learned on `_03029` / `_03062` / `_03063`).
+
+### Pattern M — Scheme Action: uncontrolled location → name-matched characters → optional discard
+
+Use when the printed keyword is **`<b>Action:</b>`** (not City Action) and the text targets an **uncontrolled City location**, moves **named characters** there (heal), then optionally discards an available City Card. Canonical: `_04015` (Through Thick and Thin). Discard filter sibling: `Action_01112b` (Carnaval).
+
+**Flow:**
+
+1. `SchemeAction` + `RequiresPerformerSelected = false`. Availability: scheme at Home (parent) + ≥1 named character in play under the player + ≥1 uncontrolled city location (`$location->Controller == 0`).
+2. `EventActionTriggered` → re-validate → `createTransitionEvent(..., "NNNNN", $this->Id)` into HD location-pick state.
+3. HD state `NNNNN`: `locationIds` = uncontrolled city names. On confirm stash `Game::CHOSEN_LOCATION`. For each controlled match of the printed Names (in printed order): skip move if already there; else `createCardMovingEvent(..., engage=false)`; heal 1 only if `Wounds > 0` (`Action_02040` idiom).
+4. **"Complete as much of an effect as possible"** — if only Kaspar is in play, move/heal Kaspar and skip Daniella (and vice versa). Do **not** throw when one name is missing.
+5. **Name matching, not CardNumber.** Reprints share Names across ids (Kaspar `_01035`/`_03014`, Daniella `_01036`/`_03013`). Use `$character->Name === clienttranslate('Kaspar Dietrich')` (etc.) over `getCharactersInPlayByPlayerId`. Hardcoding one CardNumber misses the other printing.
+6. Optional **"Then you may discard an available City Card"**: if ≥1 discardable card at the chosen location, Transition `"NNNNN_2"`; else queue `createActionResolvedEvent` and finish. State 2: highlight `ids` + Confirm + **Pass** (`actFromActionPass`). Pass is always legal (may). Available = `ICityDeckCard` + `!isControlled()` + `canBeDiscardedFromCity()` + `Location === chosen`. Discard via `createCardAddedToCityDiscardPileEvent(..., $asEffect = true)`.
+7. **ActionResolved timing:** queue after discard/pass, or when skipping the discard state. Do **not** use Pattern L's ActionResolved-before-Transition ordering here — the optional discard is still part of this action, not a trailing multi-player coda.
+8. Named transitions on both HD states when `"zombie"` / `"pass"` siblings exist (`"locationChosen"`, `"cardDiscarded"`, `"pass"`).
+
+**JS:** State 1 = city locations from `locationIds` + Confirm. State 2 = `highlightCardsAsSelectable(ids)` + Confirm + Pass; leave unhighlights / `resetCityLocations`.
+
+Reference: `Action_04015`, `State_highDramaPhase04015{,_2}`.
 
 ### Pattern H — Immediate-resolve City Action (no HD sub-state)
 

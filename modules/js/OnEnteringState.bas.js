@@ -237,6 +237,16 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04015': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 2;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
             'planningPhaseResolveSchemes_04004_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
@@ -264,6 +274,24 @@
                         this.highlightCharacterChosen(args.args.args.performerId);
                         this.clientStateArgs.performerId = args.args.args.performerId;
                     }
+                }
+            },
+
+            'highDramaPhase04015': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'highDramaPhase04015_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
                 }
             },
 

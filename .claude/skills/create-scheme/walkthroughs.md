@@ -216,3 +216,22 @@ Card text:
 7. **JS (bas).** Planning: `locationIds` selectable + Confirm Location; leave `resetCityLocations`. No `PlayerActions.js` map entry.
 
 Full implementation: `modules/php/cards/bas/_04014.php`, `reactions/Reaction_04014.php`, `States/bas/State_planningPhaseResolveSchemes04014.php`.
+
+## Walkthrough: implementing `_04015` (Through Thick and Thin)
+
+Card text:
+
+> Add a Renown to two different locations.
+> **Action:** Target an uncontrolled **City** location • Move your Kaspar Dietrich and your Daniella Dietrich there and they each heal a wound. Then you may discard an available City Card from that location.
+> *(You must complete as much of an effect as possible.)*
+
+1. **Constructor.** Eisen, Init 4 / Panache +1 (match art). Traits Camaraderie + Duty (already in `TraitNames`). Register `IHasActions` + `Action_04015`.
+2. **Resolve.** Two-different-locations pick — `actCityLocationsForReknownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap** entry. Planning state `2604015`.
+3. **Action base.** Printed keyword is **Action:** not City Action → `SchemeAction`, `RequiresPerformerSelected = false`. Do **not** extend `SchemeCityAction` (city-character availability gate).
+4. **Availability.** ≥1 controlled character whose `Name` is Kaspar or Daniella Dietrich **and** ≥1 city location with `Controller == 0`.
+5. **Name matching.** Kaspar exists as `_01035` and `_03014`; Daniella as `_01036` and `_03013`. Match `Name === clienttranslate('…')`, not CardNumber.
+6. **HD state 1 (`404015`).** Uncontrolled location pick. Stash `CHOSEN_LOCATION`. For each found Dietrich (Kaspar first, then Daniella): move if elsewhere (`engage=false`); heal 1 if `Wounds > 0`. Skip missing names (complete-as-much-as-possible).
+7. **HD state 2 (`4040152`) — optional.** If ≥1 available City Card at the location (`ICityDeckCard` + uncontrolled + `canBeDiscardedFromCity`), Transition `"04015_2"` with Confirm + Pass. Else `createActionResolvedEvent` immediately. On discard/pass, then ActionResolved. Named transitions (`locationChosen` / `cardDiscarded` / `pass` / `zombie`).
+8. **JS (bas).** Planning: two-location + actionMap. HD1: `locationIds` selectable. HD2: highlight `ids` + Confirm + Pass.
+
+Full implementation: `modules/php/cards/bas/_04015.php`, `actions/Action_04015.php`, `States/bas/State_planningPhaseResolveSchemes04015.php`, `State_highDramaPhase04015{,_2}.php`.

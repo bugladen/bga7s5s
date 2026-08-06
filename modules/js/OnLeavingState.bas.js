@@ -190,6 +190,13 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04015': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseResolveSchemes_04004_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();
@@ -206,6 +213,20 @@
                     if (this.clientStateArgs.performerId) {
                         this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
                     }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04015': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04015_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }
             },

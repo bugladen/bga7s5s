@@ -76,3 +76,9 @@
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04014.php` | Planning resolve: city location pick excluding Docks (`actFromCardWithLocations`). |
 | `modules/php/cards/_7s5s/_01089.php` (Soline) | Finesse condition Started/Ended tooltip pattern mirrored by Forged for Battle. |
 | `modules/php/cards/_7s5s/reactions/Reaction_01040.php` (Rena) | Character Continuous engage-Weapon-instead on intervene — sibling of `_04014` Continuous discipline. |
+| `modules/php/cards/bas/_04015.php` (Through Thick and Thin) | **Two-different-locations Renown resolve + Pattern M Scheme Action** (no performer): uncontrolled city → name-matched Kaspar/Daniella move+heal → optional available City Card discard. Initiative 4 / Panache +1 / Camaraderie+Duty verified against art. |
+| `modules/php/cards/bas/actions/Action_04015.php` | `SchemeAction`; Name match not CardNumber; `Controller == 0`; optional discard Pass; ActionResolved after discard/pass. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04015.php` | Two-location planning resolve (`actCityLocationsForReknownSelected` — needs `PlayerActions.js` actionMap). |
+| `modules/php/States/bas/State_highDramaPhase04015.php` | HD uncontrolled location pick (`locationChosen` + `zombie`). |
+| `modules/php/States/bas/State_highDramaPhase04015_2.php` | Optional discard + Pass (`cardDiscarded` / `pass` / `zombie`). |
+| `modules/php/cards/_7s5s/actions/Action_01112b.php` | Available City Card discard filter sibling (`ICityDeckCard` + uncontrolled + `canBeDiscardedFromCity`). |

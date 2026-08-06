@@ -44,6 +44,11 @@
 - **Temporary Finesse for "duration of the action":** stamp a named `Game::…_CONDITION` + Started/Ended notifs so the tooltip attributes the mod (Soline `_01089` / Harpoon). Clear on `EventActionResolved` gated `!IN_DUEL` — mid-duel ActionResolved must not wipe Finesse needed for gambling (`Action_04009`). Reference: `Reaction_04014` / `FORGED_FOR_BATTLE_CONDITION`.
 - **Continuous scheme Reaction:** unlabelled "you may" / "any number of times per day" → no runtime `setUsed(true)`; put `$this->setUsed(` in a comment for pre-commit. Reference: `Reaction_04014`.
 - **Engage Weapon/Armor pickers:** skip `$attachment->FakeAttachment` (Fate's Silence and siblings are not real gear).
+- **`<b>Action:</b>` vs `<b>City Action:</b>` on schemes:** plain Action → `SchemeAction` + `RequiresPerformerSelected = false`. City Action → `SchemeCityAction` (city-performer gate). Using City Action for a no-performer location target wrongly requires a character in the city. Reference: `_04015`.
+- **Named characters that exist on multiple card ids:** match `$character->Name === clienttranslate('…')`, never a single CardNumber. Kaspar/Daniella live on both core and FAF printings.
+- **Uncontrolled City location:** `$location->Controller == 0` on `getCityLocations()` rows.
+- **"Complete as much of an effect as possible":** do each sub-effect that is currently legal; skip missing pieces (e.g. only one named character in play). Availability still needs enough of the primary effect to be worth offering (typically ≥1 named character + a legal target).
+- **Optional "Then you may discard an available City Card":** HD follow-on state with Pass; skip the state when nothing discardable. Available = `ICityDeckCard` + `!isControlled()` + `canBeDiscardedFromCity()` at the location (`Action_01112b` idiom). `ActionResolved` after discard/pass — not Pattern L's resolve-before-transition.
 
 ## Cross-Cutting Helpers
 
@@ -58,6 +63,7 @@
 - `$game->getPlayerDiscardDeckName(int $playerId): string` — the deck-table location string for a player's discard pile.
 - `$card->hasTrait(string $trait): bool` — check a trait. English strings compare directly against `clienttranslate()`-wrapped values.
 - `$theah->getAvailableAttachmentsAtLocation($location): Attachment[]` — unattached attachments sitting at a city location ("available attachment").
+- **Available City Card** (discard/recruit fodder): `ICityDeckCard` + `!$card->isControlled()` + `$card->canBeDiscardedFromCity()` (and usually `$theah->cardInCity($card)` or `Location === $chosen`). Not the same helper as available attachments. Reference: `Action_01112b`, `Action_04015`.
 - `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claimability gate (flags, controllers, etc.). Use in **availability / performer filters** when Claim is the payoff so the action is never offered when unclaimable; recheck at resolve before `createLocationClaimedEvent`.
 - `$game->getPlayerReknown(int $playerId): int` — player score Renown (for "Spend a Renown" costs).
 - `$game->updateCardObjectInDb($card)` — **required** after mutating public fields on nested Actions (`$MoveMode`, `$pendingMusterId`, …) so `stRunEvents` rebuild sees them.

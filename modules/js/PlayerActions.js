@@ -63,6 +63,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'planningPhaseResolveSchemes_03017': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_03030': 'actCityLocationsForReknownSelected',
             'planningPhaseResolveSchemes_03053': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_04015': 'actCityLocationsForReknownSelected',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
         };
 
