@@ -154,6 +154,20 @@ public function actFromCardWithIds(Game $game, int $state, string $stateName, st
 
 Reference: `_01071`, `_02014`, `_02046`, `_02052`.
 
+### Fixed location + pick another
+
+When the scheme says **"Add a Renown to [City Docks] and another location"** (one destination printed, one chosen):
+
+1. Queue `createRenownAddedToLocationEvent` for the **fixed** location first.
+2. Queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` into a single planning resolve state.
+3. `argsFromCard` / `locationIds` = city location names **excluding** the fixed one. Re-validate on `actFromCardWithIds`.
+4. Do **not** use `actCityLocationsForReknownSelected` / `numberOfCityLocationsSelectable = 2` — that helper assumes both picks are free and has no fixed destination. Confirm still goes through `onCityLocationsSelected` → default `actFromCardWithLocations` (no `PlayerActions.js` `actionMap` entry needed).
+5. JS: enter with `locationIds` from args + Confirm Location; leave `resetCityLocations`.
+
+Contrast Winter's Wind `_02046` (two sequential free picks, second optional Pass) and Blood Money `_04004` (two *fixed* Renown adds, no location pick for Renown).
+
+Reference: `_04014` / `State_planningPhaseResolveSchemes04014`.
+
 ### Character-then-City-location resolve (move your \<Trait\>)
 
 When the scheme says **"Then, move your Duelist to a City location"** (or another trait) after automatic Renown:

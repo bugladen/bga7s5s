@@ -71,3 +71,8 @@
 | `modules/php/States/bas/State_highDramaPhase04005_2.php` | Concurrent multi-discard for **each player** (incl. acting); hand-filter via `getGameDeckObject`; not sans-initiating. |
 | `modules/php/cards/_7s5s/actions/Action_01095b.php` | Opponents-only multi-discard contrast (`MULTI_STATE_INITIATING_PLAYER` + sans-initiating). ActionResolved-before-Transition priority ordering. |
 | `modules/php/cards/_7s5s/actions/Action_01015.php` | Scheme destroy parallel — destroys the **performer** as cost (opposite of `_04005` target destroy). |
+| `modules/php/cards/bas/_04014.php` (Forged for Battle) | **Fixed Docks Renown + pick-another-location resolve + Continuous challenge/intervene Reaction.** Initiative 45 / Panache 0 / Zeal+Prepared verified against art. |
+| `modules/php/cards/bas/reactions/Reaction_04014.php` | Continuous: `EventChallengeIssued` + `EventCharacterIntervened` → engage Weapon/Armor → +1 Finesse + `FORGED_FOR_BATTLE_CONDITION`. Clear on `EventActionResolved` `!IN_DUEL`. No `setUsed(true)` (comment literal). Skip `FakeAttachment`. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04014.php` | Planning resolve: city location pick excluding Docks (`actFromCardWithLocations`). |
+| `modules/php/cards/_7s5s/_01089.php` (Soline) | Finesse condition Started/Ended tooltip pattern mirrored by Forged for Battle. |
+| `modules/php/cards/_7s5s/reactions/Reaction_01040.php` (Rena) | Character Continuous engage-Weapon-instead on intervene — sibling of `_04014` Continuous discipline. |

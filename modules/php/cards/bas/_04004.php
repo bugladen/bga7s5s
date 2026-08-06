@@ -44,7 +44,7 @@ class _04004 extends Scheme implements IHasActions, IHasReactions
             clienttranslate("Fortune"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [City Docks] and [The Grand Bazaar].</p>
+        $this->Text = clienttranslate("<p>Add a Renown to [The City Docks] and [The Grand Bazaar].</p>
 <p>Then, move your <b>Duelist</b> to a <b>City</b> location.</p>
 <hr />
 <p><b>Duelist City Action:</b> Move your performer to a location with a wounded enemy.</p>

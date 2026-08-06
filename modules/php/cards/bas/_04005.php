@@ -36,7 +36,7 @@ class _04005 extends Scheme implements IHasActions
             clienttranslate("Purge"),
         ];
 
-        $this->Text = clienttranslate("<p>Add a Renown to [City Docks].</p>
+        $this->Text = clienttranslate("<p>Add a Renown to [The City Docks].</p>
 <hr />
 <p><b>Red Hand City Action:</b> Destroy another character you control at your performer's location • Claim this location. Each player discards a card.</p>");
 

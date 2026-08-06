@@ -88,6 +88,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['solineElGatoConditionEnded', 1],
             ['epeeSanglanteConditionStarted', 1],
             ['epeeSanglanteConditionEnded', 1],
+            ['forgedForBattleConditionStarted', 1],
+            ['forgedForBattleConditionEnded', 1],
             ['harpoonConditionStarted', 1],
             ['harpoonConditionEnded', 1],
             ['lodestoneConditionStarted', 1],
@@ -1899,6 +1901,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.EPEE_SANGLANTE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_forgedForBattleConditionStarted: function( notif )
+    {
+        debug( 'notif_forgedForBattleConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.FORGED_FOR_BATTLE_CONDITION))
+                card.conditions.push(this.FORGED_FOR_BATTLE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_forgedForBattleConditionEnded: function( notif )
+    {
+        debug( 'notif_forgedForBattleConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.FORGED_FOR_BATTLE_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },

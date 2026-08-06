@@ -93,6 +93,9 @@ class Game extends \Bga\GameFramework\Table
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
+    // WHY: Forged for Battle (_04014) +1 Finesse for the duration of a challenge/intervention.
+    // Condition surfaces the source on the character tooltip (Soline / Harpoon pattern).
+    final const FORGED_FOR_BATTLE_CONDITION = "Finesse Modified by Forged for Battle";
     final const HARPOON_CONDITION = "Harpooned (-1 Finesse; cannot swap or move)";
     final const LODESTONE_CONDITION = "Lodestone (opponents cannot move Home)";
     final const SHACKLES_CONDITION = "Shackled (cannot move)";

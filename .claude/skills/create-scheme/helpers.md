@@ -40,6 +40,10 @@
 - **Direct `createCharacterDestroyedEvent`:** always `$character->unEquipAllAttachments($theah)` first — destroy recreates the card and skips auto-unequip (`Action_01018`, `Action_04005`).
 - **State classes reading hands:** use `$game->getGameDeckObject()`, not `$game->cards` (private on Game).
 - **Traits scaffolds invent:** `_04004` Assassination, `_04005` Purge — always check `TraitNames::$TraitsJson` before shipping.
+- **"Fixed location + another":** exclude the fixed name from `locationIds`; do not reach for `actCityLocationsForReknownSelected` (that is N free picks). Reference: `_04014`.
+- **Temporary Finesse for "duration of the action":** stamp a named `Game::…_CONDITION` + Started/Ended notifs so the tooltip attributes the mod (Soline `_01089` / Harpoon). Clear on `EventActionResolved` gated `!IN_DUEL` — mid-duel ActionResolved must not wipe Finesse needed for gambling (`Action_04009`). Reference: `Reaction_04014` / `FORGED_FOR_BATTLE_CONDITION`.
+- **Continuous scheme Reaction:** unlabelled "you may" / "any number of times per day" → no runtime `setUsed(true)`; put `$this->setUsed(` in a comment for pre-commit. Reference: `Reaction_04014`.
+- **Engage Weapon/Armor pickers:** skip `$attachment->FakeAttachment` (Fate's Silence and siblings are not real gear).
 
 ## Cross-Cutting Helpers
 
@@ -75,5 +79,7 @@ Event factories you'll likely need:
 - `createCharacterDestroyedEvent($playerId, $characterId, $reason)` — always unequip attachments on the target first when calling this directly
 - `createPressureOccuringEvent($playerId, $performerId, $location, $pressureTypes)` — then transition `"pressureLocation"`; listen for `EventLocationPressureResult` with matching `$abilityId`
 - `createCardMovingEvent($playerId, $cardId, $from, $to, $engage, $sourceId, $abilityId)` — Home moves use `Game::LOCATION_PLAYER_HOME` and usually `$engage = false`
+- `createCardEngagedEvent($playerId, $cardId, $sourceId = 0, $abilityId = "")` — engage character **or** attachment (Henri / Forged for Battle)
+- `createCharacterFinesseModifedEvent($playerId, $characterId, $oldFinesse, $newFinesse, $reason)` — pair with a named condition when the tooltip must show the source (Soline / Forged for Battle)
 - `createTransitionEvent($playerId, $sourceId, string $internalId)` — for moving into a sub-state.
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)` — for the reaction's transition.

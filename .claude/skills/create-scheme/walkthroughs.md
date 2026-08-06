@@ -133,7 +133,7 @@ Full implementation: `modules/php/cards/faf/_03054.php`, `modules/php/cards/faf/
 
 Card text:
 
-> Add a Renown to [City Forum] and [City Docks].
+> Add a Renown to [City Forum] and [The City Docks].
 > **Villain City Action:** Wound your performer • Muster one of your non-**Undead**, non-**Mercenary** characters from **The Locker** at this location. They gain **Monster** and **Undead**. At the end of Dusk, send them to **The Locker**.
 
 1. **Constructor.** Neutral faction. Verify Traits against art (scaffold had Virtue — art is Villainous–Pact). Register `IHasActions` + `Action_03062`.
@@ -149,7 +149,7 @@ Full implementation: `modules/php/cards/faf/_03062.php`, `modules/php/cards/faf/
 
 Card text:
 
-> Add a Renown to [The Grand Bazaar] and [City Docks].
+> Add a Renown to [The Grand Bazaar] and [The City Docks].
 > When an opponent equips a card to a character opposing your **Scoundrel**, it gains +1 cost.
 > **Scoundrel City Action:** Move a Renown or an available attachment from your performer's location to a different **City** location.
 
@@ -167,7 +167,7 @@ Full implementation: `modules/php/cards/faf/_03063.php`, `modules/php/cards/faf/
 
 Card text:
 
-> Add a Renown to [City Docks] and [The Grand Bazaar].
+> Add a Renown to [The City Docks] and [The Grand Bazaar].
 > Then, move your **Duelist** to a **City** location.
 > **Duelist City Action:** Move your performer to a location with a wounded enemy.
 > **Duelist Reaction:** When an opposing character is destroyed • Draw a card.
@@ -186,7 +186,7 @@ Full implementation: `modules/php/cards/bas/_04004.php`, `actions/Action_04004.p
 
 Card text:
 
-> Add a Renown to [City Docks].
+> Add a Renown to [The City Docks].
 > **Red Hand City Action:** Destroy another character you control at your performer's location • Claim this location. Each player discards a card.
 
 1. **Constructor.** Vodacce, Init 35 / Panache 0 (match art). Traits Villainous + Purge — add `Purge` to `TraitNames` if missing. Register `IHasActions` + `Action_04005`.
@@ -198,3 +198,21 @@ Card text:
 7. **Pre-commit.** `createActionResolvedEvent()` literal; no `ISorcererAbility`. Named transitions (`characterChosen` / `back` / `zombie` / `multipleOk`).
 
 Full implementation: `modules/php/cards/bas/_04005.php`, `actions/Action_04005.php`, `States/bas/State_highDramaPhase04005{,_2}.php`.
+
+## Walkthrough: implementing `_04014` (Forged for Battle)
+
+Card text:
+
+> Add a Renown to [City Docks] and another location.
+> When your character issues a challenge or intervenes, you may engage a **Weapon** or **Armor** equipped to them. If you do, they gain +1[Finesse] for the duration of the action.
+> *(Can be used any number of times per day, and once per challenge or intervention.)*
+
+1. **Constructor.** Eisen, Init 45 / Panache 0 (match art). Traits Zeal + Prepared (already in `TraitNames`). Register `IHasReactions` + `Reaction_04014`.
+2. **Resolve.** Queue Renown to Docks. `createTransitionEvent(..., "04014")` at `MEDIUM_PRIORITY` into one pick state. `locationIds` = city names **except** Docks. Do **not** use `actCityLocationsForReknownSelected`.
+3. **Planning state.** `PLANNING_PHASE_RESOLVE_SCHEMES_04014 = 2604014`. `actFromCardWithLocations` → scheme `actFromCardWithIds`. Single `""` transition back to EVENTS.
+4. **Reaction (Continuous).** Listen on `EventChallengeIssued` (your challenger) and `EventCharacterIntervened` (your intervener). Offer only if ≥1 unengaged non-Fake Weapon/Armor. Buttons per attachment + Pass. Engage + Finesse +1 + stamp `FORGED_FOR_BATTLE_CONDITION` (Soline Started/Ended notifs + JS constant). Track `$buffedCharacterId`.
+5. **Clear buff.** `EventActionResolved` when `!IN_DUEL` (WHY: mid-duel ActionResolved must not wipe gambling Finesse — `Action_04009`). Dusk safety. Destroy of buffed id drops tracker only.
+6. **Continuous discipline.** No runtime `setUsed(true)`; comment has `$this->setUsed(` for pre-commit. Once-per-challenge = one transition per event.
+7. **JS (bas).** Planning: `locationIds` selectable + Confirm Location; leave `resetCityLocations`. No `PlayerActions.js` map entry.
+
+Full implementation: `modules/php/cards/bas/_04014.php`, `reactions/Reaction_04014.php`, `States/bas/State_planningPhaseResolveSchemes04014.php`.

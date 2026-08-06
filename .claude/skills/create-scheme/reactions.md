@@ -71,6 +71,43 @@ When the bullet text has multiple sentences but no internal "may", the decision 
 
 `CardReaction` subclasses must include the literal strings `$this->setUsed(` and `$this->isAvailable(` somewhere in the file. The `handleEvent` `isAvailable` check + the `setUsed(true)` in `performReaction`'s success branch satisfy both. Decline/Pass branches deliberately skip `setUsed` — the reaction stays available for the next trigger that day. Mirror `Reaction_03005` / `Reaction_02004` / `Reaction_03017` for this discipline.
 
+### Continuous Reaction — never set to Used
+
+Default scheme reactions are once-per-day (`setUsed(true)` on success; `EventDuskEndOfDay` resets). Some printed abilities are **Continuous**:
+
+- Unlabelled **"When …, you may …"** (no `<b>Reaction:</b>` keyword)
+- Parenthetical **"Can be used any number of times per day"** / **"once per challenge or intervention"**
+
+Treat these as Continuous `CardReaction`s: do **not** call `$this->setUsed(true)` on success. Once-per-trigger is natural — queue one `createReactionTransitionEvent` per firing event (`EventChallengeIssued`, `EventCharacterIntervened`, …). Pass also skips `setUsed`.
+
+**Pre-commit gotcha.** The hook greps for the literal `$this->setUsed(` and fails if absent. Continuous reactions have no runtime call, so put the literal in a comment (same dodge as character `Reaction_03025` / `Reaction_01040`):
+
+```php
+// Continuous Reaction: intentionally do NOT call $this->setUsed(true).
+// Can fire any number of times per day; once per challenge/intervention is
+// enforced by a single transition per EventChallengeIssued / EventCharacterIntervened.
+```
+
+Still call `$this->isAvailable()` in `handleEvent` for consistency (and the second pre-commit literal). Name the reaction with a `(Continuous)` prefix when helpful.
+
+Reference: `Reaction_04014` (Forged for Battle), character siblings `Reaction_03025` (Angeline), `Reaction_01040` (Rena engage-weapon-instead).
+
+### Challenge / intervene → engage Weapon or Armor → temporary +1 Finesse
+
+Scheme text like Forged for Battle (`_04014`):
+
+> When your character issues a challenge or intervenes, you may engage a **Weapon** or **Armor** equipped to them. If you do, they gain +1[Finesse] for the duration of the action.
+
+1. **Triggers:** `EventChallengeIssued` — challenger controlled by scheme owner, `!$event->canceled`. `EventCharacterIntervened` — `$event->playerId == owner->ControllerId` and `newTargetId` is your intervener (Henri/Passionate intervene idiom).
+2. **Eligibility gate before offering:** ≥1 attachment on that character with `hasTrait("Weapon")` or `"Armor"`, `!$Engaged`, `!$FakeAttachment`. Skip the reaction entirely when none.
+3. **Buttons:** one `engage-{attachmentId}` per eligible attachment + Pass. Capture `$characterId` / `$characterName` at trigger for description + resolve.
+4. **On engage:** `createCardEngagedEvent($controllerId, $attachmentId, $owner->Id, $this->Id)` then `createCharacterFinesseModifedEvent` (+1).
+5. **Condition for tooltip source (required when Eddie wants attribution):** stamp a `Game::…_CONDITION` on the character (`addCondition` + `updateCardObjectInDb` + `…ConditionStarted` notif). Clear with `removeCondition` + `…ConditionEnded`. Mirror Soline `_01089` / Harpoon `Technique_03064`. Wire matching string constant in `seventhseacityoffivesails.js` + `Notifications.js` Started/Ended handlers that push/filter `card.conditions` and `refreshTooltipForCard`. WHY not Finesse chip alone: the chip shows ±1 but not *why*.
+6. **Duration clear:** listen on `EventActionResolved` with `$buffedCharacterId != 0` **and** `!$globals->get(Game::IN_DUEL, false)`. WHY the `!IN_DUEL` gate: mid-duel `ActionResolved` (if any) must not wipe Finesse needed for gambling — same WHY as `Action_04009`. At true challenge/duel end `IN_DUEL` is already false. Safety clear on `EventDuskEndOfDay`; on `EventCharacterDestroyed` of the buffed id just drop the tracker (recreate drops the condition).
+7. **Continuous** — see above; do not `setUsed(true)`.
+
+Reference: `Reaction_04014`, `Game::FORGED_FOR_BATTLE_CONDITION`.
+
 ### `EventCharacterDestroyed` — destroy-time location is readable
 
 `EventCharacterDestroyed` is declared with `runEventHubAfterCards = true`. Card `handleEvent` calls run **before** the hub moves the character to the locker, so `$destroyed->Location` still reports the destroy-time city slot inside your reaction's handler. Capture it into a `private string $location` field (with `$owner->IsUpdated = true`) for use in `performReaction`, because by the time the player clicks the button, the character has been moved out and `$destroyed->Location` no longer matches the city. Also capture any trait/name snapshots the resolve branch needs (`$destroyedWasZealot`, `$destroyedName`) — same reason.
