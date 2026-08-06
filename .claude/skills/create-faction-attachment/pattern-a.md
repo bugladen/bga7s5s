@@ -32,6 +32,8 @@ public function canAttachTo(Character $character): bool
 
 References: `_01073` (Duelist), `_01075` (non-Diplomat — note the inversion), `_03007` (Strega), `_04006` (Duelist **or** Spy **or** Assassin).
 
+**Not Pattern A:** **"After a \<Trait\> equips this card • …"** (Reaction on self-equip) does **not** restrict who may equip — it only gates the Reaction offer. Use Pattern D (`Reaction_04016`). Do not add `canAttachTo` / `eventCheck(Equipping)` for that wording alone.
+
 **Use `\Bga\GameFramework\UserException`, not `\BgaUserException`.** Older code uses `BgaUserException`; new code should use the framework path. (Memory feedback.) Older files (`_01050`, `_01073`, `_01075`, `_02006`, …) still throw `\BgaUserException` for historical reasons — don't follow that example, follow memory.
 
 ### Multi-trait OR ("Duelist, Spy, or Assassin")

@@ -13,7 +13,7 @@ Both need:
 
 **Pre-commit hook on Technique:** same — must handle `EventTechniqueCanceled` or add the equivalent comment.
 
-References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition).
+References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat).
 
 ### Gambling Technique / Gambling Maneuver
 
@@ -36,6 +36,34 @@ if ($owner === null || $actor === null || $actor->Id !== $owner->Id)
 Also require `Game::IN_DUEL`. Optional printed conditions (greater Finesse than adversary, adversary wounded, combat card ≥ N Thrust) go in the same `isAvailableToPlayer` using `ModifiedFinesse` / `getDuelRoundOpponent()` / `getCurrentRoundThrust()` — see `Technique_03002`, `Maneuver_03008`, `Technique_03039`, `Technique_03043`.
 
 When the cost is **"Engage this card"** (the attachment), also gate `! $attachment->Engaged` and queue `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)` on `EventResolveTechnique` — mirror `Technique_01049` / `Technique_03064`.
+
+`Technique` base sets `Used` on `EventTechniqueActivated` and resets on `EventDuelEnd` when `ResetOnDuelEnd` (default true) — do not double-`setUsed` unless a multi-step resolve needs it (`Technique_01096`).
+
+### Deferred EndOfRound ("At the end of your round, …")
+
+When the Technique effect fires **after the round ends** (not during CalculateValues / Resolve), use a public `$IsActive` flag — **not** a `Game::*_CONDITION` (that is for remainder-of-duel restrictions like Harpoon).
+
+```php
+// EventResolveTechnique → arm
+$this->IsActive = true;
+$attachment->IsUpdated = true;
+
+// EventDuelEndOfRound → fire only on "your" round
+if ($this->IsActive && $owner !== null && $event->actorId == $owner->Id)
+{
+    // effect…
+    $this->IsActive = false;
+    $attachment->IsUpdated = true;
+}
+
+// EventTechniqueCanceled / EventDuelEnd → clear stranded IsActive
+```
+
+**WHY `actorId == owningCharacter->Id`:** "your round" means the equipped character's round as duel actor. Do **not** clear `IsActive` on every EndOfRound — a stray non-owner EndOfRound would eat the pending effect. Clear on fire, cancel, and duel end.
+
+**"Each participant gains a threat":** `EventFactory::createThreatModifiedEvent(1, 1)` — challenger delta + defender delta. Sibling: `Reaction_02039`. No GameState when there is no picker.
+
+Reference: `Technique_04016` (Drachenblut). EndOfRound siblings: `Technique_03039` (MoveHome flag), `Technique_01096` / `Maneuver_01031` (IsActive + picker).
 
 ### Remainder-of-duel lasting effects (condition)
 

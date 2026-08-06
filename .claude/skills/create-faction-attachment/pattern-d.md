@@ -139,6 +139,36 @@ Cancel-later (delete only on Accept Cancel) races: Resolve can still fire if `Te
 
 **Persistence:** keep `$stage`, `$TechniqueId`, `$ManeuverId`, and restore context as **public** properties on the reaction (mirror `01047`). `$owner->IsUpdated = true` after every mutation.
 
+### Self-equip Reaction ("After a Hunter or Berserker equips this card • …")
+
+When the Reaction lives **on this attachment** and triggers when **this card** is equipped:
+
+```php
+if (! ($event instanceof EventAttachmentEquipped)) return;
+if (! $this->isAvailable()) return;
+if (! $this->ownerIsAttached($event->theah)) return;
+
+$owner = $this->getOwningAttachment($event->theah);
+if ($owner === null || $event->attachmentId != $owner->Id) return;
+
+$character = $event->theah->getCharacterById($event->characterId);
+if (! ($character instanceof Character)) return;
+
+// Trait OR gate on the *host* — not an equip restriction (Pattern A).
+if (! $character->hasTrait('Hunter') && ! $character->hasTrait('Berserker')) return;
+
+if ($character->Wounds <= 0) return;  // skip offer when heal would be a noop
+
+$transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+$event->theah->queueEvent($transition);
+```
+
+**WHY not Pattern A:** "After a \<Trait\> equips this card" gates the *Reaction offer*, not who may equip. Characters without the trait still equip; they simply never see the Reaction. Only add `canAttachTo` / `eventCheck(EventAttachmentEquipping)` when text also says **"May only equip…"**.
+
+**Heal effect:** `createCharacterBeingHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id)` + notify. Re-check trait + `Wounds > 0` in `performReaction` before healing. SourceId for the reaction transition = **attachment** id (same as `Reaction_01022`).
+
+Reference: `Reaction_04016` (Drachenblut). Heal siblings: `Reaction_03027a`, `Reaction_01181`. Character-side equip Reactions (not self): `Reaction_01039`, `Reaction_01146a`.
+
 ### "After an opposing character moves to an adjacent location" triggers
 
 Trigger on `EventCardMoved` (fires *after* the move resolves — `EventCardMoving` fires before). The classic gates:

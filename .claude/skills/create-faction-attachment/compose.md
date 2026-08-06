@@ -29,3 +29,5 @@ The framework hydrates each ability separately. No cross-talk needed between the
 **Opponent-equip + condition + Forced destroy:** `_03066` (Shackles) combines Pattern A (`CanEquipToOpponents` + Finesse-vs-ally gate), Pattern B'' (`SHACKLES_CONDITION` cannot-move), and Forced `EventHighDramaPhaseEnd` destroy. No Action/Reaction class — all on the attachment `handleEvent` / `eventCheck`. Forced unequip clears the condition.
 
 **Multi-trait equip + duel-scoped conditional (no keyword class):** `_04006` (Assassin's Garb) combines Pattern A (Duelist **or** Spy **or** Assassin) with Pattern B''' (+1 Finesse flag + `getNumberOfGambleCardsToReveal` under the same wounded-adversary gate). Both B''' halves live on the attachment `handleEvent` / override — do not split into a Technique just because the effect is duel-related.
+
+**Self-equip Reaction + Gambling EndOfRound Technique (no equip restriction):** `_04016` (Drachenblut) hosts `Reaction_04016` (Hunter/Berserker trigger on `EventAttachmentEquipped` for self — trait gate is *not* Pattern A) and `Technique_04016` (Gambling + deferred `createThreatModifiedEvent(1, 1)`). No cross-talk between the two ability classes.
