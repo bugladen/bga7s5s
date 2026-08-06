@@ -23,7 +23,9 @@ class _03cd10 extends CityCharacter implements IHasReactions
 
         $this->CityCardNumber = 10;
 
-        $this->WealthCost = 4;
+        $this->WealthCost = 5;
+
+        $this->InPlayXImageOffset = -20;
 
         $this->Resolve = 4;
         $this->Combat = 1;
