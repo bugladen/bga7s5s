@@ -13,7 +13,43 @@ Both need:
 
 **Pre-commit hook on Technique:** same — must handle `EventTechniqueCanceled` or add the equivalent comment.
 
-References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat).
+References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat), `Technique_04017` (Jägerarmbrust — engage + +1 Thrust + Resolve-time Academic/Hunter adversary discard; **not** Gambling).
+
+### Engage this card + +N Thrust (normal Technique)
+
+When printed cost is **"Engage this card • +N [Thrust]"** and the keyword is plain `<b>Technique:</b>` (not Gambling):
+
+1. Availability: `IN_DUEL` + `! $attachment->Engaged` + duel actor == owning character. **No** `DUEL_GAMBLED`.
+2. Resolve: `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)`.
+3. Calculate: `EventDuelCalculateTechniqueValues` → `$event->thrust += N` + explanation. Mirror `Technique_03018` / `Technique_02023` — do **not** require `EventGenerateChallengeThreat` when the Technique is duel-only (`IN_DUEL` gate).
+
+**Passive gamble reveal on the same card is unrelated.** "When the equipped character gambles, reveal an additional card" is Pattern B''' on the attachment class (`_01101` / `_04017`). It does **not** turn the Technique into a Gambling Technique.
+
+### Resolve-time "If your participant is a Trait…" effect gate
+
+Printed **"If your participant is an Academic or Hunter, the adversary discards a card"** (or similar) is a **conditional consequent**, not a cost and not an availability gate.
+
+- Availability stays open for any host that can pay engage (etc.).
+- On `EventResolveTechnique`, after paying costs, check `$owner->hasTrait("Academic") || $owner->hasTrait("Hunter")` (OR of listed traits).
+- Only then queue the conditional effect (discard picker, wound, …).
+- Non-matching hosts still get engage + Thrust (the unconditional halves).
+
+**Do not** put the trait check in `isAvailableToPlayer` unless the printed text is a performer restriction for the whole ability ("Academic Technique:", "May only…"). **"If …"** ≠ **"May only equip"** ≠ trait-prefixed keyword.
+
+Reference: `Technique_04017`.
+
+### Adversary discards a card (hand picker)
+
+When the Technique forces the **adversary** to discard from hand (they choose which card):
+
+1. On Resolve (after engage / trait gate): `$hand = getCardObjectsAtLocation(LOCATION_HAND, $adversary->ControllerId)`.
+2. **Empty hand:** notify why + skip transition (checklist 9). Do not dead-end the duel.
+3. **Non-empty:** `createTechniqueTransitionEvent($adversary->ControllerId, $attachment->Id, "NNNNN", $this->Id)` — HIGHEST_PRIORITY so the picker interrupts before CalculateValues. Character-hosted Maya (`Technique_01093`) may use `createTransitionEvent`; attachment-hosted prefer `createTechniqueTransitionEvent` like `Technique_04013`.
+4. **`sourceId` = attachment** (`getOwningCard()->Id`) — FrameworkActionsTrait hydrates source and `getTechniqueById`; character `sourceId` hides attachment-hosted techniques.
+5. GameState: `State_duelChooseTechnique_NNNNN` (activeplayer, hand select) → `"" => DUEL_CHOOSE_TECHNIQUE_EVENTS`. Constant + `states.inc.php` EVENTS key `"NNNNN"`. Expansion `OnEnteringState` / `OnLeavingState` / `OnUpdateActionButtons` + `EventHandlers.js` (Confirm Selection → `onCardDiscarded`, enable when `factionHand` selection non-empty).
+6. `actFromTechniqueWithId`: validate controller + `LOCATION_HAND` → `createCardDiscardedFromHandEvent(..., $asEffect = true)`.
+
+Siblings: Maya `Technique_01093`, Íñigo `Technique_03039`, Jägerarmbrust `Technique_04017`. Distinct from **reveal-then-discard** (`_03043`) and **cancel-unless-discard** (`_03044`).
 
 ### Gambling Technique / Gambling Maneuver
 

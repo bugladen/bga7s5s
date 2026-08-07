@@ -778,6 +778,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'duelChooseTechnique_04017': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'duskPhaseDiscard': () => {
                 const player = this.gamedatas.players[this.player_id];
                 const leader = player.leader;

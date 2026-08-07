@@ -194,8 +194,10 @@ public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, a
 }
 ```
 
-No applied-flag needed — evaluated at gamble time. Unconditional "when equipped character gambles" exemplars: Gallegos Blade `_01101`, Devil Jonah `_03cd05`, Ivy `_02042`, Sarafina `_01010`.
+No applied-flag needed — evaluated at gamble time. Unconditional "when equipped character gambles" exemplars: Gallegos Blade `_01101`, Jägerarmbrust `_04017`, Devil Jonah `_03cd05`, Ivy `_02042`, Sarafina `_01010`.
+
+**Passive gamble + separate Technique:** `_04017` has always-on gamble +1 **and** a normal Technique. Implement the reveal override on the attachment class; do **not** add `DUEL_GAMBLED` to the Technique unless the keyword says Gambling.
 
 **Both halves can stack on one card** (`_04006`): +1 Finesse (more gambles allowed) **and** +1 card revealed per gamble — they are separate systems; implementing only one is wrong when both are printed.
 
-References: `bas/_04006.php` (canonical attachment B'''), `_04001` (flag + wound delta — character host), `_01101` (always-on gamble +1), `_03004` (duel Finesse recomputed from dueling line).
+References: `bas/_04006.php` (canonical attachment B'''), `bas/_04017.php` (always-on gamble + Technique combo), `_04001` (flag + wound delta — character host), `_01101` (always-on gamble +1), `_03004` (duel Finesse recomputed from dueling line).

@@ -22,11 +22,13 @@
 - `$theah->getDuelRoundActor()` / `getDuelRoundOpponent()` — current duel **round** actor/opponent for Gambling Techniques / remainder-of-duel effects.
 - `$event->actorId` on `EventDuelEndOfRound` — gate "at the end of **your** round" to `$event->actorId == $owningCharacter->Id` (`Technique_04016`).
 - `$theah->getDuelChallengerId()` / `getDuelDefenderId()` / `getDuelOpponentId($participantId)` — duel **roster** ids for Pattern B''' "is this character in the duel / who is their adversary" gates (`_04006`). Prefer these over round-actor helpers when the bonus is participant-scoped, not round-actor-scoped.
-- `$theah->getNumberOfGambleCardsToReveal(Character $actor): array` — returns `[$count, $explanationsHtml]`; base count is **2** plus every card's `getNumberOfGambleCardsToReveal` override. Attachments that add reveals implement the per-card override (Gallegos `_01101`, Assassin's Garb `_04006`).
+- `$theah->getNumberOfGambleCardsToReveal(Character $actor): array` — returns `[$count, $explanationsHtml]`; base count is **2** plus every card's `getNumberOfGambleCardsToReveal` override. Attachments that add reveals implement the per-card override (Gallegos `_01101`, Assassin's Garb `_04006`, Jägerarmbrust `_04017`).
 - `$theah->swapParticipantsInDuel($duelId, $round, $oldId, $newId)` — mid-duel participant replace. Harpoon-style "cannot be swapped" must throw here *before* DB mutate.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${attachment_inject_code}` placeholder).
 - **Attachment `ControllerId` after equip:** `EventHub` sets it to the **equipping player**. For `CanEquipToOpponents`, that is *not* the equipped character's controller — use `$attachedTo->ControllerId` for the victim.
 - **"After a \<Trait\> equips this card"** ≠ **"May only equip to \<Trait\>"**. Former = Reaction offer gate on the host's traits (`Reaction_04016`). Latter = Pattern A `canAttachTo` + `eventCheck(Equipping)`.
+- **"If your participant is a \<Trait\>…"** inside Technique/Action text ≠ availability / Pattern A. Resolve-time effect gate only (`Technique_04017`). Unconditional halves still fire for other hosts.
+- **Passive "when … gambles, reveal an additional card"** ≠ **Gambling Technique** keyword. Former = B''' override; latter = `DUEL_GAMBLED` availability (`_04017` has both shapes on one card — do not conflate).
 
 **`EventAttachmentUnequipped` + `AttachedToId`:** EventHub clears `$attachment->AttachedToId = 0` **before** card `handleEvent` (event does not set `runEventHubAfterCards`). Any unequip cleanup that needs the former host must use `$event->characterId` (Pattern B trait remove, B'' condition clear, B''' bonus undo — `_04006`).
 
@@ -39,12 +41,14 @@ Event factories you'll likely need:
 - `createCardRemovedFromPlayEvent($playerId, $cardId, $toLocation, $hidden = false)` — first step of "Sink this card" UI cleanup after unequip
 - `createCardAddedToFactionDeckEvent($playerId, $cardId, $onTop)` — `$onTop = false` sinks to bottom; use `$attachment->OwnerId` for the playerId
 - `createCardDiscardedFromPlayEvent($playerId, $cardId, $location, $sourceId, $asEffect)`
+- `createCardDiscardedFromHandEvent($ownerId, $cardId, $sourceId, $asPayment, $asPlayed, $asEffect)` — adversary hand discard from Technique (`Technique_04017` / `01093`); usually `$asEffect = true`
 - `createCardEngagedEvent($playerId, $cardId, $sourceId, $abilityId)` — "Engage this card" on an attachment Technique: `$cardId` = attachment id
 - `createCardMovingEvent($playerId, $cardId, $from, $to, $engage = true, $sourceId = 0, $abilityId = '')` — default `$engage = true`; pass `false` when move is an effect and engage/sink was a separate cost. `$unstoppable = true` bypasses Harpoon-style move blocks (Lodestone Home-from-opponent gate does not check unstoppable — printed text is ability-scoped).
 - `createCharacterFinesseModifedEvent($playerId, $characterId, $old, $new, $reason)` — note the historical typo `Modifed` in the factory name. Siblings: `createCharacterCombatModifiedEvent`, `createCharacterInfluenceModifiedEvent`.
 - `createCharacterBeingHealedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')` — heal Reaction / Action (`Reaction_04016`, `Reaction_03027a`)
 - `createThreatModifiedEvent($challengerThreat, $defenderThreat, …)` — "each participant gains a threat" = `(1, 1)` (`Technique_04016`, `Reaction_02039`)
 - `createTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — for attachment Actions, `$sourceId` is usually the **attachment** id
+- `createTechniqueTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — HIGHEST_PRIORITY choice interrupt (adversary discard picker, attachment destroy pick). Attachment-hosted: `$sourceId` = attachment id (`Technique_04017` / `04013`)
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)`
 - `createActionResolvedEvent($playerId)`

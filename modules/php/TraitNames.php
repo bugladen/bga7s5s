@@ -53,6 +53,7 @@ class TraitNames
             "Corruption",
             "Cossack",
             "Crime",
+            "Crossbow",
             "Cunning",
             "Dagger",
             "Dar Matushki",

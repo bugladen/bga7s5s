@@ -216,6 +216,11 @@
                 });
             },
 
+            'duelChooseTechnique_04017': () => {
+                this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
         };
 
         if (methods[stateName])
