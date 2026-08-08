@@ -2313,7 +2313,19 @@ return declare('seventhseacityoffivesails.notifications', null, {
                     dojo.addClass(cardDivId, '_7sfs-engaged');
                     dojo.addClass(cardDivId, '_7sfs-duel-row-combat-card-gambled');
                 }
-                else if (this.player_id == combatCard.controllerId)
+
+                // WHY the hand removal is not tied to args.gambled: that flag is per
+                // duel round, not per card. Broken-Time (01077) stages an additional
+                // combat card in the owner's hand (it has to, in case the player wants
+                // to use a Maneuver on it), so in a round where the player also gambled
+                // the extra card would stay visible in hand forever.
+                //
+                // WHY getCardElement and not a getCards() id comparison: getCardElement
+                // resolves `factionhand-card-${id}` via the DOM, so it is immune to the
+                // id arriving as a number here and a string in the stock. A genuinely
+                // gambled card was never in hand, so it resolves to null and is skipped.
+                if (this.player_id == combatCard.controllerId
+                    && this.factionHand.getCardElement(combatCard))
                 {
                     this.factionHand.removeCard(combatCard);
                 }
