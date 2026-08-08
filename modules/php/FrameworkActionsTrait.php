@@ -175,9 +175,9 @@ trait FrameworkActionsTrait
         //Move the cards to a purgatory state while waiting for the other players to finish their day planning.
         //This is necessary to prevent the card from being shown back in the player's approach deck if they F5.
         if ($scheme)
-            $this->cards->moveCard($scheme, Game::LOCATION_PURGATORY);
+            $this->parkCard($scheme);
         if ($character)
-            $this->cards->moveCard($character, Game::LOCATION_PURGATORY);
+            $this->parkCard($character);
 
         $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'dayPlanned' state
     }
@@ -1030,9 +1030,7 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($event);
         }
 
-        $this->cards->moveCard($risk->Id, Game::LOCATION_PURGATORY);
-        $risk->Location = Game::LOCATION_PURGATORY;
-        $this->updateCardObjectInDb($risk);
+        $this->moveCard($risk->Id, Game::LOCATION_PURGATORY, 0, $risk);
 
         $action->announceAction($this);
         $action->resetPlayerPassCount($this);
@@ -1521,13 +1519,11 @@ trait FrameworkActionsTrait
         }
         else
         {
-            $card->Location = Game::LOCATION_DUELING_LINE;
-            $this->updateCardObjectInDb($card);
-            $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
+            $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
             $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
             $this->theah->queueEvent($transitionEvent);
-        }   
+        }
 
         $this->gamestate->nextState("combatCardChosen");
     }
@@ -1560,9 +1556,7 @@ trait FrameworkActionsTrait
         $card = $this->theah->game->getCardObjectFromDb($cardId);
 
         //Remove card from hand
-        $card->Location = Game::LOCATION_DUELING_LINE;
-        $this->updateCardObjectInDb($card);
-        $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
+        $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
         $this->gamestate->nextState("maneuverDeclined");
     }
@@ -1621,9 +1615,7 @@ trait FrameworkActionsTrait
         $this->globals->set(Game::DUEL_MANUEVER_ID, $maneuver->Id);
 
         //Remove card from hand
-        $card->Location = Game::LOCATION_DUELING_LINE;
-        $this->updateCardObjectInDb($card);
-        $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
+        $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
         $this->gamestate->nextState("maneuverPaidFor");
     }
@@ -1757,9 +1749,7 @@ trait FrameworkActionsTrait
         $this->theah->eventCheck($event);
         $this->theah->queueEvent($event);
 
-        $card->Location = Game::LOCATION_DUELING_LINE;
-        $this->updateCardObjectInDb($card);
-        $this->cards->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId);
+        $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
         // Restore actor as active before useManeuver/noManeuver — chooser may have
         // been the Proper Drama Maneuver owner, not the gambling player.
@@ -1840,7 +1830,7 @@ trait FrameworkActionsTrait
         
         foreach ($cardIds as $cardId) 
         {
-            $this->cards->moveCard($cardId, Game::LOCATION_PURGATORY);
+            $this->parkCard($cardId);
         }
         
         $this->gamestate->setPlayerNonMultiactive($playerId, 'cardsDiscarded'); // deactivate player; if none left, transition to 'dayPlanned' state

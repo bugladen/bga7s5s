@@ -198,7 +198,6 @@ class Action_01134 extends RiskAction implements ISorcererAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_2)
         {
             $owner = $this->getOwningCard($game->theah);
-            $deck = $game->getGameDeckObject($owner->ControllerId);
 
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
             if ($playerId == 0)
@@ -251,7 +250,8 @@ class Action_01134 extends RiskAction implements ISorcererAbility
                     "card" => $card->getPropertyArray($game),
                 ]);
 
-                $deck->moveCard($id, $discardName);
+                $game->moveCard($id, $discardName, 0, $card);
+
                 //Remove the card from the original cards
                 $originalCards = array_filter($originalCards, fn($originalCard) => $originalCard->id != $id);
             }

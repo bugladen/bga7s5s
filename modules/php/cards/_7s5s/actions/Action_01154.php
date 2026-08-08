@@ -153,8 +153,7 @@ class Action_01154 extends AttachmentAction implements ISorcererAbility, IAbilit
             $riskCard = $game->theah->getRiskById($game->globals->get(Game::CHOSEN_CARD));
 
             //Place original card in special hiding location
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+            $game->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $riskCard);
 
             $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($riskCard->ControllerId, $riskCard->Id);
             $game->theah->queueEvent($moveEvent);

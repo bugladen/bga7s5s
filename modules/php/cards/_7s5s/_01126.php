@@ -102,7 +102,6 @@ class _01126 extends Scheme
         if ($event instanceof EventSchemeMovedToCity && $event->scheme == $this)
         {
             $playerId = $event->theah->game->getActivePlayerId();
-            $deck = $event->theah->game->getGameDeckObject();
 
             $event->theah->setLocationCanBeClaimed($this->ChosenLocation, false);
 
@@ -128,7 +127,7 @@ class _01126 extends Scheme
                 //All characters go home
                 else if ($card instanceof Character)
                 {
-                    $deck->moveCard($card->Id, Game::LOCATION_PLAYER_HOME, $card->ControllerId);;
+                    $event->theah->game->moveCardInDeck($card->Id, Game::LOCATION_PLAYER_HOME, $card->ControllerId);
 
                     $movedHome = EventFactory::createCardMovingEvent($this->ControllerId, $card->Id, $this->ChosenLocation, Game::LOCATION_PLAYER_HOME, false);
                     $event->theah->queueEvent($movedHome);

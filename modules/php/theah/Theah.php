@@ -133,13 +133,34 @@ class Theah
         foreach ($playerIds as $playerId)
         {
             $discardDeckName = $this->game->getPlayerDiscardDeckName($playerId["id"]);
-            $this->cards += $this->db->getCardObjectsAtLocation($discardDeckName);
+            $discardCards = $this->db->getCardObjectsAtLocation($discardDeckName);
+            $this->repairDiscardPileLocations($discardCards, $discardDeckName);
+            $this->cards += $discardCards;
         }
 
         $this->backfillIndomitableWillFlags();
         $this->backfillLeshiyeOfTheWoodFlags();
 
         $this->cityBuilt = true;
+    }
+
+    // WHY: card_location is the authority for which pile a card sits in — the UI and
+    // every getCardObjectsAtLocation() query read that column. The serialized Card
+    // carries its own Location property that has to be kept in step by hand, and any
+    // code path that moves a row with the deck component alone leaves it stale. A card
+    // milled straight from a faction deck into a discard pile then still reports
+    // "Faction-<id>", so the many abilities that validate Card->Location against the
+    // discard pile name reject a card the player can plainly see in the discard pile,
+    // stranding the game in that state. Repair the drift here, where the true pile is
+    // known: a card in a discard pile always belongs to that discard pile.
+    private function repairDiscardPileLocations(array $cards, string $discardPileName): void
+    {
+        foreach ($cards as $card) {
+            if ($card->Location === $discardPileName) continue;
+
+            $card->Location = $discardPileName;
+            $this->game->updateCardObjectInDb($card);
+        }
     }
 
     // STOPGAP: Games that had a character with INDOMITABLE_WILL_CONDITION before the

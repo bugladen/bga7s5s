@@ -141,8 +141,7 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
                 throw new UserException($game->translate("Card not in your hand"));
             }
 
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($card->Id, Game::LOCATION_PURGATORY);
+            $game->parkCard($card->Id);
             $game->globals->set(Game::CHOSEN_CARD, $card->Id);
             
             $game->gamestate->nextState("cardChosen");

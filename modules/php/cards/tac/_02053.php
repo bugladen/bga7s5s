@@ -198,9 +198,7 @@ class _02053 extends Scheme implements IHasReactions
                 $game->theah->queueEvent($removeEvent);
 
                 // Move to city locker
-                $deck = $game->getGameDeckObject();
-                $deck->moveCard($card->Id, Game::LOCATION_CITY_LOCKER);
-                $card->Location = Game::LOCATION_CITY_LOCKER;
+                $game->moveCard($card->Id, Game::LOCATION_CITY_LOCKER, 0, $card);
                 $card->IsUpdated = true;
 
                 $game->notify->all("cardSentToCityLocker", clienttranslate('${scheme_inject_code}: ${card_inject_code} is sent to the City Locker.'), [

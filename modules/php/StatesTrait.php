@@ -220,7 +220,8 @@ trait StatesTrait
                 $this->globals->delete(Game::DEBUG_INCLUDE_CITY_CARD);
             } else {
                 $cityCard = $this->getCardsOnTopOfCityDeck(1)[0];
-                $this->cards->moveCard($cityCard['id'], $location);
+                // WHY: moveCardInDeck — Location set by queued EventCityCardAddedToLocation.
+                $this->moveCardInDeck($cityCard['id'], $location);
             }
 
             //Create the event
@@ -270,10 +271,9 @@ trait StatesTrait
             //Update the scheme's location in the DB
             if ($player['schemeId']) 
             {
-                $this->cards->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
+                $scheme = $this->moveCard($player['schemeId'], Game::LOCATION_PLAYER_HOME, $playerId);
 
                 // Run events that the scheme has been played to a location
-                $scheme = $this->getCardObjectFromDb($player['schemeId']);
                 $event = $this->theah->createEvent(Events::SchemeCardRevealed);
                 if ($event instanceof EventSchemeCardRevealed) {
                     $event->playerId = $playerId;

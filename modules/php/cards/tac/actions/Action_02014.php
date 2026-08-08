@@ -112,7 +112,6 @@ class Action_02014 extends CardAction
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02014)
         {
             $owner = $this->getOwningCard($game->theah);
-            $deck = $game->getGameDeckObject();
 
             foreach ($ids as $id)
             {
@@ -140,7 +139,8 @@ class Action_02014 extends CardAction
                     "card" => $card->getPropertyArray($game),
                 ]);
 
-                $deck->moveCard($id, Game::LOCATION_CITY_DISCARD);
+                $game->moveCard($id, Game::LOCATION_CITY_DISCARD, 0, $card);
+
                 //Remove the card from the original cards
                 $originalCards = array_filter($originalCards, fn($originalCard) => $originalCard->id != $id);
             }

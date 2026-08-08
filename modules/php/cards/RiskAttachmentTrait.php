@@ -28,11 +28,7 @@ trait RiskAttachmentTrait
         $originalCard = $theah->getCardById($this->OriginalCardId);
 
         $discardPileName = $theah->game->getPlayerDiscardDeckName($this->OwnerId);
-        $deck = $theah->game->getGameDeckObject();
-        $deck->moveCard($this->OriginalCardId, $discardPileName);
-        
-        $originalCard->Location = $discardPileName;
-        $theah->game->updateCardObjectInDb($originalCard);
+        $theah->game->moveCard($this->OriginalCardId, $discardPileName, 0, $originalCard);
     }
 
 }

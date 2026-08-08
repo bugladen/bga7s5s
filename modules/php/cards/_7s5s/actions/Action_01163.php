@@ -137,8 +137,7 @@ class Action_01163 extends RiskAction
             $card = $game->getCardObjectFromDb(array_shift($cardIds));
 
             //Move the saved card to the hidden location
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($card->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+            $game->moveCard($card->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $card);
 
             //Create a clone of the saved card
             $owner = $this->getOwningCard($game->theah);

@@ -121,7 +121,6 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02002_2)
         {
             $owner = $this->getOwningCard($game->theah);
-            $deck = $game->getGameDeckObject();
 
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
             $deckName = $game->getPlayerFactionDeckName($playerId);
@@ -165,7 +164,8 @@ class Action_02002 extends CharacterAction implements ISorcererAbility, IAbility
                     "card" => $card->getPropertyArray($game),
                 ]);
 
-                $deck->moveCard($id, $discardName);
+                $game->moveCard($id, $discardName, 0, $card);
+
                 //Remove the card from the original cards
                 $originalCards = array_filter($originalCards, fn($originalCard) => $originalCard->id != $id);
             }

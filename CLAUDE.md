@@ -63,6 +63,7 @@ The `.githooks/pre-commit` hook enforces these on staged PHP files:
 | Calls `createAttachmentEquippedEvent()` | Must also call `getRequiredAttachTargetId()` |
 | `extends FactionAttachment` | Must set `$this->Riposte =` |
 | **Forbidden**: implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` on the same class |
+| **Forbidden**: raw `$deck->moveCard()` / `$this->cards->moveCard()` outside `DeckTrait.php` — use `Game::moveCard()` (syncs Location), `moveCardInDeck()` (deck only), or `parkCard()` (Purgatory) |
 
 Note: `$this->setUsed(true)`, `$this->resetPlayerPassCount()`, and `$this->announceAction()` are no longer called from `CharacterAction/AttachmentAction/SchemeAction/SchemeCityAction` subclasses — these run centrally during action confirmation (`actHighDramaInPlayActionConfirm` and `stHighDramaInPlayActionDispatch`).
 
