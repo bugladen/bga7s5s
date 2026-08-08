@@ -25,6 +25,8 @@ class _03cd20 extends CityEventCard implements IHasActions, IHasReactions
         $this->CardNumber = 0;
         $this->CityCardNumber = 20;
 
+        $this->InPlayXImageOffset = -20;
+
         $this->Traits = [
             clienttranslate('Prepared'),
             clienttranslate('Timely'),
