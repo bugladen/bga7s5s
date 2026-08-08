@@ -153,9 +153,7 @@ class Technique_01090 extends Technique
                 // Done with direct DB ops so we can chain both moves synchronously
                 // — using EventCardAddedToHand here would fire after the dueling-line
                 // move and put the card back into the hand.
-                $card->Location = Game::LOCATION_HAND;
-                $deck->moveCard($card->Id, Game::LOCATION_HAND, $actor->ControllerId);
-                $game->updateCardObjectInDb($card);
+                $game->moveCard($card->Id, Game::LOCATION_HAND, $actor->ControllerId, $card);
                 $game->theah->addCardToWorld($card);
 
                 $game->notify->all("cardAddedToHand", clienttranslate('${player_name} added ${card_inject_code} to their Faction Hand.'), [
@@ -171,9 +169,7 @@ class Technique_01090 extends Technique
                 $event = EventFactory::createCombatCardAnnouncedEvent($actor->ControllerId, $owner->Id);
                 $game->theah->queueEvent($event);
 
-                $card->Location = Game::LOCATION_DUELING_LINE;
-                $deck->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $actor->ControllerId);
-                $game->updateCardObjectInDb($card);
+                $game->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $actor->ControllerId, $card);
 
                 $transition = EventFactory::createTransitionEvent($actor->ControllerId, $owner->Id, "01090_2", $this->Id);
                 $game->theah->queueEvent($transition);

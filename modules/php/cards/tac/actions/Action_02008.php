@@ -153,8 +153,7 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $riskCard = $game->theah->getCardById($riskCardId);
 
             //Place original card in special hiding location
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+            $game->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $riskCard);
 
             $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($riskCard->ControllerId, $riskCard->Id, $isHidden = true);
             $game->theah->queueEvent($moveEvent);

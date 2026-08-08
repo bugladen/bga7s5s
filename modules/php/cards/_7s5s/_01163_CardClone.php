@@ -38,8 +38,7 @@ class _01163_CardClone extends Card
                 ]);
 
                 //This clone card removed from play
-                $deck = $game->getGameDeckObject();
-                $deck->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN, $this->ControllerId);
+                $game->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN, $this->ControllerId, $this);
                 $game->notify->all("cardRemovedFromPlay", "", [
                     "cardId" => $this->Id,
                     "toLocation" => Game::LOCATION_PERMANENTLY_HIDDEN,
@@ -61,8 +60,7 @@ class _01163_CardClone extends Card
                 ]);
 
                 //The clone card is removed from play
-                $deck = $game->getGameDeckObject();
-                $deck->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN, $this->ControllerId);
+                $game->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN, $this->ControllerId, $this);
                 $game->notify->all("cardRemovedFromPlay", "", [
                     "cardId" => $this->Id,
                     "toLocation" => Game::LOCATION_PERMANENTLY_HIDDEN,
@@ -70,7 +68,9 @@ class _01163_CardClone extends Card
 
                 //Discard the cloned card to the player's discard pile
                 $clonedCard = $game->getCardObjectFromDb($this->ClonedCardId);
-                $deck->moveCard($clonedCard->Id, $game->getPlayerDiscardDeckName($clonedCard->ControllerId));
+                $discardPileName = $game->getPlayerDiscardDeckName($clonedCard->ControllerId);
+                $game->moveCard($clonedCard->Id, $discardPileName, 0, $clonedCard);
+
                 $game->notify->all("cardAddedToPlayerDiscardPile", clienttranslate('${card_inject_code} added to ${player_name} discard pile.'), [
                     "card_inject_code" => $clonedCard->getInjectCode(),
                     "playerId" => $clonedCard->ControllerId,

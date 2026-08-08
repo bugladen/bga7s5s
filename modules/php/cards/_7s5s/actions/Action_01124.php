@@ -187,8 +187,7 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
             $riskCard = $game->theah->getRiskById($game->globals->get(Game::CHOSEN_CARD));
 
             //Place original card in special hiding location
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+            $game->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $riskCard);
 
             $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($riskCard->ControllerId, $riskCard->Id);
             $game->theah->queueEvent($moveEvent);

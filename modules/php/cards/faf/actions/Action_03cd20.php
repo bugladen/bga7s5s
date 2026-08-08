@@ -81,7 +81,7 @@ class Action_03cd20 extends EventCityAction
                 }
 
                 // Put this card in the player's Home. Updating ControllerId before queueing
-                // the move ensures deck->moveCard() writes the right card_location_arg, and
+                // the move ensures game->moveCard() writes the right card_location_arg, and
                 // EventCardMoved's notify carries the new controllerId so the client renders
                 // it at the right home anchor.
                 $owner->ControllerId = $playerId;

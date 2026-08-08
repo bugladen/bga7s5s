@@ -892,8 +892,7 @@ trait UtilitiesTrait
     {
         //Place original card in special hiding location
         $owner = $game->theah->getCardById($originalCardId);
-        $deck = $game->getGameDeckObject();
-        $deck->moveCard($owner->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+        $game->moveCard($owner->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $owner);
 
         $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($owner->ControllerId, $owner->Id);
         $game->theah->queueEvent($moveEvent);

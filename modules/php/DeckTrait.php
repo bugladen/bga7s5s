@@ -119,6 +119,65 @@ trait DeckTrait
         $this->DbQuery($sql);
     }
 
+    /**
+     * Move a card in the deck component and keep Card->Location in sync.
+     *
+     * WHY: card_location (deck) and the serialized Location property are twin
+     * records. Raw $this->cards->moveCard() only updates the former and is the
+     * source of "card appears in discard but confirm rejects it" wedges. Prefer
+     * this method everywhere a card truly changes its logical location.
+     *
+     * For temporary parks that must leave Location alone (Purgatory holding a
+     * hand card pending discard), or for premature deck moves that a queued
+     * event will finish (EventCardMoved / EventCityCardAddedToLocation), use
+     * moveCardInDeck() instead.
+     *
+     * @param int $cardId
+     * @param string $location Destination location name
+     * @param int|string $locationArg Optional deck location_arg (player id for Hand etc.)
+     * @param Card|null $card Optional already-loaded instance to mutate in place
+     * @return Card The card with Location updated and persisted
+     */
+    public function moveCard(int $cardId, string $location, $locationArg = 0, ?Card $card = null): Card
+    {
+        $this->cards->moveCard($cardId, $location, $locationArg);
+
+        if ($card === null) {
+            // Prefer the in-world instance so Theah stays coherent with the DB write.
+            $card = $this->theah->getCardById($cardId);
+            if ($card === null) {
+                $card = $this->getCardObjectFromDb($cardId);
+            }
+        }
+
+        $card->Location = $location;
+        $this->updateCardObjectInDb($card);
+        return $card;
+    }
+
+    /**
+     * Move only the deck row, leaving Card->Location alone.
+     *
+     * WHY: Purgatory parks need Location to still report Hand for a subsequent
+     * discard-from-hand event. Some callers also move the deck row immediately
+     * so same-request location queries don't see the card at the old pile, while
+     * a queued event (EventCardMoved, EventCityCardAddedToLocation) will set
+     * Location shortly after.
+     */
+    public function moveCardInDeck(int $cardId, string $location, $locationArg = 0): void
+    {
+        $this->cards->moveCard($cardId, $location, $locationArg);
+    }
+
+    /**
+     * Park a card in Purgatory (or another holding location) without changing
+     * Card->Location. Convenience wrapper around moveCardInDeck().
+     */
+    public function parkCard(int $cardId, string $holdingLocation = Game::LOCATION_PURGATORY, $locationArg = 0): void
+    {
+        $this->moveCardInDeck($cardId, $holdingLocation, $locationArg);
+    }
+
     public function getGameDeckObject() 
     {
         return $this->cards;
@@ -187,10 +246,7 @@ trait DeckTrait
         while($this->cards->countCardsInLocation(Game::LOCATION_CITY_DISCARD) > 0) 
         {
             $cardInfo = $this->cards->getCardOnTop(Game::LOCATION_CITY_DISCARD);
-            $this->cards->moveCard($cardInfo['id'], Game::LOCATION_CITY_DECK);
-            $card = $this->getCardObjectFromDb($cardInfo['id']);
-            $card->Location = Game::LOCATION_CITY_DECK;
-            $this->updateCardObjectInDb($card);
+            $this->moveCard((int)$cardInfo['id'], Game::LOCATION_CITY_DECK);
         }
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
 
@@ -243,13 +299,10 @@ trait DeckTrait
     {
         $location = $this->getPlayerFactionDeckName($playerId);
         $discardLocation = $this->getPlayerDiscardDeckName($playerId);
-        while($this->cards->countCardsInLocation($discardLocation) > 0) 
+        while($this->cards->countCardsInLocation($discardLocation) > 0)
         {
             $cardInfo = $this->cards->getCardOnTop($discardLocation);
-            $this->cards->moveCard($cardInfo['id'], $location);
-            $card = $this->getCardObjectFromDb($cardInfo['id']);
-            $card->Location = $location;
-            $this->updateCardObjectInDb($card);
+            $this->moveCard((int)$cardInfo['id'], $location);
         }
         $this->cards->shuffle($location);
 

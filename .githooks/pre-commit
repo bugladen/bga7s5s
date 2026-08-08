@@ -15,6 +15,8 @@
 # 10. Classes extending AttachmentReaction must call $this->ownerIsAttached()
 # 11. Classes extending FactionAttachment must set $this->Riposte =
 #     (CityAttachment is excluded — city attachments have no FactionCardTrait combat stats)
+# 12. Raw $deck/$this->cards->moveCard() is forbidden outside DeckTrait.php
+#     — use Game::moveCard / moveCardInDeck / parkCard
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -172,6 +174,18 @@ for file in $staged_files; do
         if ! echo "$content" | grep -q '\$this->Riposte\s*='; then
             echo -e "${RED}ERROR:${NC} $file"
             echo -e "  Class extends FactionAttachment but does not set ${YELLOW}\$this->Riposte =${NC}"
+            errors_found=1
+        fi
+    fi
+
+    # Forbid raw deck-component moveCard outside DeckTrait.
+    # WHY: card_location and serialized Card->Location must stay in sync; use
+    # Game::moveCard / moveCardInDeck / parkCard instead.
+    if [[ "$file" != *"DeckTrait.php" ]]; then
+        if echo "$content" | grep -qE '(\$this->cards|\$deck|\$deckObject)->moveCard\('; then
+            echo -e "${RED}ERROR:${NC} $file"
+            echo -e "  Raw ${YELLOW}->moveCard()${NC} on the deck component is forbidden."
+            echo -e "  Use ${YELLOW}\$game->moveCard()${NC} (updates Location), ${YELLOW}moveCardInDeck()${NC} (deck only), or ${YELLOW}parkCard()${NC} (Purgatory)."
             errors_found=1
         fi
     fi

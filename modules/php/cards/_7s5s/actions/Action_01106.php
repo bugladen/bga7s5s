@@ -195,8 +195,7 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
             }
 
             //Place original card in special hiding location
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+            $game->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $riskCard);
 
             $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($riskCard->ControllerId, $riskCard->Id);
             $game->theah->queueEvent($moveEvent);

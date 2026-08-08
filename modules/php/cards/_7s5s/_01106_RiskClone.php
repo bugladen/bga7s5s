@@ -34,8 +34,7 @@ class _01106_RiskClone extends Risk implements IHasActions
             $game = $event->theah->game;
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->ownerId, $this->Id);
             $event->theah->queueEvent($removeEvent);
-            $deck = $game->getGameDeckObject();
-            $deck->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN);
+            $game->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $this);
 
             //Sink the cloned card to the bottom of the controller's faction deck
             $clonedCard = $game->getCardObjectFromDb($this->ClonedCardId);

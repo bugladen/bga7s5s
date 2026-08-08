@@ -127,13 +127,8 @@ trait EventHub
                 $handler = function (Theah $theah, EventApproachCharacterPlayed $event)
                 {
                     //Update the character's location in the DB
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->characterId, Game::LOCATION_PLAYER_HOME, $event->playerId);
-
-                    $character = $theah->getCardById($event->characterId);
+                    $character = $theah->game->moveCard($event->characterId, Game::LOCATION_PLAYER_HOME, $event->playerId);
                     $theah->addCardToWorld($character);
-
-                    $character->Location = Game::LOCATION_PLAYER_HOME;
                     $character->IsUpdated = true;
 
                     // Notify players of selected character
@@ -192,7 +187,7 @@ trait EventHub
                     }
 
                     $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($attachment->Id, $performer->Location, $event->playerId);
+                    $theah->game->moveCard($attachment->Id, $performer->Location, $event->playerId, $attachment);
 
                     // Notify players of attachment equipped
                     if ($event->messageHidden)
@@ -427,12 +422,7 @@ trait EventHub
                 {
                     //Move card in DB
                     $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->cardId, Game::LOCATION_HAND, $event->playerId);
-
-                    $card = $theah->game->getCardObjectFromDb($event->cardId);
-                    $card->Location = Game::LOCATION_HAND;
-                    $theah->game->updateCardObjectInDb($card);
-
+                    $card = $theah->game->moveCard($event->cardId, Game::LOCATION_HAND, $event->playerId);
                     $card->IsUpdated = true;
                     $theah->addCardToWorld($card);
 
@@ -470,8 +460,8 @@ trait EventHub
             case $event instanceof EventCardAddedToCityDiscardPile:
                 $handler = function (Theah $theah, EventCardAddedToCityDiscardPile $event)
                 {
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->cardId, Game::LOCATION_CITY_DISCARD);
+                    // WHY: moveCardInDeck — Character may be recreated below; Location is set on the (possibly new) instance.
+                    $theah->game->moveCardInDeck($event->cardId, Game::LOCATION_CITY_DISCARD);
 
                     $card = $theah->getCardById($event->cardId);
                     if ($card instanceof Character)
@@ -480,7 +470,7 @@ trait EventHub
                         $fullClassname = get_class($card);
                         $pos = strrpos($fullClassname, '\\');
                         $className = substr($fullClassname, $pos + 2);
-                        $card = $theah->game->instantiateCard($className, $card->Id);            
+                        $card = $theah->game->instantiateCard($className, $card->Id);
                         $theah->addCardToWorld($card);
                     }
                     $card->Engaged = false;
@@ -504,12 +494,10 @@ trait EventHub
                 {
                     $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
 
-                    $card = $theah->getCardById($event->cardId);
-                    $card->Location = $discardPileName;
-                    $card->IsUpdated = true;
-
                     $deckObject = $theah->game->getGameDeckObject();
-                    $deckObject->moveCard($card->Id, $discardPileName);
+                    $card = $theah->getCardById($event->cardId);
+                    $theah->game->moveCard($card->Id, $discardPileName, 0, $card);
+                    $card->IsUpdated = true;
 
                     // Notify players that card has been discarded from hand
                     $message = '${player_name} discarded ${card_inject_code}.';
@@ -534,8 +522,8 @@ trait EventHub
                 {
                     $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
 
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->cardId, $discardPileName);
+                    // WHY: moveCardInDeck — Character may be recreated below; Location is set on the (possibly new) instance.
+                    $theah->game->moveCardInDeck($event->cardId, $discardPileName);
 
                     $card = $theah->getCardById($event->cardId);
                     $ownerId = $card->OwnerId;
@@ -547,7 +535,7 @@ trait EventHub
                         $fullClassname = get_class($card);
                         $pos = strrpos($fullClassname, '\\');
                         $className = substr($fullClassname, $pos + 2);
-                        $card = $theah->game->instantiateCard($className, $card->Id);            
+                        $card = $theah->game->instantiateCard($className, $card->Id);
                         $theah->addCardToWorld($card);
                     }
                     $card->Location = $discardPileName;
@@ -612,11 +600,8 @@ trait EventHub
             case $event instanceof EventCardHidden:
                 $handler = function (Theah $theah, EventCardHidden $event)
                 {
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->cardId, Game::LOCATION_PERMANENTLY_HIDDEN);
-
                     $card = $theah->getCardById($event->cardId);
-                    $card->Location = Game::LOCATION_PERMANENTLY_HIDDEN;
+                    $theah->game->moveCard($event->cardId, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $card);
                     $card->IsUpdated = true;
                 };
                 $handler($this, $event);
@@ -645,15 +630,13 @@ trait EventHub
                 $handler = function (Theah $theah, EventCardMoved $event)
                 {
                     $card = $theah->getCardById($event->cardId);
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($card->Id, $event->toLocation, $card->ControllerId);
-                    $card->Location = $event->toLocation;
+                    $theah->game->moveCard($card->Id, $event->toLocation, $card->ControllerId, $card);
 
                     if ($event->engage && ! $card->Engaged)
                         $card->Engaged = true;
 
                     $card->IsUpdated = true;
-                    if ($card instanceof Character) 
+                    if ($card instanceof Character)
                     {
                         foreach ($card->Attachments as $attachmentId) {
                             $attachment = $theah->getAttachmentById($attachmentId);
@@ -662,8 +645,7 @@ trait EventHub
                                 continue;
                             }
 
-                            $deck->moveCard($attachmentId, $event->toLocation, $attachment->ControllerId);
-                            $attachment->Location = $event->toLocation;
+                            $theah->game->moveCard($attachmentId, $event->toLocation, $attachment->ControllerId, $attachment);
                             $attachment->IsUpdated = true;
                         }
                     }
@@ -727,11 +709,8 @@ trait EventHub
                 $handler = function (Theah $theah, EventCardRemovedFromPlay $event)
                 {
                     $card = $theah->getCardById($event->cardId);
-                    $card->Location = $event->toLocation;
+                    $theah->game->moveCard($card->Id, $event->toLocation, $card->ControllerId, $card);
                     $card->IsUpdated = true;
-
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($card->Id, $event->toLocation, $card->ControllerId);
 
                     $message = clienttranslate('${card_inject_code} removed from play.');
                     if ($event->hidden)
@@ -767,8 +746,8 @@ trait EventHub
 
                     if ($event->permanentlyHide)
                     {
-                        $deck = $theah->game->getGameDeckObject();
-                        $deck->moveCard($event->cardId, Game::LOCATION_PERMANENTLY_HIDDEN);
+                        // WHY: moveCard (not deck-only) — previously left Location stale = discard drift bug.
+                        $theah->game->moveCard($event->cardId, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $card);
                     }
                 };
                 $handler($this, $event);
@@ -839,11 +818,8 @@ trait EventHub
                     $handler = function (Theah $theah, EventCardMustered $event)
                     {
                         //Update the character's location in the DB
-                        $deck = $theah->game->getGameDeckObject();
-                        $deck->moveCard($event->cardId, $event->location, $event->playerId);
-
                         $card = $theah->getCardById($event->cardId);
-                        $card->Location = $event->location;
+                        $theah->game->moveCard($event->cardId, $event->location, $event->playerId, $card);
                         $card->ControllerId = $event->playerId;
                         $card->IsUpdated = true;
                         $theah->addCardToWorld($card);
@@ -874,11 +850,8 @@ trait EventHub
                         }
 
                         //Update the character's location in the DB
-                        $deck = $theah->game->getGameDeckObject();
-                        $deck->moveCard($event->characterId, $event->location, $event->playerId);
-
                         $character = $theah->getCardById($event->characterId);
-                        $character->Location = $event->location;
+                        $theah->game->moveCard($event->characterId, $event->location, $event->playerId, $character);
                         $character->ControllerId = $event->playerId;
                         $character->IsUpdated = true;
                         $theah->addCardToWorld($character);        
@@ -940,12 +913,9 @@ trait EventHub
                 $handler = function (Theah $theah, EventCityCardAddedToLocation $event)
                 {
                     $card = $theah->game->getCardObjectFromDb($event->cardId);
-                    $card->Location = $event->location;
+                    $theah->game->moveCard($event->cardId, $event->location, 0, $card);
                     $card->IsUpdated = true;
                     $theah->addCardToWorld($card);
-
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->cardId, $event->location);
                     
                     // Notify players that card has been played
                     $theah->game->notify->all("cityCardAddedToLocation", clienttranslate('${card_inject_code} added to ${location}.'), [
@@ -1367,11 +1337,7 @@ trait EventHub
                     $character = $theah->getCharacterById($event->characterId);
                     $wasInPlay = $character !== null && ($theah->cardInCity($character) || $character->Location == Game::LOCATION_PLAYER_HOME);
 
-                    $deck = $theah->game->getGameDeckObject($event->playerId);
-                    $deck->moveCard($event->characterId, Game::LOCATION_APPROACH, $event->playerId);
-
-                    $character = $theah->getCharacterById($event->characterId);
-                    $character->Location = Game::LOCATION_APPROACH;
+                    $character = $theah->game->moveCard($event->characterId, Game::LOCATION_APPROACH, $event->playerId, $character);
                     $character->OwnerId = $event->playerId;
                     $character->ControllerId = $event->playerId;
                     //Reset in-play state — a card in the Approach deck has no memory of its prior life
@@ -2079,8 +2045,8 @@ trait EventHub
                     {
                         $discardPileName = $theah->game->getPlayerDiscardDeckName($character->ControllerId);
                         $location = $discardPileName;
-                        $deck = $theah->game->getGameDeckObject();
-                        $deck->moveCard($event->characterId, $discardPileName);
+                        // WHY: moveCardInDeck — card is recreated below; Location set on the new instance.
+                        $theah->game->moveCardInDeck($event->characterId, $discardPileName);
 
                         $theah->game->notify->all("cardDiscardedFromPlay", clienttranslate('${card_inject_code} has been destroyed and sent to the discard pile due to: ${reason} '), [
                             'i18n' => ['location'],
@@ -2094,8 +2060,8 @@ trait EventHub
                     else
                     {
                         //Agent006: "Mercenary characters granted Brute by Cirilo's Passive would not have the Brute keyword upon destruction and leaving play and would be sent to the 'The Locker'"
-                        $deck = $theah->game->getGameDeckObject();
-                        $deck->moveCard($event->characterId, $locker);
+                        // WHY: moveCardInDeck — card is recreated below; Location set on the new instance.
+                        $theah->game->moveCardInDeck($event->characterId, $locker);
 
                         $theah->game->notify->all("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
                             'i18n' => ['reason'],
@@ -2125,10 +2091,7 @@ trait EventHub
                 {
                     $card = $theah->getCardById($event->cardId);
                     $locker = $theah->game->getPlayerLockerName($event->playerId);
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->moveCard($event->cardId, $locker);
-
-                    $card->Location = $locker;
+                    $theah->game->moveCard($event->cardId, $locker, 0, $card);
                     $card->IsUpdated = true;
 
                     $theah->game->notify->all("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [

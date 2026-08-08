@@ -77,12 +77,11 @@ class _01151 extends Scheme
 
             $locations = $event->theah->getCityLocations();
             $game = $event->theah->game;
-            $deck = $game->getGameDeckObject();
             foreach ($locations as $location)
             {
                 $cityCard = $game->getCardsOnTopOfCityDeck(1)[0];
 
-                $deck->moveCard($cityCard['id'], $location->Name);
+                $game->moveCardInDeck($cityCard['id'], $location->Name);
 
                 $cardEvent = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], $location->Name);
                 $event->theah->queueEvent($cardEvent);
