@@ -847,6 +847,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         nodeId = nodeId ?? `${card.divId}_image`;
         const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        const blank = '<tr><td colspan="2"><br></td></tr>';
         const traits = card.traits?.join(', ') ?? '';
         const combat = card.dashedCombat ? '-' : card.combat;
         const finesse = card.dashedFinesse ? '-' : card.finesse;
@@ -862,6 +863,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
         ];
 
         rows.push(
+            blank,
+            row(_('Resolve'), card.resolve),
+            row(_('Combat'), combat),
+            row(_('Finesse'), finesse),
+            row(_('Influence'), influence),
+            blank,
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true)
         );
@@ -903,6 +910,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
             row(_('Traits'), traits),
+            row(_('Initiative'), card.initiative),
+            row(_('Panache&nbsp;Modifier'), card.panacheModifier),
             row(_('Text'), _(card.text), true),
         ];
 
@@ -937,11 +946,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         nodeId = nodeId ?? `${card.divId}_image`;
         const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        // WHY: Full-width spacer like the abilities <hr> row — not a fake label/value pair.
+        const blank = '<tr><td colspan="2"><br></td></tr>';
         const fmtMod = (v) => v > 0 ? `+${v}` : (v || '-');
         const traits = card.traits?.join(', ') ?? '';
-        const riposte = card.dashedRiposte ? '-' : (card.riposte ?? '-');
-        const parry = card.dashedParry ? '-' : (card.parry ?? '-');
-        const thrust = card.dashedThrust ? '-' : (card.thrust ?? '-');
 
         // WHY: Title sits with Name — same identity block as character tooltips.
         // WHY: Set + Card # last among card fields (catalog refs).
@@ -949,9 +957,33 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Name'), _(card.name)),
             ...(card.title ? [row(_('Title'), _(card.title))] : []),
             row(_('Type'), _(card.type)),
+            row(_('Cost'), card.wealthCost ?? ''),
+            blank,
+            row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
+            row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
+            row(_('Finesse&nbsp;Modifier'), fmtMod(card.finesseModifier)),
+            row(_('Influence&nbsp;Modifier'), fmtMod(card.influenceModifier)),
+        ];
+
+        // WHY: Riposte/Parry/Thrust live on FactionCardTrait only — city deck attachments
+        // have no combat box, so showing "-" for them is noise.
+        if (card.deckOrigin === 'Faction') {
+            const riposte = card.dashedRiposte ? '-' : (card.riposte ?? '-');
+            const parry = card.dashedParry ? '-' : (card.parry ?? '-');
+            const thrust = card.dashedThrust ? '-' : (card.thrust ?? '-');
+            rows.push(
+                blank,
+                row(_('Riposte'), riposte),
+                row(_('Parry'), parry),
+                row(_('Thrust'), thrust),
+            );
+        }
+
+        rows.push(
+            blank,
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
-        ];
+        );
 
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
@@ -1027,6 +1059,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
     {
         nodeId = nodeId ?? `${card.divId}_image`;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        // WHY: Full-width spacer like the abilities <hr> row — not a fake label/value pair.
+        const blank = '<tr><td colspan="2"><br></td></tr>';
         const traits = card.traits?.join(', ') ?? '';
         const riposte = card.dashedRiposte ? '-' : card.riposte;
         const parry = card.dashedParry ? '-' : card.parry;
@@ -1035,6 +1069,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
+            row(_('Cost'), card.wealthCost ?? ''),
+            blank,
+            row(_('Riposte'), riposte),
+            row(_('Parry'), parry),
+            row(_('Thrust'), thrust),
+            blank,
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
         ];
