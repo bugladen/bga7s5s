@@ -1383,14 +1383,34 @@ trait StatesTrait
 
             $this->globals->set(Game::CHOSEN_CARD, $card->Id);
 
+            // WHY: Broken-Time's additional combat card is a real play — announce it
+            // the same way actDuelActionChooseCombatCard does so reactions on
+            // CombatCardAnnounced (02039, 01135, etc.) can fire before maneuvers/stats.
+            // Route through DUEL_COMBAT_CARD_EVENTS (transition "announceCombatCard")
+            // rather than jumping straight to useManeuver/applyCombatCardStats.
+            $announceEvent = EventFactory::createCombatCardAnnouncedEvent($card->ControllerId, $card->Id);
+            $this->theah->queueEvent($announceEvent);
+
             if ($card->hasManeuversAvailableToPlayer($card->ControllerId, $this->theah))
             {
-                $this->gamestate->nextState("useManeuver");
+                $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
+                $this->theah->queueEvent($transitionEvent);
             }
             else
             {
-                $this->gamestate->nextState("applyCombatCardStats");
-            }   
+                // WHY: an additional combat card (Broken-Time 01077) is staged in the
+                // owner's hand before it is played. The useManeuver branch moves it to
+                // the Dueling Line once the maneuver is paid for or declined; this
+                // branch has no such step, so without this move the card contributes
+                // its combat stats but stays in hand and is never discarded at the end
+                // of the duel.
+                $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $card->ControllerId, $card);
+
+                $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
+                $this->theah->queueEvent($transitionEvent);
+            }
+
+            $this->gamestate->nextState("announceCombatCard");
         }
         elseif ($rollTheBonesActivated)
         {

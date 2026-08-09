@@ -33,6 +33,8 @@ class _01196 extends CityCharacter implements IHasReactions
         $this->CityCardNumber = 20;
         $this->Negotiable = true;
 
+        $this->InPlayXImageOffset = 15;
+
         $this->Traits = [
             clienttranslate('Mercenary'),
             clienttranslate('Pirate'),

@@ -848,6 +848,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         nodeId = nodeId ?? `${card.divId}_image`;
         const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        const blank = '<tr><td colspan="2"><br></td></tr>';
         const traits = card.traits?.join(', ') ?? '';
         const combat = card.dashedCombat ? '-' : card.combat;
         const finesse = card.dashedFinesse ? '-' : card.finesse;
@@ -855,33 +856,20 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         // WHY: Title sits with Name — players look for "Name, Title" as one identity
         // block; burying Title under Cost/Set made it easy to miss.
-        // WHY: Card # is catalog reference, not identity — park it last among card
-        // fields. City Card # stays near Set (city-deck index players look up early).
+        // WHY: Set + Card # are catalog references — park them last among card fields.
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Title'), _(card.title)),
             row(_('Type'), _(card.type)),
-            row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
         ];
 
-        if (card.wealthCost != null) {
-            rows.push(row(_('Cost'), card.wealthCost));
-        }
-
         rows.push(
+            blank,
             row(_('Resolve'), card.resolve),
             row(_('Combat'), combat),
             row(_('Finesse'), finesse),
             row(_('Influence'), influence),
-        );
-
-        if (card.traits?.includes('Leader')) {
-            rows.push(row(_('Crew Cap'), card.crewCap));
-            rows.push(row(_('Panache'), card.panache));
-        }
-
-        rows.push(
+            blank,
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true)
         );
@@ -889,7 +877,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
-        rows.push(row(_('Card #'), card.cardNumber ?? ''));
+        rows.push(row(_('Set'), this.getSetDisplayName(card.expansionName)));
+        if (card.cardNumber != '0') {
+            rows.push(row(_('Card&nbsp;#'), card.cardNumber ?? ''));
+        }
 
         if (card.controllerId && card.location !== 'Approach' && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.techniques?.length;
@@ -919,7 +910,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
-            row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Traits'), traits),
             row(_('Initiative'), card.initiative),
             row(_('Panache&nbsp;Modifier'), card.panacheModifier),
@@ -929,7 +919,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
-        rows.push(row(_('Card #'), card.cardNumber ?? ''));
+        rows.push(
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card&nbsp;#'), card.cardNumber ?? '')
+        );
 
         if (card.controllerId && card.location !== 'Approach') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.techniques?.length;
@@ -954,36 +947,52 @@ return declare('seventhseacityoffivesails.utilities', null, {
         nodeId = nodeId ?? `${card.divId}_image`;
         const strikeIf = (used, text) => used ? `<s>${text}</s>` : text;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        // WHY: Full-width spacer like the abilities <hr> row — not a fake label/value pair.
+        const blank = '<tr><td colspan="2"><br></td></tr>';
         const fmtMod = (v) => v > 0 ? `+${v}` : (v || '-');
         const traits = card.traits?.join(', ') ?? '';
-        const riposte = card.dashedRiposte ? '-' : (card.riposte ?? '-');
-        const parry = card.dashedParry ? '-' : (card.parry ?? '-');
-        const thrust = card.dashedThrust ? '-' : (card.thrust ?? '-');
 
         // WHY: Title sits with Name — same identity block as character tooltips.
-        // WHY: Card # last among card fields; City Card # stays near Set.
+        // WHY: Set + Card # last among card fields (catalog refs).
         let rows = [
             row(_('Name'), _(card.name)),
             ...(card.title ? [row(_('Title'), _(card.title))] : []),
             row(_('Type'), _(card.type)),
-            row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
             row(_('Cost'), card.wealthCost ?? ''),
+            blank,
             row(_('Resolve&nbsp;Modifier'), fmtMod(card.resolveModifier)),
             row(_('Combat&nbsp;Modifier'), fmtMod(card.combatModifier)),
             row(_('Finesse&nbsp;Modifier'), fmtMod(card.finesseModifier)),
             row(_('Influence&nbsp;Modifier'), fmtMod(card.influenceModifier)),
-            row(_('Riposte'), riposte),
-            row(_('Parry'), parry),
-            row(_('Thrust'), thrust),
+        ];
+
+        // WHY: Riposte/Parry/Thrust live on FactionCardTrait only — city deck attachments
+        // have no combat box, so showing "-" for them is noise.
+        if (card.deckOrigin === 'Faction') {
+            const riposte = card.dashedRiposte ? '-' : (card.riposte ?? '-');
+            const parry = card.dashedParry ? '-' : (card.parry ?? '-');
+            const thrust = card.dashedThrust ? '-' : (card.thrust ?? '-');
+            rows.push(
+                blank,
+                row(_('Riposte'), riposte),
+                row(_('Parry'), parry),
+                row(_('Thrust'), thrust),
+            );
+        }
+
+        rows.push(
+            blank,
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
-        ];
+        );
 
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
-        rows.push(row(_('Card #'), card.cardNumber ?? ''));
+        rows.push(row(_('Set'), this.getSetDisplayName(card.expansionName)));
+        if (card.cardNumber != '0') {
+            rows.push(row(_('Card&nbsp;#'), card.cardNumber ?? ''));
+        }
 
         if (card.controllerId && card.location !== 'hand') {
             const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;
@@ -1016,8 +1025,6 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
-            row(_('Set'), this.getSetDisplayName(card.expansionName)),
-            ...(card.cityCardNumber ? [row(_('City&nbsp;Card&nbsp;#'), card.cityCardNumber)] : []),
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
         ];
@@ -1025,7 +1032,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
-        rows.push(row(_('Card&nbsp;#'), card.cardNumber ?? ''));
+        rows.push(row(_('Set'), this.getSetDisplayName(card.expansionName)));
+        if (card.cardNumber != '0') {
+            rows.push(row(_('Card&nbsp;#'), card.cardNumber ?? ''));
+        }
 
         const hasAbilities = card.actions?.length || card.reactions?.length || card.maneuvers?.length || card.techniques?.length;
         if (hasAbilities) rows.push('<tr><td colspan="2"><hr></td></tr>');
@@ -1050,6 +1060,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
     {
         nodeId = nodeId ?? `${card.divId}_image`;
         const row = (label, value, vtop) => `<tr><td style="padding-right:10px;${vtop ? 'vertical-align:top;' : ''}">${label}</td><td>${value}</td></tr>`;
+        // WHY: Full-width spacer like the abilities <hr> row — not a fake label/value pair.
+        const blank = '<tr><td colspan="2"><br></td></tr>';
         const traits = card.traits?.join(', ') ?? '';
         const riposte = card.dashedRiposte ? '-' : card.riposte;
         const parry = card.dashedParry ? '-' : card.parry;
@@ -1058,11 +1070,12 @@ return declare('seventhseacityoffivesails.utilities', null, {
         let rows = [
             row(_('Name'), _(card.name)),
             row(_('Type'), _(card.type)),
-            row(_('Set'), this.getSetDisplayName(card.expansionName)),
             row(_('Cost'), card.wealthCost ?? ''),
+            blank,
             row(_('Riposte'), riposte),
             row(_('Parry'), parry),
             row(_('Thrust'), thrust),
+            blank,
             row(_('Traits'), traits),
             row(_('Text'), _(card.text), true),
         ];
@@ -1070,7 +1083,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const conditionsRowHtml = this.conditionsRow(card, row);
         if (conditionsRowHtml) rows.push(conditionsRowHtml);
 
-        rows.push(row(_('Card #'), card.cardNumber ?? ''));
+        rows.push(
+            row(_('Set'), this.getSetDisplayName(card.expansionName)),
+            row(_('Card&nbsp;#'), card.cardNumber ?? '')
+        );
 
         const html = this.prependCardImageToTextTooltip(card, `<div class='_7sfs-basic-tooltip'><table style="border:none;border-collapse:collapse;">${rows.join('')}</table></div>`);
         this.addTippyTooltip(nodeId, html, this.CARD_TOOLTIP_DELAY);

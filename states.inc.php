@@ -2600,6 +2600,12 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stSetNextCombatCard",
                 "transitions" => [
+                    // WHY announceCombatCard → DUEL_COMBAT_CARD_EVENTS: Broken-Time
+                    // (and any NEXT_COMBAT_CARD source) must announce the additional
+                    // combat card so CombatCardAnnounced reactions can fire before
+                    // useManeuver / applyCombatCardStats. Those two transitions below
+                    // remain for any direct callers that still nextState by name.
+                    "announceCombatCard" => States::DUEL_COMBAT_CARD_EVENTS,
                     "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "rollTheBones" => States::DUEL_GAMBLE_SETUP,
