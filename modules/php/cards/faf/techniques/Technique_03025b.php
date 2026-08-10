@@ -96,10 +96,10 @@ class Technique_03025b extends Technique
                 "location_name" => $location,
             ]);
 
-            $moveEvent = EventFactory::createCardMovingEvent($actor->ControllerId, $actor->Id, $actor->Location, $location, $engage = false, $actor->Id, $this->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($adversary->ControllerId, $adversary->Id, $adversary->Location, $location, $engage = false, $actor->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
-            $moveEvent = EventFactory::createCardMovingEvent($adversary->ControllerId, $adversary->Id, $adversary->Location, $location, $engage = false, $actor->Id, $this->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($actor->ControllerId, $actor->Id, $actor->Location, $location, $engage = false, $actor->Id, $this->Id);
             $game->theah->queueEvent($moveEvent);
 
             $game->gamestate->nextState();
