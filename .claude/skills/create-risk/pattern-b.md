@@ -153,3 +153,38 @@ Printed (Unravel the Thread `_04010`): **`<b>Sorcerer Action:</b> Sink up to two
 
 References: `_04010` / `Action_04010` / `State_highDramaPhase04010` + `_2`.
 
+### Pattern B.5 — En Garde Action: Target adjacent enemy • move performer there • filtered multi-player discard
+
+Printed (Seek Each Devil `_04018`): **`<b>En Garde Action:</b> Target an enemy character at an adjacent <b>City</b> location • Move your performer there. Then, each other player who controls a <b>Sorcerer</b> or <b>Monster</b> there discards a card.`** Often paired with Pattern E.2 **"While your performer is an Academic or Hunter, this card has -1 cost."**
+
+This is **not** B.1 (location chooser) and **not** B.3 (Target opponent / forced challenge). Printed **"Target"** an enemy character → character chooser + Cesca interfaces.
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters`.
+2. **En Garde** heading → filter performers `!$Engaged` **and** ≥1 valid adjacent-City enemy. Start from `parent::getPerformersForAction` (home eligible — plain Action, not City Action).
+3. **Targets:** controlled characters at `getAdjacentCityLocations($performer->Location, $includeHome = false)` with `ControllerId != performer`. Uncontrolled mercenaries are **not** enemies.
+4. **`EventActionTriggered`:** clear sticky discard list; transition `"NNNNN"` to character-chooser GameState (bas JS trio: highlight performer + `highlightCardsAsSelectable` + Confirm).
+5. **On confirm:** `eventCheck` + queue `createCardMovingEvent(..., engage: false, …)` (performer → target's location). **Do not** invent Engage — En Garde is only a precondition.
+6. **Trailing discard (multi-active, not sequential turns):**
+   - Collect **other** player ids who control ≥1 `Sorcerer` or `Monster` at the destination **and** have ≥1 hand card. One discard per player even if they control both traits / multiple such characters.
+   - Stash as public `$PlayersToDiscard` on the Action + `$owner->IsUpdated = true`. WHY sticky on Action: Risk is already in discard by resolve; `buildCity` loads discard so State_2 / `actFromActionWithId` still see the Action (same seat as `_04005` / `_04009`).
+   - Queue `createActionResolvedEvent` **before** the discard `createTransitionEvent("NNNNN_2")` (priority 3 before 8) — HD action wraps; discard is a trailing multi-player effect (`Action_04005` / `Action_01095b`).
+   - Empty list → notify + skip `_2` (do **not** grey the Action when no one will discard — move is the primary effect).
+7. **State `_2`:** `StateType::MULTIPLE_ACTIVE_PLAYER`. `onEnteringState` re-filters `$PlayersToDiscard` for non-empty hands and `setPlayersMultiactive(..., "multipleOk")`. **WHY not pass the turn around:** BGA multi-active makes **all** discarders active at once; each calls `setPlayerNonMultiactive` after picking; last one fires `"multipleOk"`. Do **not** invent sequential single-active player states.
+8. **Discard act:** `createCardDiscardedFromHandEvent(..., asEffect: true)` + notify; validate player ∈ `$PlayersToDiscard` and card ∈ their hand.
+9. **Timing note:** discard-player list may be computed at target confirm against the destination **before** the move event applies. That matches post-move for *other* players' Sorcerer/Monster presence (your performer moving does not change that set; acting player is excluded anyway).
+10. **JS:** character-chooser trio for `"NNNNN"`; for `"NNNNN_2"`: `factionHand.setSelectionMode('single')` + `actChooseDiscardCard` / `onCardDiscarded` + `EventHandlers.js` enable when selection length &gt; 0 (mirror `highDramaPhase04005_2`).
+11. **Skip `EventCharacterTargeted`** unless you need Vittoria-style redirect sync — bulk of recent Target Actions (`_04008`, `_03011`, `_01115`) omit it; `_01162` / `_01078` are the exceptions that fire it.
+12. **No Cesca allow-list** unless the Action is also Sorcerer.
+
+**Contrast:**
+| | B.1 (`_03009` / `_03045`) | B.3 (`_04009`) | B.5 (`_04018`) |
+|---|---|---|---|
+| Chooser | Location | Opponent (player) then enemy character | Enemy character |
+| Cesca | No | No ("Target opponent") | Yes ("Target … character") |
+| Move | Performer to chosen location | None (challenge) | Performer to target's location |
+| Follow-up | None / wound cost | Forced challenge | Filtered multi-player discard |
+
+References: `_04018` / `Action_04018` / `State_highDramaPhase04018` + `_2`; discard seat `_04005` / `State_highDramaPhase04005_2` / Patricia `_01095`; En Garde precondition `_04009`.
+

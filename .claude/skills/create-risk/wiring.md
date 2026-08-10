@@ -68,6 +68,8 @@ When you add a card-specific sub-state, you usually need three matching JS handl
 
 Pattern reference for the trio: `highDramaPhase03cd01_2` (Penya — location chooser with both performer and target highlight) and `highDramaPhase03009` (single-performer + location-chooser).
 
+**Multi-player hand discard** (Pattern B.5 / Denounced `_04005_2` / Patricia `_01095`): GameState is `MULTIPLE_ACTIVE_PLAYER`. Entering: `setPlayersMultiactive($playerIds, "multipleOk")` — **all** discarders are active concurrently (BGA does **not** pass a single turn around). Leaving each player: `setPlayerNonMultiactive($playerId, 'multipleOk')`. JS: `factionHand.setSelectionMode('single')` + `actChooseDiscardCard` / `onCardDiscarded` + `EventHandlers.js` enable when selection length &gt; 0. Mirror `highDramaPhase04005_2` / `highDramaPhase04018_2`.
+
 **Skip the JS trio** when the chooser lives entirely in `playerReaction` button properties (Pattern D.1 / D.1.1 — e.g. Confusion `_03068` character then city-location buttons). Those need no GameState and no On*.js handlers; inventing Action-style board-highlight scaffolding is a regression trap.
 
 ## Pre-Commit Hook Compliance

@@ -40,9 +40,9 @@ Use Modified stats for Combat/Finesse/Influence comparisons and parse the operat
 
 Reference: `_04007` / `Maneuver_04007a` (discount) + `Maneuver_04007b` (calc only).
 
-### Pattern E.2 — Action-only "-1 cost if your Leader is …" (no Maneuver printed)
+### Pattern E.2 — Action-only "-1 cost if …" (no Maneuver printed)
 
-When printed text discounts the card's Wealth cost based on Leader traits (or similar out-of-duel conditions) **and the Risk has an Action/City Action but no Maneuver**, put the discount on the **Action** via `getActionFromHandDiscount` — not on the Risk class, and **not** on a fabricated Maneuver.
+When printed text discounts the card's Wealth cost based on an **out-of-duel** condition (Leader traits, **performer** traits, etc.) **and the Risk has an Action/City Action but no Maneuver**, put the discount on the **Action** via `getActionFromHandDiscount` — not on the Risk class, and **not** on a fabricated Maneuver.
 
 ```php
 public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action, array &$explanations): int
@@ -69,13 +69,37 @@ public function getActionFromHandDiscount(Theah $theah, ?Character $performer, C
 }
 ```
 
-**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), and `_03071` (Leverage) all print a general "-1 cost if Leader …" clause with only an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability. If Eddie later asks for combat-card parity, *then* add `getManeuverFromCombatCardDiscount` on a real Maneuver (or a dedicated discount Maneuver with Eddie's OK).
+**Performer-trait variant** (Seek Each Devil `_04018`: **"While your performer is an Academic or Hunter, this card has -1 cost"**):
 
-**Gates:** `$action->Id == $this->Id` (sticky discount must not leak to other hand Actions); null-check `getLeaderByPlayerId` (Leader can be destroyed mid-game — `_01160` historically skipped this; new cards should not).
+```php
+if ($action->Id == $this->Id)
+{
+    if ($performer === null)
+    {
+        return $discount;
+    }
+    if ($performer->hasTrait("Academic") || $performer->hasTrait("Hunter"))
+    {
+        $discount += 1;
+        $owner = $this->getOwningCard($theah);
+        $explanations[] = sprintf(
+            $theah->game->translate("%s: -1 because your performer is an Academic or Hunter."),
+            $owner->getInjectCode()
+        );
+    }
+}
+```
 
-**Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, wounds comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader-trait discounts on Action-only cards belong on the Action.
+**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), `_03071` (Leverage), and `_04018` (Seek Each Devil) all print a general "-1 cost if …" clause with only an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability. If Eddie later asks for combat-card parity, *then* add `getManeuverFromCombatCardDiscount` on a real Maneuver (or a dedicated discount Maneuver with Eddie's OK).
 
-References: `Action_03071`, `Action_01160`, `Action_01159`.
+**Gates:**
+- `$action->Id == $this->Id` (sticky discount must not leak to other hand Actions).
+- Leader variant: null-check `getLeaderByPlayerId` (Leader can be destroyed mid-game — `_01160` historically skipped this; new cards should not).
+- Performer variant: null-check `$performer` (discount is consulted before/without a performer in some pay-arg paths).
+
+**Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, wounds comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader- / performer-trait discounts on Action-only cards belong on the Action.
+
+References: `Action_03071`, `Action_01160`, `Action_01159`, `Action_04018` (performer Academic/Hunter).
 
 ### Pattern E.1 — Forced on the Risk class (no player choice)
 
