@@ -45,6 +45,8 @@ class Maneuver_01077 extends Maneuver
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01077", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        // EventManeuverCanceled handler not needed
     }
 
     public function getArgsFromManeuver(Game $game, int $state, string $stateName): array
@@ -100,9 +102,19 @@ class Maneuver_01077 extends Maneuver
                 "combat_card_inject_code" => $card->getInjectCode(),
             ]);
 
-            $event = EventFactory::createCardAddedToHandEvent($actor->ControllerId, $id);
-            $game->theah->queueEvent($event);
+            // WHY the card never enters hand: it is played straight from the Faction
+            // Deck to the Dueling Line by stSetNextCombatCard. It used to be staged in
+            // hand so the old play path could move it out of hand, but that path is
+            // gone (the card is auto-played, never offered to the player). Staging left
+            // the client's hand stock holding a card the server had already moved on.
+            // Parked out of the Faction Deck here so nothing resolving between now and
+            // stSetNextCombatCard can draw it; Location is set when it lands on the line.
+            $game->theah->addCardToWorld($card);
+            $game->parkCard($id);
 
+            // WHY: Playing this card is atomic with resolving the Maneuver — it is
+            // auto-played by stSetNextCombatCard rather than offered on the hub, so
+            // no Technique can be activated in between.
             $game->globals->set(Game::ABNORMAL_FLOW, true);
             $game->globals->set(Game::NEXT_COMBAT_CARD, $id);
             $game->gamestate->nextState();

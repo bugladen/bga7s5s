@@ -346,7 +346,10 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(`btnGamble`, translated, () => this.bgaPerformAction('actDuelActionGamble', {})) 
             }
             if (args._private.maneuversAvailable)
-                this.addActionButton(`btnManueuver`, _('Character Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {})) 
+            {
+                this.addActionButton(`btnManueuver`, _('Maneuver'), () => this.bgaPerformAction('actDuelActionChooseManeuver', {}))
+                this.addTippyTooltip( 'btnManueuver', `<div class='_7sfs-basic-tooltip'>${_("Use a Maneuver from the combat card played this round")}</div>` );
+            }
             if (args._private.techniquesAvailable)
             {
                 this.addActionButton(`btnTechnique`, _('Technique'), () => this.bgaPerformAction('actDuelActionChooseTechnique', {})) 
@@ -356,7 +359,7 @@ onUpdateActionButtons: function( stateName, args )
             {
                 this.addActionButton(`btnCombatCard`, _('Combat Card'), () => this.onDuelChooseCombatCardConfirmed());
                 dojo.addClass('btnCombatCard', 'disabled');
-                this.addTippyTooltip( 'btnCombatCard', `<div class='_7sfs-basic-tooltip'>${_("Play Combat card. Choose Maneuvers on card.")}</div>` );
+                this.addTippyTooltip( 'btnCombatCard', `<div class='_7sfs-basic-tooltip'>${_("Play a Combat Card. Technique and Maneuver can be chosen afterward.")}</div>` );
             }
             if ( ! args._private.endDuelAvailable)
                 this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {})) 
@@ -379,7 +382,6 @@ onUpdateActionButtons: function( stateName, args )
                 this.addActionButton(
                     `btnChooseManeuver_${maneuver.id}`, maneuver.name, () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 
             });
-            this.addActionButton(`btnDecline`, _('Decline'), () => this.bgaPerformAction('actDuelUseManeuverFromCombatCardDeclined', {}));
         },
 
         'duelPayForManeuverFromCombatCard': () => {

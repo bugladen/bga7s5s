@@ -1823,6 +1823,9 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
 }
 
 ._7sfs-duel-row-combat-card {
+    /* Positioning context for the absolutely positioned wealth cost chip
+       placed inside this card during maneuver payment states. */
+    position: relative;
     background-image: var(--card_image);
     background-size: 72px 98px;
     background-position: 0px 0px;

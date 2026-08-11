@@ -393,31 +393,31 @@ onLeavingState: function( stateName )
 
         'duelUseManeuverFromCombatCard' : () => {
             if (this.isCurrentPlayerActive()) {
-                dojo.addClass('choose_container', 'hidden');
-                dojo.addClass('chooseList', 'hidden');
-                this.chooseList.removeAll();
-
-                var items = this.factionHand.getSelection();
-                items.forEach((item) => {
-                    this.factionHand.unselectCard(item);
-                });
+                const cardId = this.gamedatas.gamestate.args?._private?.cardId
+                    ?? this.clientStateArgs?.combatCardId;
+                const round = this.gamedatas.gamestate.args?._private?.round;
+                if (cardId && round) {
+                    const cardDivId = `duel_round_${round}_combat_card_${cardId}`;
+                    if ($(cardDivId)) {
+                        dojo.removeClass(cardDivId, '_7sfs-selected');
+                    }
+                }
             }
         },
 
         'duelPayForManeuverFromCombatCard' : () => {
             if (this.isCurrentPlayerActive()) 
             {
-                dojo.addClass('choose_container', 'hidden');
-                dojo.addClass('chooseList', 'hidden');
-                this.chooseList.removeAll();
-
-                this.factionHand.getCards().forEach((card, index) => {
-                    const cardElement = this.factionHand.getCardElement(card);
-                    if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
-                        dojo.removeClass(cardElement, '_7sfs-unselectable');
-                        dojo.destroy(`${cardElement.id}_wealth_cost`);
+                const cardId = this.clientStateArgs.combatCardId
+                    ?? this.gamedatas.gamestate.args?._private?.combatCardId;
+                const round = this.gamedatas.gamestate.args?._private?.round;
+                if (cardId && round) {
+                    const cardDivId = `duel_round_${round}_combat_card_${cardId}`;
+                    if ($(cardDivId)) {
+                        dojo.removeClass(cardDivId, '_7sfs-selected');
                     }
-                });
+                    dojo.destroy(`${cardDivId}_wealth_cost`);
+                }
                 this.factionHand.setSelectionMode('none');
                 $('faction_hand_info').innerHTML = '';
             }

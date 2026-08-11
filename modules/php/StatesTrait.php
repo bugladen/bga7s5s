@@ -1090,6 +1090,11 @@ trait StatesTrait
             $this->globals->set(GAME::DUEL_ROUND, $round);
         }
 
+        // WHY: Per-round duel action allowances; must not carry across rounds.
+        $this->globals->delete(Game::DUEL_PENDING_MANEUVER_CARD);
+        $this->globals->delete(Game::DUEL_MANUEVER_ID);
+        $this->globals->delete(Game::NEXT_COMBAT_CARD);
+
         $sql = "SELECT 
             challenging_player_id, 
             challenger_id, 
@@ -1251,7 +1256,7 @@ trait StatesTrait
 
     public function stDuelGetManeuverFromCombatCardCost(): void
     {
-        $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+        $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD);
         $card = $this->getCardObjectFromDb($cardId);
         $this->globals->set(Game::CHOSEN_CARD_COST, $card->WealthCost);
 
@@ -1277,7 +1282,7 @@ trait StatesTrait
         // chosen card's combat values are added to 01114 instead of being played.
         // We attribute the stats to 01114's combat card row (so reactions targeting
         // a combat card find 01114), skip inserting a second duel_round_combat_card
-        // entry, and skip the maneuver queueing path.
+        // entry, and do not arm a pending maneuver for the sunk gamble card.
         $rollTheBonesCardId = $this->globals->get(Game::ROLL_THE_BONES_CARD_ID, 0);
         $isRollTheBonesGambleStats = $rollTheBonesCardId > 0
             && $cardId != $rollTheBonesCardId
@@ -1311,16 +1316,7 @@ trait StatesTrait
         }
         $this->theah->queueEvent($event);
 
-        if (!$isRollTheBonesGambleStats)
-        {
-            $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
-            if ($maneuverId != null)
-            {
-                $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
-                $this->theah->queueEvent($transitionEvent);
-            }
-        }
-        else
+        if ($isRollTheBonesGambleStats)
         {
             $this->globals->delete(Game::ROLL_THE_BONES_CARD_ID);
             $this->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
@@ -1336,7 +1332,11 @@ trait StatesTrait
         $maneuverId = $this->globals->get(Game::DUEL_MANUEVER_ID, null);
         if ($maneuverId != null)
         {
-            $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+            $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD, 0);
+            if ($cardId == 0)
+            {
+                $cardId = $this->globals->get(GAME::CHOSEN_CARD);
+            }
 
             $activateEvent = EventFactory::createManeuverActivatedEvent($playerId, $cardId, $maneuverId);
             $this->theah->eventCheck($activateEvent);
@@ -1365,7 +1365,9 @@ trait StatesTrait
             $this->theah->eventCheck($threatEvent);
             $this->theah->queueEvent($threatEvent);
 
-            $this->globals->delete(Game::DUEL_MANUEVER_ID); 
+            $this->globals->delete(Game::DUEL_MANUEVER_ID);
+            // WHY: Maneuver consumed; clear so the hub does not re-offer it.
+            $this->globals->delete(Game::DUEL_PENDING_MANEUVER_CARD);
             
             $this->gamestate->nextState();
         }
@@ -1381,34 +1383,33 @@ trait StatesTrait
             $this->globals->delete(Game::NEXT_COMBAT_CARD);
             $card = $this->theah->getCardById($nextCombatCard);
 
+            // WHY: Broken-Time parks its chosen card outside any location buildCity
+            // loads, so if the world was rebuilt since then getCardById handed back a
+            // detached DB copy. Register it, or later handlers in this request each get
+            // their own instance and IsUpdated mutations are never written back.
+            $this->theah->addCardToWorld($card);
+
             $this->globals->set(Game::CHOSEN_CARD, $card->Id);
 
             // WHY: Broken-Time's additional combat card is a real play — announce it
             // the same way actDuelActionChooseCombatCard does so reactions on
-            // CombatCardAnnounced (02039, 01135, etc.) can fire before maneuvers/stats.
-            // Route through DUEL_COMBAT_CARD_EVENTS (transition "announceCombatCard")
-            // rather than jumping straight to useManeuver/applyCombatCardStats.
+            // CombatCardAnnounced (02039, 01135, etc.) can fire before stats.
             $announceEvent = EventFactory::createCombatCardAnnouncedEvent($card->ControllerId, $card->Id);
             $this->theah->queueEvent($announceEvent);
 
-            if ($card->hasManeuversAvailableToPlayer($card->ControllerId, $this->theah))
-            {
-                $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
-                $this->theah->queueEvent($transitionEvent);
-            }
-            else
-            {
-                // WHY: an additional combat card (Broken-Time 01077) is staged in the
-                // owner's hand before it is played. The useManeuver branch moves it to
-                // the Dueling Line once the maneuver is paid for or declined; this
-                // branch has no such step, so without this move the card contributes
-                // its combat stats but stays in hand and is never discarded at the end
-                // of the duel.
-                $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $card->ControllerId, $card);
+            // WHY: Playing the additional combat card is atomic with resolving
+            // Broken-Time's Maneuver — the player must not be able to slip a
+            // Technique in between. So it is played here rather than being offered
+            // back on the duel action hub. The card comes straight from the Faction
+            // Deck, never through the hand, so there is no hand stock to correct.
+            $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $card->ControllerId, $card);
 
-                $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
-                $this->theah->queueEvent($transitionEvent);
-            }
+            // WHY: The new combat card carries its own Maneuver option, offered from
+            // the hub once its stats are applied.
+            $this->globals->set(Game::DUEL_PENDING_MANEUVER_CARD, $card->Id);
+
+            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
+            $this->theah->queueEvent($transitionEvent);
 
             $this->gamestate->nextState("announceCombatCard");
         }
@@ -1691,6 +1692,9 @@ trait StatesTrait
         $this->globals->delete(Game::ABNORMAL_FLOW);
         $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
         $this->globals->delete(Game::PENDING_DEFENDER_THREAT);
+        $this->globals->delete(Game::DUEL_PENDING_MANEUVER_CARD);
+        $this->globals->delete(Game::DUEL_MANUEVER_ID);
+        $this->globals->delete(Game::NEXT_COMBAT_CARD);
 
         $sql = "SELECT challenging_player_id, defending_player_id, challenger_id, defender_id FROM duel where duel_id = $duelId";
         $result = $this->getObjectListFromDB($sql)[0];

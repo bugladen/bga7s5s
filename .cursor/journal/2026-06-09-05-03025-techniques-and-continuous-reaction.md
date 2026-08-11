@@ -14,6 +14,10 @@ Simple in-duel technique that adds +1 Riposte. Pattern: base `IN_DUEL` gate + ac
 
 Gambling Technique that moves both participants to any city location. Pattern: `IN_DUEL` + `DUEL_GAMBLED` gate (actor must have gambled for combat card this round) + actor identity check.
 
+**2026-08-10 ordering correction:** Queue the adversary's move before Angeline's move. WHY: Angeline's Reaction is triggered while handling her `EventCardMoved` and looks for engaged opposing characters at her destination. The adversary must already be there when that event is processed, or the Reaction cannot target the character this Technique just moved. Both moves still occur before the duel continues; only their event order changes.
+
+Implementation was intentionally limited to swapping the two queued move events. PHP syntax validation passed and the IDE reported no linter errors. Live BGA verification remains worthwhile because the behavior depends on FIFO event processing and the adversary retaining `Engaged` through the move.
+
 **Event lifecycle:**
 - `EventResolveTechnique`: queues a transition event (`createTransitionEvent(..., "03025b", ...)`) which routes to the location-picker state via `states.inc.php` mapping.
 - `getArgsFromTechnique`: supplies `locationIds` (all 5 city locations: Oles Inn, Bordello, Cathedral, Docks, Market).

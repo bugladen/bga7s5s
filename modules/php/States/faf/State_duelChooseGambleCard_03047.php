@@ -22,7 +22,6 @@ class State_duelChooseGambleCard_03047 extends GameState
             description: clienttranslate('${actplayer} is choosing the adversary\'s combat card.'),
             descriptionMyTurn: clienttranslate('Proper Drama') . clienttranslate(': ${you} must choose the adversary\'s combat card from their revealed cards:'),
             transitions: [
-                "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                 "noManeuver" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS,
             ],
             updateGameProgression: false,
