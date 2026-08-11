@@ -16,6 +16,8 @@ For Pattern C Maneuvers that transition to a sub-state (e.g., `Maneuver_01115`),
 
 For Pattern C.5 "you choose their combat card" hijacks, wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** (after reveal), not resolve-maneuver. State id convention near the choose family: `5270NNNNN` (see `States::DUEL_CHOOSE_GAMBLE_CARD_03047`).
 
+**Shared challenge target chooser Back button:** `highDramaChallengeActionChooseTarget` in `OnUpdateActionButtons.js` shows Back **only** when `args.challengeType == NORMAL_CHALLENGE_TYPE` (plus special back transitions for Triskelion/Epee/Cavalier Hat). If your Action pays an irreversible cost in a card-specific sub-state **before** wiring `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`, do **not** use `NORMAL` — mint a card-specific type and guard `FrameworkActionsTrait::actBack` (Pattern B.6 / `_04019`).
+
 For Pattern D.5 deck-reveal Reactions that must show chooseList **before** Use/Pass, also wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** with a distinct key (`"04010"`). State id: `52730NNNNN` (see `States::DUEL_GAMBLE_REVEALED_04010 = 527304010`). Use `createTransitionEvent` (priority 8), **not** `createReactionTransitionEvent` (priority 6 → early `playerReaction` before chooseList). Both Use and Pass must return to `DUEL_GAMBLE_REVEALED_EVENTS` so leftover transitions (C.5 `"03047"`) and `endOfEvents` → choose still run. Public `cards` via `getArgsFromReaction` + `argsForState`. JS: display-only chooseList + Use/Pass (mirror `duelChooseGambleCard_03047` enter/leave). On the Risk class, `addCardToWorld($this)` before `actFromCard*` so deck-card `setUsed` persists.
 
 ### GameState class vs legacy array state

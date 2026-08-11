@@ -259,6 +259,13 @@
                 this.factionHand.setSelectionMode('none');
             },
 
+            'highDramaPhase04019': () => {
+                if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04009': () => {
                 if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

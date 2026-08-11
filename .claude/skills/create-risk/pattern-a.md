@@ -95,10 +95,11 @@ References: `Action_01083` (Leader-only intervention, custom challenge type), `A
 
 ### Custom challenge type when intervention/refusal differ OR carry side effects
 
-`Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` when **either**:
+`Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` when **any** of:
 
 1. **Intervention or refusal *gates* differ from normal** — "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene or refuse" (`AJA_CHALLENGE_TYPE`). The framework reads CHALLENGE_TYPE in `Theah::interventionCheck` to enforce these gates.
 2. **Intervention or refusal carries a side effect attached to the issuing card** — "If they refuse, engage them" + "Wound any character that intervenes" (`CORNERED_CHALLENGE_TYPE` in `_03021`). The gates themselves stay normal (anyone can refuse or intervene), but the **Risk class needs a correlator** to tell "this challenge is mine" inside its `EventChallengeRejected` / `EventCharacterIntervened` handlers.
+3. **An irreversible cost was paid in a card-specific sub-state before the shared choose-target step** — attachment Engage before target pick (`NO_MORE_WORDS_CHALLENGE_TYPE` in `_04019`). `OnUpdateActionButtons.js` shows Back on `highDramaChallengeActionChooseTarget` **only** for `NORMAL_CHALLENGE_TYPE`; a custom type hides Back after the cost. If the paid cost was **attachment** Engage (not performer), still add the type **to** `stIssueChallenge`'s auto-engage list so the performer engages on issue. Also guard `FrameworkActionsTrait::actBack`. See Pattern B.6.
 
 See the existing list in `modules/php/Game.php` for the catalog.
 

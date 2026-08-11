@@ -153,6 +153,12 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'highDramaPhase04019': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
             'highDramaPhase04009': () => {
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));

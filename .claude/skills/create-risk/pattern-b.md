@@ -188,3 +188,56 @@ This is **not** B.1 (location chooser) and **not** B.3 (Target opponent / forced
 
 References: `_04018` / `Action_04018` / `State_highDramaPhase04018` + `_2`; discard seat `_04005` / `State_highDramaPhase04005_2` / Patricia `_01095`; En Garde precondition `_04009`.
 
+### Pattern B.6 — En Garde Action: Engage attachment → issue [Combat] challenge to target opposing
+
+Printed (No More Words `_04019`): **`<b>En Garde Action:</b> Engage a <b>Melee Weapon</b> or <b>Eisenfaust</b> attachment equipped to your performer • They issue a [Combat] challenge to target opposing character.`**
+
+This is **not** B.3 (forced enemy challenger), **not** A.5/A.6 (engage **performer** then challenge), and **not** Yield `_02020` (City Action: target first, then attachment, then opponent may-engage/wound — no challenge).
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"target opposing character"**).
+2. **En Garde** heading → filter performers `!$Engaged` **and** `canChallenge($theah)` **and** ≥1 eligible unengaged attachment **and** ≥1 opposing at location. Start from `parent::getPerformersForAction` (plain Action — home eligible).
+3. **Attachment filter** (mirror `Action_02020`):
+
+```php
+($attachment->hasTrait("Weapon") && $attachment->hasTrait("Melee"))
+    || $attachment->hasTrait("Eisenfaust");
+```
+
+Also require `!$attachment->Engaged` and `$attachment->AttachedToId == $performer->Id`.
+
+4. **Two-step flow (printed bullet order: Engage attachment **then** challenge):**
+   - `"NNNNN"` → GameState attachment chooser (named buttons from `getArgsFromAction` `attachments[]` — mirror tac `highDramaPhase02020_2` **OnUpdateActionButtons**, not in-play card highlight).
+   - On attachment confirm: `createCardEngagedEvent` on the **attachment** (cost paid — irreversible).
+   - Set `CHALLENGE_STAT = STAT_COMBAT`.
+   - Mint **`NO_MORE_WORDS_CHALLENGE_TYPE`** (or card-specific name) — **not** `NORMAL_CHALLENGE_TYPE`.
+   - Transition `"NNNNN_2"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`.
+   - `nextState("attachmentChosen")` → EVENTS processes transition to choose-target.
+
+5. **WHY custom type when there is no refuse/intervene side effect:** `OnUpdateActionButtons.js` shows Back on `highDramaChallengeActionChooseTarget` **only** when `args.challengeType == NORMAL_CHALLENGE_TYPE`. After attachment Engage, Back would let the player undo past a paid cost. Custom type hides Back in UI; also guard `FrameworkActionsTrait::actBack()` when state is `highDramaChallengeActionChooseTarget` and type matches (blocks API abuse).
+
+6. **WHY custom type still goes ON `stIssueChallenge` auto-engage list:** printed Engage cost is on the **attachment**, not the performer. Performer should still auto-engage when issuing (same as `NORMAL` challenge flow). Contrast Censure `_03057` / Cornered `_03021` where **performer** Engage is paid on `EventActionTriggered` → type stays **off** auto-engage to avoid double-engage.
+
+7. **"They issue a challenge":** attachments do not issue challenges in the engine — **performer** stays `CHOSEN_PERFORMER` for the challenge pipeline.
+
+8. **`isValidTargetForAbility`:** opposing controlled character at performer's location (mirror `Action_01083` / `Action_03058`).
+
+9. **Wire:** `"NNNNN"` → `State_highDramaPhaseNNNNN`; `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. Add constant to `Game.php` + `seventhseacityoffivesails.js`. Add type to auto-engage `if` in `StatesTrait::stIssueChallenge`.
+
+10. **JS (bas expansion):** `OnEnteringState` highlight performer; `OnUpdateActionButtons` attachment name buttons (`args.args.attachments.forEach`); `OnLeavingState` unhighlight performer. No Back on attachment step (single forward path).
+
+11. **Pre-commit:** `// createActionResolvedEvent() is called when the challenge is resolved` on the Action.
+
+**Contrast:**
+
+| | Yield `_02020` (City) | B.6 `_04019` |
+|---|---|---|
+| Base | `RiskCityAction` | `RiskAction` (home performers OK) |
+| Order | Target character → attachment → opponent response | Attachment → shared challenge target |
+| Engage cost | Attachment | Attachment |
+| Follow-up | May engage / wound target | Combat challenge |
+| Challenge type | N/A | Custom (not NORMAL — no Back on chooseTarget) |
+
+References: `_04019` / `Action_04019` / `State_highDramaPhase04019`; attachment filter `Action_02020`; challenge target `Action_01083`; Back hide `NO_MORE_WORDS_CHALLENGE_TYPE` + `FrameworkActionsTrait::actBack`.
+

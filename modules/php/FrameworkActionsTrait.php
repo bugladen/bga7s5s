@@ -80,6 +80,13 @@ trait FrameworkActionsTrait
 
     public function actBack(): void
     {
+        $stateName = $this->gamestate->getCurrentMainState()->name;
+        if ($stateName === "highDramaChallengeActionChooseTarget"
+            && $this->globals->get(Game::CHALLENGE_TYPE) == Game::NO_MORE_WORDS_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("You cannot go back after engaging an attachment."));
+        }
+
         $this->gamestate->nextState("back");
     }
 

@@ -782,7 +782,7 @@ trait StatesTrait
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE)
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE || $challengeType == Game::NO_MORE_WORDS_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);

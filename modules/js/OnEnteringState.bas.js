@@ -332,6 +332,13 @@
                 this.factionHand.setSelectionMode('single');
             },
 
+            'highDramaPhase04019': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                }
+            },
+
             'highDramaPhase04009': () => {
                 if (this.isCurrentPlayerActive() && args.args.args.performerId) {
                     this.highlightCharacterChosen(args.args.args.performerId);
