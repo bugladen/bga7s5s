@@ -148,6 +148,9 @@ class Game extends \Bga\GameFramework\Table
     final const CHOSEN_CARD = "chosenCard";
     final const CHOSEN_CARD_COST = "chosenCardCost";
     final const NEXT_COMBAT_CARD = "nextCombatCard";
+    // WHY: Combat card commits at play time; Maneuver is chosen later from the hub
+    // against this id (CHOSEN_CARD is reused by unrelated duel actions/reactions).
+    final const DUEL_PENDING_MANEUVER_CARD = "duelPendingManeuverCard";
     final const CHOSEN_LOCATION = "chosenLocation";
     final const CHOSEN_ACTION = "chosenAction";
     final const CHOSEN_PERFORMER = "chosenPerformer";

@@ -1501,24 +1501,40 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(Game::CHOSEN_CARD, $card->Id);
+        // WHY: Commit at play time so Technique and Maneuver are both offered from the hub.
+        $this->globals->set(Game::DUEL_PENDING_MANEUVER_CARD, $card->Id);
 
         $event = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
         $this->theah->queueEvent($event);
 
-        if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
-        {
-            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "useManeuver");
-            $this->theah->queueEvent($transitionEvent);
-        }
-        else
-        {
-            $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
+        $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
-            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
-            $this->theah->queueEvent($transitionEvent);
-        }
+        $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
+        $this->theah->queueEvent($transitionEvent);
 
         $this->gamestate->nextState("combatCardChosen");
+    }
+
+    public function actDuelActionChooseManeuver()
+    {
+        $this->theah->buildCity();
+
+        $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD, 0);
+        if ($cardId == 0) {
+            throw new \BgaUserException(clienttranslate("No combat card Maneuver is available."));
+        }
+
+        $card = $this->theah->getCardById($cardId);
+        if ($card == null) {
+            throw new \BgaUserException(clienttranslate("Combat card not found."));
+        }
+
+        $playerId = $this->getActivePlayerId();
+        if (! $card->hasManeuversAvailableToPlayer($playerId, $this->theah)) {
+            throw new \BgaUserException(sprintf(clienttranslate("No Maneuvers available for %s."), $card->Name));
+        }
+
+        $this->gamestate->nextState("chooseManeuver");
     }
 
     public function actDuelUseManeuverFromCombatCard(string $maneuverId)
@@ -1530,7 +1546,7 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(clienttranslate("Maneuver not found."));
         }
         
-        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD);
         $card = $this->theah->getCardById($cardId);
 
         if ($maneuver->OwnerId != $card->Id) {
@@ -1542,29 +1558,15 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("maneuverChosen");
     }
 
-    public function actDuelUseManeuverFromCombatCardDeclined()
-    {
-        $playerId = $this->getActivePlayerId();
-        $cardId = $this->globals->get(Game::CHOSEN_CARD);
-        $card = $this->theah->game->getCardObjectFromDb($cardId);
-
-        //Remove card from hand
-        $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
-
-        $this->gamestate->nextState("maneuverDeclined");
-    }
-
     public function actDuelPayForManeuverFromCombatCard(string $payWithCards)
     {
         $this->theah->buildCity();
         $playerId = $this->getActivePlayerId();
-        
-        $actor = $this->theah->getDuelRoundActor();
 
         $maneuverId = $this->globals->get(Game::CHOSEN_MANEUVER);
         $maneuver = $this->theah->getManeuverById($maneuverId);
         
-        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD);
         $card = $this->theah->getCardById($cardId);
 
         $discount = $this->globals->get(Game::DISCOUNT);        
@@ -1577,11 +1579,11 @@ trait FrameworkActionsTrait
         //Total up the wealth of the cards to see if player paid correctly
         $totalWealth = 0;
         $hasWealthCard = false;
-        foreach ($cardIds as $cardId) {
-            $payCard = $this->getCardObjectFromDb($cardId);
+        foreach ($cardIds as $payCardId) {
+            $payCard = $this->getCardObjectFromDb($payCardId);
 
             if ($payCard == null)
-                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $cardId));
+                throw new UserException(sprintf(clienttranslate("Card #%d not found."), $payCardId));
 
             //If $card has wealth in its traits, add it to the total wealth
             $isWealth = $payCard->hasTrait("Wealth");
@@ -1592,23 +1594,14 @@ trait FrameworkActionsTrait
             throw new UserException(sprintf(clienttranslate("Cost of Card is %d. You selected %d Wealth of cards."), $cost, $totalWealth));
         }
 
-        $this->notifyAllPlayers("message", clienttranslate('${player_name} is playing ${card_inject_code} as their Combat Card.'), [
-            "i18n" => ["player_name", "effect_name", "maneuver_name"],
-            "player_name" => $this->getActivePlayerName(),
-            "card_inject_code" => $card->getInjectCode(),
-        ]);
-
         //Move the cards used to pay to the player's discard pile
-        foreach ($cardIds as $cardId) {
-            $payCard = $this->getCardObjectFromDb($cardId);
+        foreach ($cardIds as $payCardId) {
+            $payCard = $this->getCardObjectFromDb($payCardId);
             $event = EventFactory::createCardDiscardedFromHandEvent($payCard->OwnerId, $payCard->Id, $sourceId = 0, $asPayment = true);
             $this->theah->queueEvent($event);
         }
 
         $this->globals->set(Game::DUEL_MANUEVER_ID, $maneuver->Id);
-
-        //Remove card from hand
-        $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
         $this->gamestate->nextState("maneuverPaidFor");
     }
@@ -1744,14 +1737,14 @@ trait FrameworkActionsTrait
 
         $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
-        // Restore actor as active before useManeuver/noManeuver — chooser may have
-        // been the Proper Drama Maneuver owner, not the gambling player.
+        // WHY: Commit at play time; Maneuver is offered later from the hub.
+        $this->globals->set(Game::DUEL_PENDING_MANEUVER_CARD, $card->Id);
+
+        // Restore actor as active before leaving — chooser may have been the
+        // Proper Drama Maneuver owner, not the gambling player.
         $this->gamestate->changeActivePlayer($playerId);
 
-        if ($card->hasManeuversAvailableToPlayer($playerId, $this->theah))
-            $this->gamestate->nextState("useManeuver");
-        else
-            $this->gamestate->nextState("noManeuver");
+        $this->gamestate->nextState("noManeuver");
     }
     
 

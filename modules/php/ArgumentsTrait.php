@@ -758,9 +758,6 @@ trait ArgumentsTrait
         $sql = "SELECT count(*) FROM duel_round_combat_card where duel_id = $duelId AND round = $round";
         $combatCardsCount = $this->getUniqueValueFromDB($sql);
 
-        $sql = "SELECT count(*) FROM duel_round_maneuver where duel_id = $duelId AND round = $round";
-        $playedManeuversCount = $this->getUniqueValueFromDB($sql);
-
         $sql = "SELECT count(*) FROM duel_round_technique where duel_id = $duelId AND round = $round and technique_is_main = 1";
         $playedTechniquesCount = $this->getUniqueValueFromDB($sql);
 
@@ -778,8 +775,18 @@ trait ArgumentsTrait
             $gambleAllowedByCardEffects = false;
         }
 
-        $characterManeuevers = $this->theah->getAvailableCharacterManeuvers($actor);
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
+
+        $pendingManeuverCardId = (int) $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD, 0);
+        $maneuversAvailable = false;
+        if ($pendingManeuverCardId > 0)
+        {
+            $pendingCard = $this->theah->getCardById($pendingManeuverCardId);
+            if ($pendingCard !== null)
+            {
+                $maneuversAvailable = $pendingCard->hasManeuversAvailableToPlayer($playerId, $this->theah);
+            }
+        }
 
         $duelType = $this->globals->get(Game::DUEL_TYPE);
         if ($duelType == Game::VLADISLAV_DUEL_TYPE)
@@ -802,7 +809,7 @@ trait ArgumentsTrait
             return [
                 "_private" => [
                     "active" => [
-                        "maneuversAvailable" => $combatCardsCount > 0 && count($characterManeuevers) > 0 && $playedManeuversCount == 0,
+                        "maneuversAvailable" => $maneuversAvailable,
                         "techniquesAvailable" => $combatCardsCount > 0 && count($techniques) > 0 && $playedTechniquesCount == 0,
                         "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0 && $gambleAllowedByCardEffects,
                         "gamblesLeft" => $gamblesLeft,
@@ -829,8 +836,9 @@ trait ArgumentsTrait
 
     public function argsDuelUseManeuverFromCombatCard(): array
     {
-        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD);
         $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
+        $round = $this->globals->get(Game::DUEL_ROUND);
 
         $maneuvers = [];
         $card = $this->getCardObjectFromDb($cardId);
@@ -852,7 +860,8 @@ trait ArgumentsTrait
                     "maneuvers" => $maneuvers,
                     "gambled" => $gambled,
                     "card" => $card->getPropertyArray($this),
-                    "abnormalFlow" => $abnormalFlow
+                    "abnormalFlow" => $abnormalFlow,
+                    "round" => $round
                 ]
             ]
         ];
@@ -861,10 +870,11 @@ trait ArgumentsTrait
 
     public function argsDuelPayForManeuverFromCombatCard(): array     
     {
-        $cardId = $this->globals->get(Game::CHOSEN_CARD);
+        $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD);
         $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
         $card = $this->getCardObjectFromDb($cardId);
         $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
+        $round = $this->globals->get(Game::DUEL_ROUND);
         return [
             "_private" => [
                 "active" => [
@@ -873,7 +883,8 @@ trait ArgumentsTrait
                     "discount" => $this->globals->get(Game::DISCOUNT),
                     "gambled" => $gambled,
                     "card" => $card->getPropertyArray($this),
-                    "abnormalFlow" => $abnormalFlow
+                    "abnormalFlow" => $abnormalFlow,
+                    "round" => $round
                 ]
             ]
         ];

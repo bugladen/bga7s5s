@@ -637,21 +637,13 @@ onEnteringState: function( stateName, args )
             if (this.isCurrentPlayerActive()) 
             {
                 setTimeout(async () => {
-                    if (args.args._private.gambled)
-                        {
-                            dojo.removeClass('choose_container', 'hidden');
-                            dojo.removeClass('chooseList', 'hidden');
-                            $('choose_container_name').innerHTML = _('Chosen Gamble Card');    
-                            this.addCardToDeck(this.chooseList, args.args._private.card);
-                            this.chooseList.setSelectionMode(0);
-                        }
-                        else {
-                            const card = this.factionHand.getCards().find(c => c.id === args.args._private.cardId);
-                            if (card) {
-                                this.factionHand.setSelectionMode('single', [card]);
-                                this.factionHand.selectCard(card);
-                            }
-                        }
+                    // WHY: Combat card is already on the dueling line / duel row when Maneuver is chosen from the hub.
+                    const cardId = args.args._private.cardId;
+                    const round = args.args._private.round;
+                    const cardDivId = `duel_round_${round}_combat_card_${cardId}`;
+                    if ($(cardDivId)) {
+                        dojo.addClass(cardDivId, '_7sfs-selected');
+                    }
                 }, 500);
             }
         },
@@ -667,43 +659,29 @@ onEnteringState: function( stateName, args )
                 });
 
                 setTimeout(async () => {
-                    let div = null;
-                    if (args.args._private.gambled)
-                    {
-                        dojo.removeClass('choose_container', 'hidden');
-                        dojo.removeClass('chooseList', 'hidden');
-                        $('choose_container_name').innerHTML = _('Chosen Gamble Card');
-    
-                        this.addCardToDeck(this.chooseList, args.args._private.card);
-                        const cardId = args.args._private.combatCardId;
-                        div = this.chooseList.getItemDivId(cardId);
-                        this.chooseList.setSelectionMode(0);
-                    }
-                    else
-                    {
-                        const cardId = args.args._private.combatCardId;
-                        this.clientStateArgs.combatCardId = cardId;
-                        const handCard = this.factionHand.getCards().find(c => c.id === cardId);
-                        const cardElement = handCard ? this.factionHand.getCardElement(handCard) : null;
-                        if (cardElement) {
-                            div = cardElement.id;
-                            dojo.addClass(cardElement, '_7sfs-unselectable');
+                    const cardId = args.args._private.combatCardId;
+                    const round = args.args._private.round;
+                    this.clientStateArgs.combatCardId = cardId;
+                    const cardDivId = `duel_round_${round}_combat_card_${cardId}`;
+                    let div = $(cardDivId);
+                    if (div) {
+                        dojo.addClass(div, '_7sfs-selected');
+                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                            id: cardDivId,
+                            cost: args.args._private.cost,
+                        }), cardDivId, "first" );
+
+                        const costDiv = $(`${cardDivId}_wealth_cost`);
+                        if (costDiv) {
+                            const cost = parseInt(costDiv.innerHTML);
+                            let discountedCost = cost - args.args._private.discount;
+                            discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                            if (discountedCost !== cost)
+                            {
+                                costDiv.innerHTML = parseInt(discountedCost);
+                                dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                            }
                         }
-                    }
-        
-                    dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
-                        id: div,
-                        cost: args.args._private.cost,
-                    }), div, "first" );    
-    
-                    const costDiv = $(`${div}_wealth_cost`);
-                    const cost = parseInt(costDiv.innerHTML);
-                    let discountedCost = cost - args.args._private.discount;
-                    discountedCost = discountedCost < 0 ? 0 : discountedCost;
-                    if (discountedCost !== cost)
-                    {
-                        costDiv.innerHTML = parseInt(discountedCost);
-                        dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
                     }
     
                     $('faction_hand_info').innerHTML = _(`(0 Wealth worth of cards selected)`);

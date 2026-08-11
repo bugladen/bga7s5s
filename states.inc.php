@@ -2206,12 +2206,14 @@ $machinestates = [
                 "actDuelActionGamble",
                 "actDuelActionChooseCombatCard",
                 "actDuelActionChooseTechnique",
+                "actDuelActionChooseManeuver",
                 "actDuelDoneRound",
                 "actDuelEndDuel"
             ],
             "transitions" => [
                 "combatCardChosen" => States::DUEL_COMBAT_CARD_EVENTS,
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
+                "chooseManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                 "chooseGambleCard" => States::DUEL_GAMBLE_SETUP,
                 "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
@@ -2222,7 +2224,6 @@ $machinestates = [
                 "action" => "stRunEvents",
                 "transitions" => [
                     "01135" => States::DUEL_GAMBLE_SETUP,
-                    "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "reaction" => States::DUEL_COMBAT_CARD_REACTIONS,
                     "pay" => States::DUEL_COMBAT_CARD_PAY_FOR_REACTION,
@@ -2362,11 +2363,9 @@ $machinestates = [
                 "possibleactions" => [
                     "actDuelUseManeuverFromCombatCard",
                     "actBack",
-                    "actDuelUseManeuverFromCombatCardDeclined"
                 ],
                 "transitions" => [
                     "maneuverChosen" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST,
-                    "maneuverDeclined" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "back" => States::DUEL_CHOOSE_ACTION
                 ]
             ],
@@ -2431,7 +2430,7 @@ $machinestates = [
                     "actBackWithTransition"
                 ],
                 "transitions" => [
-                    "maneuverPaidFor" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                    "maneuverPaidFor" => States::DUEL_RESOLVE_MANEUVER,
                     "back" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "backAbnormalFlow" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD
                 ]
@@ -2567,14 +2566,10 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stSetNextCombatCard",
                 "transitions" => [
-                    // WHY announceCombatCard → DUEL_COMBAT_CARD_EVENTS: Broken-Time
-                    // (and any NEXT_COMBAT_CARD source) must announce the additional
-                    // combat card so CombatCardAnnounced reactions can fire before
-                    // useManeuver / applyCombatCardStats. Those two transitions below
-                    // remain for any direct callers that still nextState by name.
+                    // WHY announceCombatCard → DUEL_COMBAT_CARD_EVENTS: Broken-Time's
+                    // additional combat card must announce so CombatCardAnnounced
+                    // reactions can fire before its stats are applied.
                     "announceCombatCard" => States::DUEL_COMBAT_CARD_EVENTS,
-                    "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
-                    "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "rollTheBones" => States::DUEL_GAMBLE_SETUP,
                     "noMoreCombatCards" => States::DUEL_CHOOSE_ACTION
                 ]
@@ -2690,7 +2685,6 @@ $machinestates = [
                 ],
                 "transitions" => [
                     "back" => States::DUEL_CHOOSE_ACTION,
-                    "useManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                     "noManeuver" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS
                 ]
             ],
