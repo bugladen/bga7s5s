@@ -618,13 +618,6 @@ trait StatesTrait
         
         if ($this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false))
         {
-            $engageEvent = EventFactory::createCardEngagedEvent($claimingPlayerId, $performerId);
-            $this->theah->eventCheck($engageEvent);
-            $this->theah->queueEvent($engageEvent);
-
-            $this->theah->runEvents($skipTransitions = true);
-            $this->theah->buildCity();
-
             $this->globals->set(GAME::PASS_COUNT, 0);
         }
         

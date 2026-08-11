@@ -794,6 +794,11 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::IS_BASIC_CLAIM_ACTION, true);
+
+        $engageEvent = EventFactory::createCardEngagedEvent($activePlayerId, $performer->Id);
+        $this->theah->eventCheck($engageEvent);
+        $this->theah->queueEvent($engageEvent);
+
         $pressureStats = $this->theah->getPressureStats($performer, $performer->Location, Game::STAT_INFLUENCE);
         $claimEvent = EventFactory::createPressureOccuringEvent($activePlayerId, $performer->Id, $performer->Location, $pressureStats);
         $this->theah->eventCheck($claimEvent);
@@ -807,7 +812,7 @@ trait FrameworkActionsTrait
         $player_id = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         if ($this->theah->playerHasInPlayActions($player_id) == false) {
-            throw new \BgaUserException(clienttranslate("In-Play Action is not allowed right now."));
+            throw new UserException(clienttranslate("In-Play Action is not allowed right now."));
         }
 
         $this->gamestate->nextState("inPlayActionStart");
