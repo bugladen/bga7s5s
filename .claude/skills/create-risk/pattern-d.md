@@ -45,7 +45,7 @@ Pre-commit hook requirements on RiskReaction:
 - Literal `Location == Game::LOCATION_HAND` somewhere in the file (substring `grep` — `!=` does **not** satisfy it; structure your in-hand guard with the `==` form, e.g. `if (! ($owner->Location == Game::LOCATION_HAND)) return;`).
 - Literal `$this->setUsed(` and `$this->isAvailable(` somewhere in the file.
 
-References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1), `Reaction_03068` (pass-trigger + mandatory opponent Home→City move via buttons — see Pattern D.1.1), `Reaction_03031` (effect-event redirect after pay — see Pattern D.4; structural cousin of `Reaction_02016` on attachments).
+References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1), `Reaction_03068` (pass-trigger + mandatory opponent Home→City move via buttons — see Pattern D.1.1), `Reaction_03031` (effect-event redirect after pay — see Pattern D.4; structural cousin of `Reaction_02016` on attachments), `Reaction_04020` (adjacent pressure + D.2.2 + D.1.2 engage-or-wound — see Pattern D.1.2 / D.2.2).
 
 ### Pattern D.1 — Multi-stage cross-player RiskReaction with pay
 
@@ -66,6 +66,23 @@ Key gotchas:
 - `isAvailable()` returns `!Used`. Don't `setUsed(true)` until `finalize()`, or the mid-flow `playerReaction` state won't be able to render its `$stage`-dependent buttons cleanly.
 - Cross-stage notifications: emit the "you used the Reaction" message from your `EventRiskReactionTriggered` handler (after pay) rather than from the offer-stage `performReaction`, so the announce-order matches the actual cost being paid.
 - **Prefer reaction buttons over GameStates** when both choosers are small fixed pools (character name buttons, city location buttons). `Reaction_03010` muster pick and `Reaction_01039` / `Reaction_03040` location pick already prove the UI. GameStates + On*.js are for board-highlight choosers that need `ids` args / click-to-select — don't invent them for D.1 when buttons suffice.
+- **Player-target buttons** — when the owner must pick an opponent player (not a character), use `opponent-{playerId}` reaction ids with `getPlayerNameById` labels. Same discipline as **"Target opponent"** on Actions (`_04009`) — no `IRiskThatTargetsCharacters` / no Cesca. See `_04020` stage `chooseOpponent`.
+
+### Pattern D.1.2 — RiskReaction: wound target character unless they engage
+
+When the printed text says **Then, wound target character … unless they engage** (or **They may engage. If they do not, wound them**) on a **RiskReaction**, wire the engage-or-wound branch with **reaction buttons only** — mirror `Action_01049` / `Action_01156`, not a GameState.
+
+1. **Owner stage** — after any preceding effects (e.g. pressure penalty), `$stage = 'chooseCharacter'`; buttons `character-{id}` for valid targets at the printed location (usually opposing controlled characters). **`IAbilityThatTargetsCharacters`** on the Reaction + **`IRiskThatTargetsCharacters`** on the Risk (printed **"target character"**).
+2. **On character pick** — notify; if `$target->Engaged`, auto-wound + `finalize()` (no choice — already committed).
+3. **Else** — `$stage = 'engageOrWound'`; `createReactionTransitionEvent($target->ControllerId, …)` with **Engage** / **Take the Wound** buttons (no Pass — the alternate is the wound).
+4. **Engage** → `createCardEngagedEvent` on the target character (the **engage** verb, not engarde). **Wound** → `createCharacterBeingWoundedEvent` + `eventCheck`.
+5. **`finalize()`** → `setUsed` + reset stage / saved ids. Do not `setUsed` until the full chain completes (D.1 discipline).
+
+**Optional:** when the Reaction gate was **equipped with a Ranged Weapon**, queue `createRangedAbilityPlayedEvent` on wound resolution (performer id captured at trigger time). Not required for every ranged-gated Reaction — only when the wound is the ranged shot.
+
+**WHY buttons not GameState:** D.1 preference; two fixed choices fit `playerReaction`. `_03061`-style board highlight is for City Actions.
+
+References: `Reaction_04020`, `Action_01049`, `Action_01156`.
 
 ### Pattern D.1.1 — Pass-trigger City Reaction: opponent must move Home → City
 
@@ -128,6 +145,39 @@ if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::<NEW>_PRESSURE_TYPE))
 **WHY defer to `EventRiskReactionTriggered`:** same as D.2 — cancel-during-pay must not leave a dangling pressure flag.
 
 References: `Reaction_03035` (Loyal), `_02044` (Solomonia — passive auto-flag on `EventPressureOccuring`, no pay), `Reaction_02019` (Trial of Faith — RiskReaction that sets `TRIAL_OF_FAITH_PRESSURE_TYPE`).
+
+### Pattern D.2.2 — Opponent pressure penalty ("Target opponent applies -1 to their total")
+
+When the printed text says **Target opponent applies -1 to their total** (or similar — a **chosen opponent's** pressure total decreases during the current pressure), wire the inverse of D.2.1:
+
+1. **Trigger** — same as your Reaction's pressure clause (`EventPressureOccuring` ± location/adjacency gates).
+2. **Pay** — standard D.1/D.2 pay flow.
+3. **Opponent choice** — if multiple opponents have presence at the pressure location (`getCharactersAtLocation($event->location)` → distinct `ControllerId` ≠ owner), `$stage = 'chooseOpponent'` with `opponent-{playerId}` buttons. Single opponent → auto-pick. **"Target opponent"** → player chooser — **no** Cesca (same as `_04009`).
+4. **Effect in post-pay flow (before or as first step after notify)** — `setGlobalFlag(PRESSURE_TYPE, <NEW>_PRESSURE_TYPE)` and `globals->set(<NEW>_PLAYER_ID, $chosenOpponentId)`. Do **not** `setUsed` here if D.1 follow-up stages remain.
+5. **`pressureLocation()` branch** — outside the per-stat loop:
+
+```php
+if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::<NEW>_PRESSURE_TYPE))
+{
+    $playerId = $this->globals->get(Game::<NEW>_PLAYER_ID, 0);
+    if ($playerId && isset($playerInfluences[$playerId]))
+    {
+        $playerInfluences[$playerId]['influence'] -= 1;
+    }
+}
+```
+
+6. **Cleanup** — delete the player-id global in `StatesTrait` post-pressure cleanup alongside `LOYAL_PLAYER_ID`.
+
+Mint the next binary flag after `SOLINE_PRESSURE_TYPE = 16384` (e.g. `32768`). **WHY defer flag to post-pay:** same as D.2.1 — cancel-during-pay must not leave a dangling penalty.
+
+**Adjacent-location pressure trigger (Vantage Point shape):** `$event->location` is where pressure resolves; the performer's **En Garde + Ranged Weapon** gate scans `getAdjacentCityLocations($event->location, false)` for owner characters with `!$Engaged` and a `Weapon`+`Ranged` attachment (`Maneuver_01055` attachment loop). Contrast Loyal (`_03035`) which counts non-Mercs **at** `$event->location`, and `_02044` (Solomonia) which reacts when pressure is **adjacent to** Forum while Solomonia ** sits at** Forum.
+
+**Hide when meaningless:** do not offer if no opponent has controlled characters at the pressure location (nothing to penalize) or if the "Then wound target character" clause has zero legal opposing targets at that location.
+
+**Timing:** all Reaction stages (opponent pick, pressure flag, character pick, engage/wound) must complete inside the events loop **before** `stHighDramaPressureLocation` — the penalty flag is read there. Claim-action path: `EventPressureOccuring` → reactions/pay → `endOfEvents` → `HIGH_DRAMA_PRESSURE_LOCATION`.
+
+References: `Reaction_04020` (D.2.2 + D.1.2 composite), contrast `Reaction_03035` (self +1).
 
 ### Pattern D.3 — RiskReaction that cancels pending high-priority events in a batch
 
@@ -289,6 +339,18 @@ Faction-deck cards are not in `buildCity()`. `FrameworkActionsTrait::actFromCard
 Deck-reveal Sorcerer Reactions are not Cesca-copyable as hand Risks. The **Action** half of the same card may still be (`Reaction_01008` allow-list + `copyCard`) when Cesca is the performer — see `_04010` Action / journal `2026-08-03-04`.
 
 References: `Reaction_04010`, `State_duelGambleRevealed_04010`, EventHub `EventDuelGambleCardsRevealed`, contrast C.5 `Maneuver_03047a` / Ivy `Reaction_02042`.
+
+### Adjacent-location pressure + Ranged Weapon equipped (trigger gates)
+
+When text says **When a pressure occurs at an adjacent location, if your performer is equipped with a Ranged Weapon**:
+
+- **Pressure location** = `$event->location` on `EventPressureOccuring` (where totals will be computed).
+- **Performer location** = one of `getAdjacentCityLocations($event->location, false)` — scan each adjacent spot for owner's `!$Engaged` characters with a `Weapon`+`Ranged` attachment (`Maneuver_01055` / `Action_01055` attachment loop).
+- **Not** the same as Loyal (`_03035`), which counts non-Mercs **at** `$event->location`, nor `_02044` (Solomonia buffs Influence when pressure is at a location **adjacent to** Forum while Solomonia ** sits at** Forum).
+
+**`<b>En Garde Reaction:</b>`** uses the same `!$Engaged` precondition as En Garde Action — the label only changes ability type (Pattern D vs B), not the mechanical gate.
+
+See composite wiring: `Reaction_04020` (D.2.2 + D.1.2).
 
 ### `EventHighDramaPhasePlayerPassed` trigger semantics
 

@@ -694,6 +694,16 @@ trait UtilitiesTrait
             }
         }
 
+        //If Vantage Point Reaction was used, subtract 1 from the chosen opponent's total
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::VANTAGE_POINT_PRESSURE_TYPE))
+        {
+            $vantagePointPlayerId = $this->globals->get(Game::VANTAGE_POINT_PLAYER_ID, 0);
+            if ($vantagePointPlayerId && isset($playerInfluences[$vantagePointPlayerId]))
+            {
+                $playerInfluences[$vantagePointPlayerId]['influence'] -= 1;
+            }
+        }
+
         //Get the player with the most influence
         $maxInfluence = 0;
         $maxPlayerId = 0;

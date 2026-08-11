@@ -1779,6 +1779,7 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(Game::PRESSURE_BONUS);
         $this->globals->delete(Game::LOYAL_PLAYER_ID);
+        $this->globals->delete(Game::VANTAGE_POINT_PLAYER_ID);
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);
