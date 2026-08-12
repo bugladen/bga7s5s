@@ -2,14 +2,15 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCombatCardAnnounced;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_02039 extends CardReaction
+class Reaction_02039 extends RiskReaction
 {
     public function __construct()
     {
@@ -55,6 +56,22 @@ class Reaction_02039 extends CardReaction
             $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($game->theah);
+
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} uses Reaction to add a threat to both participants.'), [
+                "reaction_inject_code" => $owner->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+            ]);
+
+            $threatEvent = EventFactory::createThreatModifiedEvent(1, 1);
+            $game->theah->queueEvent($threatEvent);
+
+            $this->setUsed($game->theah, true);
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -64,15 +81,13 @@ class Reaction_02039 extends CardReaction
         if ($reactionId == 'addThreat')
         {
             $owner = $this->getOwningCard($game->theah);
-            $this->setUsed($game->theah, true);
+            $owner->IsUpdated = true;
 
-            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} uses Reaction to add a threat to both participants.'), [
-                "card_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-            ]);
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
+            $game->theah->queueEvent($event);
 
-            $threatEvent = EventFactory::createThreatModifiedEvent(1, 1);
-            $game->theah->queueEvent($threatEvent);
+            $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $game->theah->queueEvent($event);
         }
 
         if ($reactionId == 'pass')
