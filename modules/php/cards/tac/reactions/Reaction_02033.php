@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -65,7 +66,7 @@ class Reaction_02033 extends CardReaction
             }
 
             $moved = $event->theah->getCardById($event->cardId);
-            if (! $moved instanceof Character || $moved->Id == $rosa->Id) {
+            if (($moved instanceof CityCharacter && ! $moved->isControlled()) || ! $moved instanceof Character || $moved->Id == $rosa->Id) {
                 return;
             }
 
