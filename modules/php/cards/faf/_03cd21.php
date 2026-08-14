@@ -10,7 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
@@ -53,20 +53,9 @@ class _03cd21 extends CityAttachment
         // equipped character's controller ("an opponent's Risk").
 
         if ($this->isAttached() && ! $this->hasCondition(Game::SILVER_SPINE_ABILITY_USED) &&
-            (($event instanceof EventCardMoved && $event->cardId == $this->AttachedToId && $event->sourceId != 0) ||
+            (($event instanceof EventCardMoving && $event->cardId == $this->AttachedToId && $event->sourceId != 0) ||
             ($event instanceof EventCardEngaged && $event->cardId == $this->AttachedToId && $event->sourceId != 0))
         )
-        {
-            if ($this->isOpponentRiskTargetingCharacters($event, $event->sourceId))
-            {
-                $this->markAbilityUsed($event->theah->game);
-                $event->canceled = true;
-                return;
-            }
-        }
-
-        if ($this->isAttached() && ! $this->hasCondition(Game::SILVER_SPINE_ABILITY_USED) &&
-            $event instanceof EventCharacterTargeted && $event->targetId == $this->AttachedToId && $event->sourceId != 0)
         {
             if ($this->isOpponentRiskTargetingCharacters($event, $event->sourceId))
             {
