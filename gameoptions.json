@@ -28,6 +28,10 @@
             "2": {
                 "name": "Assigned Random Unique Tooth & Claw Starter Deck",
                 "description": "A random unique Tooth & Claw Starter Deck will be assigned to each player by the server.  No mirror matches are possible."                
+            },
+            "3": {
+                "name": "Assigned Random Unique Fate & Fortune Starter Deck",
+                "description": "A random unique Fate & Fortune Starter Deck will be assigned to each player by the server.  No mirror matches are possible."                
             }
         },
         "startcondition": {

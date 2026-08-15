@@ -82,7 +82,11 @@ class State_DeckAssignment extends GameState
         {
             $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "TaC");
         }
-
+        else if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_RANDOM_FATE_AND_FORTUNE)
+        {
+            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "FaF");
+        }
+    
         foreach ($playersNeedingDeck as $playerId => $player)
         {
             $random_index = array_rand($starter_decks->decks);
