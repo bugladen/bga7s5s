@@ -9,7 +9,7 @@ class StarterDecks
             "decks": [
                 {
                     "id": "SDCastille",
-                    "name": "Castille Starter",
+                    "name": "Core Castille Starter Deck",
                     "set": "Core",
                     "faction": "Castille",
                     "leader": "01089",
@@ -45,7 +45,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDEisen",
-                    "name": "Eisen Starter",
+                    "name": "Core Eisen Starter Deck",
                     "set": "Core",
                     "faction": "Eisen",
                     "leader": "01035",
@@ -77,7 +77,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDMontaigne",
-                    "name": "Montaigne Starter",
+                    "name": "Core Montaigne Starter Deck",
                     "set": "Core",
                     "faction": "Montaigne",
                     "leader": "01062",
@@ -108,7 +108,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDUssura",
-                    "name": "Ussura Starter",
+                    "name": "Core Ussura Starter Deck",
                     "set": "Core",
                     "faction": "Ussura",
                     "leader": "01116",
@@ -142,7 +142,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDVodacce",
-                    "name": "Vodacce Starter",
+                    "name": "Core Vodacce Starter Deck",
                     "set": "Core",
                     "faction": "Vodacce",
                     "leader": "01006",
@@ -176,7 +176,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDCastilleTaC",
-                    "name": "7S5S Tooth & Claw Team Castille Deck List",
+                    "name": "Tooth & Claw Castille Starter Deck",
                     "set": "TaC",
                     "faction": "Castille",
                     "leader": "01089",
@@ -285,7 +285,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDMontaigneTaC",
-                    "name": "7S5S Tooth & Claw Team Montaigne Deck List",
+                    "name": "Tooth & Claw Montaigne Starter Deck",
                     "set": "TaC",
                     "faction": "Montaigne",
                     "leader": "01062",
@@ -608,7 +608,7 @@ class StarterDecks
                 },
                 {
                     "id": "SDVodacceTaC",
-                    "name": "7S5S Tooth & Claw Team Vodacce Deck List",
+                    "name": "Tooth & Claw Vodacce Starter Deck",
                     "set": "TaC",
                     "faction": "Vodacce",
                     "leader": "01006",
@@ -712,6 +712,571 @@ class StarterDecks
                         {
                         "id": "01033",
                         "count": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "SDCastilleFaF",
+                    "name": "Fate & Fortune Castille Starter Deck",
+                    "set": "FaF",
+                    "faction": "Castille",
+                    "leader": "03037",
+                    "approach_deck": [
+                        "03040",
+                        "03039",
+                        "03038",
+                        "03063",
+                        "02035",
+                        "02033",
+                        "01091",
+                        "01149",
+                        "01148",
+                        "01098"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "03043",
+                        "count": 1
+                        },
+                        {
+                        "id": "03047",
+                        "count": 2
+                        },
+                        {
+                        "id": "03048",
+                        "count": 1
+                        },
+                        {
+                        "id": "03045",
+                        "count": 2
+                        },
+                        {
+                        "id": "03067",
+                        "count": 1
+                        },
+                        {
+                        "id": "03068",
+                        "count": 1
+                        },
+                        {
+                        "id": "02054",
+                        "count": 2
+                        },
+                        {
+                        "id": "02059",
+                        "count": 2
+                        },
+                        {
+                        "id": "02037",
+                        "count": 1
+                        },
+                        {
+                        "id": "02039",
+                        "count": 2
+                        },
+                        {
+                        "id": "02041",
+                        "count": 2
+                        },
+                        {
+                        "id": "02038",
+                        "count": 2
+                        },
+                        {
+                        "id": "01103",
+                        "count": 1
+                        },
+                        {
+                        "id": "01104",
+                        "count": 2
+                        },
+                        {
+                        "id": "01112",
+                        "count": 1
+                        },
+                        {
+                        "id": "01105",
+                        "count": 2
+                        },
+                        {
+                        "id": "01106",
+                        "count": 2
+                        },
+                        {
+                        "id": "01109",
+                        "count": 2
+                        },
+                        {
+                        "id": "01162",
+                        "count": 2
+                        },
+                        {
+                        "id": "01160",
+                        "count": 2
+                        },
+                        {
+                        "id": "01158",
+                        "count": 2
+                        },
+                        {
+                        "id": "01108",
+                        "count": 1
+                        },
+                        {
+                        "id": "03064",
+                        "count": 2
+                        },
+                        {
+                        "id": "01175",
+                        "count": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "SDEisenFaF",
+                    "name": "Fate & Fortune Eisen Starter Deck",
+                    "set": "FaF",
+                    "faction": "Eisen",
+                    "leader": "03013",
+                    "approach_deck": [
+                        "03014",
+                        "03016",
+                        "03018",
+                        "03017",
+                        "02013",
+                        "02015",
+                        "01147",
+                        "01045",
+                        "01041",
+                        "01039"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "03067",
+                        "count": 1
+                        },
+                        {
+                        "id": "03020",
+                        "count": 2
+                        },
+                        {
+                        "id": "03024",
+                        "count": 2
+                        },
+                        {
+                        "id": "03065",
+                        "count": 2
+                        },
+                        {
+                        "id": "03023",
+                        "count": 2
+                        },
+                        {
+                        "id": "03022",
+                        "count": 2
+                        },
+                        {
+                        "id": "03019",
+                        "count": 1
+                        },
+                        {
+                        "id": "02019",
+                        "count": 2
+                        },
+                        {
+                        "id": "02059",
+                        "count": 2
+                        },
+                        {
+                        "id": "02018",
+                        "count": 2
+                        },
+                        {
+                        "id": "02016",
+                        "count": 1
+                        },
+                        {
+                        "id": "01061",
+                        "count": 2
+                        },
+                        {
+                        "id": "01060",
+                        "count": 2
+                        },
+                        {
+                        "id": "01059",
+                        "count": 2
+                        },
+                        {
+                        "id": "01057",
+                        "count": 2
+                        },
+                        {
+                        "id": "01056",
+                        "count": 2
+                        },
+                        {
+                        "id": "01046",
+                        "count": 1
+                        },
+                        {
+                        "id": "01052",
+                        "count": 2
+                        },
+                        {
+                        "id": "01053",
+                        "count": 2
+                        },
+                        {
+                        "id": "01169",
+                        "count": 2
+                        },
+                        {
+                        "id": "01172",
+                        "count": 2
+                        },
+                        {
+                        "id": "01158",
+                        "count": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "SDMontaigneFaF",
+                    "name": "Fate & Fortune Montaigne Starter Deck",                    
+                    "faction": "Montaigne",
+                    "set": "FaF",
+                    "leader": "03025",
+                    "approach_deck": [
+                        "03027",
+                        "01069",
+                        "01068",
+                        "02023",
+                        "01066",
+                        "03029",
+                        "03030",
+                        "01151",
+                        "01149",
+                        "02025"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "03032",
+                        "count": 2
+                        },
+                        {
+                        "id": "03035",
+                        "count": 2
+                        },
+                        {
+                        "id": "03036",
+                        "count": 2
+                        },
+                        {
+                        "id": "03034",
+                        "count": 1
+                        },
+                        {
+                        "id": "03068",
+                        "count": 2
+                        },
+                        {
+                        "id": "02059",
+                        "count": 2
+                        },
+                        {
+                        "id": "02060",
+                        "count": 2
+                        },
+                        {
+                        "id": "02055",
+                        "count": 1
+                        },
+                        {
+                        "id": "01076",
+                        "count": 2
+                        },
+                        {
+                        "id": "01077",
+                        "count": 2
+                        },
+                        {
+                        "id": "01078",
+                        "count": 2
+                        },
+                        {
+                        "id": "01081",
+                        "count": 2
+                        },
+                        {
+                        "id": "01083",
+                        "count": 2
+                        },
+                        {
+                        "id": "01084",
+                        "count": 2
+                        },
+                        {
+                        "id": "01085",
+                        "count": 1
+                        },
+                        {
+                        "id": "01087",
+                        "count": 2
+                        },
+                        {
+                        "id": "01160",
+                        "count": 2
+                        },
+                        {
+                        "id": "01162",
+                        "count": 2
+                        },
+                        {
+                        "id": "01154",
+                        "count": 2
+                        },
+                        {
+                        "id": "01172",
+                        "count": 2
+                        },
+                        {
+                        "id": "01173",
+                        "count": 2
+                        },
+                        {
+                        "id": "03069",
+                        "count": 1
+                        }
+                    ]
+                },
+                {
+                    "id": "SDUssuraFaF",
+                    "name": "Fate & Fortune Ussura Starter Deck",
+                    "faction": "Ussura",
+                    "set": "FaF",
+                    "leader": "03049",
+                    "approach_deck": [
+                        "03052",
+                        "03050",
+                        "03053",
+                        "02045",
+                        "02046",
+                        "01122",
+                        "01118",
+                        "01120",
+                        "01149",
+                        "01152"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "03056",
+                        "count": 2
+                        },
+                        {
+                        "id": "03057",
+                        "count": 2
+                        },
+                        {
+                        "id": "03060",
+                        "count": 2
+                        },
+                        {
+                        "id": "03055",
+                        "count": 1
+                        },
+                        {
+                        "id": "03067",
+                        "count": 1
+                        },
+                        {
+                        "id": "02059",
+                        "count": 2
+                        },
+                        {
+                        "id": "02054",
+                        "count": 1
+                        },
+                        {
+                        "id": "02047",
+                        "count": 1
+                        },
+                        {
+                        "id": "01130",
+                        "count": 2
+                        },
+                        {
+                        "id": "01132",
+                        "count": 2
+                        },
+                        {
+                        "id": "01133",
+                        "count": 2
+                        },
+                        {
+                        "id": "01141",
+                        "count": 2
+                        },
+                        {
+                        "id": "01140",
+                        "count": 2
+                        },
+                        {
+                        "id": "01135",
+                        "count": 2
+                        },
+                        {
+                        "id": "01136",
+                        "count": 2
+                        },
+                        {
+                        "id": "01169",
+                        "count": 2
+                        },
+                        {
+                        "id": "01158",
+                        "count": 2
+                        },
+                        {
+                        "id": "01164",
+                        "count": 2
+                        },
+                        {
+                        "id": "01162",
+                        "count": 2
+                        },
+                        {
+                        "id": "01170",
+                        "count": 2
+                        },
+                        {
+                        "id": "01166",
+                        "count": 2
+                        },
+                        {
+                        "id": "01168",
+                        "count": 1
+                        },
+                        {
+                        "id": "01159",
+                        "count": 1
+                        }
+                    ]
+                },
+                {
+                    "id": "SDVodacceFaF",
+                    "name": "Fate & Fortune - Vodacce - Cesca Leader - Featured Deck",
+                    "faction": "Vodacce",
+                    "set": "FaF",
+                    "leader": "03001",
+                    "approach_deck": [
+                        "03003",
+                        "03004",
+                        "03006",
+                        "03005",
+                        "02001",
+                        "02004",
+                        "02005",
+                        "01012",
+                        "01152",
+                        "02003"
+                    ],
+                    "faction_deck": [
+                        {
+                        "id": "01158",
+                        "count": 2
+                        },
+                        {
+                        "id": "01160",
+                        "count": 2
+                        },
+                        {
+                        "id": "03009",
+                        "count": 2
+                        },
+                        {
+                        "id": "03007",
+                        "count": 1
+                        },
+                        {
+                        "id": "03012",
+                        "count": 2
+                        },
+                        {
+                        "id": "03067",
+                        "count": 1
+                        },
+                        {
+                        "id": "03010",
+                        "count": 2
+                        },
+                        {
+                        "id": "03070",
+                        "count": 2
+                        },
+                        {
+                        "id": "03069",
+                        "count": 2
+                        },
+                        {
+                        "id": "02010",
+                        "count": 2
+                        },
+                        {
+                        "id": "02059",
+                        "count": 2
+                        },
+                        {
+                        "id": "02054",
+                        "count": 2
+                        },
+                        {
+                        "id": "02007",
+                        "count": 2
+                        },
+                        {
+                        "id": "02060",
+                        "count": 1
+                        },
+                        {
+                        "id": "01017",
+                        "count": 1
+                        },
+                        {
+                        "id": "01018",
+                        "count": 1
+                        },
+                        {
+                        "id": "01019",
+                        "count": 1
+                        },
+                        {
+                        "id": "01020",
+                        "count": 1
+                        },
+                        {
+                        "id": "01027",
+                        "count": 2
+                        },
+                        {
+                        "id": "01022",
+                        "count": 2
+                        },
+                        {
+                        "id": "01029",
+                        "count": 2
+                        },
+                        {
+                        "id": "01033",
+                        "count": 2
+                        },
+                        {
+                        "id": "01172",
+                        "count": 2
+                        },
+                        {
+                        "id": "01030",
+                        "count": 1
                         }
                     ]
                 }

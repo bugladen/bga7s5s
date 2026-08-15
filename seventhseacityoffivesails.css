@@ -206,6 +206,22 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     background-image: url('img/cards/deckpicker/116.jpg');
 }
 
+._7sfs-deck-picker-faction-image._faf-castille {
+    background-image: url('img/cards/deckpicker/03037.jpg');
+}    
+._7sfs-deck-picker-faction-image._faf-eisen {
+    background-image: url('img/cards/deckpicker/03013.jpg');
+}
+._7sfs-deck-picker-faction-image._faf-montaigne {
+    background-image: url('img/cards/deckpicker/03025.jpg');
+}    
+._7sfs-deck-picker-faction-image._faf-vodacce {
+    background-image: url('img/cards/deckpicker/03001.jpg');
+}    
+._7sfs-deck-picker-faction-image._faf-ussura {
+    background-image: url('img/cards/deckpicker/03049.jpg');
+}
+
 ._7sfs-deck-picker-custom-textarea {
     font-family: sans-serif;
     width: 100%;

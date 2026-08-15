@@ -70,6 +70,31 @@
                 <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_tac}</div>
                 </div>
 
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDCastilleFaF">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-castille"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${castille_description_faf}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDEisenFaF">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-eisen"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${eisen_description_faf}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDMontaigneFaF">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-montaigne"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${montaigne_description_faf}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDUssuraFaF">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-ussura"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${ussura_description_faf}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacceFaF">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-vodacce"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_faf}</div>
+                </div>
+
                 <div class="_7sfs-deck-picker-tab-content" id="Custom">
                 <div style="flex: 1 1 auto; min-height: 0; display: flex;"><textarea id="customJson" placeholder="Paste your deck JSON here." class="_7sfs-deck-picker-custom-textarea"></textarea></div>
                 <div class="_7sfs-deck-picker-tab-text">\${custom_description}</div>
@@ -78,6 +103,7 @@
                 <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core</button>
                 <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Tooth & Claw</button>
+                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(3)">Fate & Fortune</button>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
@@ -89,7 +115,7 @@
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(11)">Custom Deck Code</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(16)">Custom Deck Code</button>
                 <button id="btnDeckSelect" class="deck-picker-button" disabled onclick="gameui.deckPickerDeckSelected()">\${select_description}</button>
                 </div>
             </div>
