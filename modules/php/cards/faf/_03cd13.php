@@ -27,6 +27,8 @@ class _03cd13 extends CityEventCard implements IHasActions
 
         $this->CityCardNumber = 13;
 
+        $this->InPlayXImageOffset = -20;
+
         $this->Traits = [
             clienttranslate('Treachery'),
             clienttranslate('Schadenfreude'),
