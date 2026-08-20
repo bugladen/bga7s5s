@@ -21,6 +21,8 @@ class _02034 extends Character implements IHasActions
         $this->ExpansionNumber = 2;
         $this->CardNumber = 34;
 
+        $this->InPlayXImageOffset = -15;
+
         $this->initializeFaction('Castille');
         $this->Title = clienttranslate('Espadachin Extraordinario');
         $this->Resolve = 4;
