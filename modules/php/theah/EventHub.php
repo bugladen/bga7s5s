@@ -2187,6 +2187,8 @@ trait EventHub
                     $db->updateRoundThreats($duelId, $round, $event->challengerThreat, $event->defenderThreat, $event->challengerThreatIsLethal, $event->defenderThreatIsLethal);
 
                     $result = $db->getRoundThreats($duelId, $round);
+                    $startingChallengerThreat = $result['starting_challenger_threat'];
+                    $startingDefenderThreat = $result['starting_defender_threat'];
                     $endingChallengerThreat = $result['ending_challenger_threat'];
                     $endingDefenderThreat = $result['ending_defender_threat'];
                     $wounds = $result['wounds_taken'];
@@ -2209,6 +2211,8 @@ trait EventHub
                         "defender_inject_code" => $defender->getInjectCode(),
                         "challenger_modification" => $event->challengerThreat,
                         "defender_modification" => $event->defenderThreat,
+                        "starting_challenger_threat" => $startingChallengerThreat,
+                        "starting_defender_threat" => $startingDefenderThreat,
                         "challenger_threat" => $endingChallengerThreat,
                         "defender_threat" => $endingDefenderThreat,
                         "challenger_lethal_text" => $challengerThreatIsLethalText,
