@@ -190,6 +190,12 @@ return declare('seventhseacityoffivesails.actions', null, {
             }
         });
 
+        // WHY: planningPhase is multipleactiveplayer — onLeavingState (which
+        // clears selection mode) only runs when ALL players finish. Without
+        // this, remaining approach cards stay clickable while waiting.
+        this.approachDeck.setSelectionMode(0);
+        dojo.addClass('actEndPlanningPhase', 'disabled');
+
         this.bgaPerformAction("actDayPlanned", { 
                 'scheme' : scheme, 
                 'character' : character
