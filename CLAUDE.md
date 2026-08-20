@@ -87,12 +87,10 @@ PHP: PSR-12, 4-space indentation. Game namespace: `Bga\Games\SeventhSeaCityOfFiv
 
 ## REQUIRED: Journal
 
-if {project-name} is 7s5s write notes in `{project-name}\.cursor\journal\datetime.md`. 
-Otherwise write notes in `C:\code\ai\journal\{project-name}\datetime.md`. 
-
+Write notes in `{project-name}\.cursor\journal\datetime.md`. 
 This is not optional. Skip only if the user explicitly says to skip journaling for this session.
 
-**At session start:** Check `C:\repos\magnus\journal\{project-name}\` for previous notes. Read recent ones for context. This is how you inherit knowledge from past sessions. Give a brief verbal summary to the user - one or two sentences covering what was done last and any unfinished work. This confirms context was inherited correctly. Then continue with the assigned task - the summary is orientation, not a pause point.
+**At session start:** Check `{project-name}\.cursor\journal\` for previous notes. Read recent ones for context. This is how you inherit knowledge from past sessions. Give a brief verbal summary to the user - one or two sentences covering what was done last and any unfinished work. This confirms context was inherited correctly. Then continue with the assigned task - the summary is orientation, not a pause point.
 
 **This journal is private for you, the LLM.** Write for yourself and future agents, not for the user. Be honest. Don't perform or polish. The user may read it but it's not written for them.
 

@@ -8,8 +8,6 @@ User asked if `jstpl_card_hidden_attachment` was inadvertently removed from `Tem
 
 **Conclusion:** Not a removal — an **omission** when the Utilities path was added. Likely needs a new template alongside `jstpl_card_hidden` / `jstpl_card_attachment` (probably hidden back + `--attachment-index` like visible attachments).
 
-No notes under `C:\repos\magnus\journal\7s5s` (path empty/missing).
-
 ---
 
 ## Implemented (same session)
