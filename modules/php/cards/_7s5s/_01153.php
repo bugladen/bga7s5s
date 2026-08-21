@@ -46,6 +46,50 @@ class _01153 extends FactionAttachment
         $this->hasBlockedWound = false;
     }
 
+    public function eventCheck(Event $event)
+    {
+        parent::eventCheck($event);
+
+        // WHY: Wound reduction must run at queue-time (eventCheck), not in handleEvent.
+        // Reactions (e.g. Reaction_01181) clone EventCharacterBeingWounded during
+        // handleEvent — often before Breastplate runs in card iteration order. If we
+        // only reduce in handleEvent, Breastplate still logs "blocked 1→0" on the
+        // (canceled) original while the released clone keeps wounds=1 and applies
+        // the leftover-threat wound. Commit 91c1f82f put this in eventCheck for that
+        // reason; dbbf159e accidentally moved it to handleEvent while dropping the
+        // actor/adversary gate (that gate drop is intentional and kept).
+        if ($event instanceof EventCharacterBeingWounded
+            && $event->characterId == $this->AttachedToId
+            && ! $this->hasBlockedWound
+            && $event->wounds > 0)
+        {
+            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
+            if ($inDuel)
+            {
+                $oldWounds = $event->wounds;
+                $event->wounds--;
+                if ($event->wounds < 0)
+                {
+                    $event->wounds = 0;
+                }
+
+                $event->theah->game->notify->all("message", clienttranslate('${card_inject_code} blocked a wound. Wounds went from ${oldWounds} to ${newWounds}'), [
+                    "card_inject_code" => $this->getInjectCode(),
+                    "oldWounds" => $oldWounds,
+                    "newWounds" => $event->wounds,
+                ]);
+
+                $this->hasBlockedWound = true;
+                $this->IsUpdated = true;
+                // WHY: Leftover-threat wounds are queued from stDuelEndOfRound, outside
+                // runEvents. IsUpdated is only flushed at the end of each event in
+                // runEvents, so without an immediate write the flag is lost across the
+                // state transition and Breastplate could block twice in one duel.
+                $event->theah->game->updateCardObjectInDb($this);
+            }
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -58,32 +102,6 @@ class _01153 extends FactionAttachment
         {
             $this->hasBlockedWound = false;
             $this->IsUpdated = true;
-        }
-
-        if ($event instanceof EventCharacterBeingWounded && $event->characterId == $this->AttachedToId)
-        {
-            $inDuel = $event->theah->game->globals->get(Game::IN_DUEL);
-            if ($inDuel)
-            {
-                if (! $this->hasBlockedWound)
-                {
-                    $oldWounds = $event->wounds;
-                    $event->wounds--;
-                    if ($event->wounds < 0)
-                    {
-                        $event->wounds = 0;
-                    }
-        
-                    $event->theah->game->notify->all("message", clienttranslate('${card_inject_code} blocked a wound. Wounds went from ${oldWounds} to ${newWounds}'), [
-                        "card_inject_code" => $this->getInjectCode(),
-                        "oldWounds" => $oldWounds,
-                        "newWounds" => $event->wounds,
-                    ]);
-        
-                    $this->hasBlockedWound = true;
-                    $this->IsUpdated = true;
-                }
-            }
         }
 
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->AttachedToId)
