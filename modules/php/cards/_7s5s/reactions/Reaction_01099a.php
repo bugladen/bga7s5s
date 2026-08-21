@@ -47,6 +47,16 @@ class Reaction_01099a extends CardReaction
         if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardAddedToCityDiscardPile) 
         && $this->isAvailable() && $event->asEffect)
         {
+            //If the card is a city card, check to see if it was owned by a player
+            if ($event instanceof EventCardAddedToCityDiscardPile)
+            {
+                $card = $event->theah->getCardById($event->cardId);
+                if ($card->isControlled())
+                {
+                    return;
+                }
+            }
+
             $owner = $this->getOwningCard($event->theah);
 
             if ($event->sourceId != 0)
