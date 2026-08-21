@@ -44,7 +44,7 @@ class Reaction_01099a extends CardReaction
     {
         parent::handleEvent($event);
 
-        if (($event instanceof EventCardDiscardedFromPlay || $event instanceof EventCardDiscardedFromHand || $event instanceof EventCardAddedToCityDiscardPile) 
+        if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardAddedToCityDiscardPile) 
         && $this->isAvailable() && $event->asEffect)
         {
             $owner = $this->getOwningCard($event->theah);
