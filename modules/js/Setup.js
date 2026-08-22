@@ -426,7 +426,12 @@ return declare('seventhseacityoffivesails.setup', null, {
             'cards/deckpicker/035.jpg', 
             'cards/deckpicker/062.jpg', 
             'cards/deckpicker/089.jpg', 
-            'cards/deckpicker/116.jpg'
+            'cards/deckpicker/116.jpg',
+            'cards/deckpicker/03001.jpg',
+            'cards/deckpicker/03013.jpg',
+            'cards/deckpicker/03025.jpg',
+            'cards/deckpicker/03037.jpg',
+            'cards/deckpicker/03049.jpg'
         ]);
 
         debug( "Ending game setup" );

@@ -2531,6 +2531,26 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
 
+        // WHY starting chips: ThreatModified also updates starting_* (maneuver/technique
+        // rebuild ending from starting). Keep the starting column in sync with the DB.
+        if (args.starting_challenger_threat !== undefined)
+        {
+            $(`duel_round_${args.round}_starting_challenger_threat`).innerHTML = args.starting_challenger_threat;
+            if (args.starting_challenger_threat > 0)
+                dojo.addClass(`duel_round_${args.round}_starting_challenger_threat`, '_7sfs-threat-chip-threatened');
+            else
+                dojo.removeClass(`duel_round_${args.round}_starting_challenger_threat`, '_7sfs-threat-chip-threatened');
+        }
+
+        if (args.starting_defender_threat !== undefined)
+        {
+            $(`duel_round_${args.round}_starting_defender_threat`).innerHTML = args.starting_defender_threat;
+            if (args.starting_defender_threat > 0)
+                dojo.addClass(`duel_round_${args.round}_starting_defender_threat`, '_7sfs-threat-chip-threatened');
+            else
+                dojo.removeClass(`duel_round_${args.round}_starting_defender_threat`, '_7sfs-threat-chip-threatened');
+        }
+
         $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.challenger_threat;
         if (args.challenger_threat > 0)
             dojo.addClass(`duel_round_${args.round}_ending_challenger_threat`, '_7sfs-threat-chip-threatened');

@@ -8,7 +8,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
@@ -41,7 +40,7 @@ class Reaction_01098 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardDiscardedFromPlay || $event instanceof EventCardAddedToCityDiscardPile) 
+        if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardDiscardedFromPlay) 
             && $this->isAvailable()) 
         {
             $game = $event->theah->game;

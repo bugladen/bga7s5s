@@ -27,6 +27,8 @@ class _02033 extends Character implements IHasActions, IHasReactions
         $this->ExpansionName = 'tac';
         $this->ExpansionNumber = 2;
         $this->CardNumber = 33;
+        
+        $this->InPlayXImageOffset = -10;
 
         $this->initializeFaction('Castille');
         $this->Title = clienttranslate('La Virtuosa  Vibrante');

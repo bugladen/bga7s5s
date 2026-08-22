@@ -8,7 +8,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01099a extends CardReaction
@@ -44,9 +43,19 @@ class Reaction_01099a extends CardReaction
     {
         parent::handleEvent($event);
 
-        if (($event instanceof EventCardDiscardedFromPlay || $event instanceof EventCardDiscardedFromHand || $event instanceof EventCardAddedToCityDiscardPile) 
+        if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardAddedToCityDiscardPile) 
         && $this->isAvailable() && $event->asEffect)
         {
+            //If the card is a city card, check to see if it was owned by a player
+            if ($event instanceof EventCardAddedToCityDiscardPile)
+            {
+                $card = $event->theah->getCardById($event->cardId);
+                if ($card->isControlled())
+                {
+                    return;
+                }
+            }
+
             $owner = $this->getOwningCard($event->theah);
 
             if ($event->sourceId != 0)

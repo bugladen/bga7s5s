@@ -37,7 +37,7 @@ class _03039 extends Character
         ];
 
         $this->Text = clienttranslate("<p>While Íñigo is equipped with a <b>Weapon</b>, he gains +1[Finesse].</p>
-<p><b>Gambling Technique:</b> -2[Thrust] • The adversary discards a card. Then, if they have more cards in hand than you, en garde Íñigo. At the end of the round, move Íñigo <b>Home</b>. <i>(Your combat card must have at least 2 [Thrust].)</i></p>");
+<p><b>Technique:</b> -2[Thrust] • The adversary discards a card. Then, if they have more cards in hand than you, en garde Íñigo. At the end of the round, move Íñigo <b>Home</b>. <i>(Your combat card must have at least 2 [Thrust].)</i></p>");
 
         $this->resetCard();
 

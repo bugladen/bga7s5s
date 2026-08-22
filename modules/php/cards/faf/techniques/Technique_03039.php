@@ -36,12 +36,6 @@ class Technique_03039 extends Technique
             return false;
         }
 
-        // Gambling Technique: actor must have gambled for their combat card this round.
-        if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false))
-        {
-            return false;
-        }
-
         $owner = $this->getOwningCharacter($theah);
         $actor = $theah->getDuelRoundActor();
         if ($actor === null || $actor->Id !== $owner->Id)

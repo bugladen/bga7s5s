@@ -32,6 +32,8 @@ class _01089 extends Leader implements IHasReactions
         $this->ExpansionNumber = 1;
         $this->CardNumber = 89;
 
+        $this->InPlayXImageOffset = 15;
+
         $this->initializeFaction("Castille");
         $this->Title = clienttranslate("Prince of Thieves");
         $this->Resolve = 7;

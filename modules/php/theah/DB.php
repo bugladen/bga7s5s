@@ -622,7 +622,13 @@ class DB
             $adjustedWounds += $defenderThreat;
         }
 
+        // WHY starting_* is updated too: maneuver/technique calcs rebuild ending threat
+        // from starting_* + all R/P/T (see updateRoundWithCombatStats). ThreatModified
+        // that only touched ending (e.g. Leja 01203 at round start) vanished when the
+        // first Maneuver was played. Baseline changes must live in starting_*.
         $sql = "UPDATE duel_round set 
+            starting_challenger_threat = starting_challenger_threat + {$challengerThreat}, 
+            starting_defender_threat = starting_defender_threat + {$defenderThreat},
             ending_challenger_threat = ending_challenger_threat + {$challengerThreat}, 
             ending_defender_threat = ending_defender_threat + {$defenderThreat},
             wounds_taken = $adjustedWounds
@@ -647,7 +653,7 @@ class DB
 
     public function getRoundThreats(int $duelId, int $round): array
     {
-        $sql = "SELECT ending_challenger_threat, ending_defender_threat, wounds_taken, challenger_threat_is_lethal, defender_threat_is_lethal FROM duel_round WHERE duel_id = $duelId AND round = $round";
+        $sql = "SELECT starting_challenger_threat, starting_defender_threat, ending_challenger_threat, ending_defender_threat, wounds_taken, challenger_threat_is_lethal, defender_threat_is_lethal FROM duel_round WHERE duel_id = $duelId AND round = $round";
         return $this->getObject($sql);
     }
 }

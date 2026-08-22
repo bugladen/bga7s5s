@@ -23,8 +23,8 @@ class _02005 extends Scheme
         $this->CardNumber = 5;
 
         $this->initializeFaction('Vodacce');
-        $this->Initiative = 13;
-        $this->PanacheModifier = 0;
+        $this->Initiative = 47;
+        $this->PanacheModifier = 1;
 
         $this->Traits = [
             clienttranslate('Sorte'),
