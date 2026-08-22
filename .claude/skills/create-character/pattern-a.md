@@ -337,6 +337,16 @@ WHY not just hook the post-tense `EventCardMoved` differently — there's no lat
 
 Reference: `_03026` Angeline (binary bonus), `_01037` Edeline (per-character count via `$adjustment` int).
 
+### Multi-stat location aura — flag ±1, not absolute
+
+For text like Axelle `_04022` ("While you control a Duelist at this location, Axelle gains +1 Finesse and +1 Influence"):
+
+- Same **Angeline lifecycle** (move / muster / approach / destroy / recruit) and **stale-DB** exclude-out / include-in.
+- Prefer **Ise/Benci public bool flag** + `createCharacterFinesseModifedEvent` / `createCharacterInfluenceModifiedEvent` (±1) **only on flag transition**.
+- WHY not Angeline absolute `$this->Stat + $bonus`: Axelle buffs stats that attachments also mutate — absolute would wipe those mods on every recount. Single-stat Influence-only Angeline still uses absolute; multi-stat (or Combat/Finesse that attachments commonly touch) use the flag.
+
+Reference: `_04022` Axelle; `_03026` Angeline (single-stat absolute); `_04001` Benci / `_03016` Ise (flag).
+
 ### Opposed by N+ wounded characters — location count + wound state
 
 For text like "While Benci is opposed by two or more wounded characters, he gains +1[Combat]" (`_04001` Benci). Combine:

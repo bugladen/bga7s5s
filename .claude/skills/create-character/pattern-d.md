@@ -582,3 +582,23 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |
 | `Reaction_04021` (Aimée — opponent engages ally Musketeer) | **Continuous** on `EventCardEngaged`; opponent-effect gate (`sourceId==0` skip); other Trait at location; En Garde via `createCardEngardedEvent`; Engaged re-check in `performReaction` (`runEventHubAfterCards`). |
 
+
+| `Reaction_04022` (Axelle — adversary combat card → threat) | **`EventCombatCardAnnounced`** + asymmetric `createThreatModifiedEvent`; your participant by ControllerId; En Garde rider `!$Engaged` adds adversary threat. Risk sibling `Reaction_02039` (both + pay). |
+
+### Adversary announces combat card → threat
+
+For Axelle `_04022`: **"Reaction: During a duel, after an opposing adversary announces their combat card • Your participant gains a threat. If Axelle is en garde, the adversary also gains a threat."**
+
+**Trigger:** `EventCombatCardAnnounced` (same event as Risk `Reaction_02039` / `Reaction_01135`). Gates:
+
+1. `$this->isAvailable()`
+2. `Game::IN_DUEL`
+3. Owner in play (ControllerId ≠ 0, not discard/locker)
+4. `$event->playerId != $owner->ControllerId` (adversary announces, not you)
+5. Owner's controller has a duel participant (`getDuelChallengerId` / `getDuelDefenderId` ControllerId match) — else no "your participant"
+
+**Effect:** `createThreatModifiedEvent($challengerThreat, $defenderThreat)`. Map "your participant" to the side whose participant `ControllerId == owner.ControllerId`. **En Garde rider** = `!$owner->Engaged` — also +1 the other side. Not an Engage cost; Owner need not be the duel participant.
+
+**UX:** Accept/Pass buttons; description can mention the en garde rider when `!$Engaged`. `setUsed(true)` on Accept. No state / no JS.
+
+Contrast: `Reaction_02039` is an in-hand Risk that always adds (1,1) after paying Wealth.
