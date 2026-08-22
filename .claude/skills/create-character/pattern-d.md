@@ -584,6 +584,37 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 
 
 | `Reaction_04022` (Axelle — adversary combat card → threat) | **`EventCombatCardAnnounced`** + asymmetric `createThreatModifiedEvent`; your participant by ControllerId; En Garde rider `!$Engaged` adds adversary threat. Risk sibling `Reaction_02039` (both + pay). |
+| `Reaction_04023` (Monet — reveal deck / optional equip / discard any / sink) | **En Garde** + Owner-moves-to-city (`Reaction_03025`) + multi-stage in-reaction reveal/equip/pay/discard/sink. No states/JS. Equip pay = Tomas click-to-pay (not `PAY_STATE_EQUIP_ATTACHMENT`). Deck→discard = Action_01134 notify+`moveCard`; sink = `createCardAddedToFactionDeckEvent(..., false)`. |
+
+### En Garde Reaction: reveal deck, optional equip paying costs, discard any, sink rest
+
+For Monet `_04023`: **"En Garde Reaction: After Monet moves to a City location • Reveal the top four cards of your deck. You may equip a revealed attachment to a character you control at this location, paying all costs. Discard any then sink the rest."**
+
+**Trigger:** `EventCardMoved` with Angeline `Reaction_03025` gates (`cardId == owner.Id`, `locationInCity(toLocation)`) **plus** En Garde `!$owner->Engaged` and deck nonempty (`getCardsOnTopOfPlayerFactionDeck(..., 1)`).
+
+**WHY fully button-based (no chooseList states):** Monet can move during any EVENTS dispatcher. Queuing `createTransitionEvent("04023")` would require registering that key on every dispatcher. Tomas/Don Constanzo `requeue()` via `createReactionTransitionEvent` stays inside the ambient reaction loop.
+
+**Stages** (`$stage` + `requeue` after each step):
+
+| Stage | Buttons |
+|---|---|
+| `''` | Reveal / Pass |
+| `equip` | one button per equippable revealed Attachment; Skip equip |
+| `character` | Equip to {name} (cost N); Back |
+| `pay` | click-to-pay (Tomas); Back |
+| `discard` | Discard {name} per remaining; Sink the rest |
+
+**Equip:** `canAttachTo` + `!hasEquipRestrictions` + `handWealthCount >= cost` at Owner's location (includes Monet). Finalize: payment discards → `getRequiredAttachTargetId` → `createAttachmentEquippedEvent` (deck card; Hub `moveCard`s it). Auto-skip equip stage when no affordable legal attachment.
+
+**Discard any:** no EventFactory for deck→player-discard — mirror Action_01134 / Action_02002 (`cardAddedToPlayerDiscardPile` notify + `moveCard` to `getPlayerDiscardDeckName`).
+
+**Sink rest:** `createCardAddedToFactionDeckEvent(..., false)` per remaining (Otto `_01038`).
+
+**setUsed(true)** on Reveal (mandatory first effect), not on Pass. Mid-flow has no Decline after reveal — player must finish discard/sink.
+
+Contrast: Kaj `Action_01180` uses High Drama states + `PAY_STATE_EQUIP_ATTACHMENT` (City Deck, Action-only). Yevgeni `Reaction_03052` uses phase-scoped private states (Dusk only).
+
+Reference: `Reaction_04023`; trigger sibling `Reaction_03025`; pay sibling `Reaction_04013`; reveal-Action sibling `Action_01038` / `Action_01180`.
 
 ### Adversary announces combat card → threat
 
