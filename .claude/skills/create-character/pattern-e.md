@@ -477,6 +477,50 @@ WHY Engage before clone: printed cost is Engage the attachment; the copy then re
 
 Reference: `Technique_03051`, `Technique_02055` (copy pipeline), `Technique_02011` (engage-attachment cost without copy).
 
+### Copy a Technique on your other Trait (not attachments)
+
+For Aimée `_04021`: **"Technique: Copy the effects of a Technique on your other Musketeer at this location. (Not one of their attachments.)"**
+
+Same Dame **clone / activate / resolve / calc** half as `Technique_03051` / `Technique_02055`, with three differences:
+
+| Axis | Yepikhodov `03051` | Aimée `04021a` |
+|---|---|---|
+| Who owns the Technique | Ally granted the Technique (aura) | Owner herself (`actor == owner`) |
+| Source techniques | On named character's **attachments** | On other controlled **Trait characters** at location via `$character->getTechniques()` |
+| Engage cost | Engage the attachment (printed) | **None** unless Engage is printed |
+
+**Availability:** `IN_DUEL` + actor-is-owner + `count(getAvailableTechniques) > 0`.
+
+**Listing — do NOT use `isAvailableToPlayer`:** source techniques gate on actor == that Musketeer; Aimée is the actor. Skip `ClassId === 'Technique_NNNNNa'` self and `IsTemporaryCopy`. ControllerId filter handles shared `LOCATION_PLAYER_HOME`.
+
+**Parenthetical "Not one of their attachments":** never walk `$character->Attachments`. On pick, belt-and-suspenders reject `getOwningAttachment($theah) !== null`.
+
+**Resolve → picker → clone (no Engage):**
+
+```php
+// EventResolveTechnique → createTechniqueTransitionEvent(..., "NNNNN", $this->Id)
+// actFromTechniqueWithIds: validate ⊆ getAvailableTechniques, then Dame clone recipe
+// WITHOUT createCardEngagedEvent unless Engage is printed
+$game->gamestate->nextState("cardChosen");
+```
+
+**Wiring:** `DUEL_CHOOSE_TECHNIQUE_NNNNN` (id `521` + cardId); `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS`; JS `OnUpdateActionButtons.<expansion>.js` technique buttons via `actFromCardWithIds` + `JSON.stringify([technique.id])` — no OnEntering needed (button-only like `03051` / `04013`).
+
+Reference: `Technique_04021a`; attachment-copy sibling `Technique_03051`; copy pipeline `Technique_02055`.
+
+### En Garde Technique +N Thrust (or Riposte / Parry)
+
+Printed: **`<b>En Garde Technique:</b> +1[Thrust]`** (Aimée `_04021`).
+
+- Prefer **subclassing** the matching generic (`Technique_PlusOneThrust` / `Technique_PlusOneRiposte` / …) so duel Calculate **and** challenge `EventGenerateChallengeThreat` stay shared.
+- **En Garde = `!$owner->Engaged` precondition** — same as En Garde City Action / Reaction. Do **not** queue `createCardEngagedEvent` unless Engage is a printed cost.
+- During `IN_DUEL`, also require `getDuelRoundActor()->Id === owner.Id` (03025a shape). Outside duel, leave the generic's challenge path available when En Garde.
+- Pre-commit trap: the hook regex `extends\s+Technique` also matches `extends Technique_PlusOneThrust`. Keep `// EventTechniqueCanceled handler not needed` (override `handleEvent` → `parent::handleEvent` + comment if the parent generic has none).
+
+Contrast plain **`<b>Technique:</b> +1[Thrust]`** with no En Garde keyword → use the generic directly (`_01042` Terrell) without the Engaged gate.
+
+Reference: `Technique_04021b`; generic `Technique_PlusOneThrust`; En Garde precondition siblings Tijani `_04cd29` / Desideria `Reaction_04003a`.
+
 ### Technique usable in BOTH challenge and duel contexts — two states, two routings, two state classes
 
 A technique that fires in either a challenge-resolve flow or a duel round needs entries in BOTH dispatcher routes:

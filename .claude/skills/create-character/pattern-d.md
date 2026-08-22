@@ -385,6 +385,30 @@ Effect: Pattern D "Move <Owner> to any City location" button list (`Reaction_030
 
 WHY Continuous for Leader Ekaterina: unlabelled After…may + Tomoe end-of-HD multi-claim abuse lines need every claim prompt, not a once-per-day Reaction slot. Reference: `Reaction_03049`, Continuous sibling `Reaction_03025`.
 
+### Opponent engages your other Trait → they may En Garde
+
+For Aimée `_04021`: **"After an opponent's effect engages your other Musketeer at this location, they may en garde."** Unlabelled After…may → **Continuous** Pattern D (no `setUsed(true)`; keep `$this->setUsed(` in a comment).
+
+**Trigger:** `EventCardEngaged` with `!$event->canceled`.
+
+**Gates:**
+
+1. `$this->isAvailable()`
+2. Owner in play (`ControllerId > 0`, `!characterIsInDiscardOrLocker`)
+3. **Opponent's effect** — mirror `Reaction_03031::isOpponentAbility`:
+   - `$source = getCardById($event->sourceId)` → `ControllerId` is a live opponent (`!= owner` and `!= 0`), **or**
+   - in-play action via `getInPlayActionById($event->abilityId)` whose owning card has an opponent controller
+   - **`sourceId == 0` is NOT an effect** — Challenge / framework auto-engage (`FrameworkActionsTrait`) omits source; do not prompt
+4. Engaged card is a `Character`, **not** Owner (`cardId != owner.Id`), same controller, same location, has the printed Trait (e.g. Musketeer)
+
+**Timing trap:** `EventCardEngaged.runEventHubAfterCards = true` — Hub sets `Engaged = true` **after** card `handleEvent`. Do **not** require `$musketeer->Engaged` at trigger time. Stash a public `$engagedMusketeerId` for serialize; in `performReaction` re-validate `Engaged` (and location/trait/controller) before `createCardEngagedEvent`.
+
+**Buttons:** En Garde / Pass. Effect = `createCardEngardedEvent(owner.ControllerId, musketeer.Id, owner.Id, $this->Id)`. Clear stash after Pass or En Garde. Continuous → omit `setUsed(true)` on success.
+
+Contrast: Ved'ma `Reaction_01124` (self Engaged by own Sorcery Risk — daily Reaction, not Continuous, not opponent-gated).
+
+Reference: `Reaction_04021`; opponent-ability helper sibling `Reaction_03031`; Continuous siblings `Reaction_03049` / `Reaction_03025`.
+
 ### Cancel-and-reissue Reaction — opt out of an auto-emitted event
 
 For text like "During Dusk, you may choose not to move <Owner> Home" (`_03016` Ise). The framework's `stDuskPhaseCleanup` emits a `createCardMovingEvent(..., LOCATION_PLAYER_HOME, $engage=false, $sourceId=0)` for every non-Home controlled character. The Reaction intercepts that event, asks the player, and either keeps it canceled (effect: stay) or re-queues it (effect: go home as normal).
@@ -556,4 +580,5 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_03040` (Soline el Gato — any character arrives) | **"After a character moves here"** without enemy gate — allies trigger too. Effect: button-per-other-city-location + Pass; `createCardMovingEvent(engage=false)` for Soline herself. Contrast `Reaction_03016b` (enemy-only) and `Reaction_01089` (adjacent-only after Action resolves). |
 | `Reaction_04003a` (Desideria — Thug destroy → hand) | **En Garde City Reaction** + duel/opponent cause gate + **deferred mid-duel Hand return**. `EventCharacterWounded` marks opponent lethal; Destroyed ORs `IN_DUEL`; locker/discard → hand; `stDuelEnd` flush. |
 | `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |
+| `Reaction_04021` (Aimée — opponent engages ally Musketeer) | **Continuous** on `EventCardEngaged`; opponent-effect gate (`sourceId==0` skip); other Trait at location; En Garde via `createCardEngardedEvent`; Engaged re-check in `performReaction` (`runEventHubAfterCards`). |
 

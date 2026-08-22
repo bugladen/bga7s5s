@@ -232,6 +232,12 @@
                 });
             },
 
+            'duelChooseTechnique_04021': () => {
+                args.args.techniques.forEach((technique) => {
+                    this.addActionButton(`actChooseTechnique-${technique.id}`, technique.name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.id])}));
+                });
+            },
+
             'duelChooseTechnique_04017': () => {
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCard', 'disabled');
