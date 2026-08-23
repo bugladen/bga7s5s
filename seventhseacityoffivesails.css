@@ -766,6 +766,9 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
 }
 ._7sfs-scheme-in-city {
     position: relative;
+    /* WHY: ._7sfs-scheme keeps top:35px for home absolute layout. Left alone under
+       position:relative it shifts the crop down and sticks out of the city row. */
+    top: 0;
 }
 ._7sfs-scheme-container-in-city {
     /* WHY: Stat boxes are absolute-positioned siblings of the scheme image.
@@ -773,6 +776,24 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
        and stay put when flex-wrap moves the scheme to the next row. */
     position: relative;
     margin-left: 15px;
+}
+/* WHY: Home initiative/panache tops (63/87) assume scheme art at top:35.
+   In-city art is at top:0, so subtract 35 to keep the boxes on the crop. */
+._7sfs-scheme-container-in-city ._7sfs-scheme-initiative-box {
+    top: 28px;
+}
+._7sfs-scheme-container-in-city ._7sfs-scheme-panache-box {
+    top: 52px;
+}
+/* WHY: relative + bottom:-15px on the color dot added ~16px flow height and, when
+   the shorter scheme was vertically centered in the 110px city row, ~5px of
+   overflow past the location bottom. Absolute keeps the badge on the crop. */
+._7sfs-scheme-container-in-city ._7sfs-scheme-player-color {
+    position: absolute;
+    right: auto;
+    bottom: auto;
+    left: 130px;
+    top: 55px;
 }
 
 ._7sfs-first-player-home {
