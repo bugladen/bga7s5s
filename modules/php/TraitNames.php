@@ -219,6 +219,7 @@ class TraitNames
             "Weapon",
             "Weapons Master",
             "Weave",
+            "Welcome",
             "Zeal",
             "Zealot"
         ]

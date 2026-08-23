@@ -183,6 +183,15 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04024': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseResolveSchemes_04014': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();

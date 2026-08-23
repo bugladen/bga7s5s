@@ -227,6 +227,14 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04024': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
             'planningPhaseResolveSchemes_04014': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;

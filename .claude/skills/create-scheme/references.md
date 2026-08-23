@@ -82,3 +82,7 @@
 | `modules/php/States/bas/State_highDramaPhase04015.php` | HD uncontrolled location pick (`locationChosen` + `zombie`). |
 | `modules/php/States/bas/State_highDramaPhase04015_2.php` | Optional discard + Pass (`cardDiscarded` / `pass` / `zombie`). |
 | `modules/php/cards/_7s5s/actions/Action_01112b.php` | Available City Card discard filter sibling (`ICityDeckCard` + uncontrolled + `canBeDiscardedFromCity`). |
+| `modules/php/cards/bas/_04024.php` (Diplomatic Envoy) | **Fixed Forum Renown + Then move your Diplomat there (one pick) + En Garde Combat sanctuary at Forum.** Scaffold was `_40024` / `Welsome` — art is `_04024` / Welcome. Initiative 16 / Panache -1 verified. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04024.php` | Planning Diplomat pick (`diplomatChosen` + `zombie`). |
+| `modules/php/cards/_7s5s/_01095.php` (Patricia) | Character sibling: en garde + location → cannot be issued challenges (`eventCheck`). |
+| `modules/php/cards/faf/_03028.php` (Térence) | Character sibling: cannot issue Combat challenges (`CHALLENGE_STAT == STAT_COMBAT`). |
