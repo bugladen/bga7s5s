@@ -23,6 +23,8 @@ class _01203 extends CityCharacter implements IHasReactions
 
         $this->Title = clienttranslate('Whispered Shade');
 
+        $this->InPlayXImageOffset = 15;
+
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 3;
