@@ -43,7 +43,11 @@ class DB
 
     public function getNextEvent()
     {
-        $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority LIMIT 1";
+        // WHY: event_id tiebreaker — same-priority events (e.g. AttachmentUnequipped
+        // then CardDiscardedFromPlay, both MEDIUM) must stay FIFO. Without it MySQL
+        // can return discard first; client then flies the attached card and unequip
+        // recreates an orphan in the city row (Breastplate _01153).
+        $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority, event_id LIMIT 1";
         $data = $this->getObject($sql);
 
         if (!$data) {
