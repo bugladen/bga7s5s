@@ -583,12 +583,6 @@ return declare('seventhseacityoffivesails.notifications', null, {
         // character.divId caused the ownerDocument crash. Patch the live
         // character in place, then re-seat the attachment as a city-row sibling
         // so the following discard/sink notification can animate it away.
-        if (attachment.divId)
-        {
-            dojo.destroy(attachment.divId);
-            attachment.divId = null;
-        }
-
         const characterElement = character.divId ? $(character.divId) : null;
         if (characterElement)
         {
@@ -647,16 +641,39 @@ return declare('seventhseacityoffivesails.notifications', null, {
             });
         }
 
-        // WHY: attachedToId is already null, so createAttachmentCard places as a
-        // sibling ('before') without _7sfs-attached-card absolute positioning —
-        // card sits in the city row in front of the character for the discard fly.
+        // WHY: Reparent the live node (don't destroy/recreate). Destroy+recreate
+        // left a city orphan when cardDiscardedFromPlay raced ahead of unequip
+        // (same MEDIUM event priority, unordered until DB FIFO fix) — discard
+        // flew the attached card, then unequip built a fresh sibling that sat
+        // forever. If discard already ran, location is Player Discard / divId
+        // null — skip so we don't recreate that orphan. Flows that leave the
+        // attachment in play (e.g. Technique_02055) still get a city-row sibling.
+        if (attachment.location === this.LOCATION_PLAYER_DISCARD)
+        {
+            return;
+        }
+
+        const attachmentElement = attachment.divId ? $(attachment.divId) : null;
         const anchorId = characterElement
             ? character.divId
             : this.getTargetElementForLocation(
                 character.location || attachment.location,
                 character.controllerId || attachment.controllerId
             );
-        if (anchorId && $(anchorId))
+
+        if (attachmentElement && anchorId && $(anchorId))
+        {
+            attachmentElement.style.transition = 'none';
+            dojo.removeClass(attachment.divId, '_7sfs-attached-card');
+            dojo.removeClass(attachment.divId, '_7sfs-attached-card-no-modifiers');
+            dojo.removeClass(attachment.divId, '_7sfs-attached-card-splayed');
+            attachmentElement.style.removeProperty('left');
+            attachmentElement.style.removeProperty('top');
+            attachmentElement.style.removeProperty('z-index');
+            attachmentElement.style.removeProperty('--attachment-index');
+            dojo.place(attachment.divId, anchorId, 'before');
+        }
+        else if (anchorId && $(anchorId))
         {
             const divId = this.createCardId(
                 attachment,
