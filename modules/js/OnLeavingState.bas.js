@@ -199,6 +199,20 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04025': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseEnd_04025': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.clientStateArgs = {};
+            },
+
             'planningPhaseResolveSchemes_04015': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();

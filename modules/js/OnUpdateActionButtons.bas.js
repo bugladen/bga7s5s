@@ -110,6 +110,16 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'planningPhaseResolveSchemes_04025': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'planningPhaseEnd_04025': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Draw Selected'), () => this.onMultipleChooseListCardsConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'planningPhaseResolveSchemes_04015': () => {
                 this.addActionButton(`actCityLocationsSelected`, _('Confirm Locations'), () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');

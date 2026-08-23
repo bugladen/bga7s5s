@@ -306,6 +306,15 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'planningPhaseEnd_04025': () => {
+                const needed = this.clientStateArgs.cardsToDraw || 2;
+                if (this.chooseList.getSelectedItems().length === needed) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
             'duelResolveManeuver_03059_3': () => {
                 if (this.chooseList.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseCardSelected', 'disabled');

@@ -245,6 +245,35 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04025': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'planningPhaseEnd_04025': () => {
+                if (! this.isCurrentPlayerActive()) {
+                    return;
+                }
+                if (! args.args._private || ! args.args._private.args || ! args.args._private.args.cards) {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _('Top Cards of Your Deck');
+
+                args.args._private.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(2);
+                this.clientStateArgs.cardsToDraw = args.args._private.args.cardsToDraw || 2;
+            },
+
             'planningPhaseResolveSchemes_04015': () => {
                 if (this.isCurrentPlayerActive()) {
                     const locations = this.getListofAvailableCityLocationImages();
