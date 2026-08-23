@@ -1900,8 +1900,8 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
 }
 
 ._7sfs-card-info-text {
-    font-size:14px;
-    font-weight:bold;
+    /* WHY 12px: Eddie — image-only hover ability labels ~2pt smaller than 14px. */
+    font-size:12px;
 }
 
 ._7sfs-lethal {
@@ -2035,7 +2035,8 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
     top: auto !important;
     left: auto !important;
     margin-top: 8px;
-    font-size: 12pt;
+    /* WHY 10pt: Eddie — image-only hover ability labels ~2pt smaller than 12pt. */
+    font-size: 10pt;
     width: auto !important;
 }
 
