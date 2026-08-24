@@ -4,6 +4,8 @@
 
 Use when the printed text is **`<b>Forced:</b> At the end of Planning • …`**. This is **not** scheme resolve — it fires later, from `stPlanningPhaseEnd` → `EventPhasePlanningEnd` → `PLANNING_PHASE_END_EVENTS`.
 
+**Contrast — Reaction at end of Planning.** If the text is **`<b>… Reaction:</b> At the end of Planning • …`** (Look/Pass, optional), do **not** treat it as Forced. Use a `CardReaction` on `EventPhasePlanningEnd` that queues `createReactionTransitionEvent`, then (if needed) a follow-on pick state still registered under `PLANNING_PHASE_END_EVENTS` with `createTransitionEvent(..., "NNNNN", $reaction->Id)`. See [reactions.md](reactions.md) "Merchant / trait Reaction at Planning End". Reference: `_04025`.
+
 ### Trigger on the scheme class
 
 ```php
@@ -25,7 +27,7 @@ WHY `LOCATION_PLAYER_HOME`: chosen schemes remain at Home until Dusk (see lifecy
 | Transitions back | `"" => States::PLANNING_PHASE_END_EVENTS` |
 | JS keys | `planningPhaseEnd_<NNNNN>` in OnEntering / OnUpdate / OnLeaving |
 
-Do **not** register these under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` — that map is only for resolve-time picks. Same card number key (`"03041"`) can legally appear in both maps because they are separate lookups (see `_01098`: resolve `"01098"` vs end `"01098"`).
+Do **not** register these under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` — that map is only for resolve-time picks. Same card number key (`"03041"` / `"04025"`) can legally appear in both maps because they are separate lookups (see `_01098`: resolve `"01098"` vs end `"01098"`; `_04025`: resolve Renown pick vs Planning-End look/draw).
 
 ### Draw-then-discard subtype (`_03041`)
 

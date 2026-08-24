@@ -92,14 +92,16 @@ For additional steps, append `2`, `3`, etc. (`26030302`, `28030412`, `4030292`).
 | When the pick happens | Transition map |
 |---|---|
 | During scheme resolve | `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions` |
-| During Forced at Planning End | `PLANNING_PHASE_END_EVENTS.transitions` |
+| During Forced **or Reaction follow-on** at Planning End | `PLANNING_PHASE_END_EVENTS.transitions` |
 | During High Drama action | `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions` |
 
 ```php
-"NNNNN" => States::PLANNING_PHASE_END_<NNNNN>,   // example: Forced end pick
+"NNNNN" => States::PLANNING_PHASE_END_<NNNNN>,   // Forced end pick OR Reaction look/draw pick
 ```
 
 The transition key (`"NNNNN"`) is the string you pass as the third arg of `EventFactory::createTransitionEvent(...)`. It's looked up against the map for the events state that is currently running.
+
+**Reaction follow-on picks:** pass the **reaction Id as the 4th arg** (`createTransitionEvent($playerId, $owner->Id, "NNNNN", $this->Id)`) so `actFromCardWithIds` / `argsFromCard` route to `actFromReactionWithIds` / `getArgsFromReaction`. Resolve picks on the scheme omit the 4th arg (or pass `""`). Same `"NNNNN"` key may appear on both resolve and Planning-End maps — intentional (`_01098`, `_04025`).
 
 ## JS Wiring
 
@@ -111,10 +113,10 @@ For every new player-choice sub-state, wire all three of:
 
 State name prefixes:
 - Resolve picks → `planningPhaseResolveSchemes_<NNNNN>`
-- Planning-End Forced picks → `planningPhaseEnd_<NNNNN>`
+- Planning-End Forced **or Reaction** picks → `planningPhaseEnd_<NNNNN>`
 - High Drama action picks → `highDramaPhase<NNNNN>`
 
-Hand multi-discard also needs an `EventHandlers.js` entry so the Confirm button enables/disables on selection change.
+Hand multi-discard also needs an `EventHandlers.js` entry so the Confirm button enables/disables on selection change. Private look multi-select (draw N of looked cards) likewise needs `EventHandlers.js` exact-count enable on `chooseList` + Confirm → `onMultipleChooseListCardsConfirmed`.
 
 ### Discard-pile chooser (trait-filtered)
 

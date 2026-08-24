@@ -130,6 +130,21 @@ City Reaction on `EventLocationClaimed`:
 
 Reference: `Reaction_03041`. Button-from-location move-Renown idiom: `Reaction_01118` (Elina — sources with Renown; Proper Study flips it: fixed source, destinations).
 
+### Merchant / trait Reaction at Planning End (look → draw two → sink rest)
+
+Printed **`<b>Merchant Reaction:</b> At the end of Planning • Look at the top three … additional for each Merchant … Draw two … sink the rest.`** — this is a **Reaction**, not Pattern F Forced.
+
+1. **Trigger:** `EventPhasePlanningEnd` + `$this->isAvailable()` + scheme `Location == LOCATION_PLAYER_HOME` + ≥1 controlled Merchant (`getCharactersInPlayByPlayerId` + `hasTrait("Merchant")`) + `getCardsOnTopOfPlayerFactionDeck(..., 1)` non-empty. Skip offer when no Merchant or empty deck.
+2. **Offer:** `createReactionTransitionEvent` → Look / Pass buttons. Pass does **not** `setUsed` (event will not re-fire today). Look calls `setUsed(true)`.
+3. **Look count:** `3 + merchantCount`. Snapshot property arrays into `Game::CHOSEN_CARD` via `getCardsOnTopOfPlayerFactionDeck` (reshuffles discard when short).
+4. **Clamp:** if looked ≤2, auto-draw all looked cards and **skip** the pick state (cannot "draw two" of one). If >2, queue follow-on state.
+5. **Follow-on state:** `PLANNING_PHASE_END_<NNNNN>` under **`PLANNING_PHASE_END_EVENTS`** (same map as Forced picks — phase-scoped). Queue `createTransitionEvent($controllerId, $owner->Id, "NNNNN", $this->Id)` — **4th arg = reaction Id** so `actFromCardWithIds` → `actFromReactionWithIds` (Yevgeni `Reaction_03052` shape). Same `"NNNNN"` key may also exist on the resolve-schemes map.
+6. **Private UI:** state's `getArgs()` returns `argsForStatePrivate()`. JS reads `args.args._private.args.cards` / `cardsToDraw`. `"Look at"` ≠ Reveal — do not announce card names to all players (contrast Otto `_01038`).
+7. **Draw / sink:** for each looked id — if chosen, `createCardRemovedFromPlayerFactionDeckEvent` + `createCardAddedToHandEvent` (Otto — physical move is in hand-add handler); else `createCardAddedToFactionDeckEvent($playerId, $id, false)` (bottom of faction deck, not discard / not city discard).
+8. **JS:** `chooseList` `setSelectionMode(2)`; Confirm → `onMultipleChooseListCardsConfirmed`; `EventHandlers.js` enable when `getSelectedItems().length === clientStateArgs.cardsToDraw`. Zombie: auto-pick first `cardsToDraw` ids from `CHOSEN_CARD`.
+
+Reference: `Reaction_04025` + `State_planningPhaseEnd_04025`. Look/reorder City Deck sibling: `Reaction_03052`. Sink-from-look opponent deck: `_02005`.
+
 ### Multi-stage reactions (button-driven, no sub-state)
 
 Use this when the Reaction needs several player clicks in sequence (e.g. offer → pick target → confirm), or when the *player who clicks* changes between steps. Pattern source: `Reaction_03cd10` (Julius Caligari), `Reaction_03006` (Premonition).

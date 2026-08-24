@@ -168,6 +168,18 @@ Contrast Winter's Wind `_02046` (two sequential free picks, second optional Pass
 
 Reference: `_04014` / `State_planningPhaseResolveSchemes04014`.
 
+### City Card to fixed location + Renown to a different location
+
+When the scheme says **"Add a City Card to [The Grand Bazaar]. Then add a Renown to a different location"** (Midnight Shipment–style city card, then `_04014`-style Renown pick):
+
+1. `$cityCards = $game->getCardsOnTopOfCityDeck(1)`. If non-empty, queue `createCityCardAddedToLocationEvent((int)$cityCards[0]['id'], $fixed)`. **Cast id** — `getCardsOnTopOfCityDeck` returns raw deck rows (Penya / `_01149`).
+2. **Guard empty city deck+discard:** do not index `[0]` when count is 0 — notify and still offer the Then Renown pick. WHY: `_01149` indexes unsafely; empty-city edge should not soft-lock resolve.
+3. Queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` so the city-card event resolves before the pick state.
+4. Renown pick: `locationIds` **exclude** the fixed City Card destination. "Different" means ≠ that location even when no City Card was added.
+5. Same JS as fixed-Renown-and-another (`actFromCardWithLocations`, no `actionMap` entry).
+
+Reference: `_04025` (Bazaar + Renown elsewhere). City-card-only sibling: `_01149` (Renown + City Card to Docks, no pick).
+
 ### Character-then-City-location resolve (move your \<Trait\>)
 
 When the scheme says **"Then, move your Duelist to a City location"** (or another trait) after automatic Renown:

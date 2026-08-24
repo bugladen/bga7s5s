@@ -86,3 +86,11 @@
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04024.php` | Planning Diplomat pick (`diplomatChosen` + `zombie`). |
 | `modules/php/cards/_7s5s/_01095.php` (Patricia) | Character sibling: en garde + location → cannot be issued challenges (`eventCheck`). |
 | `modules/php/cards/faf/_03028.php` (Térence) | Character sibling: cannot issue Combat challenges (`CHALLENGE_STAT == STAT_COMBAT`). |
+| `modules/php/cards/bas/_04025.php` (No Rest for the Wicked) | **City Card to Bazaar + Renown to different location + Merchant Reaction at Planning End** (private look N / draw two / sink rest). Initiative 96 / Panache -2 / Trade+Fortune verified against art. |
+| `modules/php/cards/bas/reactions/Reaction_04025.php` | Planning-End Reaction (not Forced): Merchant gate; Look/Pass; `CHOSEN_CARD` snapshot; clamp ≤2 auto-draw; `createTransitionEvent(..., "04025", $this->Id)` for pick; Otto draw + faction-deck sink. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04025.php` | Resolve Renown pick excluding Bazaar (`actFromCardWithLocations`). |
+| `modules/php/States/bas/State_planningPhaseEnd_04025.php` | Private look multi-select (`argsForStatePrivate`); zombie auto-draws first `cardsToDraw`. |
+| `modules/php/cards/_7s5s/_01149.php` (Midnight Shipment) | City Card add to fixed location sibling (no Renown pick after). |
+| `modules/php/cards/faf/reactions/Reaction_03052.php` | Private City Deck look → sink/reorder sibling (Dusk Continuous). |
+| `modules/php/cards/tac/_02005.php` (Decipher the Strands) | Look top N (+Strega) of opponent deck → sink/reorder (resolve-time, not Planning End). |
+| `modules/php/cards/_7s5s/actions/Action_01038.php` (Otto) | Reveal-to-all + draw attachment + sink rest — draw/sink event pair sibling (**Reveal**, not Look). |
