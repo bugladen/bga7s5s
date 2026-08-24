@@ -836,6 +836,13 @@ trait ArgumentsTrait
 
     public function argsDuelUseManeuverFromCombatCard(): array
     {
+        // WHY: Maneuver isAvailableToPlayer often needs Theah (e.g. characters at the
+        // duel location). Without buildCity, $theah->cards is empty and location gates
+        // return false — empty maneuver buttons. First entry often "works" only because
+        // actDuelActionChooseManeuver built the city in the same request; Back (actBack)
+        // and page refresh do not, so the list goes empty.
+        $this->theah->buildCity();
+
         $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD);
         $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
         $round = $this->globals->get(Game::DUEL_ROUND);
