@@ -139,6 +139,51 @@ Cancel-later (delete only on Accept Cancel) races: Resolve can still fire if `Te
 
 **Persistence:** keep `$stage`, `$TechniqueId`, `$ManeuverId`, and restore context as **public** properties on the reaction (mirror `01047`). `$owner->IsUpdated = true` after every mutation.
 
+### Pressure fails instead (difference ≤1) — Pompon `_04026` / Objection `_01027`
+
+Printed (attachment): "When a pressure at this location would succeed by one or fewer, engage this card • It fails instead."
+
+Printed (Risk sibling Objection): "When a pressure succeeds with a difference of 1 or less • The pressure fails instead."
+
+**Do not route attachment versions through Objection's wealth-pay path.** Objection is a `RiskReaction` + `ICancelReaction`: `performReaction` stacks pay → `EventRiskReactionTriggered` applies the fail after payment. Attachment cost is **engage this card** — apply engage + fail in `performReaction` directly. No `ICancelReaction`, no `EventRiskReactionTriggered`.
+
+Trigger and gates:
+
+```php
+if (! ($event instanceof EventLocationPressured)) return;
+if (! $event->success || $event->difference > 1) return;
+if (! $this->isAvailable()) return;
+if (! $this->ownerIsAttached($event->theah)) return;
+
+$owner = $this->getOwningAttachment($event->theah);
+if ($owner === null || $owner->Engaged) return;  // engage cost
+
+$owningCharacter = $this->getOwningCharacter($event->theah);
+// "at this location" — omit this gate when printed text has no location clause (Objection)
+if ($owningCharacter === null || $event->location != $owningCharacter->Location) return;
+
+// WHY: Mirror Objection — only interrupt another player's pressure.
+// Printed text often omits "opponent"; failing your own success is not the intent.
+if ($event->playerId == $owner->ControllerId) return;
+```
+
+**Capture pressured context** onto the reaction at trigger time (flat fields: `playerId`, `performerId`, `location`, `pressureType`, `totalsExplanation`, `highDramaBasicAction`, `abilityId`) + `$owner->IsUpdated = true`. Needed to rebuild the failed Result after the original event is gone. Clear after Fail.
+
+**Offer transition:** `createReactionTransitionEvent` with `priority = Event::HIGH_PRIORITY` so the choice interrupts before `EventLocationPressureResult` resolves (same as Objection / cancel Techniques).
+
+**On Fail in `performReaction`:**
+1. `createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id)`
+2. Notify
+3. `$game->theah->deletePressureResultEvents()`
+4. `createLocationPressureResultEvent(..., success: false, ...)` with stored context → `queueEvent`
+5. `setUsed` + clear stored context
+
+No GameState / JS — standard `playerReaction` buttons (Fail Pressure / Pass).
+
+**Risk vs Attachment footgun:** copying Objection wholesale into an AttachmentReaction leaves a dead pay-state path and never engages the card. Copy the *pressure math* (Pressured + delete + failed Result); replace the *cost plumbing* with engage.
+
+References: `Reaction_04026` (attachment), `Reaction_01027` (Risk sibling — pressure math only).
+
 ### Self-equip Reaction ("After a Hunter or Berserker equips this card • …")
 
 When the Reaction lives **on this attachment** and triggers when **this card** is equipped:

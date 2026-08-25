@@ -29,6 +29,7 @@
 - **"After a \<Trait\> equips this card"** ≠ **"May only equip to \<Trait\>"**. Former = Reaction offer gate on the host's traits (`Reaction_04016`). Latter = Pattern A `canAttachTo` + `eventCheck(Equipping)`.
 - **"If your participant is a \<Trait\>…"** inside Technique/Action text ≠ availability / Pattern A. Resolve-time effect gate only (`Technique_04017`). Unconditional halves still fire for other hosts.
 - **Passive "when … gambles, reveal an additional card"** ≠ **Gambling Technique** keyword. Former = B''' override; latter = `DUEL_GAMBLED` availability (`_04017` has both shapes on one card — do not conflate).
+- **"Pressure fails instead" (difference ≤1)** ≠ Risk Objection pay path. Attachment versions engage in `performReaction` and rebuild a failed Result — do not `ICancelReaction` / `EventRiskReactionTriggered` (`Reaction_04026` vs `Reaction_01027`).
 
 **`EventAttachmentUnequipped` + `AttachedToId`:** EventHub clears `$attachment->AttachedToId = 0` **before** card `handleEvent` (event does not set `runEventHubAfterCards`). Any unequip cleanup that needs the former host must use `$event->characterId` (Pattern B trait remove, B'' condition clear, B''' bonus undo — `_04006`).
 
@@ -47,6 +48,7 @@ Event factories you'll likely need:
 - `createCharacterFinesseModifedEvent($playerId, $characterId, $old, $new, $reason)` — note the historical typo `Modifed` in the factory name. Siblings: `createCharacterCombatModifiedEvent`, `createCharacterInfluenceModifiedEvent`.
 - `createCharacterBeingHealedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')` — heal Reaction / Action (`Reaction_04016`, `Reaction_03027a`)
 - `createThreatModifiedEvent($challengerThreat, $defenderThreat, …)` — "each participant gains a threat" = `(1, 1)` (`Technique_04016`, `Reaction_02039`)
+- `createLocationPressureResultEvent($playerId, $performerId, $location, $pressureType, $success, $totalsExplanation, $highDramaBasicAction, $abilityId)` — rebuild pressure outcome after `deletePressureResultEvents()` (`Reaction_04026` / `Reaction_01027`); pass `success: false` to fail
 - `createTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — for attachment Actions, `$sourceId` is usually the **attachment** id
 - `createTechniqueTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — HIGHEST_PRIORITY choice interrupt (adversary discard picker, attachment destroy pick). Attachment-hosted: `$sourceId` = attachment id (`Technique_04017` / `04013`)
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
@@ -54,3 +56,5 @@ Event factories you'll likely need:
 - `createActionResolvedEvent($playerId)`
 - `createSorcererAbilityStartEvent($playerId, $sourceId, $abilityId, $performerId, $targetId = 0, $targetLocation = '')`
 - `createSorcererAbilityPlayedEvent($playerId, $sourceId, $abilityId, $performerId, $targetId = 0, $targetLocation = '')`
+
+Also: `$theah->deletePressureResultEvents()` — wipe queued `EventLocationPressureResult` before re-queueing a failed Result (`Reaction_04026`).

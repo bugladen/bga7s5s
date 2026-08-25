@@ -46,6 +46,8 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 - **Forced destroy at end of High Drama:** `EventHighDramaPhaseEnd` + unequip + discard (`_03066`). Not dusk. Unequip clears B'' conditions.
 - **"Sink this card"** on an equipped faction attachment: unequip → removeFromPlay → `createCardAddedToFactionDeckEvent(OwnerId, id, false)`. Not locker. Not hand-deck `insertCardOnExtremePosition`. Mirror `Technique_02055` / `Action_03065`. Immediate-resolve City Actions need no GameState when there is no picker.
 - **Cancel Maneuver/Technique:** Activated (not Resolve); `HIGH_PRIORITY` transitions; cancel-first when multi-stage "unless discard"; correct character/player id gates — do not copy `Reaction_01047`'s compare. See Pattern D / `_03044`.
+- **Pressure fails instead (≤1 difference):** `EventLocationPressured` → `deletePressureResultEvents` + failed Result. Attachment = engage in `performReaction`; Risk Objection = wealth pay via `ICancelReaction` — do not mix. `"at this location"` = host location match. Own-pressure gate mirrors Objection. `HIGH_PRIORITY` offer. See Pattern D / `_04026`.
+- **Engage + +N Parry** = same shape as engage + Thrust (`04017`); Calculate `parry += N` (`04026`). No GameState when no picker.
 - Namespaces:
   - Attachment class: `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>`
   - Action:           `...\cards\<expansion>\actions`

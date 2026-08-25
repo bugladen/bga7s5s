@@ -13,15 +13,15 @@ Both need:
 
 **Pre-commit hook on Technique:** same — must handle `EventTechniqueCanceled` or add the equivalent comment.
 
-References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat), `Technique_04017` (Jägerarmbrust — engage + +1 Thrust + Resolve-time Academic/Hunter adversary discard; **not** Gambling).
+References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat), `Technique_04017` (Jägerarmbrust — engage + +1 Thrust + Resolve-time Academic/Hunter adversary discard; **not** Gambling), `Technique_04026` (Pompon — engage + +1 Parry; simplest engage-stat Technique).
 
-### Engage this card + +N Thrust (normal Technique)
+### Engage this card + +N Thrust / Parry (normal Technique)
 
-When printed cost is **"Engage this card • +N [Thrust]"** and the keyword is plain `<b>Technique:</b>` (not Gambling):
+When printed cost is **"Engage this card • +N [Thrust]"** or **"Engage this card • +N [Parry]"** and the keyword is plain `<b>Technique:</b>` (not Gambling):
 
 1. Availability: `IN_DUEL` + `! $attachment->Engaged` + duel actor == owning character. **No** `DUEL_GAMBLED`.
 2. Resolve: `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)`.
-3. Calculate: `EventDuelCalculateTechniqueValues` → `$event->thrust += N` + explanation. Mirror `Technique_03018` / `Technique_02023` — do **not** require `EventGenerateChallengeThreat` when the Technique is duel-only (`IN_DUEL` gate).
+3. Calculate: `EventDuelCalculateTechniqueValues` → `$event->thrust += N` **or** `$event->parry += N` + explanation. Mirror `Technique_04017` (Thrust) / `Technique_04026` (Parry) / `Technique_03018` / `Technique_02023` — do **not** require `EventGenerateChallengeThreat` when the Technique is duel-only (`IN_DUEL` gate). No GameState when there is no picker.
 
 **Passive gamble reveal on the same card is unrelated.** "When the equipped character gambles, reveal an additional card" is Pattern B''' on the attachment class (`_01101` / `_04017`). It does **not** turn the Technique into a Gambling Technique.
 
