@@ -289,6 +289,22 @@
                 }
             },
 
+            'highDramaPhase04027': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04027_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04009': () => {
                 if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

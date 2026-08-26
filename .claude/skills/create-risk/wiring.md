@@ -72,6 +72,8 @@ Pattern reference for the trio: `highDramaPhase03cd01_2` (Penya — location cho
 
 **Multi-player hand discard** (Pattern B.5 / Denounced `_04005_2` / Patricia `_01095`): GameState is `MULTIPLE_ACTIVE_PLAYER`. Entering: `setPlayersMultiactive($playerIds, "multipleOk")` — **all** discarders are active concurrently (BGA does **not** pass a single turn around). Leaving each player: `setPlayerNonMultiactive($playerId, 'multipleOk')`. JS: `factionHand.setSelectionMode('single')` + `actChooseDiscardCard` / `onCardDiscarded` + `EventHandlers.js` enable when selection length &gt; 0. Mirror `highDramaPhase04005_2` / `highDramaPhase04018_2`.
 
+**Engage / Decline buttons when decline has a concrete stake (Pattern B.7 / Yield `_02020_3`):** prefer labeled `Engage` + `Decline and Claim` (or `Decline and Wound`) over a generic Pass when the alternate effect is claim/wound — opponent must see the stake. Wrath `_01034` Pass is fine when the alternate is soft (en garde your performer). bas/faf/tac `OnUpdateActionButtons`: `actFromCardWithId` `{id: 1}` / `{id: 2}`. Highlight both performer and target on enter (Yield `02020_3` shape).
+
 **Skip the JS trio** when the chooser lives entirely in `playerReaction` button properties (Pattern D.1 / D.1.1 — e.g. Confusion `_03068` character then city-location buttons). Those need no GameState and no On*.js handlers; inventing Action-style board-highlight scaffolding is a regression trap.
 
 ## Pre-Commit Hook Compliance
@@ -103,7 +105,7 @@ A Risk card that both extends `Risk` AND has Actions/Maneuvers/Reactions in sepa
 - **State ID convention:** `4<NNNNN>` for High-Drama player-turn states owned by a card. (Memory feedback.)
 - **"Opposing"** means BOTH different controller AND same location.
 - **Modified stats** (`ModifiedInfluence`, `ModifiedFinesse`, …) — use these for live comparisons, not the printed base values.
-- **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
+- **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order. Stub hygiene: `Bureaucracy` not `Beauracracy`; Montaigne faction stubs sometimes typo `Montagne` — fix to `Montaigne`.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
 - **"Strega" / "Mercenary" / "Diplomat" / "Duelist" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the performer / `getDuelRoundActor()`. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack.
 - **`IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters`** — mark when printed text says **"Target"/"target"** (Rules Team + Cesca `Reaction_01008`). The interface is not merely "has a character chooser UI" — `_03060` heals "another character" without "target", `_03069` swaps with "your other character" without "target", and both must **not** implement either (and must not be on Cesca's copy whitelist). Compare `_01083`, `_01115`, `_03008`, `_03011`, `_03034`. Skip for location-only / hand-discard / fixed-trigger choosers.

@@ -174,6 +174,16 @@
                 });
             },
 
+            'highDramaPhase04027': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase04027_2': () => {
+                this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actDecline`, _('Decline and Claim'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'highDramaPhase04009': () => {
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));

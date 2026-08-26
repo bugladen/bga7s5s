@@ -241,3 +241,38 @@ Also require `!$attachment->Engaged` and `$attachment->AttachedToId == $performe
 
 References: `_04019` / `Action_04019` / `State_highDramaPhase04019`; attachment filter `Action_02020`; challenge target `Action_01083`; Back hide `NO_MORE_WORDS_CHALLENGE_TYPE` + `FrameworkActionsTrait::actBack`.
 
+### Pattern B.7 — En Garde Action: Target opposing non-Leader en garde • they may engage or you claim
+
+Printed (A Costly Accord `_04027`): **`<b>En Garde Diplomat Action:</b> Target an opposing non-<b>Leader</b> that is en garde • They may engage. If they do not, claim this location.`**
+
+This is **not** A.5 (claim-on-refuse after a challenge — no `CHALLENGE_TYPE`), **not** B.6 (no attachment Engage / challenge), and **not** D.1.2 (RiskReaction Engage-or-wound). Same family as Yield `_02020` / Duckfoot `_01049` / Wrath `_01034` "they may engage" — decline consequence here is **you claim**, not wound / engarde performer.
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"Target"**).
+2. **Heading gates stack:** En Garde → `!$Engaged`; **Diplomat** (or other trait in the heading) → `hasTrait("Diplomat")`. Start from `parent::getPerformersForAction` (plain Action — home eligible). Filter performers with ≥1 valid target.
+3. **Targets:** opposing at performer location (`getOpposingCharactersAtLocation`), `! hasTrait("Leader")`, en garde (`!$Engaged`).
+4. **`EventActionTriggered`:** transition `"NNNNN"` to character-chooser GameState (bas JS trio: highlight performer + `highlightCardsAsSelectable` + Confirm).
+5. **On target confirm:** set `CHOSEN_TARGET`; transition `"NNNNN_2"` with **target's ControllerId** as the transition `playerId` (opponent becomes active).
+6. **State `_2` — labeled Engage / Decline buttons** (mirror Yield `highDramaPhase02020_3`):
+   - `id == 1` → `createCardEngagedEvent` on the target (voluntary engage — use target's ControllerId as the engage `playerId`).
+   - `id == 2` → notify decline; if `cardInCity($performer)` **and** `canLocationBeClaimedBy($performer->ControllerId, $location)` → `createLocationClaimedEvent($performer->ControllerId, $performer->Id, $location)`; else notify cannot claim.
+7. **WHY labeled Decline+Claim, not Pass:** Wrath `_01034` uses Pass when the alternate is soft ("en garde your performer"). When decline has a concrete location claim, label the button so the opponent sees the stake (Yield uses "Decline and Wound").
+8. **WHY `ActionResolved` after the opponent chooses:** the printed effect *is* engage-or-claim. Contrast Yield `_02020` / Seek `_04018`, which fire ActionResolved once costs / primary move are locked and treat the opponent response as trailing. Do **not** resolve before `"NNNNN_2"`.
+9. **WHY claimability only at decline emit:** engage may still happen when the location is unclaimable — same discipline as Censure `_03057` / Ambitious `_03067`. Do **not** grey the Action on `canLocationBeClaimedBy`.
+10. **No `CHALLENGE_TYPE`:** this never enters the challenge pipeline. Do not clone A.5 correlator plumbing.
+11. **Wire:** `"NNNNN"` / `"NNNNN_2"` → GameState classes under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. bas JS: character-chooser trio for step 1; step 2 highlight performer + target + Engage / Decline and Claim buttons.
+12. **Stub hygiene:** Traits use `Bureaucracy` (not `Beauracracy`); Montaigne faction stubs sometimes typo `Montagne` — fix to `Montaigne`.
+
+**Contrast:**
+
+| | Yield `_02020` | Wrath `_01034` | A.5 Censure `_03057` | B.7 `_04027` |
+|---|---|---|---|---|
+| Base | `RiskCityAction` | `RiskAction` | `RiskCityAction` | `RiskAction` |
+| Cost before choice | Engage attachment | Wound performer | Engage performer + challenge | None (En Garde precondition only) |
+| Opponent UI | Engage / Decline and Wound | Engage / Pass | Challenge accept/refuse | Engage / Decline and Claim |
+| Decline effect | Wound target | En garde performer | Claim via `EventChallengeRejected` | Claim via Action act |
+| ActionResolved | After attachment paid (before response) | After opponent chooses | Challenge pipeline | After opponent chooses |
+
+References: `_04027` / `Action_04027` / `State_highDramaPhase04027` + `_2`; Yield buttons `Action_02020` / `highDramaPhase02020_3`; claim emit `Action_03057` / `_03057`; Cesca Target `Action_04018`.
+
