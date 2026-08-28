@@ -74,6 +74,8 @@ Pattern reference for the trio: `highDramaPhase03cd01_2` (Penya — location cho
 
 **Engage / Decline buttons when decline has a concrete stake (Pattern B.7 / Yield `_02020_3`):** prefer labeled `Engage` + `Decline and Claim` (or `Decline and Wound`) over a generic Pass when the alternate effect is claim/wound — opponent must see the stake. Wrath `_01034` Pass is fine when the alternate is soft (en garde your performer). bas/faf/tac `OnUpdateActionButtons`: `actFromCardWithId` `{id: 1}` / `{id: 2}`. Highlight both performer and target on enter (Yield `02020_3` shape).
 
+**Character chooser → location chooser with Back (Pattern B.8 / `_04028`, also `_02025`):** step 1 GameState transitions `characterChosen` **directly** to `_2` (not through EVENTS). Only `"NNNNN"` needs an entry under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Step 2: `actBack` + `actFromCardWithLocations`; highlight performer + target as chosen on enter; mirror `highDramaPhase02025_2` JS.
+
 **Skip the JS trio** when the chooser lives entirely in `playerReaction` button properties (Pattern D.1 / D.1.1 — e.g. Confusion `_03068` character then city-location buttons). Those need no GameState and no On*.js handlers; inventing Action-style board-highlight scaffolding is a regression trap.
 
 ## Pre-Commit Hook Compliance

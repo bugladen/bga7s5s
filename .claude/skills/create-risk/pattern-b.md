@@ -276,3 +276,48 @@ This is **not** A.5 (claim-on-refuse after a challenge — no `CHALLENGE_TYPE`),
 
 References: `_04027` / `Action_04027` / `State_highDramaPhase04027` + `_2`; Yield buttons `Action_02020` / `highDramaPhase02020_3`; claim emit `Action_03057` / `_03057`; Cesca Target `Action_04018`.
 
+### Pattern B.8 — En Garde Action: Target opposing • move both to controlled or Leader City location
+
+Printed (Depose `_04028`): **`<b>En Garde Musketeer Action:</b> Target an opposing character • Move them and your performer to a <b>City</b> location you control, or one where you control a <b>Leader</b>.`**
+
+This is **not** B.5 (moves only the performer to the target's location / adjacent-enemy scan), **not** B.1 (location chooser only — no character Target), and **not** the adjacent-only move-both of Tea and Cakes `_02025` / Giacinto `_01205` (those use `getAdjacentCityLocations`; Depose omits "adjacent").
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"Target"** opposing character).
+2. **Heading gates stack:** En Garde → `!$Engaged`; **Musketeer** (or other trait in the heading) → `hasTrait(...)`. Start from `parent::getPerformersForAction` (plain Action — home eligible).
+3. **Targets:** opposing at performer location (`getOpposingCharactersAtLocation`) — no adjacent scan, no Leader/non-Leader filter unless printed.
+4. **Destinations** (second chooser — iterate **all** city locations, not adjacency):
+
+```php
+foreach ($theah->getCityLocations() as $cityLocation) {
+    $name = $cityLocation->Name;
+    if ($name === $performer->Location) continue; // WHY: "Move … to" — same spot is a no-op
+    $youControl = $theah->game->getControllerForLocation($name) == $performer->ControllerId;
+    $leaderThere = ($leader = $theah->getLeaderByPlayerId($performer->ControllerId)) !== null
+        && $leader->Location === $name;
+    if ($youControl || $leaderThere) { /* offer */ }
+}
+```
+
+5. **Availability:** grey the Action when the performer has opposing targets but **zero** legal destinations (same discipline as B.1 "has ≥1 valid destination").
+6. **Two-step flow** (mirror `_02025` JS, different destination predicate):
+   - `"NNNNN"` → character-chooser GameState (`characterChosen` → `_2` **direct** on the GameState — do **not** route `_2` through `HIGH_DRAMA_PLAYER_TURN_EVENTS` unless you need an active-player swap).
+   - `"NNNNN_2"` → location-chooser GameState with **Back** to step 1 (`actBack` / `highDramaPhase02025_2` shape).
+7. **On location confirm:** shared `batchId`; queue target move then performer move — both `engage=false` (En Garde heading is precondition only; no printed Engage cost). `eventCheck` both; `createActionResolvedEvent` on confirm.
+8. **WHY move target first:** matches `_02025` / `_01205` ordering; both share destination and `batchId`.
+9. **"Where you control a Leader":** your Leader **character** at that location (`getLeaderByPlayerId` + `Location` match) — distinct from claim-control alone (you may move to an uncontrolled spot where your Leader sits).
+10. **Wire:** `"NNNNN"` only under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`; define both GameState classes + `States::HIGH_DRAMA_PLAYER_TURN_NNNNN` / `_NNNNN_2`. bas JS trio: character Confirm on step 1; `makeCityLocationSelectable` + Back + Confirm Location on step 2 (highlight performer + target as chosen).
+
+**Contrast:**
+
+| | B.5 `_04018` | B.1 `_03045` | `_02025` Tea and Cakes | B.8 `_04028` |
+|---|---|---|---|---|
+| Target | Adjacent enemy | N/A (location) | Opposing (Influence ≤) | Opposing (same location) |
+| Who moves | Performer only | Performer only | Target + performer | Target + performer |
+| Destination | Target's location | Adjacent claim-controlled | Adjacent City | Any City you control **or** Leader at |
+| Adjacency | Yes (target scan) | Yes | Yes | **No** |
+| Cesca | Yes | No | Yes | Yes |
+
+References: `_04028` / `Action_04028` / `State_highDramaPhase04028` + `_2`; move-both + batchId `Action_02025` / `Action_01205`; destination claim-control `Action_03045`; En Garde precondition `_04018`.
+

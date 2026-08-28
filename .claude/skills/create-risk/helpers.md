@@ -32,7 +32,7 @@
 - `$character->Wounds` — current wound count (not a Modified* field). Pattern E "more wounds than" discounts compare this directly (`Maneuver_04007a`).
 - `$this->getInjectCode(): string` — inline-styled card name for notifications.
 - `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claim gate (reads `CityLocation->CanBeClaimed`; Leshiye / Indomitable Will flip it off). Use at availability **and** emit sites for effects whose *whole* point is the claim. For Pattern A.5 refuse→claim, Pattern A.8 pressure→claim-on-success, **and** Pattern B.7 decline→claim, gate the **emit** only — do not grey the Action when claim is currently illegal (the challenge/pressure/engage choice still plays). `$playerId` is reserved for future per-player rules — still pass the claimer's id.
-- `$game->getControllerForLocation(string $location): int` — claim-control owner (`0` = uncontrolled). Distinct from "enemy character present." For "fewer locations than an opponent" counts, tally `$location->Controller == $playerId` over `getCityLocations()` instead.
+- `$game->getControllerForLocation(string $location): int` — claim-control owner (`0` = uncontrolled). Distinct from "enemy character present." For "fewer locations than an opponent" counts, tally `$location->Controller == $playerId` over `getCityLocations()` instead. Pattern B.8 (`_04028`) also pairs this with **your Leader at the location** (`getLeaderByPlayerId($playerId)->Location === $name`) for "or one where you control a Leader" — Leader presence and claim-control are separate OR branches.
 
 Event factories you'll likely need:
 - `createTransitionEvent($playerId, $sourceId, string $internalId, ?int $abilityId = null)` — move into a sub-state via the `*_EVENTS` transitions table.
