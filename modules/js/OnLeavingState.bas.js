@@ -289,6 +289,28 @@
                 }
             },
 
+            'highDramaPhase04029': () => {
+                if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04029_2': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.getCards().forEach((card) => {
+                        const cardElement = this.factionHand.getCardElement(card);
+                        if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
+                            dojo.removeClass(cardElement, '_7sfs-unselectable');
+                            dojo.destroy(`${cardElement.id}_wealth_cost`);
+                        }
+                    });
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                }
+            },
+
             'highDramaPhase04027': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
