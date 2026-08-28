@@ -59,6 +59,11 @@ class _01047 extends FactionAttachment implements IHasReactions, IHasTechniques
         ];
     }
 
+    public function canBeMoved(): bool
+    {
+        return false;
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);

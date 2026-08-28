@@ -76,7 +76,7 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
                 }
 
                 [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($performer, $attachment);
-                if ($hasRestrictions || ! $attachment->canAttachTo($performer))
+                if ($hasRestrictions || ! $attachment->canAttachTo($performer) || ! $attachment->canBeMoved())
                 {
                     continue;
                 }

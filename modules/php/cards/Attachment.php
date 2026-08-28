@@ -89,5 +89,13 @@ abstract class Attachment extends Card implements IWealthCost
     {
         return true;
     }
+
+    // WHY: Default true. Kaspar's Panzerhand (_01047) overrides when printed text
+    // blocks moving while equipped. Take-control steal flows (unequip → hand → equip)
+    // filter with this; discard-pile retrieval is not "moving" an equipped attachment.
+    public function canBeMoved(): bool
+    {
+        return true;
+    }
     
 }
