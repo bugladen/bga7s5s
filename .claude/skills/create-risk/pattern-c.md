@@ -588,7 +588,7 @@ Do **not** "fix" this by re-emitting `EventDuelCalculateManeuverValues` after th
 
 #### Pure-calc variant: no `EventResolveManeuver` handler needed
 
-When both branches are pure stat mutations (no wound / draw / transition), skip `EventResolveManeuver` entirely. The calc-event branch on the stored choice is the entire effect. Reference: `Maneuver_03024` (both branches are +2 stat).
+When both branches are pure stat mutations (no wound / draw / transition), skip `EventResolveManeuver` entirely. The calc-event branch on the stored choice is the entire effect. Reference: `Maneuver_03024` (+2/+2, Sorcerer/Monster gate), `Maneuver_04030` (+1/+1, no gate).
 
 #### Choice-with-side-effect variant: queue side effects in `actFromManeuverWithId`
 
@@ -610,7 +610,7 @@ Reference: `Maneuver_03035` (Loyal).
 
 If the maneuver has any cross-round state beyond the choice (a `next-round` modifier, an `IsActive` flag), reset it in both `EventManeuverCanceled` AND `EventDuelEnd` (and `EventDuelEndOfRound` for "next round only" effects). The choice field itself only needs `EventManeuverCanceled` reset — the next activation will overwrite it. Multi-step: also clear `$WoundTargetId` (etc.) on cancel.
 
-References: `Maneuver_01135` (template; choice gates a side-effect branch with cross-round Thrust reduction), `Maneuver_03024` (Superstitious — pure-calc Sorcerer/Monster gate variant), `Maneuver_03035` (Loyal — multi-step wound cost + Riposte/Thrust choice).
+References: `Maneuver_01135` (template; choice gates a side-effect branch with cross-round Thrust reduction), `Maneuver_03024` (Superstitious — pure-calc +2/+2, Sorcerer/Monster gate), `Maneuver_04030` (Tip the Scales — pure-calc +1/+1, no gate), `Maneuver_03035` (Loyal — multi-step wound cost + Riposte/Thrust choice).
 
 ### Pattern C.1 — Final Strike maneuver (post-death effect; optionally with player choice)
 

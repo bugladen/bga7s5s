@@ -383,6 +383,30 @@ For City Actions like **"City Action: Destroy all engaged attachments equipped t
 
 References: `_03072` / `Action_03072` / `State_highDramaPhase03072` / `Maneuver_03072`, `Technique_02026b` (choose-one engaged destroy), `Action_03038b` (unequip+discard destroy), contrast A.9 (engage *character*, no Target / no Cesca).
 
+### Pattern A.11 — Move performer to adjacent City with more Renown
+
+For City Actions like **"City Action: Move your performer to an adjacent City location with more Renown."** — see `_04030` (Tip the Scales). Contrast `_01059` (any adjacent City — no Renown filter) and `Action_02023` (move *opposing* to adjacent with **less** Renown — inverse compare on a character target, not a performer self-move).
+
+1. **`RiskCityAction`**, `RequiresPerformerSelected = true`. **No** `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters` — location chooser only (same JS trio as `03009` / `04004`).
+2. **Performer filter:** city performers (`RiskCityAction` base) with ≥1 valid destination from `getValidDestinations`.
+3. **Destination filter:**
+   ```php
+   $performerLocation = $theah->getCityLocation($performer->Location);
+   foreach ($theah->getAdjacentCityLocations($performer->Location, false) as $name) {
+       $adj = $theah->getCityLocation($name);
+       if ($adj !== null && $adj->Renown > $performerLocation->Renown) { /* valid */ }
+   }
+   ```
+   Strict `>` — "more Renown", not equal. `$includeHome = false` (adjacent **City** location).
+4. **`EventActionTriggered`:** `createTransitionEvent(..., "NNNNN")` → location GameState (`actFromCardWithLocations`, `"locationChosen"`). **`actFromActionWithIds`:** validate destination still valid → `createCardMovingEvent` on performer (`engage=false`) → `createActionResolvedEvent`.
+5. **Grey Action** when performer is at a local Renown peak among adjacent city locations (zero valid destinations).
+
+**WHY not B.1:** B.1 filters on **claim control** (`getControllerForLocation`). This text filters on **Renown comparison** only — a location can qualify while uncontrolled or opponent-controlled.
+
+**WHY not B.5:** B.5 is character Target + move performer to target's spot. A.11 is self-move with no Target wording.
+
+References: `_04030` / `Action_04030` / `State_highDramaPhase04030`, `_01059` (adjacent move baseline), `Action_02023` (inverse less-Renown on opposing move).
+
 ### Common precondition predicates
 
 A few wordings recur often:

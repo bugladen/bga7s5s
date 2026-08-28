@@ -90,7 +90,9 @@ if ($action->Id == $this->Id)
 }
 ```
 
-**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), `_03071` (Leverage), and `_04018` (Seek Each Devil) all print a general "-1 cost if …" clause with only an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability. If Eddie later asks for combat-card parity, *then* add `getManeuverFromCombatCardDiscount` on a real Maneuver (or a dedicated discount Maneuver with Eddie's OK).
+**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), `_03071` (Leverage), and `_04018` (Seek Each Devil) all print a general "-1 cost if …" clause with **only** an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability.
+
+**When the Risk also prints a real Maneuver** and the card-level "-1 cost while your performer is …" clause should apply at combat-card pay too, see Pattern E.2.1 — do not leave combat-card at full WealthCost if the user/rules expect parity across both pay paths.
 
 **Gates:**
 - `$action->Id == $this->Id` (sticky discount must not leak to other hand Actions).
@@ -100,6 +102,50 @@ if ($action->Id == $this->Id)
 **Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, wounds comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader- / performer-trait discounts on Action-only cards belong on the Action.
 
 References: `Action_03071`, `Action_01160`, `Action_01159`, `Action_04018` (performer Academic/Hunter).
+
+### Pattern E.2.1 — Card-level performer-trait "-1 cost" with **both** City Action and Maneuver
+
+When printed text says **"While your performer is a [Trait], this card has -1 cost"** (or "… or …") as a **card-level** clause and the Risk prints **both** a City Action **and** a Maneuver, the framework has **two separate pay channels** — there is no single Risk-class hook at pay time. Implement **both**:
+
+| Pay path | Hook | "Performer" at discount time |
+|---|---|---|
+| City Action from hand | `getActionFromHandDiscount` on the **Action** | `$performer` (chosen performer; null-check) |
+| Combat card / Maneuver from hand | `getManeuverFromCombatCardDiscount` on the **Maneuver** | `$theah->getDuelRoundActor()` (duel participant; null-check) |
+
+```php
+// Action_04030 — City Action pay
+if ($action->Id == $this->Id && $performer !== null
+    && ($performer->hasTrait('Merchant') || $performer->hasTrait('Scoundrel')))
+{
+    $discount += 1;
+    // ... explanation
+}
+
+// Maneuver_04030 — combat-card pay
+$owner = $this->getOwningCard($theah);
+if ($owner->Id == $combatCard->Id)
+{
+    $actor = $theah->getDuelRoundActor();
+    if ($actor !== null
+        && ($actor->hasTrait('Merchant') || $actor->hasTrait('Scoundrel')))
+    {
+        $discount += 1;
+        // ... same explanation wording as Action path
+    }
+}
+```
+
+**WHY two hooks, not Action-only E.2:** `Card::getManeuverFromCombatCardDiscount` iterates Maneuvers at combat-card pay — it never calls `getActionFromHandDiscount`. Conversely, Action pay never consults Maneuver discount hooks. Duplicating the clause on both ability objects is correct; putting it only on the Action leaves Maneuver pay at full `WealthCost` (regression on `_04030`).
+
+**WHY not put performer-trait discount on the Risk class:** same as Pattern E — no Risk-class channel at either pay time.
+
+**WHY `getDuelRoundActor()` for Maneuver path:** at combat-card pay, "your performer" = your duel participant for this round — the same role `$performer` plays during a City Action.
+
+**Single Maneuver discipline:** hang `getManeuverFromCombatCardDiscount` on the one real Maneuver (same as wounds discount on `Maneuver_04007a` only). Do not duplicate on dual a/b Maneuvers.
+
+**Contrast E.2:** Action-only Risks (`_01159`, `_04018`) need only the Action hook. **Contrast Pattern E Maneuver discounts:** duel-relative predicates (wounds, Finesse, `DUEL_GAMBLED`, engaged adversary) belong on Maneuvers only — they do not need an Action mirror.
+
+Reference: `_04030` / `Action_04030` / `Maneuver_04030`.
 
 ### Pattern E.1 — Forced on the Risk class (no player choice)
 
