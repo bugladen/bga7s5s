@@ -99,6 +99,18 @@ public function actFromCardWithLocations(string $locations): void
 
 There is no `clearCityLocationAsSelectable` function — that's a hallucinated name. The existing helper is `resetCityLocations()` (in `modules/js/Utilities.js`), which strips `_7sfs-selectable` / `_7sfs-selected` / `_7sfs-chosen` and the pointer cursor from every active city location element (plus the player Home endcap). Every existing location-picker cleanup in `OnLeavingState.tac.js` uses it; mirror that.
 
+### chooseList read-only acknowledge (ACTIVE_PLAYER — show revealed cards)
+
+For High Drama text where **the action owner must see a public hand reveal in chooseList** (not only log inject codes) — Giacinto `_04032_4`:
+
+- State type = **ACTIVE_PLAYER** for the viewer (usually Owner). **Not** `MULTIPLE_ACTIVE_PLAYER` + `stMultiPlayerInitCardRevealAcknowledge*` — auto-ack pref / zombies clear seats and the state leaves immediately.
+- `OnEnteringState`: unhide `choose_container` / `chooseList`; `addCardToDeck` each `args.args.args.cards`; `setSelectionMode(0)`.
+- `OnUpdateActionButtons`: Ok → `bgaPerformAction('actPass', {})` where the state's `actPass` only `nextState("ok")` (avoid `Game::actPass` "passes" log).
+- `OnLeavingState`: hide/clear chooseList.
+- After Ok, if another player must act (hand-owner discard), use a **GAME** bridge state to `changeActivePlayer` then enter the picker (01192_2) — do not rely on activeplayer `onEnteringState` alone.
+
+Contrast: duel public multi-ack (`Technique_03043`); private look (`Technique_03052` + `argsForStatePrivate`).
+
 ### chooseList sink / reorder — `EventHandlers.js` is mandatory
 
 `OnEnteringState` + `OnUpdateActionButtons` alone are **not** enough for chooseList multi-select or reorder chips. Selection clicks route through `EventHandlers.js` → `onChooseCardClicked`. The **default** else branch only enables Confirm when `getSelectedItems().length === 1` and never calls `addSortTagToCard`.

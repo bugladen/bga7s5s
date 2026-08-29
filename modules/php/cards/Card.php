@@ -118,6 +118,18 @@ abstract class Card
         return $args; 
     }
 
+    public function actFromCardRevealHand(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        if ($this instanceof IHasActions)
+        {
+            $action = $this->getActionById($internalId);
+            if ($action)
+            {
+                $action->actFromActionRevealHand($game, $state, $stateName);
+            }
+        }
+    }
+
     public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void 
     { 
         if ($this instanceof IHasActions)

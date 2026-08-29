@@ -17,6 +17,8 @@ abstract class Action
 
     public function actFromActionPass(Game $game, int $state): void { }
 
+    public function actFromActionRevealHand(Game $game, int $state, string $stateName = ''): void { }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void  { }
     
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  { }

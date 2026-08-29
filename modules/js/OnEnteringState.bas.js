@@ -484,6 +484,73 @@
                 }
             },
 
+            'highDramaPhase04032': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase04032_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(args.args.args.characterId);
+                    this.clientStateArgs.characterId = args.args.args.characterId;
+                }
+            },
+
+            'highDramaPhase04032_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(args.args.args.characterId);
+                    this.clientStateArgs.characterId = args.args.args.characterId;
+                }
+            },
+
+            'highDramaPhase04032_4': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+
+                const playerName = args.args.args.playerName || '';
+
+                (args.args.args.cards || []).forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+
+                const translated = dojo.string.substitute(
+                    _("${playerName}'s Revealed Hand"),
+                    { playerName: playerName }
+                );
+                $('choose_container_name').innerHTML = translated;
+                this.chooseList.setSelectionMode(0);
+            },
+
+            'highDramaPhase04032_5': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const cardIds = (args.args.args.cardIds || []).map((id) => parseInt(id, 10));
+                    const selectable = this.factionHand.getCards().filter((card) => cardIds.includes(parseInt(card.id, 10)));
+                    this.factionHand.setSelectionMode('single');
+                    this.factionHand.setSelectableCards(selectable);
+
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.highlightCharacterChosen(args.args.args.characterId);
+                    this.clientStateArgs.characterId = args.args.args.characterId;
+                }
+            },
+
             'highDramaPhase04009': () => {
                 if (this.isCurrentPlayerActive() && args.args.args.performerId) {
                     this.highlightCharacterChosen(args.args.args.performerId);

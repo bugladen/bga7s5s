@@ -358,6 +358,47 @@
                 }
             },
 
+            'highDramaPhase04032': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04032_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04032_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04032_4': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+
+            'highDramaPhase04032_5': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04009': () => {
                 if (this.isCurrentPlayerActive() && this.clientStateArgs.performerId) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

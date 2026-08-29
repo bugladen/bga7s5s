@@ -168,6 +168,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.SILVER_SPINE_ABILITY_USED = 'Silver Spine Ability Used';
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
+            this.GIACINTO_INFLUENCE_REDUCTION_CONDITION = 'Influence Reduced by Giacinto';
             this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
             this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
             this.FORGED_FOR_BATTLE_CONDITION = 'Finesse Modified by Forged for Battle';

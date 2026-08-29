@@ -210,6 +210,32 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'highDramaPhase04032': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase04032_2': () => {
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                if (args.args && args.args.canRevealHand) {
+                    this.addActionButton('actRevealHand', _('Reveal Hand'), () => this.bgaPerformAction('actFromCardRevealHand', {}));
+                }
+            },
+
+            'highDramaPhase04032_3': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'highDramaPhase04032_4': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.bgaPerformAction('actPass', {}));
+            },
+
+            'highDramaPhase04032_5': () => {
+                this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onChooseHandCardConfirmed());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             'duelResolveManeuver_04030': () => {
                 this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 1}));
                 this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 2}));

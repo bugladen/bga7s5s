@@ -363,6 +363,24 @@ For text like "While Benci is opposed by two or more wounded characters, he gain
 
 Reference: `_04001` Benci; Ise `_03016` (flag); Angeline `_03026` (location timing).
 
+### Opposing trait −N Influence at Owner's location
+
+For text like Giacinto `_04032` ("Opposing **Sorcerers** have −1[Influence]"):
+
+This is a **debuff aura on opposing characters**, not a self-buff. Mirror Contempt and Hatred `_01143` for the apply/remove/condition/notif machinery, but scope like Benci/Axelle (location + opposing), not global.
+
+1. **Track debuffed character ids** on the aura source (survive via `IsUpdated`).
+2. **Apply** −N via `createCharacterInfluenceModifiedEvent` + a named `Game::*_CONDITION` string + `conditionsApplied` notif on each newly qualifying Sorcerer.
+3. **Remove** +N + `conditionsRemoved` when they leave scope (move away, lose Sorcerer, Owner leaves, etc.).
+4. **Eligible set** = opposing (`getOpposingCharactersAtLocation` / controller mismatch) + `hasTrait("Sorcerer")` at **Owner's current location**.
+5. **Home → empty list** — same shared-`LOCATION_PLAYER_HOME` trap as Benci. Clear every debuff when Owner moves Home; skip muster/recruit hooks while Owner is at Home.
+6. **Stale-DB on `EventCardMoved`** — Angeline exclude-out / include-in when recounting who shares Owner's location.
+7. **Lifecycle hooks** — move / muster / approach / destroy / recruit / Owner sent to locker (clear all).
+
+WHY not global `_01143`: printed "Opposing" in this codebase always means same location + different controller. A city-wide Influence tax would over-hit.
+
+Reference: `_04032` Giacinto; condition/notif sibling `_01143`; location opposing siblings `_04001` Benci / `_04022` Axelle.
+
 ### Location Technique grant aura — "Your other characters at this location gain: Technique: …"
 
 For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"), Stranahan `_02022` ("Your Musketeers … gain Lethal"), or Yepikhodov `_03051` ("Your other characters … gain Technique: Engage … Copy …"). This is a **card-class `handleEvent` passive**, not a Reaction and not a Technique mounted on the aura source himself (unless the printed text also gives him the Technique).

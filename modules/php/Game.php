@@ -92,6 +92,7 @@ class Game extends \Bga\GameFramework\Table
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
     final const LET_BYGONES_BE_BYGONES = "Let Bygones Be Bygones";
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
+    final const GIACINTO_INFLUENCE_REDUCTION_CONDITION = "Influence Reduced by Giacinto";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
     // WHY: Forged for Battle (_04014) +1 Finesse for the duration of a challenge/intervention.

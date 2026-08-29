@@ -1895,6 +1895,34 @@ trait FrameworkActionsTrait
         $card->actFromCardPass($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId);
     }
 
+    public function actFromCardRevealHand(): void
+    {
+        $this->theah->buildCity();
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($actionId, 0, strpos($actionId, "_"));
+
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+        }
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
+        }
+
+        $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
+        }
+
+        $card->actFromCardRevealHand($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId);
+    }
+
     public function actFromCardWithId(int $id)
     {
         $this->theah->buildCity();
