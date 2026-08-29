@@ -27,9 +27,9 @@ class Action_01187 extends AttachmentAction
 
         $smuggledItem = $this->getOwningCard($theah);
         $attachmentsInHand = $theah->game->getAttachmentsInHand($smuggledItem->ControllerId);
-        $attachmentsInPlay = $theah->getAvailableAttachmentsAtLocation($smuggledItem->Location);
+        $attachmentsInCity = $theah->getAvailableAttachmentsInCity();
 
-        return count($attachmentsInHand) > 0 || count($attachmentsInPlay) > 0;
+        return count($attachmentsInHand) > 0 || count($attachmentsInCity) > 0;
     }
 
     public function handleEvent(Event $event)

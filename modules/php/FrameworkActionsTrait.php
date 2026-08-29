@@ -612,8 +612,19 @@ trait FrameworkActionsTrait
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
+        $equipType = $this->globals->get(Game::EQUIP_TYPE);
 
-        if ($attachment->Location != $performer->Location) {
+        if ($equipType == Game::SMUGGLED_ITEM_EQUIP_TYPE)
+        {
+            $attachmentsInCity = $this->theah->getAvailableAttachmentsInCity();
+            $attachmentIds = array_map(fn($cityAttachment) => $cityAttachment->Id, $attachmentsInCity);
+            if (! in_array($attachmentId, $attachmentIds))
+            {
+                throw new \BgaUserException(clienttranslate("Attachment is not available in the City."));
+            }
+        }
+        else if ($attachment->Location != $performer->Location)
+        {
             throw new \BgaUserException(clienttranslate("Attachment is not at Performer's Location."));
         }
 
@@ -663,11 +674,23 @@ trait FrameworkActionsTrait
         }
         else if ($attachment->Location != Game::LOCATION_HAND)
         {
-            $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
-            $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
+            if ($equipType == Game::SMUGGLED_ITEM_EQUIP_TYPE)
+            {
+                $attachmentsInCity = $this->theah->getAvailableAttachmentsInCity();
+                $attachmentIds = array_map(fn($cityAttachment) => $cityAttachment->Id, $attachmentsInCity);
+                if (! in_array($attachmentId, $attachmentIds))
+                {
+                    throw new UserException(clienttranslate("Attachment is not available in the City."));
+                }
+            }
+            else
+            {
+                $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
+                $attachmentIds = array_map(function($attachment) { return $attachment->Id; }, $attachmentsAtLocation);
 
-            if (!in_array($attachmentId, $attachmentIds)) {
-                throw new UserException(clienttranslate("Attachment is not at Performer's Location."));
+                if (!in_array($attachmentId, $attachmentIds)) {
+                    throw new UserException(clienttranslate("Attachment is not at Performer's Location."));
+                }
             }
         }
 
