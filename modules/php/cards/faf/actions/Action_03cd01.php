@@ -29,6 +29,11 @@ class Action_03cd01 extends CharacterAction
 
         $owner = $this->getOwningCharacter($theah);
 
+        if (!$owner->isControlled())
+        {
+            return false;
+        }
+
         if (!$theah->cardInCity($owner))
         {
             return false;
