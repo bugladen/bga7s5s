@@ -521,6 +521,22 @@ Contrast plain **`<b>Technique:</b> +1[Thrust]`** with no En Garde keyword → u
 
 Reference: `Technique_04021b`; generic `Technique_PlusOneThrust`; En Garde precondition siblings Tijani `_04cd29` / Desideria `Reaction_04003a`.
 
+### +N stat with Lethal if Owner engaged (ready)
+
+Printed: **`<b>Technique:</b> +1[Riposte]. If Andare is engaged, gain Lethal.`** (`_04031` Andare).
+
+**Engaged vs En Garde — load-bearing:** printed "If \<Owner\> is **engaged**" means `$owner->Engaged === true` (character is ready / sideways). That is the **opposite** of En Garde (`!$Engaged`). Do not copy the En Garde Technique gate from `Technique_04021b`.
+
+- Subclass the matching generic (`Technique_PlusOneRiposte`, `Technique_PlusOneThrust`, …) so the +N stat stays shared.
+- Override `isAvailableToPlayer` for **actor-is-owner** when `IN_DUEL` — the `Technique_PlusOne*` generics only gate `IN_DUEL`, not actor identity.
+- On `EventDuelCalculateTechniqueValues` when `$event->techniqueId == $this->Id`: if `$owner->Engaged`, queue `createGainLethalEvent($event->actorId, $theah)`. Duel-only → **no** `EventGenerateChallengeThreat` handler unless the technique is also meant to fire outside duels.
+- Do **not** gate `isAvailableToPlayer` on `$owner->Engaged` — the base +N Riposte is always legal; Lethal is a resolve-time rider (like Axelle's en-garde adversary threat on `Reaction_04022`).
+- Pre-commit: `extends Technique_PlusOneRiposte` matches `extends Technique` — keep `// EventTechniqueCanceled handler not needed`.
+
+Contrast: En Garde Technique requires `!$Engaged` at pick time (`Technique_04021b`). Engaged Lethal rider requires `Engaged` at calculate time (`Technique_04031`).
+
+Reference: `Technique_04031`; En Garde opposite `Technique_04021b`; Lethal pipeline `Technique_03002` / `Technique_GainLethal`.
+
 ### Technique usable in BOTH challenge and duel contexts — two states, two routings, two state classes
 
 A technique that fires in either a challenge-resolve flow or a duel round needs entries in BOTH dispatcher routes:

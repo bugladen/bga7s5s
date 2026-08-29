@@ -584,6 +584,7 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 
 
 | `Reaction_04022` (Axelle — adversary combat card → threat) | **`EventCombatCardAnnounced`** + asymmetric `createThreatModifiedEvent`; your participant by ControllerId; En Garde rider `!$Engaged` adds adversary threat. Risk sibling `Reaction_02039` (both + pay). |
+| `Reaction_04031` (Andare — first round remove your participant's threat) | **`EventDuelNewRound` `round == 1`** + duel-at-location + En Garde `!$Engaged`; remove-only via `createThreatModifiedEvent(-1,0)`/`(0,-1)`; threat > 0 valid-target gate. Fuller sibling `Reaction_01203` (add or remove either participant). |
 | `Reaction_04023` (Monet — reveal deck / optional equip / discard any / sink) | **En Garde** + Owner-moves-to-city (`Reaction_03025`) + multi-stage in-reaction reveal/equip/pay/discard/sink. No states/JS. Equip pay = Tomas click-to-pay (not `PAY_STATE_EQUIP_ATTACHMENT`). Deck→discard = Action_01134 notify+`moveCard`; sink = `createCardAddedToFactionDeckEvent(..., false)`. |
 
 ### En Garde Reaction: reveal deck, optional equip paying costs, discard any, sink rest
@@ -633,3 +634,30 @@ For Axelle `_04022`: **"Reaction: During a duel, after an opposing adversary ann
 **UX:** Accept/Pass buttons; description can mention the en garde rider when `!$Engaged`. `setUsed(true)` on Accept. No state / no JS.
 
 Contrast: `Reaction_02039` is an in-hand Risk that always adds (1,1) after paying Wealth.
+
+### Duel at location, first round → remove your participant's threat
+
+For Andare `_04031`: **"En Garde Reaction: When a duel occurs at this location, at the beginning of the first round • Remove one threat from your participant."**
+
+**Trigger:** `EventDuelNewRound` with `$event->round == 1`. WHY not `EventDuelStarted`: the printed window is "beginning of the first round" — same event Leja `Reaction_01203` uses for add/remove threat at round 1.
+
+**Gates:**
+
+1. `$this->isAvailable()`
+2. Owner `isControlled()`
+3. **En Garde** = `!$owner->Engaged` (precondition, not an Engage cost) — re-check in `performReaction`
+4. **Location** — duel "at this location": `$owner->Location == $challenger->Location || $owner->Location == $defender->Location` (use `$event->challengerId` / `$event->defenderId` on the round event)
+5. **Valid-target** — owner must control a participant with threat > 0 before queuing the transition. Read current threat from `Game::CHALLENGER_THREAT` / `Game::DEFENDER_THREAT` globals. If neither side you control has threat, skip — avoids a useless Pass-only prompt.
+
+**Effect:** Map "your participant" to the challenger or defender whose `ControllerId == $owner->ControllerId`. Queue `createThreatModifiedEvent(-1, 0)` or `(0, -1)`. Remove Threat / Pass buttons; `setUsed(true)` on Remove.
+
+**Siblings:**
+
+| Card | Difference |
+|---|---|
+| `Reaction_01203` (Leja, CityCharacter) | Add **or** remove from **either** participant; multiple buttons per side |
+| `Reaction_04031` (Andare) | Remove only, **your** participant only, En Garde precondition |
+
+No state / no JS. Owner need not be a duel participant — only present at the duel location.
+
+Reference: `Reaction_04031`; fuller sibling `Reaction_01203`.
