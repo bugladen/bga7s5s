@@ -135,11 +135,23 @@ class Action_01104 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, true, $owner->Id, $this->Id);
+            // WHY: Engage and go Home are separate clauses — queue Engage first, then move
+            // with engage=false (Action_03cd01 / Reaction_02058 pattern). Lodestone blocks
+            // opponent Home moves but the Engage clause still applies; tying engage to
+            // CardMoved left Lodestone targets en garde when the move was swallowed.
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $game->theah->queueEvent($engageEvent);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $game->theah->queueEvent($engageEvent);
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
             $moveEvent->batchId = $batchId;
             $game->theah->queueEvent($moveEvent);
 
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $performer->Id, $performer->Location, Game::LOCATION_PLAYER_HOME, true, $owner->Id, $this->Id);
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $performer->Id, $performer->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
             $moveEvent->batchId = $batchId;
             $game->theah->queueEvent($moveEvent);
 

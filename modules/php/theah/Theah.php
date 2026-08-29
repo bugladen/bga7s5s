@@ -546,6 +546,15 @@ class Theah
         return $attachments;
     }
 
+    function getAvailableAttachmentsInCity(): array
+    {
+        $attachments = [];
+        foreach ($this->getCityLocations() as $location) {
+            $attachments = array_merge($attachments, $this->getAvailableAttachmentsAtLocation($location->Name));
+        }
+        return $attachments;
+    }
+
     function getAvailableCharacterTechniques($character)
     {
         $techniques = [];

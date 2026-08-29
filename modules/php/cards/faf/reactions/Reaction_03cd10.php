@@ -110,6 +110,7 @@ class Reaction_03cd10 extends CardReaction
         {
             $owner = $this->getOwningCharacter($event->theah);
             if ($event->cardId == $owner->Id
+                && $owner->isControlled()
                 && $event->theah->locationInCity($event->toLocation)
                 && $this->hasOpposingCharacterAtLocation($event->theah, $owner, $event->toLocation))
             {

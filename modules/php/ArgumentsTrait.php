@@ -313,9 +313,14 @@ trait ArgumentsTrait
         $this->theah->buildCity();
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
+        $equipType = $this->globals->get(Game::EQUIP_TYPE);
 
         $attachmentsInPlay = [];
-        if ($performer->Location != Game::LOCATION_PLAYER_HOME) 
+        if ($equipType == Game::SMUGGLED_ITEM_EQUIP_TYPE)
+        {
+            $attachmentsInPlay = $this->theah->getAvailableAttachmentsInCity();
+        }
+        else if ($performer->Location != Game::LOCATION_PLAYER_HOME)
         {
             $attachmentsInPlay = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
         }
@@ -353,8 +358,13 @@ trait ArgumentsTrait
         $performer = $this->theah->getCharacterById($performerId);
 
         $attachmentsInHand = $this->getAttachmentsInHand($playerId);
+        $equipType = $this->globals->get(Game::EQUIP_TYPE);
         $attachmentsInPlay = [];
-        if ($performer->Location != Game::LOCATION_PLAYER_HOME) 
+        if ($equipType == Game::SMUGGLED_ITEM_EQUIP_TYPE)
+        {
+            $attachmentsInPlay = $this->theah->getAvailableAttachmentsInCity();
+        }
+        else if ($performer->Location != Game::LOCATION_PLAYER_HOME)
         {
             $attachmentsInPlay = $this->theah->getAvailableAttachmentsAtLocation($performer->Location);
         }
@@ -362,7 +372,7 @@ trait ArgumentsTrait
         return [
             "_private" => [
                 "active" => [
-                    "equipType" => $this->globals->get(Game::EQUIP_TYPE),
+                    "equipType" => $equipType,
                     "performerId" => $performerId,
                     "attachmentsInHand" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInHand),
                     "attachmentsInPlay" => array_map(function($attachment) { return $attachment->Id; }, $attachmentsInPlay),

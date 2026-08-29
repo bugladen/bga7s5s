@@ -2271,12 +2271,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
      *
      * @param {HTMLElement} cardElement
      * @param {HTMLElement} fromElement
-     * @param {{duration?: number}} [options]
+     * @param {{duration?: number, preserveScale?: boolean}} [options]
      * @returns {Promise<void>}
      */
     animateCardFromElement: async function(cardElement, fromElement, options)
     {
         const duration = (options && options.duration) || 500;
+        const preserveScale = options && options.preserveScale;
         if (! cardElement || ! fromElement || ! this.animationManager || ! this.animationManager.animationsActive()) {
             return;
         }
@@ -2287,6 +2288,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const deltaY = fromRect.top - toRect.top;
 
         cardElement.style.transition = 'none';
+        if (preserveScale) {
+            await cardElement.animate([
+                { transform: `translate(${deltaX}px, ${deltaY}px)`, opacity: 1 },
+                { transform: 'translate(0, 0)', opacity: 1 }
+            ], {
+                duration: duration,
+                easing: 'ease-out'
+            }).finished;
+            return;
+        }
+
         await cardElement.animate([
             { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.2)`, opacity: 0.8 },
             { transform: 'translate(0, 0) scale(1)', opacity: 1 }
@@ -2307,12 +2319,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
      *
      * @param {HTMLElement} cardElement
      * @param {HTMLElement} toElement
-     * @param {{duration?: number}} [options]
+     * @param {{duration?: number, preserveScale?: boolean}} [options]
      * @returns {Promise<void>}
      */
     animateCardToElement: async function(cardElement, toElement, options)
     {
         const duration = (options && options.duration) || 500;
+        const preserveScale = options && options.preserveScale;
         if (! cardElement || ! toElement || ! this.animationManager || ! this.animationManager.animationsActive()) {
             return;
         }
@@ -2323,6 +2336,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const deltaY = toRect.top - fromRect.top;
 
         cardElement.style.transition = 'none';
+        if (preserveScale) {
+            await cardElement.animate([
+                { transform: 'translate(0, 0)', opacity: 1 },
+                { transform: `translate(${deltaX}px, ${deltaY}px)`, opacity: 1 }
+            ], {
+                duration: duration,
+                easing: 'ease-out'
+            }).finished;
+            return;
+        }
+
         await cardElement.animate([
             { transform: 'translate(0, 0) scale(1)', opacity: 1 },
             { transform: `translate(${deltaX}px, ${deltaY}px) scale(0.2)`, opacity: 0.8 }

@@ -63,9 +63,9 @@ class _01186 extends CityCharacter
         //Maryams imperviousness supersedes the event
         //Handle each event from a Risk source that would target her and cancel them before they are processed.
         //Mark ImperviousnessUsedToday as true so that it cannot be used again until the next day.
-        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && 
-            (($event instanceof EventCardMoving && $event->cardId == $this->Id && $event->sourceId != 0) ||
-            ($event instanceof EventCardEngaged && $event->cardId == $this->Id && $event->sourceId != 0))
+        if ( (($event instanceof EventCardMoving && $event->cardId == $this->Id && $event->sourceId != 0) ||
+            ($event instanceof EventCardEngaged && $event->cardId == $this->Id && $event->sourceId != 0)) &&
+            $this->isControlled() && ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED)
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
@@ -84,7 +84,9 @@ class _01186 extends CityCharacter
             }
         }
 
-        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventCharacterTargeted && $event->targetId == $this->Id && $event->sourceId != 0)
+        if ($event instanceof EventCharacterTargeted && $event->targetId == $this->Id && $event->sourceId != 0
+            && $this->isControlled() && ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED)
+        )
         {
             $source = $event->theah->getCardById($event->sourceId);
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
@@ -102,7 +104,9 @@ class _01186 extends CityCharacter
             }
         }
 
-        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventChallengeIssued && $event->defenderId == $this->Id && $event->sourceId != 0)
+        if ($event instanceof EventChallengeIssued && $event->defenderId == $this->Id && $event->sourceId != 0
+            && $this->isControlled() && ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED)
+        )
         {
             $source = $event->theah->getCardById($event->sourceId);
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
@@ -120,7 +124,9 @@ class _01186 extends CityCharacter
             }
         }
 
-        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventCharacterBeingWounded && $event->characterId == $this->Id && $event->sourceId != 0)
+        if ($event instanceof EventCharacterBeingWounded && $event->characterId == $this->Id && $event->sourceId != 0
+            && $this->isControlled() && ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED)
+        )
         {
             $source = $event->theah->getCardById($event->sourceId);
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
@@ -138,7 +144,9 @@ class _01186 extends CityCharacter
             }
         }
 
-        if ( ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED) && $event instanceof EventAttachmentEquipping && $event->characterId == $this->Id && $event->sourceId != 0)
+        if ($event instanceof EventAttachmentEquipping && $event->characterId == $this->Id && $event->sourceId != 0
+            && $this->isControlled() && ! $this->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED)
+        )
         {
             $source = $event->theah->getCardById($event->sourceId);
             if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
