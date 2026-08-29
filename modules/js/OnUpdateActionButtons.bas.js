@@ -325,6 +325,16 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelChooseTechnique_04033': () => {
+                this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
+                this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
+            },
+
+            'duelNewRound_04033': () => {
+                this.addActionButton(`btnAddThreat`, _('Add Threat'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }), { id: 'actPass', color: 'alert' });
+            },
+
         };
 
         if (methods[stateName])

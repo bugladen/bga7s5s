@@ -152,6 +152,7 @@ class TraitNames
             "Purge",
             "Ranged",
             "Raven",
+            "Razor",
             "Recuperation",
             "Red Hand",
             "Redeemed",

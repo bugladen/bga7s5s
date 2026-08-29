@@ -537,6 +537,50 @@ Contrast: En Garde Technique requires `!$Engaged` at pick time (`Technique_04021
 
 Reference: `Technique_04031`; En Garde opposite `Technique_04021b`; Lethal pipeline `Technique_03002` / `Technique_GainLethal`.
 
+### +1 Thrust or +1 Parry choice
+
+For **"Technique: +1[Thrust] or +1[Parry]"** (Iago `_04033`, Vissenta `_01013`):
+
+1. On `EventResolveTechnique`: stash defaults (`$UseThrust = false`) and queue **`createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)`** — HIGHEST_PRIORITY so the picker runs **before** `EventDuelCalculateTechniqueValues` (Framework queues Resolve then Calculate).
+2. State `DUEL_CHOOSE_TECHNIQUE_NNNNN` (id `521` + cardId): two buttons — `id: 0` = Parry, `id: 1` = Thrust (01013 convention).
+3. `actFromTechniqueWithId`: set `$UseThrust = ($id == 1)`; `$owner->IsUpdated = true`; `nextState()`.
+4. On Calculate when `$event->techniqueId == $this->Id`: `$event->thrust += 1` or `$event->parry += 1` + explanation.
+5. Clear `$UseThrust` on `EventTechniqueCanceled` / `EventDuelEnd`.
+
+**WHY not copy Vissenta's `createTransitionEvent` + `HIGH_PRIORITY`:** modern techniques that need a choice before Calculate use `createTechniqueTransitionEvent` (Ekaterina `03049`). Relying on HIGH_PRIORITY alone is fragile if other HIGHEST_PRIORITY events are queued.
+
+**JS:** `OnUpdateActionButtons.<expansion>.js` only — button-only, no OnEntering/OnLeaving (same as `duelChooseTechnique_01013`). Zombie: `nextState()` leaves `$UseThrust` false → Parry default.
+
+Wire `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions`.
+
+Reference: `Technique_04033` (canonical modern); older sibling `Technique_01013`; HIGHEST_PRIORITY sibling `Technique_03049`.
+
+### Deferred optional effect on adversary's next round
+
+For **"At the start of the adversary's next round, you may add a threat to <Owner>"** (Iago `_04033` — often paired with the Thrust/Parry choice above):
+
+1. On Resolve: set public `$PendingThreatChoice = true` (persist via `$owner->IsUpdated`).
+2. On `EventDuelNewRound` when `$PendingThreatChoice` **and** `$event->actorId != $owner->Id` (adversary is the actor):
+   - Skip/clear if `characterIsInDiscardOrLocker($owner)`.
+   - **Clear the flag before queueing** so a re-fired NewRound does not double-prompt.
+   - `createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)` — **same transition key** as the Thrust/Parry picker.
+3. State `DUEL_NEW_ROUND_NNNNN` (id `510` + cardId; constant under `DUEL_NEW_ROUND_*`): Add Threat / Pass buttons.
+4. `actFromTechniqueWithId` for that state: Add Threat → map Owner's Id to `[challengerThreat, defenderThreat]` deltas → `createThreatModifiedEvent` (Axelle `Reaction_04022` shape — text says "to Iago", not "your participant"). Pass → notify decline.
+5. Clear `$PendingThreatChoice` on `EventTechniqueCanceled` / `EventDuelEnd`.
+
+**Dispatcher-scoped transition key (Lorenzo `01090`):**
+
+| Dispatcher | `"NNNNN"` routes to |
+|---|---|
+| `DUEL_CHOOSE_TECHNIQUE_EVENTS` | `DUEL_CHOOSE_TECHNIQUE_NNNNN` (Thrust/Parry) |
+| `DUEL_NEW_ROUND_EVENTS` | `DUEL_NEW_ROUND_NNNNN` (optional threat) |
+
+Both need entries in `states.inc.php`. Do **not** invent a second transition key (`"NNNNN_2"`) unless the NewRound step is reached from Technique EVENTS.
+
+**JS:** `OnUpdateActionButtons` only for both states. Zombie on NewRound: `nextState()` = decline (flag already cleared on enter).
+
+Reference: `Technique_04033`; NewRound deferred sibling `Technique_01090`; threat mapping `Reaction_04022`.
+
 ### Technique usable in BOTH challenge and duel contexts — two states, two routings, two state classes
 
 A technique that fires in either a challenge-resolve flow or a duel round needs entries in BOTH dispatcher routes:

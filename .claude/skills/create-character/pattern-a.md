@@ -872,6 +872,49 @@ Named city location constants (real ones in `Game.php`):
 
 Reference: `_03028` Térence, `_01089` Soline (duel boundary + swap discipline — but Soline modifies *adversaries*, Térence modifies *self*).
 
+### Gains traits while participating in a duel
+
+For text like Iago `_04033` ("While Iago is participating in a duel, he gains **Pirate** and **Scoundrel**"):
+
+Grant on **self** via `addTrait` / `removeTrait` (not a `hasTrait` override). Track a `$DuelTraitsApplied` bool so apply is idempotent and clear only removes what this card granted.
+
+**Lifecycle** (same participation gates as Térence `_03028` / Soline `_01089`):
+
+| Event | Action |
+|---|---|
+| `EventDuelStarted` when `$event->challengerId` or `defenderId` == `$this->Id` | `applyDuelTraits` |
+| `EventDuelEnd` | `clearDuelTraits` |
+| `EventChallengerSwapped` / `EventDefenderSwapped` | apply when `$this->Id` becomes the new participant; clear when leaving |
+
+```php
+private function applyDuelTraits(Event $event): void
+{
+    if ($this->DuelTraitsApplied) return;
+    if ($this->ControllerId == 0 || $event->theah->game->characterIsInDiscardOrLocker($this)) return;
+
+    $this->addTrait($event->theah->game, "Pirate");
+    $this->addTrait($event->theah->game, "Scoundrel");
+    $this->DuelTraitsApplied = true;
+    $this->IsUpdated = true;
+}
+```
+
+`addTrait` / `removeTrait` already emit `traitAdded` / `traitRemoved` client notifs — no extra notify needed.
+
+**Contrasts:**
+
+| Shape | Who gets the trait | Scope |
+|---|---|---|
+| Iago `_04033` | **Self** while duel participant | Duel start/end + swaps |
+| Daniella `Action_03013` | **Opposing** characters | While using abilities (turn-scoped Continuous Action) |
+| El Gato Mask `_03043` | Equipped character | Equip / unequip |
+
+Do **not** invent a sticky Technique flag for a printed passive that lasts the whole duel — that belongs on the card class.
+
+Novel printed trait strings (e.g. **Razor** on Iago's scaffold) must also be added to `TraitNames::$TraitsJson` alphabetically (checklist 65).
+
+Reference: `_04033` Iago; participation sibling `_03028` Térence; equip-grant sibling `_03043`; opposing-tag sibling `Action_03013`.
+
 ### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
 
 For text like "While using your abilities, characters opposing <Owner> may be considered <Trait>" (Daniella Dietrich `_03013`): the trait must light up on *opposing* characters, not on the owner. The Uwe Zimmerman `_01043` `hasTrait` override pattern is the WRONG fit — that pattern lights up the *receiver* of `hasTrait`, so it only works when the card being considered is the card whose `hasTrait` was overridden. For the opposing-direction case, mirror the Wilhelm Dünst `Action_02013` pattern instead: **mutate the opposing characters' `ModifiedTraits` directly via `addTrait` / `removeTrait`**, keep a tracked set of the ids you tagged, and untag at the scope boundary.
@@ -1075,6 +1118,7 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventCharacterCombatModified` / `EventCharacterInfluenceModified` | A character's modified stat changed (`$event->CharacterId`, `$event->OldCombat`/`NewCombat` or `OldInfluence`/`NewInfluence`) | Re-sync a "set [StatA] equal to [StatB]" link when the source stat changes, or re-apply the link when an external effect mutates the target stat during the override. EventHub applies the new stat **before** card `handleEvent` runs (`runEventHubAfterCards = false`). Reference: `_03028` Térence. |
 | `EventAttachmentEquipped` | An attachment was equipped (`$event->characterId`, `$event->attachmentId`; `$event->asAction` distinguishes action-equip vs passive) | "After a character equips an attachment at [location] …" City Reactions. Look up equipping character via `getCharacterById($event->characterId)` and compare `.Location` to the named city constant. Skip `$attachment->FakeAttachment`. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01039` (owner self-equip only). |
 | `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
+| `EventDuelNewRound` | A new duel round is starting (`$event->actorId` is whose turn it is; `$event->round`) | "At the beginning of the first round" (gate `round == 1` — Andare `Reaction_04031`); "**adversary's next round**" deferred Technique effects (gate `actorId != owner.Id` — Iago `Technique_04033`, Lorenzo `Technique_01090`). |
 | `EventResolveManeuver` | A Maneuver is resolving (`$event->playerId` actor, `$event->adversaryId` opponent, `$event->maneuverId`) | "Adversary cannot perform Maneuvers" backstop — gate `adversaryId == Owner.Id`. `_04012` Raven (live line condition); `Technique_01186` Maryam (armed flag). |
 | `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel (`$event->gambled` is set from `duel_round.gambled`) | "+X to combat card stats" — `_01116` Yevgeni (every card); gambled-only — `_03037` Sanjay (`$event->gambled` gate) |
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |

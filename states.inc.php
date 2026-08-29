@@ -2208,6 +2208,7 @@ $machinestates = [
                     "01127" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "01090" => States::DUEL_NEW_ROUND_01090,
                     "01090_2" => States::DUEL_APPLY_COMBAT_CARD_STATS,
+                    "04033" => States::DUEL_NEW_ROUND_04033,
                     "reaction" => States::DUEL_NEW_ROUND_REACTIONS,
                     "pay" => States::DUEL_NEW_ROUND_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUEL_CHOOSE_ACTION,
@@ -2355,6 +2356,7 @@ $machinestates = [
                         "04013" => States::DUEL_CHOOSE_TECHNIQUE_04013,
                         "04017" => States::DUEL_CHOOSE_TECHNIQUE_04017,
                         "04021" => States::DUEL_CHOOSE_TECHNIQUE_04021,
+                        "04033" => States::DUEL_CHOOSE_TECHNIQUE_04033,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral
