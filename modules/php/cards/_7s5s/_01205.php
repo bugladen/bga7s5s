@@ -23,6 +23,8 @@ class _01205 extends CityCharacter implements IHasActions
 
         $this->Title = clienttranslate('Dogged Kidnapper');
 
+        $this->InPlayXImageOffset = -20;
+
         $this->Resolve = 3;
         $this->Combat = 0;
         $this->Finesse = 1;
