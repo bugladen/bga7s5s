@@ -497,30 +497,93 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const attachment = args.attachment;
         const performer = this.cardProperties[args.performerId];
 
-        //See if the card came from the hand
-        const cardExists = this.factionHand.getCards().some(c => c.id === attachment.id);
-        if (cardExists)
+        const fromHand = this.factionHand.getCards().some(c => c.id === attachment.id);
+        const oldCard = this.cardProperties[attachment.id];
+        // WHY: deckOrigin === 'City' and no from_character_code — fresh equip from the
+        // city row (or deck), not a character-to-character move.
+        const isCityAttachmentEquip = attachment.deckOrigin === 'City'
+            && !fromHand
+            && !args.from_character_code;
+
+        let cityAttachmentElement = null;
+
+        if (fromHand)
         {
             const card = this.cardProperties[attachment.id];
             this.factionHand.removeCard(card);
         }
-        else if (this.cardProperties[attachment.id] != undefined)
+        else if (oldCard != undefined)
         {
-            const oldCard = this.cardProperties[attachment.id];
-
-            //Destroy the old card element
-            dojo.destroy(oldCard.divId);
+            if (isCityAttachmentEquip && oldCard.divId && this.isCardInCity(attachment.id))
+            {
+                // Keep the city-row node alive until the fly finishes.
+                cityAttachmentElement = $(oldCard.divId);
+            }
+            else
+            {
+                dojo.destroy(oldCard.divId);
+            }
         }
 
         $(`${performer.controllerId}-score-hand-count`).innerHTML = args.handCount;
 
-        this.attachCard(performer, attachment);
         this.cardProperties[attachment.id] = attachment;
 
         performer.modifiedResolve = args.modifiedResolve;
         performer.modifiedCombat = args.modifiedCombat;
         performer.modifiedFinesse = args.modifiedFinesse;
         performer.modifiedInfluence = args.modifiedInfluence;
+
+        const performerElement = $(performer.divId);
+        const animationsActive = performerElement && this.animationManager && this.animationManager.animationsActive();
+
+        // WHY: Fly the city attachment into the character BEFORE attachCard +
+        // createCard — otherwise the equipped art appears instantly and the fly
+        // reads as a duplicate trailing behind.
+        if (isCityAttachmentEquip && animationsActive)
+        {
+            if (cityAttachmentElement)
+            {
+                await this.animateCardToElement(cityAttachmentElement, performerElement, {
+                    duration: 400,
+                    preserveScale: true,
+                });
+                // WHY: Collapse the city-row slot after the fly — doing this in
+                // parallel made the card shrink while it was still in transit.
+                await cityAttachmentElement.animate([
+                    { width: cityAttachmentElement.offsetWidth + 'px', marginLeft: '25px', marginRight: '5px' },
+                    { width: '0px', marginLeft: '0px', marginRight: '0px' }
+                ], {
+                    duration: 150,
+                    easing: 'ease-in',
+                    fill: 'forwards'
+                }).finished;
+                dojo.destroy(cityAttachmentElement.id);
+                if (oldCard)
+                {
+                    oldCard.divId = null;
+                }
+            }
+            else
+            {
+                // Equipped straight from the city deck — stage a standalone card at
+                // the character, then FLIP from the UL tower into place.
+                const tempDivId = `temp-equip-${attachment.id}`;
+                const savedAttachedToId = attachment.attachedToId;
+                attachment.attachedToId = 0;
+                attachment.attachmentIndex = null;
+                this.createCard(tempDivId, attachment, performer.divId);
+                await this.animateCardFromElement($(tempDivId), $('city-ul-tower'), {
+                    duration: 400,
+                    preserveScale: true,
+                });
+                dojo.destroy(tempDivId);
+                attachment.attachedToId = savedAttachedToId;
+                attachment.divId = null;
+            }
+        }
+
+        this.attachCard(performer, attachment);
 
         //Create a placeholder html element in front of the performer
         const placeholderId = "equip-placeholder";
@@ -532,9 +595,9 @@ return declare('seventhseacityoffivesails.notifications', null, {
         //Create the new character element    
         this.createCard(performer.divId, performer, placeholderId);
 
-        // Add pop scale animation to the newly created element
         const newElement = $(performer.divId);
-        if (newElement && this.animationManager && this.animationManager.animationsActive()) {
+        if (!isCityAttachmentEquip && newElement && this.animationManager && this.animationManager.animationsActive())
+        {
             await newElement.animate([
                 { transform: 'scale(0.8)' },
                 { transform: 'scale(1.1)' },
