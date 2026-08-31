@@ -4,6 +4,14 @@
 
 Extend `AttachmentReaction` (which extends `CardReaction`). It adds `ownerIsAttached(Theah)` so you can early-out when the parent attachment is detached.
 
+### Default gate: attachment must be in play (equipped)
+
+`Theah::runEvents` dispatches every event to **all** tracked cards, including cards in hand and off-board zones. A card-level reaction on an attachment still receives those events even when the attachment is not equipped.
+
+**Default rule:** Reactions on attachments only trigger when the attachment is in play — call `$this->ownerIsAttached($theah)` in `handleEvent` before queuing a reaction transition. For attachments, "in play" means equipped (`AttachedToId > 0` via `Attachment::isAttached()`), not merely held in hand.
+
+**Exception:** When printed text equips the attachment *from* a specific off-play zone (hand, dueling line, etc.), gate on that zone instead of `ownerIsAttached` — e.g. `Reaction_01155` checks `LOCATION_DUELING_LINE`. Re-equip reactions (already attached, moving to another character) use `ownerIsAttached` plus exclude the current host from targets.
+
 **Pre-commit hook requires all three** literal strings in the class body:
 - `$this->setUsed(`
 - `$this->isAvailable(`
