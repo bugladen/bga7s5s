@@ -4,14 +4,14 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_02037 extends CardReaction
+class Reaction_02037 extends AttachmentReaction
 {
     private ?int $pendingChallengerId = null;
 
@@ -54,6 +54,9 @@ class Reaction_02037 extends CardReaction
 
         foreach ($this->getEligibleTargets($theah, $challenger->Location, $mysta->ControllerId) as $character)
         {
+            if ($character->Id === $mysta->AttachedToId)
+                continue;
+
             if ($mysta->canAttachTo($character))
                 $array[] = $this->createButtonProperty($theah->game, $character->Name, 'equip_' . $character->Id);
         }
@@ -67,10 +70,10 @@ class Reaction_02037 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventChallengeIssued && $this->isAvailable())
+        if ($event instanceof EventChallengeIssued && $this->isAvailable() && $this->ownerIsAttached($event->theah))
         {
             $mysta = $this->getOwningAttachment($event->theah);
-            if (! $mysta || $mysta->Location != Game::LOCATION_HAND)
+            if (! $mysta)
                 return;
 
             $challenger = $event->theah->getCharacterById($event->challengerId);
@@ -78,7 +81,10 @@ class Reaction_02037 extends CardReaction
                 return;
 
             $eligible = $this->getEligibleTargets($event->theah, $challenger->Location, $mysta->ControllerId);
-            $eligible = array_values(array_filter($eligible, fn (Character $c) => $mysta->canAttachTo($c)));
+            $eligible = array_values(array_filter(
+                $eligible,
+                fn (Character $c) => $c->Id !== $mysta->AttachedToId && $mysta->canAttachTo($c)
+            ));
             if (count($eligible) === 0)
                 return;
 
@@ -109,25 +115,18 @@ class Reaction_02037 extends CardReaction
                 ? $game->theah->getCharacterById($this->pendingChallengerId)
                 : null;
 
-            if (! $target || ! $challenger || $target->ControllerId !== $mysta->ControllerId || $target->Location !== $challenger->Location)
+            if (! $target || ! $challenger || $target->ControllerId !== $mysta->ControllerId || $target->Location !== $challenger->Location || $target->Id === $mysta->AttachedToId)
             {
                 $this->pendingChallengerId = null;
                 $mysta->IsUpdated = true;
                 throw new UserException($game->translate('Invalid character for Mysta.'));
             }
 
-            if (! $mysta->canAttachTo($target))
+            if (! $mysta->isAttached() || ! $mysta->canAttachTo($target))
             {
                 $this->pendingChallengerId = null;
                 $mysta->IsUpdated = true;
                 throw new UserException($game->translate('Mysta cannot attach to that character.'));
-            }
-
-            if ($mysta->Location != Game::LOCATION_HAND)
-            {
-                $this->pendingChallengerId = null;
-                $mysta->IsUpdated = true;
-                throw new UserException($game->translate('Mysta is not in your hand.'));
             }
 
             $actualTargetId = $mysta->getRequiredAttachTargetId($game->theah, $target->Id);
