@@ -1117,7 +1117,8 @@ $machinestates = [
             "action" => "stTechniqueAvailable",
             "transitions" => [
                 "hasTechique" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE,
-                "noTechnique" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE
+                "noTechnique" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
+                "challengeSkipped" => States::NEXT_PLAYER,
             ]
         ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE => [

@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -724,6 +725,20 @@ trait StatesTrait
     {
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->getCardObjectFromDb($performerId);
+
+        if ($this->globals->get(Game::CHALLENGE_TYPE) == Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE)
+        {
+            $abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+            $action = $this->theah->getInPlayActionById($abilityId);
+            if ($action instanceof Action_02001 && ! $action->shouldIssueChallenge($this))
+            {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+                $this->theah->queueEvent($actionResolvedEvent);
+                $this->theah->runEvents(true);
+                $this->gamestate->nextState('challengeSkipped');
+                return;
+            }
+        }
 
         $techniques = $this->theah->getAvailableCharacterTechniques($performer);
 

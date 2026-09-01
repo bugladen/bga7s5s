@@ -86,6 +86,20 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
         return $args;
     }
 
+    public function shouldIssueChallenge(Game $game): bool
+    {
+        $andriana = $this->getOwningCharacter($game->theah);
+        $targetId = (int) $game->globals->get(Game::CHOSEN_TARGET);
+        $target = $game->theah->getCharacterById($targetId);
+
+        if ($target === null)
+        {
+            return false;
+        }
+
+        return $target->Location === $andriana->Location;
+    }
+
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
         $andriana = $this->getOwningCharacter($game->theah);
