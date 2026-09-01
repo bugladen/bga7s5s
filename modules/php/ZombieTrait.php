@@ -62,7 +62,6 @@ trait ZombieTrait
 
                 case "planningPhaseResolveSchemes_01125":
                 case "planningPhaseResolveSchemes_01125_2":
-                case "planningPhaseResolveSchemes_01126":
                 case "planningPhaseResolveSchemes_01144":
                 case "planningPhaseResolveSchemes_01145":
                 case "planningPhaseResolveSchemes_01145_2":
@@ -73,8 +72,29 @@ trait ZombieTrait
                     $this->actPass("pass");
                     break;
 
+                case "planningPhaseResolveSchemes_01126":
+                    {
+                        $args = $this->argsForState();
+                        $locationIds = $args['args']['locationIds'] ?? [];
+                        if (!empty($locationIds)) {
+                            $this->actFromCardWithLocations(json_encode([$locationIds[0]]));
+                        } else {
+                            $this->actPass("pass");
+                        }
+                    }
+                    break;
+
                 case "planningPhaseResolveSchemes_01126_2":
-                    $this->actBack();
+                    {
+                        $args = $this->argsForState();
+                        $locationIds = $args['args']['locationIds'] ?? [];
+                        $requiredCount = $args['args']['requiredLocationCount'] ?? min(2, count($locationIds));
+                        if ($requiredCount > 0 && count($locationIds) >= $requiredCount) {
+                            $this->actFromCardWithLocations(json_encode(array_slice($locationIds, 0, $requiredCount)));
+                        } else {
+                            $this->actBack();
+                        }
+                    }
                     break;
 
                 case "highDramaBeginning_01144":

@@ -59,7 +59,7 @@ class _01126 extends Scheme
 
         if ($event instanceof EventRenownAddedToLocation && $event->location == $this->ChosenLocation)
         {
-            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));    
+            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));
         }
 
         //We have to allow the reknown to be removed by the scheme itself
@@ -147,10 +147,18 @@ class _01126 extends Scheme
     public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
+        $playerId = $game->getActivePlayerId();
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01126)
+        {
+            $args['locationIds'] = $game->theah->getOuterCityLocations();
+        }
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2)
         {
-            $args["chosenLocation"] = $this->ChosenLocation;
+            $args['chosenLocation'] = $this->ChosenLocation;
+            $args['locationIds'] = $this->getSelectableRenownLocationIds($game, $this->ChosenLocation, $playerId);
+            $args['requiredLocationCount'] = min(2, count($args['locationIds']));
         }
 
         return $args;
@@ -164,7 +172,7 @@ class _01126 extends Scheme
         {
             $location = $ids[0];
 
-            if (!in_array($location, $game->theah->getOuterCityLocations()))
+            if (!in_array($location, $game->theah->getOuterCityLocations(), true))
             {
                 throw new UserException($game->translate("Location is not an outer city location."));
             }
@@ -174,49 +182,138 @@ class _01126 extends Scheme
             $game->theah->addCardToWorld($this);
             $game->globals->set(Game::CHOSEN_LOCATION, $location);
 
-            $game->gamestate->nextState("locationChosen");
+            $game->gamestate->nextState('locationChosen');
         }
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01126_2)
         {
             $playerId = $game->getActivePlayerId();
-            $playerName = $game->getPlayerNameById($playerId);
-    
-            $locations = $ids;
-    
-            //Check to be sure renown can be added to locations
-            foreach ($locations as $location) {
-                $reknownEvent = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
-                $game->theah->eventCheck($reknownEvent);
+            $locations = array_values(array_unique($ids));
+
+            $selectableLocations = $this->getSelectableRenownLocationIds($game, $this->ChosenLocation, $playerId);
+            $requiredCount = min(2, count($selectableLocations));
+
+            if ($requiredCount === 0) {
+                throw new UserException($game->translate('There are no locations where Renown can be placed.'));
             }
-    
-            //Check if event can be run
-            $schemeMoveEvent = $game->theah->createEvent(Events::SchemeMovedToCity);
-            if ($schemeMoveEvent instanceof EventSchemeMovedToCity) {
-                $schemeMoveEvent->scheme = $this;
-                $schemeMoveEvent->location = $this->ChosenLocation;
-                $schemeMoveEvent->playerId = $playerId;
+
+            if (count($locations) !== $requiredCount) {
+                if ($requiredCount === 1) {
+                    throw new UserException($game->translate('You must choose one location.'));
+                }
+                throw new UserException($game->translate('You must choose two locations.'));
             }
-            $game->theah->eventCheck($schemeMoveEvent);
-    
-            $game->notify->all('message', 
-                clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${scheme_inject_code}.'), [
-                'i18n' => ['location'],
-                "player_name" => $playerName,
-                "location" => $this->ChosenLocation,
-                "scheme_inject_code" => $this->getInjectCode(),
-            ]);
 
             foreach ($locations as $location) {
-                $reknownEvent = EventFactory::createRenownAddedToLocationEvent($playerId, $location, 1, $this->getInjectCode());
-                $game->theah->queueEvent($reknownEvent);
+                if ($location === $this->ChosenLocation) {
+                    throw new UserException($game->translate('You cannot place Renown on the chosen location.'));
+                }
+
+                if (!in_array($location, $selectableLocations, true)) {
+                    throw new UserException($game->translate('That location cannot receive Renown.'));
+                }
             }
-    
-            // Move Leshiye of the Wood to the chosen location
-            $game->theah->queueEvent($schemeMoveEvent);
-    
-            // Go back and finish running the Scheme events
-            $game->gamestate->nextState("locationsChosen");
+
+            $this->resolveLeshiyeWithRenownLocations($game, $locations);
+            $game->gamestate->nextState('locationsChosen');
         }
+    }
+
+    private function getOtherCityLocations(Game $game, string $chosenLocation): array
+    {
+        return array_values(array_filter(
+            array_keys($game->theah->getCityLocations()),
+            fn(string $location) => $location !== $chosenLocation
+        ));
+    }
+
+    private function isLocationBlockedByLeshiye(Game $game, string $location): bool
+    {
+        foreach ($game->theah->getCardObjectsAtLocation($location) as $card) {
+            if ($card instanceof _01126 && $card->ChosenLocation === $location) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function canPlaceRenownAtLocation(Game $game, string $location, int $playerId): bool
+    {
+        $reknownEvent = EventFactory::createRenownAddedToLocationEvent(
+            $playerId,
+            $location,
+            1,
+            $this->getInjectCode()
+        );
+
+        try {
+            $game->theah->eventCheck($reknownEvent);
+        } catch (UserException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function getSelectableRenownLocationIds(Game $game, string $chosenLocation, int $playerId): array
+    {
+        $selectable = [];
+
+        foreach ($this->getOtherCityLocations($game, $chosenLocation) as $location) {
+            if ($this->isLocationBlockedByLeshiye($game, $location)) {
+                continue;
+            }
+
+            if ($this->canPlaceRenownAtLocation($game, $location, $playerId)) {
+                $selectable[] = $location;
+            }
+        }
+
+        return $selectable;
+    }
+
+    private function resolveLeshiyeWithRenownLocations(Game $game, array $locations): void
+    {
+        $playerId = $game->getActivePlayerId();
+        $playerName = $game->getPlayerNameById($playerId);
+
+        foreach ($locations as $location) {
+            $reknownEvent = EventFactory::createRenownAddedToLocationEvent(
+                $playerId,
+                $location,
+                1,
+                $this->getInjectCode()
+            );
+            $game->theah->eventCheck($reknownEvent);
+        }
+
+        $schemeMoveEvent = $game->theah->createEvent(Events::SchemeMovedToCity);
+        if ($schemeMoveEvent instanceof EventSchemeMovedToCity) {
+            $schemeMoveEvent->scheme = $this;
+            $schemeMoveEvent->location = $this->ChosenLocation;
+            $schemeMoveEvent->playerId = $playerId;
+        }
+        $game->theah->eventCheck($schemeMoveEvent);
+
+        $game->notify->all('message',
+            clienttranslate('${player_name} has chosen ${location} as the Chosen Location for ${scheme_inject_code}.'), [
+            'i18n' => ['location'],
+            'player_name' => $playerName,
+            'location' => $this->ChosenLocation,
+            'scheme_inject_code' => $this->getInjectCode(),
+        ]);
+
+        foreach ($locations as $location) {
+            $reknownEvent = EventFactory::createRenownAddedToLocationEvent(
+                $playerId,
+                $location,
+                1,
+                $this->getInjectCode()
+            );
+            $game->theah->queueEvent($reknownEvent);
+        }
+
+        $game->theah->queueEvent($schemeMoveEvent);
     }
 }

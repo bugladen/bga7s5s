@@ -218,11 +218,11 @@
     
             'planningPhaseResolveSchemes_01126': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const locations = this.getListofOutermostCityLocations();
                     this.numberOfCityLocationsSelectable = 1;
-    
-                    locations.forEach((location) => {
-                        this.makeCityLocationSelectable(location);
+
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
                     });
                 }
             },
@@ -230,19 +230,25 @@
     
             'planningPhaseResolveSchemes_01126_2': () => {
                 if (this.isCurrentPlayerActive()) {
-                    const selectedLocationElement = dojo.query(`[data-location="${args.args.args.chosenLocation}"]`)[0];
-                    const locations = this.getListofAvailableCityLocationImages();
-                    this.numberOfCityLocationsSelectable = 2;
-                    locations.forEach((location) => {
-                        const imageElement = $(location);
-                        if (imageElement.id == selectedLocationElement.id)
-                            {
-                                this.markCityLocationAsChosen(location);
-                                return;
-                            }
+                    const selectedLocationElement = this.getCityLocationElement(args.args.args.chosenLocation);
+                    const locationIds = args.args.args.locationIds || [];
+                    this.numberOfCityLocationsSelectable = args.args.args.requiredLocationCount ?? Math.min(2, locationIds.length);
 
-                            this.makeCityLocationSelectable(location);
-                        });
+                    if (selectedLocationElement) {
+                        this.markCityLocationAsChosen(selectedLocationElement);
+                    }
+
+                    locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+
+                    if (locationIds.length === 1) {
+                        const imageElement = this.getCityLocationElement(locationIds[0]);
+                        dojo.addClass(imageElement, '_7sfs-selected');
+                        this.selectedCityLocations = [imageElement.id];
+                        dojo.removeClass('actCityLocationsSelected', 'disabled');
+                    }
                 }
             },
     
