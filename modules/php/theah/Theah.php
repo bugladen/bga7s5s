@@ -1603,6 +1603,11 @@ class Theah
         return $this->db->areTransitionEventsOfTypeForPlayerQueued($playerId, $reactionType);
     }
 
+    public function hasQueuedCardMoveToLocation(int $cardId, string $toLocation): bool
+    {
+        return $this->db->hasQueuedCardMoveToLocation($cardId, $toLocation);
+    }
+
     public function deleteActionTriggeredEvents(string $actionId)
     {
         $this->db->deleteActionTriggeredEvents($actionId);

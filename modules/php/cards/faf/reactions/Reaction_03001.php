@@ -78,7 +78,7 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
                 return;
             }
 
-            $targets = $this->getOpposingCharactersAtLocation($event->theah, $cesca);
+            $targets = $this->getOpposingReactionTargets($event->theah, $cesca, $event);
             if (count($targets) == 0)
             {
                 return;
@@ -129,5 +129,39 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
     {
         $characters = $theah->getCharactersAtLocation($cesca->Location);
         return array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($cesca->ControllerId)));
+    }
+
+    private function getOpposingReactionTargets(Theah $theah, Character $cesca, EventSorcererAbilityPlayed $event): array
+    {
+        $targets = $this->getOpposingCharactersAtLocation($theah, $cesca);
+
+        // WHY: EventCardMoving queues EventCardMoved after EventSorcererAbilityPlayed in the
+        // same batch (e.g. Pull / Action_01172). The target-count guard runs too early unless
+        // we also count an opposing ability target that is still queued to move to Cesca.
+        if ($event->performerId != $cesca->Id || $event->targetId == 0)
+        {
+            return $targets;
+        }
+
+        $target = $theah->getCharacterById($event->targetId);
+        if ($target == null || ! $target->isNotControlledByPlayer($cesca->ControllerId))
+        {
+            return $targets;
+        }
+
+        foreach ($targets as $character)
+        {
+            if ($character->Id == $target->Id)
+            {
+                return $targets;
+            }
+        }
+
+        if ($theah->hasQueuedCardMoveToLocation($target->Id, $cesca->Location))
+        {
+            $targets[] = $target;
+        }
+
+        return $targets;
     }
 }

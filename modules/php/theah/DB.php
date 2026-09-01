@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 
 /** @disregard */
 class DB
@@ -111,6 +112,23 @@ class DB
         $sql = "SELECT COUNT(*) FROM events 
                 WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$playerId}%' AND event_serialized LIKE '%{$reactionType}%')";
         return $this->getUniqueValue($sql) > 0;
+    }
+
+    public function hasQueuedCardMoveToLocation(int $cardId, string $toLocation): bool
+    {
+        $sql = "SELECT event_serialized FROM events WHERE event_serialized LIKE '%EventCardMoved%'";
+        foreach ($this->getCollection($sql) as $row)
+        {
+            $event = $this->game->safeUnserialize($row['event_serialized']);
+            if ($event instanceof EventCardMoved
+                && $event->cardId === $cardId
+                && $event->toLocation === $toLocation)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //Use this to delete all reaction transition events that might pile up from other events
