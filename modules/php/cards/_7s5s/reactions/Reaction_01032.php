@@ -506,52 +506,53 @@ class Reaction_01032 extends RiskReaction
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
-            if ($this->inHandThug)
+            if ($event->reactionId != 'pass')
             {
                 $owner = $this->getOwningCard($event->theah);
-
-                if ($event->reactionId != 'pass')
-                {                    
-                    $characterId = str_replace("discard-", "", $event->reactionId);
-                    $character = $event->theah->getCardById($characterId);
-                    $discardEvent = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $characterId, $owner->Id);
-                    $event->theah->queueEvent($discardEvent);
-
-                    $game = $event->theah->game;
-                    $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to discard ${character_inject_code}.'), [
-                        "reaction_inject_code" => $owner->getInjectCode(),
-                        "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                        "character_inject_code" => $character->getInjectCode(),
-                    ]);
-
-                    $this->clearEvents($game);
-                    $this->inHandThug = false;
-                    $owner->IsUpdated = true;
-                }
+                $this->clearEvents($event->theah->game);
+                $this->inHandThug = false;
+                $this->inPlayRedHand = false;
+                $owner->IsUpdated = true;
             }
+        }
+    }
 
-            if ($this->inPlayRedHand)
-            {
-                if ($event->reactionId != 'pass')
-                {
-                    $owner = $this->getOwningCard($event->theah);
-                    $characterId = str_replace("destroy-", "", $event->reactionId);
-                    $character = $event->theah->getCardById($characterId);
-                    $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $characterId, $character->Location);
-                    $event->theah->queueEvent($destroyEvent);
+    private function payCost(Game $game, string $reactionId): void
+    {
+        $owner = $this->getOwningCard($game->theah);
 
-                    $game = $event->theah->game;
-                    $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to destroy ${character_inject_code}.'), [
-                        "reaction_inject_code" => $owner->getInjectCode(),
-                        "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                        "character_inject_code" => $character->getInjectCode(),
-                    ]);
+        if ($this->inHandThug)
+        {
+            $characterId = str_replace("discard-", "", $reactionId);
+            $character = $game->theah->getCardById($characterId);
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $characterId, $owner->Id);
+            $game->theah->queueEvent($discardEvent);
 
-                    $this->clearEvents($game);
-                    $this->inPlayRedHand = false;
-                    $owner->IsUpdated = true;
-                }
-            }
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to discard ${character_inject_code}.'), [
+                "reaction_inject_code" => $owner->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "character_inject_code" => $character->getInjectCode(),
+            ]);
+
+            $this->inHandThug = false;
+            $owner->IsUpdated = true;
+        }
+
+        if ($this->inPlayRedHand)
+        {
+            $characterId = str_replace("destroy-", "", $reactionId);
+            $character = $game->theah->getCardById($characterId);
+            $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $characterId, $character->Location);
+            $game->theah->queueEvent($destroyEvent);
+
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to destroy ${character_inject_code}.'), [
+                "reaction_inject_code" => $owner->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "character_inject_code" => $character->getInjectCode(),
+            ]);
+
+            $this->inPlayRedHand = false;
+            $owner->IsUpdated = true;
         }
     }
 
@@ -622,11 +623,10 @@ class Reaction_01032 extends RiskReaction
 
         if ($reactionId != 'pass')
         {
-            if ($this->inHandThug)
-            {
-                $characterId = str_replace("discard-", "", $reactionId);
-                $game->globals->set(Game::INVALID_PAY_CARD_IDS, [$characterId]);
-            }
+            // WHY: Thug discard / Red Hand destroy must resolve before pay state
+            // queues EventRiskPlayed — otherwise Night of Drinking (01109) can
+            // cancel Unyielding Loyalty without the additional cost being paid.
+            $this->payCost($game, $reactionId);
 
             $owner = $this->getOwningCard($game->theah);
             $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
