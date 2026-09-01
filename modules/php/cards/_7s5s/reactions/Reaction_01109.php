@@ -2,8 +2,10 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01032;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01140;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01169;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01032;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
@@ -171,6 +173,18 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
                 foreach ($risk->getReactions() as $reaction)
                 {
                     if ($reaction instanceof Reaction_01140)
+                    {
+                        $reaction->revertCancellation($game->theah);
+                    }
+                }
+            }
+
+            //Edge case: Unyielding Loyalty — restore the effect it had cancelled
+            if ($risk instanceof _01032)
+            {
+                foreach ($risk->getReactions() as $reaction)
+                {
+                    if ($reaction instanceof Reaction_01032)
                     {
                         $reaction->revertCancellation($game->theah);
                     }

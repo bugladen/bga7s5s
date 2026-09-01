@@ -572,6 +572,20 @@ class Reaction_01032 extends RiskReaction
         $this->challengeIssuedEvent = null;
     }
 
+    public function revertCancellation(Theah $theah): void
+    {
+        $game = $theah->game;
+        $this->releaseEvent($game);
+        $this->inHandThug = false;
+        $this->inPlayRedHand = false;
+
+        $owner = $this->getOwningCard($theah);
+        if ($owner !== null)
+        {
+            $owner->IsUpdated = true;
+        }
+    }
+
     private function releaseEvent(Game $game)
     {
         if ($this->engagedEvent)
