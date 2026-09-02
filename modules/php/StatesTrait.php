@@ -1623,9 +1623,6 @@ trait StatesTrait
 
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
-
-        $actor = $this->theah->getDuelRoundActor();
-        $actorId = $actor->Id;
         $challengerId = $this->theah->getDuelChallengerId();
 
         // WHY: Adversary-threat nullify already ran in stDuelEndOfRound BEFORE
@@ -1650,14 +1647,25 @@ trait StatesTrait
         // WHY live getCharacterById (not getDuelRoundOpponent): EndOfRound movers
         // (e.g. Technique_01036) already ran. Check board state now — do NOT nullify
         // threat here (that commit happened in stDuelEndOfRound while co-located).
+        //
+        // WHY actor-dead exception: leftover actor wounds can put the actor in the
+        // locker while adversary pool threat remains for next round. Locker != city
+        // would look like "not co-located" and wrongly end the duel. Continue when
+        // the actor is dead and the adversary is still present; end when the
+        // adversary is gone, or a living actor is no longer co-located (flee/split).
         $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+        $actorId = $actor->Id;
         $adversaryId = $this->theah->getDuelOpponentId($actorId);
         $adversary = $this->theah->getCharacterById($adversaryId);
-        $adversaryNotPresent = $adversary === null
-            || $this->characterIsInDiscardOrLocker($adversary)
-            || $actor->Location != $adversary->Location;
 
-        if ($adversaryNotPresent)
+        $actorIsDead = $this->characterIsInDiscardOrLocker($actor);
+        $adversaryIsGone = $adversary === null || $this->characterIsInDiscardOrLocker($adversary);
+        $livingActorNotCoLocated = !$actorIsDead
+            && $adversary !== null
+            && $actor->Location != $adversary->Location;
+
+        if ($adversaryIsGone || $livingActorNotCoLocated)
         {
             $this->notifyAllPlayers("message", clienttranslate('The duel ends because ${adversary_name} is no longer present.'), [
                 'i18n' => ['adversary_name'],
