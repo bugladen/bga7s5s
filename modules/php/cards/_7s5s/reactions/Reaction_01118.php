@@ -27,8 +27,17 @@ class Reaction_01118 extends CardReaction
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $locations = $theah->getCityLocations();
         $elina = $this->getOwningCharacter($theah);
+
+        // WHY: Renown only exists on city locations. Player Home shares one string
+        // across players and is not in cityLocations — moving renown there crashes EventHub.
+        if (!$theah->cardInCity($elina))
+        {
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
+            return $array;
+        }
+
+        $locations = $theah->getCityLocations();
         foreach ($locations as $location)
         {
             if ($location->Name == $elina->Location)
@@ -70,6 +79,15 @@ class Reaction_01118 extends CardReaction
         if ($reactionId != "pass")
         {
             $elina = $this->getOwningCharacter($game->theah);
+
+            // WHY: Elina may have moved Home after the reaction was queued but before
+            // the player chose a source location — skip the move rather than crash EventHub.
+            if (!$game->theah->cardInCity($elina))
+            {
+                $game->gamestate->nextState("done");
+                return;
+            }
+
             $location = str_replace("moveRenown-", "", $reactionId);
 
             $batchId = $game->getNextEventBatchId();
