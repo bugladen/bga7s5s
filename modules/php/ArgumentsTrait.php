@@ -77,10 +77,11 @@ trait ArgumentsTrait
         {
             $performer = $this->theah->getCharacterById($lockedPerformerId);
 
+            // WHY: lock restricts which character can act; Pass remains available
+            // (Pattern A.2 / Bloody Entrance — "may perform another action").
             return [
                 '_private' => [
                     'active' => [
-                        'mustPerformAction' => true,
                         'lockedPerformerId' => $lockedPerformerId,
                         'canChallenge' => $performer !== null && $this->theah->characterCanBasicChallenge($performer),
                         'canClaim' => $performer !== null && $this->theah->characterCanBasicClaim($performer),

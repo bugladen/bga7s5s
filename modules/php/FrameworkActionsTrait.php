@@ -51,10 +51,9 @@ trait FrameworkActionsTrait
 
     public function actHighDramaPass(): void
     {
-        if ($this->mustPerformExtraAction())
-        {
-            throw new UserException(clienttranslate("You must perform an action with the designated character."));
-        }
+        // WHY: EXTRA_ACTION_PERFORMER locks *who* may act, not *whether* they must act.
+        // Bloody Entrance (and Pattern A.2) grants an optional follow-up — Pass is allowed.
+        // Lock clears in stNextPlayer's else branch when EXTRA_ACTIONS is already 0.
 
         $playerId = $this->getActivePlayerId();
 

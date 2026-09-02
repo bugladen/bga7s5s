@@ -98,9 +98,10 @@ onUpdateActionButtons: function( stateName, args )
             }
             if (args._private.hasBrutes)
                 this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
-                        
-            if (! args._private.mustPerformAction)
-                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
+
+            // WHY: EXTRA_ACTION_PERFORMER may lock the performer, but Pass is still allowed
+            // (e.g. Bloody Entrance — "may perform another action").
+            this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
         },
 
         'highDramaMoveActionChoosePerformer': () => {

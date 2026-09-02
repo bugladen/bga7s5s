@@ -137,11 +137,12 @@ class Action_03032 extends RiskAction implements ISorcererAbility
             );
             $game->theah->queueEvent($sorceryPlayedEvent);
 
-            // WHY: mandatory follow-up action locked to this performer — consumed via Game::EXTRA_ACTION_PERFORMER
+            // WHY: optional follow-up locked to this performer (Pass allowed). EXTRA_ACTIONS
+            // keeps the player; EXTRA_ACTION_PERFORMER restricts who can act if they do.
             $game->globals->set(Game::EXTRA_ACTIONS, 1);
             $game->globals->set(Game::EXTRA_ACTION_PERFORMER, $performer->Id);
 
-            $game->notify->all("message", clienttranslate('${player_name} must perform another action with ${performer_name}.'), [
+            $game->notify->all("message", clienttranslate('${player_name} may perform another action with ${performer_name}.'), [
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "performer_name" => $performer->Name,
             ]);

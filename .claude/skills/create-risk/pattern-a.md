@@ -173,11 +173,13 @@ For City Actions like "Target an adjacent enemy character • Move them …" (`_
 
 The card-specific sub-state is needed (you can't use the shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`) because no challenge is being issued — the shared chooser drives the challenge flow.
 
-### Pattern A.2 — Wound your performer • Move them to any location • Mandatory extra action (same performer)
+### Pattern A.2 — Wound your performer • Move them to any location • Optional extra action (same performer)
 
-For City Actions like "Wound your performer • Move them to any location, then they may perform another action" with the italic *(It must be performed and they must be the performer of the action)* — see `_03032` Bloody Entrance.
+For Actions like "Wound your performer • Move them to any location, then they may perform another action" with the italic *(It must be performed and they must be the performer of the action)* — see `_03032` Bloody Entrance.
 
-**Action shape** (`RiskCityAction implements ISorcererAbility` when Sorcerer-prefixed):
+**Reading the italic:** "may perform" → Pass is allowed. The italic means that *if* they take the follow-up, that wound/move character must be the performer — not that Pass is forbidden. (Earlier implementations wrongly hid Pass; corrected 2026-09-02.)
+
+**Action shape** (`RiskAction` / `RiskCityAction` as printed; `implements ISorcererAbility` when Sorcerer-prefixed):
 
 1. **`RequiresPerformerSelected = true`**. Filter performers in `getPerformersForAction`: Sorcerer trait (when text says Sorcerer) + at least one valid destination.
 2. **Destination list** — all city location names + `LOCATION_PLAYER_HOME` if the performer is not already at Home. Exclude the performer's current location. Copy `Action_03029::getValidDestinationLocations` / `Action_03032` — this is the "any location" pool, **not** `getAdjacentCityLocations`.
@@ -194,20 +196,18 @@ For City Actions like "Wound your performer • Move them to any location, then 
      ```
    - `createActionResolvedEvent` + `nextState("locationChosen")`
 
-**WHY two globals:** `EXTRA_ACTIONS` is consumed in `stNextPlayer` to keep the same *player* active. `CHOSEN_PERFORMER` is wiped at the start of every `stNextPlayer` along with other action globals — it cannot carry the lock across the extra-action boundary. `EXTRA_ACTION_PERFORMER` survives until the turn actually advances to the next player (cleared in the `else` branch of `stNextPlayer` when `EXTRA_ACTIONS == 0`).
+**WHY two globals:** `EXTRA_ACTIONS` is consumed in `stNextPlayer` to keep the same *player* active. `CHOSEN_PERFORMER` is wiped at the start of every `stNextPlayer` along with other action globals — it cannot carry the lock across the extra-action boundary. `EXTRA_ACTION_PERFORMER` survives until the turn actually advances to the next player (cleared in the `else` branch of `stNextPlayer` when `EXTRA_ACTIONS == 0`). By the time the player is on the extra turn, `EXTRA_ACTIONS` is already 0 — so Pass → `stNextPlayer` clears the lock and advances normally.
 
 **Framework enforcement** (already wired — do not reimplement per card):
 
 | Layer | What it does |
 |---|---|
-| `Game::getExtraActionPerformerId()` / `mustPerformExtraAction()` / `assertIsExtraActionPerformer()` / `filterPerformerIdsForExtraAction()` | Helpers on `Game.php` |
+| `Game::getExtraActionPerformerId()` / `mustPerformExtraAction()` / `assertIsExtraActionPerformer()` / `filterPerformerIdsForExtraAction()` | Helpers on `Game.php` / `UtilitiesTrait` |
 | `Theah::characterCanMove/Recruit/Equip/BasicChallenge/BasicClaim()` | Single-character versions of the basic-action availability checks |
 | `Theah::actionAvailableToPerformer()` / `playerHasInPlayActionsForPerformer()` / `playerHasInHandActionsForPerformer()` | Filter card actions to those the locked character can perform |
-| `ArgumentsTrait::argPlayerTurn()` | When locked: `mustPerformAction=true`, recompute each `can*` for that character, hide brutes |
+| `ArgumentsTrait::argPlayerTurn()` | When locked: recompute each `can*` for that character, hide brutes; Pass still offered |
 | All performer-chooser args | `filterPerformerIdsForExtraAction()` → only the locked id |
 | All `actHighDrama*PerformerChosen` | `assertIsExtraActionPerformer($id)` |
-| `actHighDramaPass()` | throws when `mustPerformExtraAction()` |
-| `OnUpdateActionButtons.js` | hides Pass when `args._private.mustPerformAction` |
 
 **Card-side only:** set both globals when the effect resolves. No additional framework edits needed for future cards that reuse this pattern.
 
