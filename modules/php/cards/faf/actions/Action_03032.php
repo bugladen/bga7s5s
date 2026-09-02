@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions;
 
 use Bga\GameFramework\UserException;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_03032 extends RiskCityAction implements ISorcererAbility
+class Action_03032 extends RiskAction implements ISorcererAbility
 {
     public function __construct()
     {
