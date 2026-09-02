@@ -131,6 +131,21 @@ class DB
         return false;
     }
 
+    public function getQueuedCardMoveDestination(int $cardId): ?string
+    {
+        $sql = "SELECT event_serialized FROM events WHERE event_serialized LIKE '%EventCardMoved%'";
+        foreach ($this->getCollection($sql) as $row)
+        {
+            $event = $this->game->safeUnserialize($row['event_serialized']);
+            if ($event instanceof EventCardMoved && $event->cardId === $cardId)
+            {
+                return $event->toLocation;
+            }
+        }
+
+        return null;
+    }
+
     //Use this to delete all reaction transition events that might pile up from other events
     public function deleteTransitionEvents(string $reactionId)
     {

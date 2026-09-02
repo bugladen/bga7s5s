@@ -68,7 +68,12 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
         {
             $cesca = $this->getOwningCharacter($event->theah);
 
-            if (! $event->theah->cardInCity($cesca))
+            // WHY: EventCardMoved is queued after EventSorcererAbilityPlayed (CardMoving
+            // appends it). Cesca may still be at Home / old city when this runs; treat a
+            // queued city arrival as in-city for City Reaction gating.
+            $queuedDestination = $event->theah->getQueuedCardMoveDestination($cesca->Id);
+            $willBeInCity = $queuedDestination !== null && $event->theah->locationInCity($queuedDestination);
+            if (! $event->theah->cardInCity($cesca) && ! $willBeInCity)
             {
                 return;
             }
@@ -136,32 +141,50 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
         $targets = $this->getOpposingCharactersAtLocation($theah, $cesca);
 
         // WHY: EventCardMoving queues EventCardMoved after EventSorcererAbilityPlayed in the
-        // same batch (e.g. Pull / Action_01172). The target-count guard runs too early unless
-        // we also count an opposing ability target that is still queued to move to Cesca.
-        if ($event->performerId != $cesca->Id || $event->targetId == 0)
-        {
-            return $targets;
-        }
+        // same batch. The target-count guard runs too early unless we also count characters
+        // that will be co-located once pending moves resolve.
 
-        $target = $theah->getCharacterById($event->targetId);
-        if ($target == null || ! $target->isNotControlledByPlayer($cesca->ControllerId))
+        // Case A — opposing ability target queued to move to Cesca (e.g. Pull / Action_01172).
+        if ($event->performerId == $cesca->Id && $event->targetId != 0)
         {
-            return $targets;
-        }
-
-        foreach ($targets as $character)
-        {
-            if ($character->Id == $target->Id)
+            $target = $theah->getCharacterById($event->targetId);
+            if ($target != null
+                && $target->isNotControlledByPlayer($cesca->ControllerId)
+                && ! $this->targetsContainId($targets, $target->Id)
+                && $theah->hasQueuedCardMoveToLocation($target->Id, $cesca->Location))
             {
-                return $targets;
+                $targets[] = $target;
             }
         }
 
-        if ($theah->hasQueuedCardMoveToLocation($target->Id, $cesca->Location))
+        // Case B — Cesca herself queued to move (e.g. Follow the Thread / Action_03009).
+        // Opposing characters at the destination are not yet visible via cesca->Location.
+        $destination = $theah->getQueuedCardMoveDestination($cesca->Id);
+        if ($destination !== null)
         {
-            $targets[] = $target;
+            foreach ($theah->getCharactersAtLocation($destination) as $character)
+            {
+                if ($character->isNotControlledByPlayer($cesca->ControllerId)
+                    && ! $this->targetsContainId($targets, $character->Id))
+                {
+                    $targets[] = $character;
+                }
+            }
         }
 
         return $targets;
+    }
+
+    private function targetsContainId(array $targets, int $id): bool
+    {
+        foreach ($targets as $character)
+        {
+            if ($character->Id == $id)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

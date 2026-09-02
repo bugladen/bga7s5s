@@ -1608,6 +1608,11 @@ class Theah
         return $this->db->hasQueuedCardMoveToLocation($cardId, $toLocation);
     }
 
+    public function getQueuedCardMoveDestination(int $cardId): ?string
+    {
+        return $this->db->getQueuedCardMoveDestination($cardId);
+    }
+
     public function deleteActionTriggeredEvents(string $actionId)
     {
         $this->db->deleteActionTriggeredEvents($actionId);
