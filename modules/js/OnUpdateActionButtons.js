@@ -210,9 +210,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
-            if (args._private.equipType === this.SMUGGLED_ITEM_EQUIP_TYPE)
-                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backSmuggledItem'}), { id: 'actBack', color: 'alert' });
-            else if (args._private.equipType === this.NORMAL_EQUIP_TYPE) 
+            // WHY: SMUGGLED_ITEM (Action_01187) arrives here after the in-play action is
+            // already confirmed — no prior chooser to return to, so no back arrow.
+            if (args._private.equipType === this.NORMAL_EQUIP_TYPE)
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             if (args._private.attachmentsInHand.length > 0) {
                 this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => this.bgaPerformAction('actSimpleTransition', {transition: 'equipFromHand'}));

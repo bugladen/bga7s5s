@@ -129,7 +129,6 @@ trait ZombieTrait
                 case "highDramaChallengeActionActivateTechnique":
                 case "highDramaClaimActionChoosePerformer":
                 case "highDramaEquipActionChoosePerformer":
-                case "highDramaEquipActionChooseAttachmentLocation":
                 case "highDramaEquipActionChooseAttachmentFromHand":
                 case "highDramaEquipActionPayForAttachmentFromHand":
                 case "highDramaEquipActionChooseAttachmentFromPlay":
@@ -149,6 +148,19 @@ trait ZombieTrait
                 case "highDramaBruteActionPayForBrute":
                     // Default action: Go back to main turn
                     $this->actBack();
+                    break;
+
+                case "highDramaEquipActionChooseAttachmentLocation":
+                    // WHY: SMUGGLED_ITEM has no human back UI, but zombie must unwind via
+                    // backSmuggledItem toward a state where it can pass — not advance deeper.
+                    if ($this->globals->get(Game::EQUIP_TYPE) == Game::SMUGGLED_ITEM_EQUIP_TYPE)
+                    {
+                        $this->actBackWithTransition('backSmuggledItem');
+                    }
+                    else
+                    {
+                        $this->actBack();
+                    }
                     break;
 
                 case "highDramaInHandActionPay":

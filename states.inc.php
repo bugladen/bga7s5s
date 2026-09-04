@@ -1535,6 +1535,9 @@ $machinestates = [
                 "equipFromHand" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND, 
                 "equipFromPlay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY, 
                 "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER,
+                // WHY: kept for zombie abort only — human UI does not show back for
+                // SMUGGLED_ITEM (Action_01187 already confirmed). Zombie uses this to
+                // unwind toward a passable state.
                 "backSmuggledItem" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION
             ]
         ],
