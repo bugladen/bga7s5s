@@ -216,9 +216,9 @@ class DeckValidator
             $uniqueCardIds[] = $cardId;
         }
 
-        if ($totalCount != 40)
+        if ($totalCount < 40)
         {
-            $errors[] = clienttranslate('The Faction Deck must contain 40 cards.');
+            $errors[] = sprintf(clienttranslate('The Faction Deck must contain at least 40 cards. It contains %d cards.'), $totalCount);
             return false;
         }
 
