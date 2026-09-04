@@ -548,6 +548,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
                     duration: 400,
                     preserveScale: true,
                 });
+                // WHY: Hide before width collapse — fill:forwards leaves the card
+                // visually on the character; collapsing an opaque ghost looks like
+                // a second copy lingering until destroy.
+                cityAttachmentElement.style.opacity = '0';
                 // WHY: Collapse the city-row slot after the fly — doing this in
                 // parallel made the card shrink while it was still in transit.
                 await cityAttachmentElement.animate([

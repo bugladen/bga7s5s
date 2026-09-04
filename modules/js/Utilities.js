@@ -2336,12 +2336,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
         cardElement.style.transition = 'none';
         if (preserveScale) {
+            // WHY fill:forwards — without it WAAPI snaps the card back to its
+            // layout rect when the animation ends, which looks like the card
+            // reappears in the city row before destroy/collapse (equip fly).
             await cardElement.animate([
                 { transform: 'translate(0, 0)', opacity: 1 },
                 { transform: `translate(${deltaX}px, ${deltaY}px)`, opacity: 1 }
             ], {
                 duration: duration,
-                easing: 'ease-out'
+                easing: 'ease-out',
+                fill: 'forwards'
             }).finished;
             return;
         }
