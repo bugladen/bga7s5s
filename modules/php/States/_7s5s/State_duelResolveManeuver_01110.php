@@ -20,13 +20,18 @@ class State_duelResolveManeuver_01110 extends GameState
             name: "duelResolveManeuver_01110",
 
             description: clienttranslate('${actplayer} is choosing their Nothing Personal options.'),
-            descriptionMyTurn: clienttranslate('Nothing Personal') . clienttranslate(': ${you} must choose to take another wound or Location becomes Uncontrolled:'),
+            descriptionMyTurn: clienttranslate('Nothing Personal') . clienttranslate(': ${you} must choose their Nothing Personal options:'),
             transitions: [
                 "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
         );
+    }
+
+    public function getArgs(): array
+    {
+        return $this->game->argsForState();
     }
     
     #[PossibleAction]

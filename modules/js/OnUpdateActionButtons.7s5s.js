@@ -999,7 +999,11 @@
             },
 
             'duelResolveManeuver_01110': () => {
-                this.addActionButton(`actTakeWound`, _('Take Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                // WHY: First wound may have already destroyed the adversary into Locker/Discard —
+                // canTakeWound is false then; only Location Becomes Uncontrolled remains.
+                if (args.args.canTakeWound) {
+                    this.addActionButton(`actTakeWound`, _('Take Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                }
                 this.addActionButton(`actLocationBecomesUncontrolled`, _('Location Becomes Uncontrolled'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 

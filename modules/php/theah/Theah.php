@@ -1310,8 +1310,15 @@ class Theah
     // CityLocation->CanBeClaimed flag — cards that want to forbid a claim (e.g. Action_01130
     // / Indomitable Will) toggle the flag rather than encoding their own card-specific check
     // in this method. $playerId is currently unused but reserved for future per-player rules.
+    // WHY: Guard locationInCity first — callers sometimes pass Discard-/Locker- after a
+    // character died mid-flow; getCityLocation would throw a fatal Exception.
     public function canLocationBeClaimedBy(int $playerId, string $location): bool
     {
+        if (! $this->locationInCity($location))
+        {
+            return false;
+        }
+
         return $this->getCityLocation($location)->CanBeClaimed;
     }
 
@@ -1328,8 +1335,15 @@ class Theah
     // WHY: Central rule for "can this location be uncontrolled right now". Parallel to
     // canLocationBeClaimedBy — Indomitable Will (Action_01130) also prevents un-control,
     // and toggles CanBecomeUncontrolled on the location. $playerId reserved for future use.
+    // WHY locationInCity guard: same as canLocationBeClaimedBy — Locker-/Discard- must
+    // return false, not throw (Maneuver_01110 tournoi crash when adversary died first).
     public function canLocationBecomeUncontrolledBy(int $playerId, string $location): bool
     {
+        if (! $this->locationInCity($location))
+        {
+            return false;
+        }
+
         return $this->getCityLocation($location)->CanBecomeUncontrolled;
     }
 
