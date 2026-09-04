@@ -82,7 +82,12 @@ class _01041 extends Character implements IHasActions
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardMoved && $event->cardId == $this->Id && $event->fromLocation != Game::LOCATION_PLAYER_HOME)
+        // WHY: Must handle home→city self-moves. After dusk everyone is at
+        // LOCATION_PLAYER_HOME; the next High Drama move into a city with an opposing
+        // Sorcerer is how the aura re-applies. getOpposingSorcererCount short-circuits
+        // home to 0, so from=home is safe (fromCount always 0; +1 only when toCount>=1).
+        // Muster into the city is still covered by EventCharacterMustered below.
+        if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
         {
             if ($this->getOpposingSorcererCount($event->theah, $event->fromLocation) == 0 && $this->getOpposingSorcererCount($event->theah, $event->toLocation) >= 1)
             {
@@ -98,6 +103,8 @@ class _01041 extends Character implements IHasActions
         // compare $this->Location with event locations; because LOCATION_PLAYER_HOME is
         // shared, those equality checks would falsely match opposing characters at other
         // players' homes (notably during dusk when everyone routes to "Player Home").
+        // Self-move stays above this guard: EventCardMoved runs before Location updates,
+        // so at handler time she is still at her old location when leaving the city.
         if ($this->Location == Game::LOCATION_PLAYER_HOME)
         {
             return;
