@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
@@ -49,16 +50,7 @@ class Technique_DestroyPlusOneThrust extends Technique
             $event->thrust += 1;
             $event->explanations[] = sprintf(clienttranslate("%s is destroyed and adds +1 Thrust"), $owner->getInjectCode());
 
-            if ($owner instanceof Attachment && $owner->isAttached())
-            {
-                $character = $this->getOwningCharacter($event->theah);
-                $unequipEvent = EventFactory::createAttachmentUnequippedEvent($owner->ControllerId, $character->Id, $owner->Id);
-                $event->theah->queueEvent($unequipEvent);
-    
-                $owner = $this->getOwningCard($event->theah);
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($owner->OwnerId, $owner->Id, $owner->Location, $owner->Id);
-                $event->theah->queueEvent($discardEvent);
-            }
+            $this->queueDestroyOwner($event->theah, $owner);
         }
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
@@ -67,12 +59,35 @@ class Technique_DestroyPlusOneThrust extends Technique
             $event->adversaryThreat += 1;
             $event->explanations[] = sprintf(clienttranslate("%s is destroyed and adds +1 Threat"), $owner->getInjectCode());
 
-            $character = $this->getOwningCharacter($event->theah);
-            $unequipEvent = EventFactory::createAttachmentUnequippedEvent($owner->ControllerId, $character->Id, $owner->Id);
-            $event->theah->queueEvent($unequipEvent);
-
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($owner->OwnerId, $owner->Id, $owner->Location, $owner->Id);
-            $event->theah->queueEvent($discardEvent);
+            // WHY: Challenge reject still runs GenerateChallengeThreat (rejection-wound
+            // math). The old code always did getOwningCharacter()->Id with no attach
+            // guard — unlike the duel branch — so an unattached owner (or a Character
+            // copy with no attached host) fataled here on zombie refuse.
+            $this->queueDestroyOwner($event->theah, $owner);
         }
+    }
+
+    /**
+     * Destroy the host attachment: unequip if needed, then discard from play.
+     * WHY skip non-Attachment owners: Katain/Yepikhodov copies set OwnerId to the
+     * Character; "Destroy this card" must not unequip/discard that Character.
+     * WHY use AttachedToId not getOwningCharacter(): avoids null->Id when the
+     * attach target is missing from Theah while AttachedToId is still set.
+     */
+    private function queueDestroyOwner(Theah $theah, ?Card $owner): void
+    {
+        if (! ($owner instanceof Attachment))
+        {
+            return;
+        }
+
+        if ($owner->isAttached())
+        {
+            $unequipEvent = EventFactory::createAttachmentUnequippedEvent($owner->ControllerId, $owner->AttachedToId, $owner->Id);
+            $theah->queueEvent($unequipEvent);
+        }
+
+        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($owner->OwnerId, $owner->Id, $owner->Location, $owner->Id);
+        $theah->queueEvent($discardEvent);
     }
 }
