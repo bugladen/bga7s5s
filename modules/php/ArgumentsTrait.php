@@ -19,7 +19,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
 trait ArgumentsTrait
@@ -803,18 +802,8 @@ trait ArgumentsTrait
 
         // WHY: Daniella (_03013) Continuous — opt-in at the duel hub so the adversary
         // can be tagged Sorcerer before Technique/Maneuver choice (Reaction is too late).
-        $considerAdversarySorcererAvailable = false;
-        if ($actor instanceof IHasActions)
-        {
-            foreach ($actor->getActions() as $action)
-            {
-                if ($action instanceof Action_03013 && $action->isAvailableAsDuelAction($this->theah))
-                {
-                    $considerAdversarySorcererAvailable = true;
-                    break;
-                }
-            }
-        }
+        // Looks at Daniella at the actor's location, not only when she is the actor.
+        $considerAdversarySorcererAvailable = Action_03013::findAvailableDuelAction($this->theah) !== null;
 
         $duelType = $this->globals->get(Game::DUEL_TYPE);
         if ($duelType == Game::VLADISLAV_DUEL_TYPE)

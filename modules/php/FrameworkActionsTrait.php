@@ -19,7 +19,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\LocationAction;
@@ -1459,27 +1458,13 @@ trait FrameworkActionsTrait
     /**
      * Daniella (_03013): consider the duel adversary a Sorcerer until end of turn.
      * Stays on the duel hub so Technique/Maneuver can be chosen afterward.
+     * Daniella need not be the actor — only at the actor's location (same controller).
      */
     public function actDuelActionConsiderAdversarySorcerer()
     {
         $this->theah->buildCity();
 
-        $actor = $this->theah->getDuelRoundActor();
-        if (! ($actor instanceof IHasActions))
-        {
-            throw new UserException($this->translate("That Duel Action is not available."));
-        }
-
-        $action = null;
-        foreach ($actor->getActions() as $candidate)
-        {
-            if ($candidate instanceof Action_03013)
-            {
-                $action = $candidate;
-                break;
-            }
-        }
-
+        $action = Action_03013::findAvailableDuelAction($this->theah);
         if ($action === null)
         {
             throw new UserException($this->translate("That Duel Action is not available."));

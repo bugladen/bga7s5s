@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -132,13 +133,17 @@ class Action_03013 extends CharacterAction
     }
 
     /**
-     * Duel hub opt-in: available when Daniella is the current round actor and the
-     * adversary is not already considered a Sorcerer.
+     * Duel hub opt-in: available when Daniella shares the actor's location (same
+     * controller) and the adversary is not already considered a Sorcerer.
      *
      * WHY a duelChooseAction button (not only Reaction_03013a): Technique availability
      * (e.g. Technique_03018) is evaluated when the player opens Technique from the hub.
      * Reaction_03013a fires after Maneuver/Technique activate — too late to unlock a
      * Sorcerer-gated Technique for this round. Tagging at the hub first fixes that.
+     *
+     * WHY not require Daniella to be the duel participant: printed ability scopes to
+     * "while using your abilities" while characters oppose Daniella. A crewmate can
+     * be the actor; Daniella only needs to be at that location so the adversary opposes her.
      */
     public function isAvailableAsDuelAction(Theah $theah): bool
     {
@@ -148,13 +153,20 @@ class Action_03013 extends CharacterAction
         }
 
         $daniella = $this->getOwningCharacter($theah);
-        if ($daniella === null)
+        if ($daniella === null || $theah->game->characterIsInDiscardOrLocker($daniella))
         {
             return false;
         }
 
         $actor = $theah->getDuelRoundActor();
-        if ($actor === null || $actor->Id !== $daniella->Id)
+        if ($actor === null)
+        {
+            return false;
+        }
+
+        // Same player ("your abilities") and same location (adversary opposes Daniella).
+        if ($daniella->ControllerId !== $actor->ControllerId
+            || $daniella->Location !== $actor->Location)
         {
             return false;
         }
@@ -167,6 +179,41 @@ class Action_03013 extends CharacterAction
 
         return ! $adversary->hasTrait("Sorcerer")
             && ! in_array($adversary->Id, $this->TaggedOpposingIds, true);
+    }
+
+    /**
+     * Find Daniella's Action at the current duel actor's location (may not be the actor).
+     */
+    public static function findAvailableDuelAction(Theah $theah): ?self
+    {
+        $actor = $theah->getDuelRoundActor();
+        if ($actor === null)
+        {
+            return null;
+        }
+
+        foreach ($theah->getCharactersAtLocation($actor->Location) as $character)
+        {
+            if ($character->ControllerId !== $actor->ControllerId)
+            {
+                continue;
+            }
+
+            if (! ($character instanceof IHasActions))
+            {
+                continue;
+            }
+
+            foreach ($character->getActions() as $action)
+            {
+                if ($action instanceof self && $action->isAvailableAsDuelAction($theah))
+                {
+                    return $action;
+                }
+            }
+        }
+
+        return null;
     }
 
     public function actDuelConsiderAdversarySorcerer(Game $game): void

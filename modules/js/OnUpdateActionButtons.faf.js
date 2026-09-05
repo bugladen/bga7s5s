@@ -443,7 +443,7 @@
                 {
                     this.addActionButton(
                         `btnConsiderAdversarySorcerer`,
-                        _('Consider Adversary a Sorcerer'),
+                        _('(Daniella) Consider Adversary a Sorcerer'),
                         () => this.bgaPerformAction('actDuelActionConsiderAdversarySorcerer', {})
                     );
                     this.addTippyTooltip(
