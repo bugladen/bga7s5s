@@ -24,7 +24,7 @@ class Action_03013 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("(Continuous) Choose an opposing character at this location to be considered a Sorcerer");
+        $this->Name = clienttranslate("(Continuous) Choose an opposing character at to gain Sorcerer Trait");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
