@@ -365,7 +365,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addTippyTooltip( 'btnCombatCard', `<div class='_7sfs-basic-tooltip'>${_("Play a Combat Card. Technique and Maneuver can be chosen afterward.")}</div>` );
             }
             if ( ! args._private.endDuelAvailable)
-                this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {})) 
+                this.statusBar.addActionButton(_('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {}), { id: 'btnDone', color: 'alert' }); 
             if (args._private.endDuelAvailable)
                 this.addActionButton(`btnEndDuel`, _('End Duel'), () => this.bgaPerformAction('actDuelEndDuel', {})) 
         },
