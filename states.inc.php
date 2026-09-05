@@ -2212,6 +2212,7 @@ $machinestates = [
                 "actDuelActionChooseCombatCard",
                 "actDuelActionChooseTechnique",
                 "actDuelActionChooseManeuver",
+                "actDuelActionConsiderAdversarySorcerer",
                 "actDuelDoneRound",
                 "actDuelEndDuel"
             ],
@@ -2220,6 +2221,7 @@ $machinestates = [
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
                 "chooseManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                 "chooseGambleCard" => States::DUEL_GAMBLE_SETUP,
+                "considerAdversarySorcerer" => States::DUEL_CHOOSE_ACTION,
                 "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
         ],

@@ -180,6 +180,12 @@ class Action_03013 extends CharacterAction
         $adversary = $game->theah->getDuelRoundOpponent();
 
         $this->grantSorcerer($game, $daniella, $adversary);
+
+        // WHY: self-loop nextState does not run the event hub, so IsUpdated cards
+        // (adversary trait + Daniella's TaggedOpposingIds on this Action) would not
+        // flush unless we write them here. High Drama path relies on ActionResolved.
+        $game->updateCardObjectInDb($adversary);
+        $game->updateCardObjectInDb($daniella);
     }
 
     private function grantSorcerer(Game $game, Character $daniella, Character $character): void

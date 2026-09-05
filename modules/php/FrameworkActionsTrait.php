@@ -16,8 +16,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\LocationAction;
@@ -1452,6 +1454,41 @@ trait FrameworkActionsTrait
         }
 
         $this->gamestate->nextState("chooseTechnique");
+    }
+
+    /**
+     * Daniella (_03013): consider the duel adversary a Sorcerer until end of turn.
+     * Stays on the duel hub so Technique/Maneuver can be chosen afterward.
+     */
+    public function actDuelActionConsiderAdversarySorcerer()
+    {
+        $this->theah->buildCity();
+
+        $actor = $this->theah->getDuelRoundActor();
+        if (! ($actor instanceof IHasActions))
+        {
+            throw new UserException($this->translate("That Duel Action is not available."));
+        }
+
+        $action = null;
+        foreach ($actor->getActions() as $candidate)
+        {
+            if ($candidate instanceof Action_03013)
+            {
+                $action = $candidate;
+                break;
+            }
+        }
+
+        if ($action === null)
+        {
+            throw new UserException($this->translate("That Duel Action is not available."));
+        }
+
+        $action->actDuelConsiderAdversarySorcerer($this);
+
+        // Self-loop: refresh args so Technique list can include Sorcerer-gated options.
+        $this->gamestate->nextState("considerAdversarySorcerer");
     }
 
     public function actDuelTechniqueChosen(string $techniqueId)

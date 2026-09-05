@@ -436,6 +436,23 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            // WHY: Daniella hub opt-in — tag adversary Sorcerer before Technique choice.
+            // Core duelChooseAction runs first; this only adds the extra button when args say so.
+            'duelChooseAction': () => {
+                if (args._private && args._private.considerAdversarySorcererAvailable)
+                {
+                    this.addActionButton(
+                        `btnConsiderAdversarySorcerer`,
+                        _('Consider Adversary a Sorcerer'),
+                        () => this.bgaPerformAction('actDuelActionConsiderAdversarySorcerer', {})
+                    );
+                    this.addTippyTooltip(
+                        'btnConsiderAdversarySorcerer',
+                        `<div class='_7sfs-basic-tooltip'>${_("Grant the adversary Sorcerer until end of turn (Daniella)")}</div>`
+                    );
+                }
+            },
+
         }
 
         if ( methods[stateName] )
