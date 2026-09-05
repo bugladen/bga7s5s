@@ -282,7 +282,12 @@ class Reaction_03007 extends AttachmentReaction implements ISorcererAbility
         $deck = $game->getGameDeckObject();
         $deckName = $game->getPlayerFactionDeckName($this->opponentId);
 
+        // WHY: Must update Card->Location too — insertCard alone leaves Location=Hand
+        // while card_location becomes Faction-*. Gamble confirm (and similar) then
+        // reject a card the UI offered from the deck tops.
         $deck->insertCardOnExtremePosition($cardId, $deckName, false);
+        $card->Location = $deckName;
+        $game->updateCardObjectInDb($card);
 
         $game->notify->player($this->opponentId, "cardRemovedFromHand", clienttranslate('Private: ${reaction_inject_code}: you sink ${card_inject_code} from your hand.'), [
             "reaction_inject_code" => $owner->getInjectCode(),

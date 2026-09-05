@@ -1672,9 +1672,17 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Card not found."));
         }
 
+        // WHY: card_location is authoritative (same as argsDuelChooseGambleCard / discard
+        // repair). Serialized Location can lag after Hand→Faction sinks that only called
+        // insertCardOnExtremePosition (Premonition / Matushka's Shears historically).
+        if ($deckCard['location'] != $deckName) {
+            throw new UserException(clienttranslate("Card is not in your faction deck."));
+        }
+
         $card = $this->getCardObjectFromDb($id);
         if ($card->Location != $deckName) {
-            throw new UserException(clienttranslate("Card is not in your faction deck."));
+            $card->Location = $deckName;
+            $this->updateCardObjectInDb($card);
         }
 
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);
