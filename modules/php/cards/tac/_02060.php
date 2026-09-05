@@ -34,7 +34,8 @@ class _02060 extends Risk implements IHasReactions
             clienttranslate('Hubris')
         ];
 
-        $this->Text = clienttranslate("<p><b>Reaction:</b> When your challenge is refused, wound your challenger • Wound the refusing character.</p><p><b>Reaction:</b> When the duel would end, wound your participant • Wound your opposing adversary.</p>");
+        $this->Text = clienttranslate("<p><b>Reaction:</b> When your challenge is refused, wound your challenger • Wound the refusing character.</p>
+        <p><b>Reaction:</b> When the duel would end, wound your participant • Wound your opposing adversary.</p>");
 
         $this->resetCard();
 

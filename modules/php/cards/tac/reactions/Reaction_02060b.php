@@ -45,6 +45,17 @@ class Reaction_02060b extends RiskReaction
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
             {
+                $challenger = $event->theah->getCharacterById($event->challengerId);
+                $defender = $event->theah->getCharacterById($event->defenderId);
+                // WHY: Both wounds require living participants. If either is already
+                // in The Locker (or Discard for Brutes), the reaction must not offer.
+                if ($challenger === null || $defender === null
+                    || $event->theah->game->characterIsInDiscardOrLocker($challenger)
+                    || $event->theah->game->characterIsInDiscardOrLocker($defender))
+                {
+                    return;
+                }
+
                 if ($event->challengingPlayerId == $owner->ControllerId)
                 {
                     $this->MyParticipantId = $event->challengerId;
