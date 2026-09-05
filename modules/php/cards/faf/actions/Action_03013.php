@@ -13,7 +13,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03013 extends CharacterAction
@@ -63,23 +62,38 @@ class Action_03013 extends CharacterAction
             $this->setUsed($event->theah, false);
         }
 
-        // Trait persists for the duration of the player's turn — clear at turn end.
-        if ($event instanceof EventPlayerTurnEnd)
-        {
-            $this->untagOpposingSorcerers($event->theah);
-        }
-
-        // Daniella leaves play / location → drop any outstanding tags so we don't
-        // leave a Sorcerer trait orphaned on a character that no longer opposes her.
         $owner = $this->getOwningCharacter($event->theah);
-        if ($event instanceof EventCardMoved && $owner !== null && $event->cardId === $owner->Id)
+
+        // WHY location-scoped (not turn-scoped): printed text is opposing Daniella —
+        // co-location. Eddie: remove Sorcerer when the granted character leaves her location.
+        if ($event instanceof EventCardMoved && $owner !== null)
         {
-            $this->untagOpposingSorcerers($event->theah);
+            if ($event->cardId === $owner->Id)
+            {
+                // Daniella left — no one at her old spot still "opposes" her there.
+                $this->untagOpposingSorcerers($event->theah);
+            }
+            elseif (in_array($event->cardId, $this->TaggedOpposingIds, true)
+                && $event->toLocation !== $owner->Location)
+            {
+                // Tagged character moved away from Daniella.
+                // WHY toLocation vs owner.Location: EventCardMoved.runEventHubAfterCards
+                // means the mover's Location is still fromLocation during handleEvent;
+                // Daniella's Location is current (she is not the mover).
+                $this->untagCharacter($event->theah, $event->cardId);
+            }
         }
 
-        if ($event instanceof EventCharacterDestroyed && $owner !== null && $event->characterId === $owner->Id)
+        if ($event instanceof EventCharacterDestroyed && $owner !== null)
         {
-            $this->untagOpposingSorcerers($event->theah);
+            if ($event->characterId === $owner->Id)
+            {
+                $this->untagOpposingSorcerers($event->theah);
+            }
+            elseif (in_array($event->characterId, $this->TaggedOpposingIds, true))
+            {
+                $this->untagCharacter($event->theah, $event->characterId);
+            }
         }
     }
 
@@ -241,7 +255,7 @@ class Action_03013 extends CharacterAction
         $this->TaggedOpposingIds[] = $character->Id;
         $daniella->IsUpdated = true;
 
-        $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} grants ${character_inject_code} Sorcerer until end of turn.'), [
+        $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} grants ${character_inject_code} Sorcerer while at Daniella\'s location.'), [
             "card_inject_code" => $daniella->getInjectCode(),
             "player_name" => $game->getPlayerNameById($daniella->ControllerId),
             "character_inject_code" => $character->getInjectCode(),
@@ -286,6 +300,30 @@ class Action_03013 extends CharacterAction
         return [true, ""];
     }
 
+    private function untagCharacter(Theah $theah, int $characterId): void
+    {
+        $index = array_search($characterId, $this->TaggedOpposingIds, true);
+        if ($index === false)
+        {
+            return;
+        }
+
+        unset($this->TaggedOpposingIds[$index]);
+        $this->TaggedOpposingIds = array_values($this->TaggedOpposingIds);
+
+        $character = $theah->getCharacterById($characterId);
+        if ($character !== null)
+        {
+            $character->removeTrait($theah->game, "Sorcerer");
+        }
+
+        $owner = $this->getOwningCharacter($theah);
+        if ($owner !== null)
+        {
+            $owner->IsUpdated = true;
+        }
+    }
+
     private function untagOpposingSorcerers(Theah $theah): void
     {
         if (empty($this->TaggedOpposingIds))
@@ -293,21 +331,9 @@ class Action_03013 extends CharacterAction
             return;
         }
 
-        $game = $theah->game;
-        foreach ($this->TaggedOpposingIds as $cid)
+        foreach (array_values($this->TaggedOpposingIds) as $cid)
         {
-            $c = $theah->getCharacterById($cid);
-            if ($c !== null)
-            {
-                $c->removeTrait($game, "Sorcerer");
-            }
-        }
-        $this->TaggedOpposingIds = [];
-
-        $owner = $this->getOwningCharacter($theah);
-        if ($owner !== null)
-        {
-            $owner->IsUpdated = true;
+            $this->untagCharacter($theah, $cid);
         }
     }
 }
