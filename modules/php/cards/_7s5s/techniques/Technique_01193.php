@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -33,6 +34,31 @@ class Technique_01193 extends Technique
         return $inDuel;
     }
 
+    /**
+     * WHY: Dame of Swords (02055) / I Know That Trick (01165) clone this technique
+     * onto the participant Character. The original lives on Burnished Cuirass and
+     * must stay attached; Character owners are valid copies and have no Attachment.
+     */
+    private function ownerCanApplyDeferredEffect(Theah $theah): bool
+    {
+        $owner = $this->getOwningCard($theah);
+        if ($owner instanceof Attachment)
+        {
+            return $owner->isAttached();
+        }
+
+        return $owner instanceof Character;
+    }
+
+    private function markOwnerUpdated(Theah $theah): void
+    {
+        $owner = $this->getOwningCard($theah);
+        if ($owner !== null)
+        {
+            $owner->IsUpdated = true;
+        }
+    }
+
     public function handleEvent(Event $event)
     { 
         parent::handleEvent($event);
@@ -41,34 +67,28 @@ class Technique_01193 extends Technique
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $this->ReduceAdversaryThrust = true;
-            $attachment = $this->getOwningCard($event->theah);
-            if ($attachment instanceof Attachment)
-                $attachment->IsUpdated = true;
+            $this->markOwnerUpdated($event->theah);
         }
 
         if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
         {
             $this->ReduceAdversaryThrust = false;
-            $attachment = $this->getOwningCard($event->theah);
-            if ($attachment instanceof Attachment)
-                $attachment->IsUpdated = true;
+            $this->markOwnerUpdated($event->theah);
         }
 
         //Reduce the opponent's Thrust by 1 if the technique is activated
         if ($event instanceof EventDuelCalculateCombatCardStats && $this->ReduceAdversaryThrust)
         {
-            $attachment = $this->getOwningCard($event->theah);
-            $isAttached = $attachment instanceof Attachment && $attachment->isAttached();
-
-            if ($isAttached)
+            if ($this->ownerCanApplyDeferredEffect($event->theah))
             {
+                $owner = $this->getOwningCard($event->theah);
                 $character = $this->getOwningCharacter($event->theah);
-                if ($character->Id == $event->adversaryId)
+                if ($character !== null && $character->Id == $event->adversaryId)
                 {
-                    $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the Adversary's Thrust by %d"), $attachment->getInjectCode(), 1);
+                    $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the Adversary's Thrust by %d"), $owner->getInjectCode(), 1);
                     $event->removeThrust(1);
                     $this->ReduceAdversaryThrust = false;
-                    $attachment->IsUpdated = true;
+                    $this->markOwnerUpdated($event->theah);
                 }
             }
         }
@@ -76,16 +96,13 @@ class Technique_01193 extends Technique
         // If the event is a new round and the owning character is the actor then reset the ReduceOpponentThrust flag
         if ($event instanceof EventDuelNewRound)
         {
-            $attachment = $this->getOwningCard($event->theah);
-            $isAttached = $attachment instanceof Attachment && $attachment->isAttached();
-
-            if ($isAttached)
+            if ($this->ownerCanApplyDeferredEffect($event->theah))
             {
                 $character = $this->getOwningCharacter($event->theah);
-                if ($character->Id == $event->actorId)
+                if ($character !== null && $character->Id == $event->actorId)
                 {
                     $this->ReduceAdversaryThrust = false;
-                    $attachment->IsUpdated = true;
+                    $this->markOwnerUpdated($event->theah);
                 }
             }
         }
@@ -93,13 +110,10 @@ class Technique_01193 extends Technique
         // If the duel is over then reset the ReduceOpponentThrust flag
         if ($event instanceof EventDuelEnd)
         {
-            $attachment = $this->getOwningCard($event->theah);
-            $isAttached = $attachment instanceof Attachment && $attachment->isAttached();
-
-            if ($isAttached)
+            if ($this->ownerCanApplyDeferredEffect($event->theah))
             {
                 $this->ReduceAdversaryThrust = false;
-                $attachment->IsUpdated = true;
+                $this->markOwnerUpdated($event->theah);
             }
         }
     }
