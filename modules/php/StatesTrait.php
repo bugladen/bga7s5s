@@ -1881,7 +1881,7 @@ trait StatesTrait
                     $this->setPlayerReknown($playerId, -1);               
             }
             
-            $this->gamestate->nextState("endOfGame");
+            $this->goToEndOfGame(Game::VICTORY_DOMINANCE);
             return;
         }
 
@@ -1948,7 +1948,7 @@ trait StatesTrait
                 "player_name" => $this->getPlayerNameById($winners[0])
             ]);
 
-            $this->gamestate->nextState("endOfGame");
+            $this->goToEndOfGame(Game::VICTORY_ECONOMIC);
             return;
         }
         else if (count($winners) > 1)
@@ -2001,7 +2001,7 @@ trait StatesTrait
                     "player_name" => $this->getPlayerNameById($highestReknownPlayer)
                 ]);
 
-                $this->gamestate->nextState("endOfGame");
+                $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
                 return;
             }
 
@@ -2076,7 +2076,7 @@ trait StatesTrait
                     "player_name" => $this->getPlayerNameById($highestCountPlayer)
                 ]);
 
-                $this->gamestate->nextState("endOfGame");
+                $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
                 return;
             }
 
@@ -2133,7 +2133,7 @@ trait StatesTrait
                     "player_name" => $this->getPlayerNameById($highestInfluencePlayer)
                 ]);
 
-                $this->gamestate->nextState("endOfGame");
+                $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
                 return;
             }
 
@@ -2210,7 +2210,7 @@ trait StatesTrait
                 ]);
             }
 
-            $this->gamestate->nextState("endOfGame");
+            $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
             return;
         }
 
@@ -2373,6 +2373,9 @@ trait StatesTrait
 
     public function stDuskEndOfDay(): void
     {
+        // WHY: Capture crew size at day end before Brute discard events alter the board.
+        $this->recordCharactersAtEndOfDayStat();
+
         $event = $this->theah->createEvent(Events::DuskEndOfDay);
         $this->theah->queueEvent($event);
 

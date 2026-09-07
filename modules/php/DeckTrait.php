@@ -63,6 +63,10 @@ trait DeckTrait
                 "leader" => $card->getPropertyArray($this),
             ]);
 
+            // WHY: Set when decks materialize (covers manual, random, and tournament), not at pick time.
+            $leaderStatIndex = array_search($card->Name, Game::LEADER_STAT_LABELS, true);
+            $this->bga->playerStats->set(Game::STAT_LEADER, $leaderStatIndex === false ? 0 : $leaderStatIndex, $playerId);
+
             // *** Create the approach deck and send each card to the player ***
             $approachDeck = $deck->approach_deck;
             $cards = [];

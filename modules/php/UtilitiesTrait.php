@@ -21,6 +21,57 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 
 trait UtilitiesTrait
 {
+    /**
+     * Record end-of-game table/player stats and transition to the framework gameEnd state.
+     * WHY: Victory can end via StatesTrait nextState or EventTransition (e.g. Leader
+     * destroyed in 2p). Centralizing here keeps end stats consistent for every exit.
+     */
+    public function goToEndOfGame(int $victoryType): void
+    {
+        $this->recordEndOfGameStats($victoryType);
+        $this->gamestate->nextState('endOfGame');
+    }
+
+    /**
+     * Record end-of-game stats when an EventTransition will end the game (cannot call goToEndOfGame).
+     */
+    public function recordEndOfGameStats(int $victoryType): void
+    {
+        $this->bga->tableStats->set(Game::STAT_DAY_ENDED, (int) $this->getGameStateValue(Game::DAY));
+        $this->bga->tableStats->set(Game::STAT_VICTORY_TYPE, $victoryType);
+
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $playerId => $player) {
+            $this->bga->playerStats->set(Game::STAT_RENOWN_ENDED, (int) $this->getPlayerReknown($playerId), $playerId);
+        }
+    }
+
+    /**
+     * Store each player's controlled-in-play character count for the current day.
+     * WHY: Not inited in setupNewGame — days that never reach dusk show as "-" instead of 0.
+     * Count is taken at dusk end-of-day before Brute discard events are queued.
+     */
+    public function recordCharactersAtEndOfDayStat(): void
+    {
+        $statName = match ((int) $this->getGameStateValue(Game::DAY)) {
+            1 => Game::STAT_CHARACTERS_DAY_1,
+            2 => Game::STAT_CHARACTERS_DAY_2,
+            3 => Game::STAT_CHARACTERS_DAY_3,
+            4 => Game::STAT_CHARACTERS_DAY_4,
+            5 => Game::STAT_CHARACTERS_DAY_5,
+            default => null,
+        };
+        if ($statName === null) {
+            return;
+        }
+
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $playerId => $player) {
+            $count = count($this->theah->getCharactersInPlayByPlayerId($playerId));
+            $this->bga->playerStats->set($statName, $count, $playerId);
+        }
+    }
+
     function dbGetAuxScore($player_id) 
     {
         return $this->bga->playerScoreAux->get($player_id);
