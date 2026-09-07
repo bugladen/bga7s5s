@@ -29,8 +29,6 @@ class Reaction_02016 extends AttachmentReaction
     private ?EventCharacterIntervened $characterIntervenedEvent = null;
     private ?EventCharacterTargeted $characterTargetedEvent = null;
     private bool $isChallenger = false;
-    private ?string $savedAbilityId = null;
-    private ?int $savedSourceId = null;
     private ?int $targetCharacterId = null;
 
     private bool $skipNextEvent = false;
@@ -118,8 +116,6 @@ class Reaction_02016 extends AttachmentReaction
             return false;
         }
 
-        $this->savedAbilityId = $abilityId;
-        $this->savedSourceId = $sourceId;
         return true;
     }
 
@@ -429,43 +425,6 @@ class Reaction_02016 extends AttachmentReaction
         }
     }
 
-    private function loadAbility(Theah $theah): ?IAbilityThatTargetsCharacters
-    {
-        if ($this->savedSourceId !== null && $this->savedAbilityId !== null)
-        {
-            $source = $theah->getCardById($this->savedSourceId);
-            if ($source)
-            {
-                $ability = $source->getAbilityById($this->savedAbilityId);
-                if ($ability instanceof IAbilityThatTargetsCharacters)
-                {
-                    return $ability;
-                }
-            }
-
-            $action = $theah->getInPlayActionById($this->savedAbilityId);
-            if ($action instanceof IAbilityThatTargetsCharacters)
-            {
-                return $action;
-            }
-        }
-        return null;
-    }
-
-    private function cancelEvents(Game $game): void
-    {
-        $this->engagedEvent = null;
-        $this->engardedEvent = null;
-        $this->cardMovingEvent = null;
-        $this->characterWoundedEvent = null;
-        $this->characterHealedEvent = null;
-        $this->characterTargetedEvent = null;
-        $this->isChallenger = false;
-        $this->challengeIssuedEvent = null;
-        $this->characterIntervenedEvent = null;
-        $game->globals->set(Game::CHALLENGE_CANCELLED, true);
-    }
-
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
@@ -492,26 +451,11 @@ class Reaction_02016 extends AttachmentReaction
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
-            $ability = $this->loadAbility($game->theah);
-            if ($ability)
-            {
-                [$isValid, ] = $ability->isValidTargetForAbility($game, $character);
-                if ($isValid)
-                {
-                    $this->releaseEvent($game, $characterId);
-                }
-                else
-                {
-                    $game->notify->all("message", clienttranslate('${character_inject_code} is not a valid target for the ability. The ability has been canceled.'), [
-                        "character_inject_code" => $character->getInjectCode(),
-                    ]);
-                    $this->cancelEvents($game);
-                }
-            }
-            else if ($this->characterIntervenedEvent)
-            {
-                $this->releaseEvent($game, $characterId);
-            }
+            // WHY: Do not re-validate with isValidTargetForAbility after redirect.
+            // Card text forces the retarget ("targets your performer instead"). Re-checking
+            // caused false cancels (Bleed Out vs pending Cross cost wound) and would need
+            // per-ability edge-case handling for every wound/healed/engaged gate.
+            $this->releaseEvent($game, $characterId);
 
             $this->setUsed($game->theah, true);
         }
@@ -524,6 +468,19 @@ class Reaction_02016 extends AttachmentReaction
             $this->characterIntervenedEvent = null;
             $this->skipNextEvent = true;
             $this->setUsed($game->theah, true);
+        }
+        else
+        {
+            // WHY: Intercept clones+cancels the original effect. Decline must re-release onto
+            // the original target or the ability fizzles (e.g. Bleed Out wound vanishes).
+            // skipNextEvent prevents Cross from immediately re-intercepting the same event.
+            $this->releaseEvent($game, $this->targetCharacterId);
+            $this->skipNextEvent = true;
+            $owner = $this->getOwningAttachment($game->theah);
+            if ($owner)
+            {
+                $owner->IsUpdated = true;
+            }
         }
 
         $game->gamestate->nextState('done');
