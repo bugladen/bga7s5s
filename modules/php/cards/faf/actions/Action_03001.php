@@ -80,6 +80,13 @@ class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharact
             return [false, $game->translate("Target cannot be a Leader.")];
         }
 
+        // WHY: Kaspar (_03014) et al. — heal runs before wound; illegal targets must be
+        // rejected here so the Strega wound is not deleted with nowhere to go.
+        if (! $character->canBeWoundedByOpponentAbilities())
+        {
+            return [false, $game->translate("Opponents' abilities cannot wound or move wounds to this character.")];
+        }
+
         return [true, ""];
     }
 
@@ -204,6 +211,10 @@ class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharact
     private function getOpposingNonLeaderTargets(Theah $theah, Character $cesca): array
     {
         $characters = $theah->getCharactersAtLocation($cesca->Location);
-        return array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($cesca->ControllerId) && ! $character->hasTrait("Leader")));
+        return array_values(array_filter($characters, fn($character) =>
+            $character->isNotControlledByPlayer($cesca->ControllerId)
+            && ! $character->hasTrait("Leader")
+            && $character->canBeWoundedByOpponentAbilities()
+        ));
     }
 }

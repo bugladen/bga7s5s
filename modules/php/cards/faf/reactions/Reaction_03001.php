@@ -57,6 +57,11 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
             return [false, $game->translate("Character is not at Cesca's location.")];
         }
 
+        if (! $character->canBeWoundedByOpponentAbilities())
+        {
+            return [false, $game->translate("Opponents' abilities cannot wound this character.")];
+        }
+
         return [true, ""];
     }
 
@@ -133,7 +138,10 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
     private function getOpposingCharactersAtLocation(Theah $theah, Character $cesca): array
     {
         $characters = $theah->getCharactersAtLocation($cesca->Location);
-        return array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($cesca->ControllerId)));
+        return array_values(array_filter($characters, fn($character) =>
+            $character->isNotControlledByPlayer($cesca->ControllerId)
+            && $character->canBeWoundedByOpponentAbilities()
+        ));
     }
 
     private function getOpposingReactionTargets(Theah $theah, Character $cesca, EventSorcererAbilityPlayed $event): array
@@ -150,6 +158,7 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
             $target = $theah->getCharacterById($event->targetId);
             if ($target != null
                 && $target->isNotControlledByPlayer($cesca->ControllerId)
+                && $target->canBeWoundedByOpponentAbilities()
                 && ! $this->targetsContainId($targets, $target->Id)
                 && $theah->hasQueuedCardMoveToLocation($target->Id, $cesca->Location))
             {
@@ -165,6 +174,7 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
             foreach ($theah->getCharactersAtLocation($destination) as $character)
             {
                 if ($character->isNotControlledByPlayer($cesca->ControllerId)
+                    && $character->canBeWoundedByOpponentAbilities()
                     && ! $this->targetsContainId($targets, $character->Id))
                 {
                     $targets[] = $character;

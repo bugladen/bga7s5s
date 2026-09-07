@@ -84,6 +84,16 @@ abstract class Character extends Card implements IHasTechniques
         return $this->isControlled();
     }
 
+    // WHY: Targeting-time gate for passives like Kaspar (_03014) "Opponents' abilities
+    // cannot wound or move wounds to …". eventCheck zeroing on EventCharacterBeingWounded
+    // still blocks the wound half, but move-wound abilities heal first — without this
+    // predicate the source loses the wound and it never lands. Callers that let an
+    // opponent pick a wound/move-wound destination should filter on this.
+    public function canBeWoundedByOpponentAbilities(): bool
+    {
+        return true;
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
