@@ -30,3 +30,18 @@ Base `Technique` removes `IsTemporaryCopy` on `EventDuelNewRound` only when `own
 ## Files
 - `modules/php/cards/_7s5s/techniques/Technique_01193.php`
 - `modules/php/cards/_7s5s/techniques/Technique_01204.php`
+
+---
+
+## Follow-up: Kaspar Technique_03014 missing from Dame picker
+
+Eddie: Dame copies effects; it should not care about source cost/prereqs. Without Eisenfaust, `Technique_03014` never appeared.
+
+**Cause:** `getAvailableTechniques` filtered with `$t->isAvailableToPlayer()`. Kaspar's technique gates on `hasEisenfaust` there — effect resolve does not re-check Eisenfaust, so once copied it would wound fine; the picker was the only block.
+
+**Fix:** Stop using `isAvailableToPlayer` for Dame's list. Skip self / ClassId `Technique_02055` / `IsTemporaryCopy` only — same shape as Yepikhodov `Technique_03051`.
+
+WHY not change Technique_03014: Eisenfaust is correct for *playing* Kaspar's technique; Dame is the wrong place to enforce it.
+
+## Files (picker)
+- `modules/php/cards/tac/techniques/Technique_02055.php`

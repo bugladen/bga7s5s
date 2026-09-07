@@ -51,17 +51,19 @@ class Technique_02055 extends Technique
     private function getAvailableTechniques(Theah $theah): array
     {
         $actor = $theah->getDuelRoundActor();
-        $playerId = $actor->ControllerId;
         $techniquesArray = [];
 
-        // Collect techniques from participant and their attachments,
-        // filtering by isAvailableToPlayer but skipping self to avoid recursion
+        // WHY not isAvailableToPlayer: Dame copies effects only — source costs /
+        // prerequisites (e.g. Kaspar Technique_03014 needing Eisenfaust) do not
+        // gate what can be copied. Same shape as Technique_03051.
         if ($actor instanceof IHasTechniques)
         {
             foreach ($actor->getTechniques() as $t)
             {
-                if ($t->Id !== $this->Id && $t->isAvailableToPlayer($playerId, $theah))
+                if ($this->isCopyableTechnique($t))
+                {
                     $techniquesArray[] = $t;
+                }
             }
         }
 
@@ -72,13 +74,30 @@ class Technique_02055 extends Technique
             {
                 foreach ($attachment->getTechniques() as $t)
                 {
-                    if ($t->Id !== $this->Id && $t->isAvailableToPlayer($playerId, $theah))
+                    if ($this->isCopyableTechnique($t))
+                    {
                         $techniquesArray[] = $t;
+                    }
                 }
             }
         }
 
         return $techniquesArray;
+    }
+
+    private function isCopyableTechnique(Technique $technique): bool
+    {
+        if ($technique->Id === $this->Id || $technique->ClassId === 'Technique_02055')
+        {
+            return false;
+        }
+
+        if ($technique->IsTemporaryCopy)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function handleEvent(Event $event)
