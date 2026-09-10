@@ -56,12 +56,13 @@ class Game extends \Bga\GameFramework\Table
     //Player stats
     final const STAT_RENOWN_ENDED = "renown_ended"; //The renown that the player ended the game with
     final const STAT_LEADER = "leader"; //Which Leader the player brought
-    // Characters controlled in play at end of each day (set in stDuskEndOfDay; not inited so unplayed days show "-")
+    // Characters controlled in play at end of each day (set in stDuskEndOfDay)
     final const STAT_CHARACTERS_DAY_1 = "characters_day_1";
     final const STAT_CHARACTERS_DAY_2 = "characters_day_2";
     final const STAT_CHARACTERS_DAY_3 = "characters_day_3";
     final const STAT_CHARACTERS_DAY_4 = "characters_day_4";
     final const STAT_CHARACTERS_DAY_5 = "characters_day_5";
+    final const STAT_WOUNDS_RECEIVED = "wounds_received"; // Total wounds applied to the player's characters
     // WHY: BGA stats are int/float/bool only. Leader names display via value_labels;
     // indices here must stay in lockstep with stats.json value_labels for id 12.
     final const LEADER_STAT_LABELS = [
@@ -556,7 +557,16 @@ class Game extends \Bga\GameFramework\Table
         // Init game statistics (names must match stats.json).
         $this->bga->tableStats->init(Game::STAT_DAY_ENDED, 0);
         $this->bga->tableStats->init(Game::STAT_VICTORY_TYPE, Game::VICTORY_NONE);
-        $this->bga->playerStats->init([Game::STAT_RENOWN_ENDED, Game::STAT_LEADER], 0);
+        $this->bga->playerStats->init([
+            Game::STAT_RENOWN_ENDED,
+            Game::STAT_LEADER,
+            Game::STAT_CHARACTERS_DAY_1,
+            Game::STAT_CHARACTERS_DAY_2,
+            Game::STAT_CHARACTERS_DAY_3,
+            Game::STAT_CHARACTERS_DAY_4,
+            Game::STAT_CHARACTERS_DAY_5,
+            Game::STAT_WOUNDS_RECEIVED,
+        ], 0);
 
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();

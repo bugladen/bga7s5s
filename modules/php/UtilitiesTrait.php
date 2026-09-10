@@ -48,7 +48,6 @@ trait UtilitiesTrait
 
     /**
      * Store each player's controlled-in-play character count for the current day.
-     * WHY: Not inited in setupNewGame — days that never reach dusk show as "-" instead of 0.
      * Count is taken at dusk end-of-day before Brute discard events are queued.
      */
     public function recordCharactersAtEndOfDayStat(): void

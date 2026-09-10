@@ -9,6 +9,7 @@ First real BGA statistics for this game. Docs: https://en.doc.boardgamearena.com
 - Player `renown_ended` (id 11): renown at end
 - Player `leader` (id 12): which Leader brought — labeled int
 - Player `characters_day_1`…`characters_day_5` (ids 13–17): controlled characters in play at that day's dusk end
+- Player `wounds_received` (id 19): cumulative wounds applied to characters the player controlled
 
 ## Victory type labels (id 18) / Game::VICTORY_*
 0 None, 1 Assassination, 2 Dominance, 3 Economic, 4 Fifth Day
@@ -31,7 +32,10 @@ Cannot hook stGameEnd (framework forbids overloading).
 
 ## Characters-per-day
 `recordCharactersAtEndOfDayStat()` in `stDuskEndOfDay` before Brute discard.
-WHY not init: unplayed days show "-" not 0.
+Inited to 0 in setupNewGame.
+
+## Wounds received
+WHY cumulative via `playerStats->inc` in `Character.php` on `EventCharacterWounded` (after wound reductions), not an end-of-game sum of current `Wounds`: "received" includes healed wounds and destroyed characters. Tallied for `ControllerId` when wounds apply. Init to 0; no need to set in `recordEndOfGameStats`.
 
 ## Renown timing
 Dominance / 2p Leader kill set losers to -1 before end; that is what renown_ended records.
@@ -40,4 +44,4 @@ Dominance / 2p Leader kill set losers to -1 before end; that is what renown_ende
 - New endOfGame exits must pass the correct VICTORY_* type
 - New Leaders → append to BOTH LEADER_STAT_LABELS and value_labels (never reorder once live)
 - Do not change live stat ids / do not edit stats.json while public games run
-- Do not init characters_day_* stats
+- Wound prevention that zeroes `EventCharacterWounded::wounds` before Character handles it must stay before Character's handler so the inc stays accurate

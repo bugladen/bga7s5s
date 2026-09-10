@@ -46,6 +46,11 @@
       "id": 17,
       "name": "Characters at end of Day 5",
       "type": "int"
+    },
+    "wounds_received": {
+      "id": 19,
+      "name": "Total wounds received by characters",
+      "type": "int"
     }
   },
   "value_labels": {

@@ -386,6 +386,12 @@ abstract class Character extends Card implements IHasTechniques
             $this->Wounds += $event->wounds;            
             $this->IsUpdated = true;
 
+            // WHY: Count after reductions on EventCharacterWounded (e.g. Breastplate) so only
+            // wounds that actually apply are tallied. ControllerId = who owns them in play.
+            if ($event->wounds > 0 && $this->ControllerId) {
+                $event->theah->game->bga->playerStats->inc(Game::STAT_WOUNDS_RECEIVED, $event->wounds, $this->ControllerId);
+            }
+
             $event->theah->game->notify->all("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],
                 "target_inject_code" => $this->getInjectCode(),
