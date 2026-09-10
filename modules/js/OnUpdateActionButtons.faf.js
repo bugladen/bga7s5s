@@ -220,6 +220,11 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase03013': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase03034': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
@@ -429,6 +434,23 @@
                 }
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            // WHY: Daniella hub opt-in — tag adversary Sorcerer before Technique choice.
+            // Core duelChooseAction runs first; this only adds the extra button when args say so.
+            'duelChooseAction': () => {
+                if (args._private && args._private.considerAdversarySorcererAvailable)
+                {
+                    this.addActionButton(
+                        `btnConsiderAdversarySorcerer`,
+                        _('(Daniella) Consider Adversary a Sorcerer'),
+                        () => this.bgaPerformAction('actDuelActionConsiderAdversarySorcerer', {})
+                    );
+                    this.addTippyTooltip(
+                        'btnConsiderAdversarySorcerer',
+                        `<div class='_7sfs-basic-tooltip'>${_("Grant the adversary Sorcerer while at Daniella's location")}</div>`
+                    );
+                }
             },
 
         }

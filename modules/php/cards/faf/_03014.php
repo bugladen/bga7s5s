@@ -43,6 +43,11 @@ class _03014 extends Character
         ];
     }
 
+    public function canBeWoundedByOpponentAbilities(): bool
+    {
+        return false;
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);

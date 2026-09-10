@@ -1,1 +1,78 @@
-{}
+{
+  "table": {
+    "day_ended": {
+      "id": 10,
+      "name": "What day did the game end on?",
+      "type": "int"
+    },
+    "victory_type": {
+      "id": 18,
+      "name": "What type of victory occurred?",
+      "type": "int"
+    }
+  },
+  "player": {
+    "renown_ended": {
+      "id": 11,
+      "name": "How much renown did each player have at the end of the game?",
+      "type": "int"
+    },
+    "leader": {
+      "id": 12,
+      "name": "Which Leader did each player bring?",
+      "type": "int"
+    },
+    "characters_day_1": {
+      "id": 13,
+      "name": "Characters at end of Day 1",
+      "type": "int"
+    },
+    "characters_day_2": {
+      "id": 14,
+      "name": "Characters at end of Day 2",
+      "type": "int"
+    },
+    "characters_day_3": {
+      "id": 15,
+      "name": "Characters at end of Day 3",
+      "type": "int"
+    },
+    "characters_day_4": {
+      "id": 16,
+      "name": "Characters at end of Day 4",
+      "type": "int"
+    },
+    "characters_day_5": {
+      "id": 17,
+      "name": "Characters at end of Day 5",
+      "type": "int"
+    },
+    "wounds_received": {
+      "id": 19,
+      "name": "Total wounds received by characters",
+      "type": "int"
+    }
+  },
+  "value_labels": {
+    "12": [
+      "None",
+      "Don Constanzo Scarpa",
+      "Kaspar Dietrich",
+      "Odette Dubois D'Arrent",
+      "Soline el Gato",
+      "Yevgeni",
+      "Cesca del Rosso",
+      "Daniella Dietrich",
+      "Angeline Dèmone",
+      "Sanjay",
+      "Ekaterina Ilyanava"
+    ],
+    "18": [
+      "None",
+      "Assassination",
+      "Dominance",
+      "Economic",
+      "Fifth Day"
+    ]
+  }
+}

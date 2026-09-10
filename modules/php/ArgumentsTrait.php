@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
@@ -78,10 +79,11 @@ trait ArgumentsTrait
         {
             $performer = $this->theah->getCharacterById($lockedPerformerId);
 
+            // WHY: lock restricts which character can act; Pass remains available
+            // (Pattern A.2 / Bloody Entrance — "may perform another action").
             return [
                 '_private' => [
                     'active' => [
-                        'mustPerformAction' => true,
                         'lockedPerformerId' => $lockedPerformerId,
                         'canChallenge' => $performer !== null && $this->theah->characterCanBasicChallenge($performer),
                         'canClaim' => $performer !== null && $this->theah->characterCanBasicClaim($performer),
@@ -808,6 +810,11 @@ trait ArgumentsTrait
             }
         }
 
+        // WHY: Daniella (_03013) Continuous — opt-in at the duel hub so the adversary
+        // can be tagged Sorcerer before Technique/Maneuver choice (Reaction is too late).
+        // Looks at Daniella at the actor's location, not only when she is the actor.
+        $considerAdversarySorcererAvailable = Action_03013::findAvailableDuelAction($this->theah) !== null;
+
         $duelType = $this->globals->get(Game::DUEL_TYPE);
         if ($duelType == Game::VLADISLAV_DUEL_TYPE)
         {
@@ -819,6 +826,7 @@ trait ArgumentsTrait
                         "gambleAvailable" => false,
                         "gamblesLeft" => 0,
                         "combatCardAvailable" => false,
+                        "considerAdversarySorcererAvailable" => false,
                         "endDuelAvailable" => true
                     ]
                 ],
@@ -834,6 +842,7 @@ trait ArgumentsTrait
                         "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0 && $gambleAllowedByCardEffects,
                         "gamblesLeft" => $gamblesLeft,
                         "combatCardAvailable" => $combatCardsCount == 0,
+                        "considerAdversarySorcererAvailable" => $considerAdversarySorcererAvailable,
                         "endDuelAvailable" => false
                     ]
                 ],

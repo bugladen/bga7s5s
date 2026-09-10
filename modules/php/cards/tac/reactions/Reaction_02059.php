@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_02059 extends RiskReaction
 {
     private ?EventCharacterBeingWounded $savedWoundEvent = null;
+    private bool $skipNextEvent = false;
 
     public function __construct()
     {
@@ -45,6 +46,13 @@ class Reaction_02059 extends RiskReaction
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND && $event->abilityId != '')
             {
+                if ($this->skipNextEvent)
+                {
+                    $this->skipNextEvent = false;
+                    $owner->IsUpdated = true;
+                    return;
+                }
+
                 $character = $event->theah->getCharacterById($event->characterId);
                 if ($character && $character->ControllerId == $owner->ControllerId)
                 {
@@ -111,6 +119,7 @@ class Reaction_02059 extends RiskReaction
             {
                 $game->theah->queueEvent($this->savedWoundEvent);
                 $this->savedWoundEvent = null;
+                $this->skipNextEvent = true;
             }
         }
 

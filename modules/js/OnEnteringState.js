@@ -554,20 +554,26 @@ onEnteringState: function( stateName, args )
 
                 this.numberOfCardsSelectable = 1;
                 card = this.cardProperties[args.args.performerId];
-                image = $(`${card.divId}_image`);
-                this.clearCardAsSelectable(image);
-                dojo.addClass(image, '_7sfs-chosen');
+                if (card) {
+                    image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    dojo.addClass(image, '_7sfs-chosen');
+                }
 
                 card = this.cardProperties[args.args.targetId];
-                image = $(`${card.divId}_image`);
-                this.clearCardAsSelectable(image);
-                dojo.addClass(image, '_7sfs-chosen');
+                if (card) {
+                    image = $(`${card.divId}_image`);
+                    this.clearCardAsSelectable(image);
+                    dojo.addClass(image, '_7sfs-chosen');
+                }
 
                 args.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
-                    const image = $(`${card.divId}_image`);
-                    this.clearCardAsSelectable(image);
-                    this.makeCardSelectable(image);
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        this.clearCardAsSelectable(image);
+                        this.makeCardSelectable(image);
+                    }
                 });
             }
         },

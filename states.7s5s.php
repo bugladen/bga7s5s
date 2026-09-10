@@ -182,7 +182,7 @@ $machinestates += [
             "description" => clienttranslate('Leshiye of the Wood: ${actplayer} must choose options for Leshiye of the Wood.'),
             "descriptionmyturn" => clienttranslate('Leshiye of the Wood: ${you} must choose an outer City Location for Leshiye of the Wood:'),
             "type" => "activeplayer",
-            "args" => "argsEmpty",
+            "args" => "argsForState",
             "possibleactions" => [
                 "actFromCardWithLocations",
             ],

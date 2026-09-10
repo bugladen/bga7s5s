@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04003a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
@@ -725,6 +726,20 @@ trait StatesTrait
     {
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->getCardObjectFromDb($performerId);
+
+        if ($this->globals->get(Game::CHALLENGE_TYPE) == Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE)
+        {
+            $abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+            $action = $this->theah->getInPlayActionById($abilityId);
+            if ($action instanceof Action_02001 && ! $action->shouldIssueChallenge($this))
+            {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+                $this->theah->queueEvent($actionResolvedEvent);
+                $this->theah->runEvents(true);
+                $this->gamestate->nextState('challengeSkipped');
+                return;
+            }
+        }
 
         $techniques = $this->theah->getAvailableCharacterTechniques($performer);
 
@@ -1609,14 +1624,11 @@ trait StatesTrait
 
         $duelId = $this->globals->get(Game::DUEL_ID);
         $round = $this->globals->get(Game::DUEL_ROUND);
-
-        $actor = $this->theah->getDuelRoundActor();
-        $actorId = $actor->Id;
         $challengerId = $this->theah->getDuelChallengerId();
 
-        // WHY: Location / adversary-threat nullify already ran in stDuelEndOfRound
-        // BEFORE EventDuelEndOfRound movers (e.g. Technique_01036). Re-checking here
-        // would wipe adversary threat after Daniella flees.
+        // WHY: Adversary-threat nullify already ran in stDuelEndOfRound BEFORE
+        // EventDuelEndOfRound movers. Pool values below are post-nullify; do not
+        // zero them again here (would wipe threat after Daniella flees).
         $sql = "SELECT * FROM duel_round where duel_id = $duelId AND round = $round";
         $values = $this->getObjectListFromDB($sql)[0];
         $endingChallengerThreat = $values['ending_challenger_threat'];
@@ -1629,6 +1641,38 @@ trait StatesTrait
         {
             $this->notifyAllPlayers("message", clienttranslate('No Threat remains in either player pool.'), []);
             
+            $this->gamestate->nextState("endOfDuel");
+            return;
+        }
+
+        // WHY live getCharacterById (not getDuelRoundOpponent): EndOfRound movers
+        // (e.g. Technique_01036) already ran. Check board state now — do NOT nullify
+        // threat here (that commit happened in stDuelEndOfRound while co-located).
+        //
+        // WHY actor-dead exception: leftover actor wounds can put the actor in the
+        // locker while adversary pool threat remains for next round. Locker != city
+        // would look like "not co-located" and wrongly end the duel. Continue when
+        // the actor is dead and the adversary is still present; end when the
+        // adversary is gone, or a living actor is no longer co-located (flee/split).
+        $this->theah->buildCity();
+        $actor = $this->theah->getDuelRoundActor();
+        $actorId = $actor->Id;
+        $adversaryId = $this->theah->getDuelOpponentId($actorId);
+        $adversary = $this->theah->getCharacterById($adversaryId);
+
+        $actorIsDead = $this->characterIsInDiscardOrLocker($actor);
+        $adversaryIsGone = $adversary === null || $this->characterIsInDiscardOrLocker($adversary);
+        $livingActorNotCoLocated = !$actorIsDead
+            && $adversary !== null
+            && $actor->Location != $adversary->Location;
+
+        if ($adversaryIsGone || $livingActorNotCoLocated)
+        {
+            $this->notifyAllPlayers("message", clienttranslate('The duel ends because ${adversary_name} is no longer present.'), [
+                'i18n' => ['adversary_name'],
+                'adversary_name' => $adversary !== null ? $adversary->Name : '',
+            ]);
+
             $this->gamestate->nextState("endOfDuel");
             return;
         }
@@ -1845,7 +1889,7 @@ trait StatesTrait
                     $this->setPlayerReknown($playerId, -1);               
             }
             
-            $this->gamestate->nextState("endOfGame");
+            $this->goToEndOfGame(Game::VICTORY_DOMINANCE);
             return;
         }
 
@@ -1912,7 +1956,7 @@ trait StatesTrait
                 "player_name" => $this->getPlayerNameById($winners[0])
             ]);
 
-            $this->gamestate->nextState("endOfGame");
+            $this->goToEndOfGame(Game::VICTORY_ECONOMIC);
             return;
         }
         else if (count($winners) > 1)
@@ -1965,7 +2009,7 @@ trait StatesTrait
                     "player_name" => $this->getPlayerNameById($highestReknownPlayer)
                 ]);
 
-                $this->gamestate->nextState("endOfGame");
+                $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
                 return;
             }
 
@@ -2040,7 +2084,7 @@ trait StatesTrait
                     "player_name" => $this->getPlayerNameById($highestCountPlayer)
                 ]);
 
-                $this->gamestate->nextState("endOfGame");
+                $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
                 return;
             }
 
@@ -2097,7 +2141,7 @@ trait StatesTrait
                     "player_name" => $this->getPlayerNameById($highestInfluencePlayer)
                 ]);
 
-                $this->gamestate->nextState("endOfGame");
+                $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
                 return;
             }
 
@@ -2174,7 +2218,7 @@ trait StatesTrait
                 ]);
             }
 
-            $this->gamestate->nextState("endOfGame");
+            $this->goToEndOfGame(Game::VICTORY_FIFTH_DAY);
             return;
         }
 
@@ -2337,6 +2381,9 @@ trait StatesTrait
 
     public function stDuskEndOfDay(): void
     {
+        // WHY: Capture crew size at day end before Brute discard events alter the board.
+        $this->recordCharactersAtEndOfDayStat();
+
         $event = $this->theah->createEvent(Events::DuskEndOfDay);
         $this->theah->queueEvent($event);
 

@@ -44,6 +44,14 @@ class Technique_03025b extends Technique
             return false;
         }
 
+        // WHY: Cannot move both participants if the adversary is already in discard/locker.
+        $adversaryId = $theah->getDuelOpponentId($actor->Id);
+        $adversary = $theah->getCharacterById($adversaryId);
+        if ($adversary === null || $theah->game->characterIsInDiscardOrLocker($adversary))
+        {
+            return false;
+        }
+
         return true;
     }
 

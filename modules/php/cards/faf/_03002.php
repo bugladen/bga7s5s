@@ -24,6 +24,8 @@ class _03002 extends Character implements IHasActions
 
         $this->initializeFaction("Vodacce");
 
+        $this->InPlayXImageOffset = -20;
+
         $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 4;

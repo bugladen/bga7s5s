@@ -34,7 +34,7 @@ class _03032 extends Risk implements IHasActions
             clienttranslate("Porté")
         ];
 
-        $this->Text = clienttranslate("<b>Sorcerer City Action:</b> Wound your performer • Move them to any location, then they may perform another action. <i>(It must be performed and they must be the performer of the action)</i>");
+        $this->Text = clienttranslate("<b>Sorcerer Action:</b> Wound your performer • Move them to any location, then they may perform another action. <i>(It must be performed and they must be the performer of the action)</i>");
 
         $this->resetCard();
 

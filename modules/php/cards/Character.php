@@ -92,6 +92,16 @@ abstract class Character extends Card implements IHasTechniques
         return $this->hasCondition(Game::FATES_SILENCE_CONDITION);
     }
 
+    // WHY: Targeting-time gate for passives like Kaspar (_03014) "Opponents' abilities
+    // cannot wound or move wounds to …". eventCheck zeroing on EventCharacterBeingWounded
+    // still blocks the wound half, but move-wound abilities heal first — without this
+    // predicate the source loses the wound and it never lands. Callers that let an
+    // opponent pick a wound/move-wound destination should filter on this.
+    public function canBeWoundedByOpponentAbilities(): bool
+    {
+        return true;
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
@@ -399,6 +409,12 @@ abstract class Character extends Card implements IHasTechniques
         {
             $this->Wounds += $event->wounds;            
             $this->IsUpdated = true;
+
+            // WHY: Count after reductions on EventCharacterWounded (e.g. Breastplate) so only
+            // wounds that actually apply are tallied. ControllerId = who owns them in play.
+            if ($event->wounds > 0 && $this->ControllerId) {
+                $event->theah->game->bga->playerStats->inc(Game::STAT_WOUNDS_RECEIVED, $event->wounds, $this->ControllerId);
+            }
 
             $event->theah->game->notify->all("characterWounded", clienttranslate('${target_inject_code} has received ${wounds} wound(s) due to: ${reason}'), [
                 'i18n' => ['reason'],

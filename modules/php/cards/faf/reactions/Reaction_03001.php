@@ -57,6 +57,11 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
             return [false, $game->translate("Character is not at Cesca's location.")];
         }
 
+        if (! $character->canBeWoundedByOpponentAbilities())
+        {
+            return [false, $game->translate("Opponents' abilities cannot wound this character.")];
+        }
+
         return [true, ""];
     }
 
@@ -68,7 +73,12 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
         {
             $cesca = $this->getOwningCharacter($event->theah);
 
-            if (! $event->theah->cardInCity($cesca))
+            // WHY: EventCardMoved is queued after EventSorcererAbilityPlayed (CardMoving
+            // appends it). Cesca may still be at Home / old city when this runs; treat a
+            // queued city arrival as in-city for City Reaction gating.
+            $queuedDestination = $event->theah->getQueuedCardMoveDestination($cesca->Id);
+            $willBeInCity = $queuedDestination !== null && $event->theah->locationInCity($queuedDestination);
+            if (! $event->theah->cardInCity($cesca) && ! $willBeInCity)
             {
                 return;
             }
@@ -78,7 +88,7 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
                 return;
             }
 
-            $targets = $this->getOpposingCharactersAtLocation($event->theah, $cesca);
+            $targets = $this->getOpposingReactionTargets($event->theah, $cesca, $event);
             if (count($targets) == 0)
             {
                 return;
@@ -128,6 +138,63 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
     private function getOpposingCharactersAtLocation(Theah $theah, Character $cesca): array
     {
         $characters = $theah->getCharactersAtLocation($cesca->Location);
-        return array_values(array_filter($characters, fn($character) => $character->isNotControlledByPlayer($cesca->ControllerId)));
+        return array_values(array_filter($characters, fn($character) =>
+            $character->isNotControlledByPlayer($cesca->ControllerId)
+            && $character->canBeWoundedByOpponentAbilities()
+        ));
+    }
+
+    private function getOpposingReactionTargets(Theah $theah, Character $cesca, EventSorcererAbilityPlayed $event): array
+    {
+        $targets = $this->getOpposingCharactersAtLocation($theah, $cesca);
+
+        // WHY: EventCardMoving queues EventCardMoved after EventSorcererAbilityPlayed in the
+        // same batch. The target-count guard runs too early unless we also count characters
+        // that will be co-located once pending moves resolve.
+
+        // Case A — opposing ability target queued to move to Cesca (e.g. Pull / Action_01172).
+        if ($event->performerId == $cesca->Id && $event->targetId != 0)
+        {
+            $target = $theah->getCharacterById($event->targetId);
+            if ($target != null
+                && $target->isNotControlledByPlayer($cesca->ControllerId)
+                && $target->canBeWoundedByOpponentAbilities()
+                && ! $this->targetsContainId($targets, $target->Id)
+                && $theah->hasQueuedCardMoveToLocation($target->Id, $cesca->Location))
+            {
+                $targets[] = $target;
+            }
+        }
+
+        // Case B — Cesca herself queued to move (e.g. Follow the Thread / Action_03009).
+        // Opposing characters at the destination are not yet visible via cesca->Location.
+        $destination = $theah->getQueuedCardMoveDestination($cesca->Id);
+        if ($destination !== null)
+        {
+            foreach ($theah->getCharactersAtLocation($destination) as $character)
+            {
+                if ($character->isNotControlledByPlayer($cesca->ControllerId)
+                    && $character->canBeWoundedByOpponentAbilities()
+                    && ! $this->targetsContainId($targets, $character->Id))
+                {
+                    $targets[] = $character;
+                }
+            }
+        }
+
+        return $targets;
+    }
+
+    private function targetsContainId(array $targets, int $id): bool
+    {
+        foreach ($targets as $character)
+        {
+            if ($character->Id == $id)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

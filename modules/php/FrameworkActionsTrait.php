@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
@@ -52,10 +53,9 @@ trait FrameworkActionsTrait
 
     public function actHighDramaPass(): void
     {
-        if ($this->mustPerformExtraAction())
-        {
-            throw new UserException(clienttranslate("You must perform an action with the designated character."));
-        }
+        // WHY: EXTRA_ACTION_PERFORMER locks *who* may act, not *whether* they must act.
+        // Bloody Entrance (and Pattern A.2) grants an optional follow-up — Pass is allowed.
+        // Lock clears in stNextPlayer's else branch when EXTRA_ACTIONS is already 0.
 
         $playerId = $this->getActivePlayerId();
 
@@ -1469,6 +1469,27 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("chooseTechnique");
     }
 
+    /**
+     * Daniella (_03013): consider the duel adversary a Sorcerer until end of turn.
+     * Stays on the duel hub so Technique/Maneuver can be chosen afterward.
+     * Daniella need not be the actor — only at the actor's location (same controller).
+     */
+    public function actDuelActionConsiderAdversarySorcerer()
+    {
+        $this->theah->buildCity();
+
+        $action = Action_03013::findAvailableDuelAction($this->theah);
+        if ($action === null)
+        {
+            throw new UserException($this->translate("That Duel Action is not available."));
+        }
+
+        $action->actDuelConsiderAdversarySorcerer($this);
+
+        // Self-loop: refresh args so Technique list can include Sorcerer-gated options.
+        $this->gamestate->nextState("considerAdversarySorcerer");
+    }
+
     public function actDuelTechniqueChosen(string $techniqueId)
     {
         $playerId = $this->getActivePlayerId();
@@ -1665,9 +1686,17 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Card not found."));
         }
 
+        // WHY: card_location is authoritative (same as argsDuelChooseGambleCard / discard
+        // repair). Serialized Location can lag after Hand→Faction sinks that only called
+        // insertCardOnExtremePosition (Premonition / Matushka's Shears historically).
+        if ($deckCard['location'] != $deckName) {
+            throw new UserException(clienttranslate("Card is not in your faction deck."));
+        }
+
         $card = $this->getCardObjectFromDb($id);
         if ($card->Location != $deckName) {
-            throw new UserException(clienttranslate("Card is not in your faction deck."));
+            $card->Location = $deckName;
+            $this->updateCardObjectInDb($card);
         }
 
         $count = $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 2);

@@ -24,7 +24,7 @@ class _03012 extends Risk implements IHasReactions
 
         $this->WealthCost = 0;
 
-        $this->Riposte = 1;
+        $this->Riposte = 0;
         $this->DashedRiposte = true;
         $this->Parry = 3;
         $this->Thrust = 1;

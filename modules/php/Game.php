@@ -43,6 +43,42 @@ class Game extends \Bga\GameFramework\Table
     final const OPTIONS_PLAYER_DECKS_RANDOM_TOOTH_AND_CLAW = 2;
     final const OPTIONS_PLAYER_DECKS_RANDOM_FATE_AND_FORTUNE = 3;
 
+    // BGA end-of-game statistic keys (must match stats.json)
+    //Table stats
+    final const STAT_DAY_ENDED = "day_ended";    //The day that ended the game
+    final const STAT_VICTORY_TYPE = "victory_type"; //How the game was won
+    // Victory type values for STAT_VICTORY_TYPE (must match stats.json value_labels id 18)
+    final const VICTORY_NONE = 0;
+    final const VICTORY_ASSASSINATION = 1;
+    final const VICTORY_DOMINANCE = 2;
+    final const VICTORY_ECONOMIC = 3;
+    final const VICTORY_FIFTH_DAY = 4;
+    //Player stats
+    final const STAT_RENOWN_ENDED = "renown_ended"; //The renown that the player ended the game with
+    final const STAT_LEADER = "leader"; //Which Leader the player brought
+    // Characters controlled in play at end of each day (set in stDuskEndOfDay)
+    final const STAT_CHARACTERS_DAY_1 = "characters_day_1";
+    final const STAT_CHARACTERS_DAY_2 = "characters_day_2";
+    final const STAT_CHARACTERS_DAY_3 = "characters_day_3";
+    final const STAT_CHARACTERS_DAY_4 = "characters_day_4";
+    final const STAT_CHARACTERS_DAY_5 = "characters_day_5";
+    final const STAT_WOUNDS_RECEIVED = "wounds_received"; // Total wounds applied to the player's characters
+    // WHY: BGA stats are int/float/bool only. Leader names display via value_labels;
+    // indices here must stay in lockstep with stats.json value_labels for id 12.
+    final const LEADER_STAT_LABELS = [
+        0 => 'None',
+        1 => 'Don Constanzo Scarpa',
+        2 => 'Kaspar Dietrich',
+        3 => "Odette Dubois D'Arrent",
+        4 => 'Soline el Gato',
+        5 => 'Yevgeni',
+        6 => 'Cesca del Rosso',
+        7 => 'Daniella Dietrich',
+        8 => 'Angeline Dèmone',
+        9 => 'Sanjay',
+        10 => 'Ekaterina Ilyanava',
+    ];
+
     //Card locations
     final const LOCATION_CITY_DECK = 'City Deck';
     final const LOCATION_CITY_DISCARD = 'City Discard';
@@ -529,15 +565,19 @@ class Game extends \Bga\GameFramework\Table
         //Set the initial event batch id
         $this->globals->set(Game::EVENT_BATCH_ID, 0);
 
-        // Init game statistics.
-        //
-        // NOTE: statistics used in this file must be defined in your `stats.inc.php` file.
-
-        // Dummy content.
-        // $this->initStat("table", "table_teststat1", 0);
-        // $this->initStat("player", "player_teststat1", 0);
-
-        // TODO: Setup the initial game situation here.
+        // Init game statistics (names must match stats.json).
+        $this->bga->tableStats->init(Game::STAT_DAY_ENDED, 0);
+        $this->bga->tableStats->init(Game::STAT_VICTORY_TYPE, Game::VICTORY_NONE);
+        $this->bga->playerStats->init([
+            Game::STAT_RENOWN_ENDED,
+            Game::STAT_LEADER,
+            Game::STAT_CHARACTERS_DAY_1,
+            Game::STAT_CHARACTERS_DAY_2,
+            Game::STAT_CHARACTERS_DAY_3,
+            Game::STAT_CHARACTERS_DAY_4,
+            Game::STAT_CHARACTERS_DAY_5,
+            Game::STAT_WOUNDS_RECEIVED,
+        ], 0);
 
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();

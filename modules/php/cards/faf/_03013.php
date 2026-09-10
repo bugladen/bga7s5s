@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\reactions\Reaction_03013;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\reactions\Reaction_03013a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\techniques\Technique_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
@@ -57,6 +58,7 @@ class _03013 extends Leader implements IHasActions, IHasReactions, IHasTechnique
 
         $this->Reactions = [
             new Reaction_03013(),
+            new Reaction_03013a(),
         ];
 
         $this->Techniques = [

@@ -98,7 +98,7 @@ class Reaction_03006 extends CardReaction
             {
                 return;
             }
-            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->targetId);
+            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->targetId, (int)$event->playerId);
             return;
         }
 
@@ -108,7 +108,7 @@ class Reaction_03006 extends CardReaction
             {
                 return;
             }
-            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->targetId);
+            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->targetId, (int)$event->playerId);
             return;
         }
 
@@ -118,7 +118,7 @@ class Reaction_03006 extends CardReaction
             {
                 return;
             }
-            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->cardId);
+            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->cardId, (int)$event->playerId);
             return;
         }
 
@@ -128,6 +128,7 @@ class Reaction_03006 extends CardReaction
             {
                 return;
             }
+            // EventCardMoving has no playerId; opponent comes from source card.
             $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->cardId);
             return;
         }
@@ -138,6 +139,7 @@ class Reaction_03006 extends CardReaction
             {
                 return;
             }
+            // Wound/heal events have no playerId; opponent comes from source card.
             $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->characterId);
             return;
         }
@@ -148,12 +150,16 @@ class Reaction_03006 extends CardReaction
             {
                 return;
             }
-            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->defenderId);
+            // WHY: Challenges always choose a defender. Skip IAbilityThatTargetsCharacters —
+            // BasicChallenge has sourceId=0, and activating a technique before issue overwrites
+            // TRANSITION_INTERNAL_ID so abilityId is no longer 'BasicChallenge'. Same playerId
+            // fallback as Reaction_01014 for sourceless basic challenges.
+            $this->maybeTrigger($event, (int)$event->sourceId, (string)$event->abilityId, (int)$event->defenderId, (int)$event->playerId, false);
             return;
         }
     }
 
-    private function maybeTrigger(Event $event, int $sourceId, string $abilityId, int $targetCharacterId): void
+    private function maybeTrigger(Event $event, int $sourceId, string $abilityId, int $targetCharacterId, int $initiatingPlayerId = 0, bool $requireCharacterTargetingAbility = true): void
     {
         $theah = $event->theah;
         $owner = $this->getOwningCard($theah);
@@ -162,7 +168,7 @@ class Reaction_03006 extends CardReaction
             return;
         }
 
-        if (! $this->sourceAbilityTargetsCharacters($theah, $sourceId, $abilityId))
+        if ($requireCharacterTargetingAbility && ! $this->sourceAbilityTargetsCharacters($theah, $sourceId, $abilityId))
         {
             return;
         }
@@ -178,8 +184,10 @@ class Reaction_03006 extends CardReaction
             return;
         }
 
+        // WHY: BasicChallengeAction fires with sourceId=0 (no source card). Opponent is the
+        // initiating player — same fallback Reaction_01014 uses via $event->playerId.
         $source = $theah->getCardById($sourceId);
-        $opposingPlayerId = $source ? $source->ControllerId : 0;
+        $opposingPlayerId = $source ? $source->ControllerId : $initiatingPlayerId;
         if ($opposingPlayerId == 0 || $opposingPlayerId == $owner->ControllerId)
         {
             return;
@@ -340,7 +348,12 @@ class Reaction_03006 extends CardReaction
         $deck = $game->getGameDeckObject();
         $deckName = $game->getPlayerFactionDeckName($this->opponentId);
 
+        // WHY: Must update Card->Location too — insertCard alone leaves Location=Hand
+        // while card_location becomes Faction-*. Gamble confirm (and similar) then
+        // reject a card the UI offered from the deck tops.
         $deck->insertCardOnExtremePosition($cardId, $deckName, false);
+        $card->Location = $deckName;
+        $game->updateCardObjectInDb($card);
 
         $game->notify->player($this->opponentId, "cardRemovedFromHand", clienttranslate('Private: ${reaction_inject_code}: you sink ${card_inject_code} from your hand.'), [
             "reaction_inject_code" => $owner->getInjectCode(),

@@ -72,7 +72,9 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
-        $owner = $this->getOwningAttachment($game->theah);
+        // WHY: getOwningCard (not Attachment) — Katain (Reaction_02011) copies this
+        // onto a Character; getOwningAttachment() returns null in that case.
+        $owner = $this->getOwningCard($game->theah);
 
         if (! $character->isControlled())
         {
@@ -110,7 +112,8 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
                 throw new UserException($errorMessage);
             }
 
-            $owner = $this->getOwningAttachment($game->theah);
+            // WHY: same as isValidTargetForAbility — owner may be Character when Katain-copied
+            $owner = $this->getOwningCard($game->theah);
 
             if ($character->Engaged)
             {

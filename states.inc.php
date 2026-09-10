@@ -1008,6 +1008,7 @@ $machinestates = [
                 "03008" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "03009" => States::HIGH_DRAMA_PLAYER_TURN_03009,
                 "03011" => States::HIGH_DRAMA_PLAYER_TURN_03011,
+                "03013" => States::HIGH_DRAMA_PLAYER_TURN_03013,
                 "03020" => States::HIGH_DRAMA_PLAYER_TURN_03020,
                 "03021" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "03026" => States::HIGH_DRAMA_PLAYER_TURN_03026,
@@ -1162,7 +1163,8 @@ $machinestates = [
             "action" => "stTechniqueAvailable",
             "transitions" => [
                 "hasTechique" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE,
-                "noTechnique" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE
+                "noTechnique" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
+                "challengeSkipped" => States::NEXT_PLAYER,
             ]
         ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE => [
@@ -1581,6 +1583,9 @@ $machinestates = [
                 "equipFromHand" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND, 
                 "equipFromPlay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY, 
                 "back" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_PERFORMER,
+                // WHY: kept for zombie abort only — human UI does not show back for
+                // SMUGGLED_ITEM (Action_01187 already confirmed). Zombie uses this to
+                // unwind toward a passable state.
                 "backSmuggledItem" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION
             ]
         ],
@@ -2255,6 +2260,7 @@ $machinestates = [
                 "actDuelActionChooseCombatCard",
                 "actDuelActionChooseTechnique",
                 "actDuelActionChooseManeuver",
+                "actDuelActionConsiderAdversarySorcerer",
                 "actDuelDoneRound",
                 "actDuelEndDuel"
             ],
@@ -2263,6 +2269,7 @@ $machinestates = [
                 "chooseTechnique" => States::DUEL_CHOOSE_TECHNIQUE,
                 "chooseManeuver" => States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD,
                 "chooseGambleCard" => States::DUEL_GAMBLE_SETUP,
+                "considerAdversarySorcerer" => States::DUEL_CHOOSE_ACTION,
                 "doneWithRound" => States::DUEL_END_OF_ROUND,
             ]
         ],

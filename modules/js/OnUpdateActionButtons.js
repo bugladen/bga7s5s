@@ -98,9 +98,10 @@ onUpdateActionButtons: function( stateName, args )
             }
             if (args._private.hasBrutes)
                 this.addActionButton(`btnBrute`, _('Play Brute'), () => this.bgaPerformAction('actHighDramaChooseBruteStart', {})) 
-                        
-            if (! args._private.mustPerformAction)
-                this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
+
+            // WHY: EXTRA_ACTION_PERFORMER may lock the performer, but Pass is still allowed
+            // (e.g. Bloody Entrance — "may perform another action").
+            this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
         },
 
         'highDramaMoveActionChoosePerformer': () => {
@@ -209,9 +210,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaEquipActionChooseAttachmentLocation': () => {
-            if (args._private.equipType === this.SMUGGLED_ITEM_EQUIP_TYPE)
-                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backSmuggledItem'}), { id: 'actBack', color: 'alert' });
-            else if (args._private.equipType === this.NORMAL_EQUIP_TYPE) 
+            // WHY: SMUGGLED_ITEM (Action_01187) arrives here after the in-play action is
+            // already confirmed — no prior chooser to return to, so no back arrow.
+            if (args._private.equipType === this.NORMAL_EQUIP_TYPE)
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             if (args._private.attachmentsInHand.length > 0) {
                 this.addActionButton(`actChooseFromHand`, _('Equip from Hand'), () => this.bgaPerformAction('actSimpleTransition', {transition: 'equipFromHand'}));
@@ -367,7 +368,7 @@ onUpdateActionButtons: function( stateName, args )
                 this.addTippyTooltip( 'btnCombatCard', `<div class='_7sfs-basic-tooltip'>${_("Play a Combat Card. Technique and Maneuver can be chosen afterward.")}</div>` );
             }
             if ( ! args._private.endDuelAvailable)
-                this.addActionButton(`btnDone`, _('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {})) 
+                this.statusBar.addActionButton(_('End Round'), () => this.bgaPerformAction('actDuelDoneRound', {}), { id: 'btnDone', color: 'alert' }); 
             if (args._private.endDuelAvailable)
                 this.addActionButton(`btnEndDuel`, _('End Duel'), () => this.bgaPerformAction('actDuelEndDuel', {})) 
         },

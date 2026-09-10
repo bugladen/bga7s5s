@@ -135,6 +135,12 @@ class Action_01028 extends RiskAction
 
             $pressureStats = $game->theah->getPressureStats(null, $location, Game::STAT_INFLUENCE);
             $pressureOccuringEvent = EventFactory::createPressureOccuringEvent($owner->ControllerId, 0, $location, $pressureStats);
+            // WHY: CardMoving only appends CardMoved (MEDIUM) when processed. A MEDIUM
+            // PressureOccuring queued here FIFO-runs before those CardMoveds, so
+            // Constanzo (_01006) checks the location before thugs arrive and never
+            // sets CONSTANZO_PRESSURE_TYPE. LOWEST runs after all MEDIUM CardMoveds;
+            // Transition (prio 8) still follows so pressureLocation() matches.
+            $pressureOccuringEvent->priority = Event::LOW_PRIORITY;
             $game->theah->queueEvent($pressureOccuringEvent);
 
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "pressureLocation", $this->Id);

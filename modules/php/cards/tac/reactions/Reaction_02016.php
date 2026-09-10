@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -28,8 +29,6 @@ class Reaction_02016 extends AttachmentReaction
     private ?EventCharacterIntervened $characterIntervenedEvent = null;
     private ?EventCharacterTargeted $characterTargetedEvent = null;
     private bool $isChallenger = false;
-    private ?string $savedAbilityId = null;
-    private ?int $savedSourceId = null;
     private ?int $targetCharacterId = null;
 
     private bool $skipNextEvent = false;
@@ -43,19 +42,19 @@ class Reaction_02016 extends AttachmentReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose a Character at this Location to become the new target: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may wound your performer to become the new target: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
 
+        // WHY: Card text redirects only to the equipped character ("your performer"),
+        // not any ally at the location. Prior code listed every character at the location.
         $owningCharacter = $this->getOwningCharacter($theah);
-        $characters = $theah->getCharactersAtLocationByPlayerId($owningCharacter->Location, $owningCharacter->ControllerId);
-        $characters = array_filter($characters, fn($character) => $character->Id != $this->targetCharacterId);
-        foreach ($characters as $character)
+        if ($owningCharacter && $owningCharacter->Id != $this->targetCharacterId)
         {
-            $array[] = $this->createButtonProperty($theah->game, $character->Name, "redirect-$character->Id");
+            $array[] = $this->createButtonProperty($theah->game, $owningCharacter->Name, "redirect-$owningCharacter->Id");
         }
 
         $array[] = $this->createButtonProperty($theah->game, "Decline", "decline");
@@ -110,15 +109,13 @@ class Reaction_02016 extends AttachmentReaction
             return false;
         }
 
-        $charactersAtLocation = $theah->getCharactersAtLocationByPlayerId($owningCharacter->Location, $owningCharacter->ControllerId);
-        $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->Id != $targetCharacter->Id);
-        if (count($charactersAtLocation) == 0)
+        // WHY: Redirect target is always the equipped character. No point reacting when
+        // they are already the target — there is no "instead" to apply.
+        if ($targetCharacter && $targetCharacter->Id == $owningCharacter->Id)
         {
             return false;
         }
 
-        $this->savedAbilityId = $abilityId;
-        $this->savedSourceId = $sourceId;
         return true;
     }
 
@@ -316,7 +313,15 @@ class Reaction_02016 extends AttachmentReaction
 
             $owner = $this->getOwningAttachment($event->theah);
             $owningCharacter = $this->getOwningCharacter($event->theah);
-            if ($owningCharacter->Id == $event->newTargetId)
+            $newTarget = $event->theah->getCharacterById($event->newTargetId);
+
+            // WHY: Card redirects TO the equipped character. Trigger when an ally at this
+            // location (not the performer) becomes the intervention target — opposite of
+            // Vittoria (01014), which redirects away from herself onto a Thug.
+            if ($newTarget
+                && $newTarget->ControllerId == $owningCharacter->ControllerId
+                && $newTarget->Location == $owningCharacter->Location
+                && $newTarget->Id != $owningCharacter->Id)
             {
                 if ($this->skipNextEvent)
                 {
@@ -325,20 +330,15 @@ class Reaction_02016 extends AttachmentReaction
                     return;
                 }
 
-                $charactersAtLocation = $event->theah->getCharactersAtLocationByPlayerId($owningCharacter->Location, $owningCharacter->ControllerId);
-                $charactersAtLocation = array_filter($charactersAtLocation, fn($character) => $character->Id != $owningCharacter->Id);
-                if (count($charactersAtLocation) > 0)
-                {
-                    $this->characterIntervenedEvent = clone $event;
-                    unset($this->characterIntervenedEvent->theah);
-                    $this->targetCharacterId = $owningCharacter->Id;
-                    $owner->IsUpdated = true;
+                $this->characterIntervenedEvent = clone $event;
+                unset($this->characterIntervenedEvent->theah);
+                $this->targetCharacterId = $newTarget->Id;
+                $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                $event->canceled = true;
 
-                    $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $event->theah->queueEvent($reactionTransitionEvent);
-                }
+                $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($reactionTransitionEvent);
             }
         }
     }
@@ -406,56 +406,23 @@ class Reaction_02016 extends AttachmentReaction
 
         if ($this->characterIntervenedEvent)
         {
-            $owningCharacter = $this->getOwningCharacter($game->theah);
-            $owningCharacter->removeCondition(Game::DUEL_DEFENDER);
+            $originalTarget = $game->theah->getCharacterById($this->targetCharacterId);
+            if ($originalTarget)
+            {
+                $originalTarget->removeCondition(Game::DUEL_DEFENDER);
+            }
 
             $performer = $game->theah->getCharacterById($characterId);
             $performer->addCondition(Game::DUEL_DEFENDER);
 
             $game->globals->set(GAME::CHOSEN_TARGET, $performer->Id);
 
-            $this->characterIntervenedEvent->oldTargetId = $owningCharacter->Id;
+            // WHY: Intervention was on an ally; redirect sets performer as newTarget.
+            $this->characterIntervenedEvent->oldTargetId = $this->targetCharacterId;
             $this->characterIntervenedEvent->newTargetId = $performer->Id;
             $game->theah->queueEvent($this->characterIntervenedEvent);
             $this->characterIntervenedEvent = null;
         }
-    }
-
-    private function loadAbility(Theah $theah): ?IAbilityThatTargetsCharacters
-    {
-        if ($this->savedSourceId !== null && $this->savedAbilityId !== null)
-        {
-            $source = $theah->getCardById($this->savedSourceId);
-            if ($source)
-            {
-                $ability = $source->getAbilityById($this->savedAbilityId);
-                if ($ability instanceof IAbilityThatTargetsCharacters)
-                {
-                    return $ability;
-                }
-            }
-
-            $action = $theah->getInPlayActionById($this->savedAbilityId);
-            if ($action instanceof IAbilityThatTargetsCharacters)
-            {
-                return $action;
-            }
-        }
-        return null;
-    }
-
-    private function cancelEvents(Game $game): void
-    {
-        $this->engagedEvent = null;
-        $this->engardedEvent = null;
-        $this->cardMovingEvent = null;
-        $this->characterWoundedEvent = null;
-        $this->characterHealedEvent = null;
-        $this->characterTargetedEvent = null;
-        $this->isChallenger = false;
-        $this->challengeIssuedEvent = null;
-        $this->characterIntervenedEvent = null;
-        $game->globals->set(Game::CHALLENGE_CANCELLED, true);
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -465,8 +432,15 @@ class Reaction_02016 extends AttachmentReaction
         if ($reactionId != 'decline')
         {
             $owner = $this->getOwningCard($game->theah);
-            $characterId = str_replace("redirect-", "", $reactionId);
+            $owningCharacter = $this->getOwningCharacter($game->theah);
+            $characterId = (int) str_replace("redirect-", "", $reactionId);
             $character = $game->theah->getCharacterById($characterId);
+
+            // WHY: Only the equipped character may become the new target.
+            if (! $owningCharacter || $characterId != $owningCharacter->Id)
+            {
+                throw new UserException($game->translate("Only the equipped character may become the new target."));
+            }
 
             $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to redirect the ability to ${character_inject_code}.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
@@ -477,35 +451,36 @@ class Reaction_02016 extends AttachmentReaction
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
-            $ability = $this->loadAbility($game->theah);
-            if ($ability)
-            {
-                [$isValid, ] = $ability->isValidTargetForAbility($game, $character);
-                if ($isValid)
-                {
-                    $this->releaseEvent($game, $characterId);
-                }
-                else
-                {
-                    $game->notify->all("message", clienttranslate('${character_inject_code} is not a valid target for the ability. The ability has been canceled.'), [
-                        "character_inject_code" => $character->getInjectCode(),
-                    ]);
-                    $this->cancelEvents($game);
-                }
-            }
-            else if ($this->characterIntervenedEvent)
-            {
-                $this->releaseEvent($game, $characterId);
-            }
+            // WHY: Do not re-validate with isValidTargetForAbility after redirect.
+            // Card text forces the retarget ("targets your performer instead"). Re-checking
+            // caused false cancels (Bleed Out vs pending Cross cost wound) and would need
+            // per-ability edge-case handling for every wound/healed/engaged gate.
+            $this->releaseEvent($game, $characterId);
 
             $this->setUsed($game->theah, true);
         }
         else if ($this->characterIntervenedEvent)
         {
-            $owningCharacter = $this->getOwningCharacter($game->theah);
-            $this->releaseEvent($game, $owningCharacter->Id);
+            // WHY: DUEL_DEFENDER was already swapped onto the intervener in actHighDramaChallengeActionIntervene
+            // before this event fired. Decline only needs to re-emit the canceled notify event as-is.
+            // releaseEvent would clobber oldTargetId. skipNextEvent prevents re-trigger on the same ally.
+            $game->theah->queueEvent($this->characterIntervenedEvent);
+            $this->characterIntervenedEvent = null;
             $this->skipNextEvent = true;
             $this->setUsed($game->theah, true);
+        }
+        else
+        {
+            // WHY: Intercept clones+cancels the original effect. Decline must re-release onto
+            // the original target or the ability fizzles (e.g. Bleed Out wound vanishes).
+            // skipNextEvent prevents Cross from immediately re-intercepting the same event.
+            $this->releaseEvent($game, $this->targetCharacterId);
+            $this->skipNextEvent = true;
+            $owner = $this->getOwningAttachment($game->theah);
+            if ($owner)
+            {
+                $owner->IsUpdated = true;
+            }
         }
 
         $game->gamestate->nextState('done');

@@ -62,6 +62,25 @@ class Maneuver_01110 extends Maneuver
         }
     }
 
+    public function getArgsFromManeuver(Game $game, int $state, string $stateName): array
+    {
+        $args = parent::getArgsFromManeuver($game, $state, $stateName);
+
+        if ($state == States::DUEL_RESOLVE_MANEUVER_01110)
+        {
+            $actor = $game->theah->getDuelRoundActor();
+            $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
+            $adversary = $game->theah->getCharacterById($adversaryId);
+
+            // WHY: First wound may have already destroyed the adversary. UI must not offer
+            // "Take Wound" when they are in Discard/Locker — only location uncontrolled remains.
+            $args["canTakeWound"] = $adversary !== null
+                && ! $game->characterIsInDiscardOrLocker($adversary);
+        }
+
+        return $args;
+    }
+
     public function actFromManeuverWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromManeuverWithId($game, $state, $stateName, $id);
@@ -75,6 +94,12 @@ class Maneuver_01110 extends Maneuver
 
             if ($id == 1)
             {
+                // WHY: Mirror canTakeWound — first wound may already have destroyed them.
+                if ($adversary === null || $game->characterIsInDiscardOrLocker($adversary))
+                {
+                    throw new \BgaUserException($game->translate("Adversary is not available to take another wound."));
+                }
+
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
@@ -85,7 +110,12 @@ class Maneuver_01110 extends Maneuver
 
             if ($id == 2)
             {
-                $location = $adversary->Location;
+                // WHY: Card says "this location" (the duel site). Using $adversary->Location
+                // fatals when the first wound destroyed them — Location is then Locker-*,
+                // which is not in cityLocations (tournoi 260903-0151). Actor remains at
+                // the duel city location. Same "capture duel site" idea as Maneuver_01107's
+                // AdversaryLocation, but actor is still present so no persisted field needed.
+                $location = $actor->Location;
 
                 if ($game->theah->canLocationBecomeUncontrolledBy($owner->ControllerId, $location))
                 {
