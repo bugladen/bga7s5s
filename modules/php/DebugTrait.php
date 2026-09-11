@@ -285,4 +285,14 @@ trait DebugTrait
         $this->theah->queueEvent($event);
         $this->theah->runEvents($skipTransitions = true);
     }
+
+    public function debug_AddCardToApproachDeck(string $className, int $playerId)
+    {
+        $card = $this->createCardInLocation($className, Game::LOCATION_APPROACH, $playerId, $playerId);
+
+        $this->notifyPlayer($playerId, "approachCardsReceived", 'Debug: card added to Approach Deck', [
+            "cards" => [$card->getPropertyArray($this)],
+        ]);
+    }
+    
 }
