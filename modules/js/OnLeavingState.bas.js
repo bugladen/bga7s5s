@@ -227,6 +227,12 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04035': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
             'highDramaPhase04034': () => {
                 if (this.isCurrentPlayerActive()) {
                     if (this.clientStateArgs.performerId) {

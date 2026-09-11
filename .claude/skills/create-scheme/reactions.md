@@ -41,6 +41,21 @@ public function handleEvent(Event $event)
 
 Reference: `Reaction_03005` (claim a location after Red Hand's challenge refused), `Reaction_02004` (move adjacent performer when opponent initiates pressure at scheme controller's location).
 
+### Pressure total bonus (+1 per Trait at location)
+
+Scheme text like Meeting of the Minds (`_04035`):
+
+> When a pressure occurs at your performer's location • Add +1 to your total for each of your Academics there.
+
+1. **Trigger:** `EventPressureOccuring` + `isAvailable()` + `$event->playerId == $owner->ControllerId` (you are pressuring — "your performer") + ≥1 controlled traited character at `$event->location`.
+2. Capture `$location` for description; Use / Pass buttons.
+3. On Use: `setGlobalFlag(PRESSURE_TYPE, MEETING_OF_THE_MINDS_PRESSURE_TYPE)` + store player id global; `setUsed(true)`. Pass clears capture without `setUsed`.
+4. **Apply in `pressureLocation()`:** count traited chars via a **fresh** `getCharactersAtLocation($location)` — do not reuse the Claude / Reputation Meritée filtered `$charactersAtLocation` list (printed bonus is for Academics *there*).
+5. Clear the player-id global in HD turn cleanup alongside `LOYAL_PLAYER_ID` / `VANTAGE_POINT_PLAYER_ID`.
+6. Sibling Risk reaction Loyal (`Reaction_03035`) adds fixed +1 via the same flag timing (after reactions, before `pressureLocation()`).
+
+Reference: `Reaction_04035`.
+
 ### Capturing context onto the reaction
 
 The triggering event has only a snapshot of args (`$event->challengerId`, etc.). If the reaction needs context that isn't on the event (the location of the challenge, the destroyed character's name, etc.), capture it into a `private` property on the reaction at trigger time, **then clear it** in `performReaction` (or `resetStage` for multi-stage reactions). `$owner->IsUpdated = true` persists the property to DB. See `Reaction_02004::$location` and `Reaction_03005::$location` for the pattern.

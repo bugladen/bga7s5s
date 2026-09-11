@@ -120,6 +120,19 @@ public function actFromCardPass(Game $game, int $state, string $stateName, strin
 
 Reference: `_01044` (filter by `Attachment` instanceof), `_03005` (filter by trait list). Both throw if a card is available; both `nextState("")` on success.
 
+### Discard or Locker pick (contingent on controlling a Trait)
+
+When the scheme says **"If you control an Academic, put your non-Revelry risk from your discard or The Locker into your hand"**:
+
+1. Queue fixed Renown as usual.
+2. Gate the pick: `getCharactersInPlayByPlayerId` + `hasTrait(...)` **and** ≥1 eligible Risk in discard or locker (`instanceof Risk` + `!$card->hasTrait("Revelry")`).
+3. Only queue `createTransitionEvent` when both true — otherwise notify and stop (contingent If, same as contingent Then).
+4. `argsFromCard` exposes `ids` from both piles. JS: populate chooseList from `player.discard` **and** `player.locker` filtered by `ids` (coerce `Number` — locker muster `_03062`).
+5. On pick: branch remove event on `$card->Location` (`createCardRemovedFromPlayerDiscardPileEvent` vs `createCardRemovedFromLockerEvent`) then `createCardAddedToHandEvent`. Mirror `Reaction_04003a` discard-or-locker move.
+6. Pass throws while any eligible remain.
+
+Reference: `_04035`.
+
 ### Location-pick state
 
 When the player picks a city location, use `actFromCardWithIds` (plural — the framework hands locations in as a string array).

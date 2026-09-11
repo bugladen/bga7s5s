@@ -285,6 +285,28 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04035': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = _('Your Discard Pile or The Locker');
+
+                    const player = this.gamedatas.players[this.getActivePlayerId()];
+                    const ids = (args.args.args.ids || []).map(Number);
+                    const addIfEligible = (card) => {
+                        if (ids.includes(Number(card.id))) {
+                            this.addCardToDeck(this.chooseList, card);
+                        }
+                    };
+                    (player.discard || []).forEach(addIfEligible);
+                    (player.locker || []).forEach(addIfEligible);
+                    this.chooseList.setSelectionMode(1);
+
+                    if (this.chooseList.count() > 0)
+                        dojo.addClass('actPass', 'disabled');
+                }
+            },
+
             'highDramaPhase04034': () => {
                 if (this.isCurrentPlayerActive()) {
                     if (args.args.args.performerId) {

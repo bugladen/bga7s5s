@@ -744,6 +744,25 @@ trait UtilitiesTrait
             }
         }
 
+        //If Meeting of the Minds Reaction was used, add +1 per Academic at the location
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::MEETING_OF_THE_MINDS_PRESSURE_TYPE))
+        {
+            $meetingPlayerId = $this->globals->get(Game::MEETING_OF_THE_MINDS_PLAYER_ID, 0);
+            if ($meetingPlayerId && isset($playerInfluences[$meetingPlayerId]))
+            {
+                // WHY: Count from a fresh location query — Claude / Reputation Meritée filter $charactersAtLocation for who contributes stats, but the printed bonus is for Academics *there*.
+                $academicBonus = 0;
+                foreach ($this->theah->getCharactersAtLocation($location) as $character)
+                {
+                    if ($character->ControllerId == $meetingPlayerId && $character->hasTrait("Academic"))
+                    {
+                        $academicBonus++;
+                    }
+                }
+                $playerInfluences[$meetingPlayerId]['influence'] += $academicBonus;
+            }
+        }
+
         //If Vantage Point Reaction was used, subtract 1 from the chosen opponent's total
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::VANTAGE_POINT_PRESSURE_TYPE))
         {

@@ -188,9 +188,11 @@ class Game extends \Bga\GameFramework\Table
     final const LOYAL_PRESSURE_TYPE = 8192;
     final const SOLINE_PRESSURE_TYPE = 16384;
     final const VANTAGE_POINT_PRESSURE_TYPE = 32768;
+    final const MEETING_OF_THE_MINDS_PRESSURE_TYPE = 65536;
     final const SOLOMONIA_ID = "solomoniaId";
     final const LOYAL_PLAYER_ID = "loyalPlayerId";
     final const VANTAGE_POINT_PLAYER_ID = "vantagePointPlayerId";
+    final const MEETING_OF_THE_MINDS_PLAYER_ID = "meetingOfTheMindsPlayerId";
 
     //Player action global variables
     //Delete these in stNextPlayer

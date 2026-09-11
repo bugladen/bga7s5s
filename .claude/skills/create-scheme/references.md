@@ -100,6 +100,9 @@
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04034_2.php` | Renown source pick (`locationChosen` + `back`). |
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04034_3.php` | Adjacent dest (`locationChosen` + `back`). |
 | `modules/php/States/bas/State_highDramaPhase04034.php` | Opponent choice; flatten `location` for description; zombie prefers lose control. |
+| `modules/php/cards/bas/_04035.php` (Meeting of the Minds) | **Fixed dual Renown (Bazaar + Forum) + contingent Academic discard/Locker Risk pick + pressure Reaction.** Skip pick when no Academic or no eligible Risk. Initiative 83 / Panache -1 / Discovery. |
+| `modules/php/cards/bas/reactions/Reaction_04035.php` | Pressure at your performer's location → +1 per Academic. `MEETING_OF_THE_MINDS_PRESSURE_TYPE`; count Academics fresh at calc time (not Claude-filtered list). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04035.php` | Combined discard+Locker chooseList (`ids` args). |
 | `modules/php/cards/_7s5s/_01152.php` | Always-offer add-or-move-adjacent sibling (no fewest gate); Pass → move path. |
 | `modules/php/cards/_7s5s/_01144.php` | Fewest-then-second-Add sibling (unique fewest / no ties). |
 | `modules/php/cards/_7s5s/maneuvers/Maneuver_01110.php` | Wound vs location-uncontrolled button choice sibling. |
