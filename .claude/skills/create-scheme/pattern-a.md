@@ -180,6 +180,21 @@ When the scheme says **"Add a City Card to [The Grand Bazaar]. Then add a Renown
 
 Reference: `_04025` (Bazaar + Renown elsewhere). City-card-only sibling: `_01149` (Renown + City Card to Docks, no pick).
 
+### Add Renown, or (if unique fewest) move adjacent instead
+
+When the scheme says **"Add a Renown to any location. If you have the fewest Renown, you may move a Renown to an adjacent location instead"** (Explosive Ultimatum):
+
+1. **Default path is always Add** — one planning resolve state with all city locations selectable; Confirm → `createRenownAddedToLocationEvent` → named `"renownPlaced"` → EVENTS.
+2. **Move-instead is optional and gated.** Offer "Move a Renown Instead" only when **both**:
+   - Player has **unique** fewest score Renown (`getPlayerReknown`; count of players at that score == 1). **Ties do not qualify** — Eddie / `_04034` (same discipline as Filling the Ranks `_01144` even when the card omits "(Fewest cannot tie.)").
+   - At least one city location has `Renown > 0` (nothing to move → no button; must add).
+3. Expose `canMoveRenown` from `argsFromCard`. Button calls `onPass()` → `actFromCardPass` — **add** `planningPhaseResolveSchemes_<NNNNN>` to `PlayerActions.js` `onPass` / `actionArray` map → `'actFromCardPass'` (same as `_01152`).
+4. **Three states** (GameState classes): (1) add-or-pass-to-move; (2) source location with Renown (`locationIds`); (3) adjacent dest via `getAdjacentCityLocations($from, false)`. Batch move events under one `batchId` (`createRenownMovingBetweenLocationsEvent` + remove + add(`isMove=true`)).
+5. Named transitions when `"pass"` / `"back"` / `"zombie"` siblings exist (`"renownPlaced"`, `"locationChosen"`, `"pass"`). Back from 2→1 and 3→2.
+6. Contrast `_01152` (Until Morale Improves): always offers move as the Pass alternative with no fewest gate. Contrast `_01144`: fewest unlocks a **second Add** to a different location, not a move.
+
+Reference: `_04034` / `State_planningPhaseResolveSchemes04034{,_2,_3}`.
+
 ### Character-then-City-location resolve (move your \<Trait\>)
 
 When the scheme says **"Then, move your Duelist to a City location"** (or another trait) after automatic Renown:

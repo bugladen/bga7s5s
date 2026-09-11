@@ -115,6 +115,34 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'planningPhaseResolveSchemes_04034': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                // WHY: onUpdateActionButtons gets getArgs() directly (one less nest than onEnteringState).
+                if (args.args && args.args.canMoveRenown) {
+                    this.statusBar.addActionButton(_('Move a Renown Instead'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+                }
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_04034_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_04034_3': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'highDramaPhase04034': () => {
+                if (args.args && args.args.canLoseControl) {
+                    this.addActionButton(`actLoseControl`, _('Lose Control'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                }
+                this.addActionButton(`actDecline`, _('Decline'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
             'planningPhaseEnd_04025': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Draw Selected'), () => this.onMultipleChooseListCardsConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

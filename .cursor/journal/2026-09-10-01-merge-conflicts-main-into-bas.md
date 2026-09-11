@@ -20,4 +20,4 @@ Also kept HEAD-only bits that weren't wrong:
 - helpers: `getAdjacentCityLocations` + `setPlayersMultiactive` bullets
 
 ## Status
-Conflicts resolved + staged. Merge commit NOT made — user only asked to fix conflicts.
+Conflicts resolved. Merge commit `327c1945` ("Merge remote-tracking branch 'origin' into bas"). Working tree clean; bas ahead of origin/bas by 44. Not pushed.

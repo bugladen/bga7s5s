@@ -206,6 +206,36 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04034': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseResolveSchemes_04034_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseResolveSchemes_04034_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04034': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseEnd_04025': () => {
                 dojo.addClass('choose_container', 'hidden');
                 dojo.addClass('chooseList', 'hidden');

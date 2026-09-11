@@ -94,3 +94,12 @@
 | `modules/php/cards/faf/reactions/Reaction_03052.php` | Private City Deck look → sink/reorder sibling (Dusk Continuous). |
 | `modules/php/cards/tac/_02005.php` (Decipher the Strands) | Look top N (+Strega) of opponent deck → sink/reorder (resolve-time, not Planning End). |
 | `modules/php/cards/_7s5s/actions/Action_01038.php` (Otto) | Reveal-to-all + draw attachment + sink rest — draw/sink event pair sibling (**Reveal**, not Look). |
+| `modules/php/cards/bas/_04034.php` (Explosive Ultimatum) | **Add Renown, or unique-fewest move-adjacent instead + Pattern N City Action** (opponent lose control / decline → wound opposing). Initiative 28 / Panache 0 / Cunning+Sabotage. Fewest = no ties (Eddie). |
+| `modules/php/cards/bas/actions/Action_04034.php` | Pattern N: opponent-controlled performer filter; Transition to location Controller; Lose Control / Decline; `createLocationBecomesUncontrolledEvent`. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04034.php` | Planning add-or-pass-to-move (`renownPlaced` / `pass` / `zombie`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04034_2.php` | Renown source pick (`locationChosen` + `back`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04034_3.php` | Adjacent dest (`locationChosen` + `back`). |
+| `modules/php/States/bas/State_highDramaPhase04034.php` | Opponent choice; flatten `location` for description; zombie prefers lose control. |
+| `modules/php/cards/_7s5s/_01152.php` | Always-offer add-or-move-adjacent sibling (no fewest gate); Pass → move path. |
+| `modules/php/cards/_7s5s/_01144.php` | Fewest-then-second-Add sibling (unique fewest / no ties). |
+| `modules/php/cards/_7s5s/maneuvers/Maneuver_01110.php` | Wound vs location-uncontrolled button choice sibling. |

@@ -17,7 +17,7 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 Pre-commit hook: `SchemeAction` / `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`.
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`, `_04034`.
 
 **Action-object persistence:** public fields on the Action (`$MoveMode`, `$pendingMusterId`, …) survive only if you call `$game->updateCardObjectInDb($owner)` after mutating them. `$owner->IsUpdated = true` alone is **not** flushed before `stRunEvents` rebuilds cards from DB (learned on `_03029` / `_03062` / `_03063`).
 
@@ -39,6 +39,27 @@ Use when the printed keyword is **`<b>Action:</b>`** (not City Action) and the t
 **JS:** State 1 = city locations from `locationIds` + Confirm. State 2 = `highlightCardsAsSelectable(ids)` + Confirm + Pass; leave unhighlights / `resetCityLocations`.
 
 Reference: `Action_04015`, `State_highDramaPhase04015{,_2}`.
+
+### Pattern N — Opponent may lose control, or wound opposing characters
+
+Use when the printed City Action is **"If an opponent controls this location • They may choose to lose control of it. If they do not, wound all opposing characters there"**. Canonical: `_04034` (Explosive Ultimatum). Choice UX sibling: `Maneuver_01110`. Opponent-becomes-active sibling: `Action_04009`.
+
+**Flow:**
+
+1. `SchemeCityAction` + `RequiresPerformerSelected = true`.
+2. `getPerformersForAction` / availability: city performers whose location has `Controller != 0 && Controller != playerId` (an opponent controls it). Do **not** require `canLocationBecomeUncontrolledBy` for availability — Decline still wounds.
+3. `EventActionTriggered`: re-validate → `Game::CHOSEN_LOCATION = $performer->Location` → `createTransitionEvent((int)$location->Controller, $owner->Id, "NNNNN", $this->Id)`. WHY 1st arg = location controller: `EventTransition` changes the active player to that id before `nextState("NNNNN")`.
+4. HD state `NNNNN` (activeplayer = controlling opponent):
+   - Args: `location`, `canLoseControl` (`canLocationBecomeUncontrolledBy($actingPlayerId, $location)`), `performerId` for highlight.
+   - Buttons: **Lose Control** (`actFromCardWithId` id `1`) only when `canLoseControl`; **Decline** (id `2`) always.
+5. Lose Control → `createLocationBecomesUncontrolledEvent($actingPlayerId, $location)` (gate again server-side) + `createActionResolvedEvent($actingPlayerId)`.
+6. Decline → wound every character at the location with `ControllerId != 0 && ControllerId != actingPlayerId` (`createCharacterBeingWoundedEvent`) + `createActionResolvedEvent`. "Opposing" here is vs the **scheme controller** (acting player), not vs the declining opponent.
+7. Named success (`"choiceMade"`) when `"zombie"` also exists. Zombie: id `1` if `canLoseControl`, else id `2`.
+8. Flatten `location` onto GameState `getArgs()` top level if the description uses `${location}` (BGA substitutes top-level keys).
+
+**JS:** Highlight performer; buttons from `args.args.canLoseControl` in **OnUpdateActionButtons** (one less nest than OnEnteringState — see helpers.md). No Back (opponent is choosing, not the acting player re-picking).
+
+Reference: `Action_04034`, `State_highDramaPhase04034`. Uncontrol gate: `Theah::canLocationBecomeUncontrolledBy` / `Action_01112a` / `Maneuver_01110`.
 
 ### Pattern H — Immediate-resolve City Action (no HD sub-state)
 

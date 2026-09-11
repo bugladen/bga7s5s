@@ -235,6 +235,33 @@ Buttons: state 1 Confirm only; state 2 Back + Confirm Location (`onCityLocations
 
 Reference: `_04004` bas JS triple.
 
+### Add Renown / optional Move Instead (fewest-gated)
+
+Same city-location chooser as above for state 1. Conditional move button + Pass map:
+
+```js
+// OnUpdateActionButtons — note args.args (not args.args.args)
+'planningPhaseResolveSchemes_<NNNNN>': () => {
+    this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+    if (args.args && args.args.canMoveRenown) {
+        this.statusBar.addActionButton(_('Move a Renown Instead'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+    }
+    dojo.addClass('actCityLocationsSelected', 'disabled');
+},
+```
+
+**Also** add to `PlayerActions.js` `onPass` / `actionArray`:
+
+```js
+'planningPhaseResolveSchemes_<NNNNN>': 'actFromCardPass',
+```
+
+States 2–3: `locationIds` from args + Back + Confirm. Leave: `resetCityLocations`.
+
+**Args nest reminder:** OnEnteringState uses `args.args.args.canMoveRenown` / `locationIds`; OnUpdateActionButtons uses `args.args.canMoveRenown`. See helpers.md.
+
+Reference: `_04034` bas JS; `_01152` for the always-offer-move sibling.
+
 ### Multi-card hand discard (Planning End Forced / draw-then-discard)
 
 ```js

@@ -255,6 +255,45 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04034': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const locations = this.getListofAvailableCityLocationImages();
+                    this.numberOfCityLocationsSelectable = 1;
+                    locations.forEach((location) => {
+                        this.makeCityLocationSelectable(location);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_04034_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_04034_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'highDramaPhase04034': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+                }
+            },
+
             'planningPhaseEnd_04025': () => {
                 if (! this.isCurrentPlayerActive()) {
                     return;

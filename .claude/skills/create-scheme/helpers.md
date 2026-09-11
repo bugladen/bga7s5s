@@ -50,6 +50,10 @@
 - **Uncontrolled City location:** `$location->Controller == 0` on `getCityLocations()` rows.
 - **"Complete as much of an effect as possible":** do each sub-effect that is currently legal; skip missing pieces (e.g. only one named character in play). Availability still needs enough of the primary effect to be worth offering (typically ≥1 named character + a legal target).
 - **Optional "Then you may discard an available City Card":** HD follow-on state with Pass; skip the state when nothing discardable. Available = `ICityDeckCard` + `!isControlled()` + `canBeDiscardedFromCity()` at the location (`Action_01112b` idiom). `ActionResolved` after discard/pass — not Pattern L's resolve-before-transition.
+- **"Fewest Renown" for move-instead / similar gates:** use `$game->getPlayerReknown`. **Unique fewest only — ties do not qualify** (Eddie / `_04034`), same as Filling the Ranks `_01144` even when the card omits "(Fewest cannot tie.)". Count players at the lowest score; require `$atLowest == 1`.
+- **Add vs move-adjacent resolve button:** "Move a Renown Instead" uses `onPass()` → must map the state in `PlayerActions.js` `actionArray` to `'actFromCardPass'` (`_01152` / `_04034`). Without the map, Pass falls through to generic `actPass` and breaks.
+- **JS args nesting (GameState classes):** `onEnteringState` receives BGA's wrap of `getArgs()`, so card fields are at **`args.args.args.*`**. `onUpdateActionButtons` receives `getArgs()` directly, so the same fields are at **`args.args.*`**. Mixing them up silently disables conditional buttons (`canMoveRenown` / `canLoseControl`). Mirror `highDramaPhase04009` / `04032_2`.
+- **Location becomes uncontrolled:** `$theah->canLocationBecomeUncontrolledBy($playerId, $location)` then `createLocationBecomesUncontrolledEvent`. Parallel to claimability. Indomitable Will and similar clear `CanBecomeUncontrolled`.
 
 ## Cross-Cutting Helpers
 
@@ -66,7 +70,8 @@
 - `$theah->getAvailableAttachmentsAtLocation($location): Attachment[]` — unattached attachments sitting at a city location ("available attachment").
 - **Available City Card** (discard/recruit fodder): `ICityDeckCard` + `!$card->isControlled()` + `$card->canBeDiscardedFromCity()` (and usually `$theah->cardInCity($card)` or `Location === $chosen`). Not the same helper as available attachments. Reference: `Action_01112b`, `Action_04015`.
 - `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claimability gate (flags, controllers, etc.). Use in **availability / performer filters** when Claim is the payoff so the action is never offered when unclaimable; recheck at resolve before `createLocationClaimedEvent`.
-- `$game->getPlayerReknown(int $playerId): int` — player score Renown (for "Spend a Renown" costs).
+- `$theah->canLocationBecomeUncontrolledBy(int $playerId, string $location): bool` — central un-control gate (`CanBecomeUncontrolled`; Indomitable Will). Use before offering / resolving "lose control" / "becomes uncontrolled". Reference: `Action_04034`, `Action_01112a`, `Maneuver_01110`.
+- `$game->getPlayerReknown(int $playerId): int` — player score Renown (for "Spend a Renown" costs **and** "fewest Renown" comparisons).
 - `$game->updateCardObjectInDb($card)` — **required** after mutating public fields on nested Actions (`$MoveMode`, `$pendingMusterId`, …) so `stRunEvents` rebuild sees them.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${scheme_inject_code}` placeholder).
 - `$card->getEquipDiscount($theah, $performer, $attachment, &$explanations): int` — override on scheme/character; `$discount -= 1` raises equip cost.
@@ -83,6 +88,7 @@ Event factories you'll likely need:
 - `createCardRemovedFromPlayerDiscardPileEvent($playerId, $cardId)` (notification-only)
 - `createCardAddedToHandEvent($playerId, $cardId)` (does the actual move)
 - `createLocationClaimedEvent($playerId, ?int $performerId, $location)`
+- `createLocationBecomesUncontrolledEvent($playerId, $location)` — "lose control" / "becomes uncontrolled"; gate with `canLocationBecomeUncontrolledBy` first
 - `createCharacterDestroyedEvent($playerId, $characterId, $reason)` — always unequip attachments on the target first when calling this directly
 - `createPressureOccuringEvent($playerId, $performerId, $location, $pressureTypes)` — then transition `"pressureLocation"`; listen for `EventLocationPressureResult` with matching `$abilityId`
 - `createCardMovingEvent($playerId, $cardId, $from, $to, $engage, $sourceId, $abilityId)` — Home moves use `Game::LOCATION_PLAYER_HOME` and usually `$engage = false`
