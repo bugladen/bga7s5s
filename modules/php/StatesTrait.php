@@ -1320,7 +1320,14 @@ trait StatesTrait
             $event->dashedParry = $card->DashedParry;
             $event->addThrust($card->Thrust);
             $event->dashedThrust = $card->DashedThrust;
-            $event->gambled = $gambled == 1;
+            // WHY: FREE gambles (01135) leave duel_round.gambled NULL so they do not
+            // consume Finesse, but the combat card was still obtained by gambling —
+            // Sanjay and similar need event->gambled true. Exclude Roll the Bones
+            // additive stats: those values attach to a non-gambled combat card (01114).
+            $event->gambled = $gambled == 1 || (
+                ! $isRollTheBonesGambleStats
+                && $this->globals->get(Game::DUEL_GAMBLED, false)
+            );
             $event->statsAddedToExistingCombatCard = $isRollTheBonesGambleStats;
         }
         $this->theah->queueEvent($event);

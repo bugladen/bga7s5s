@@ -67,6 +67,27 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->ControllerId, $this->cancelledCombatCardId, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
+            // WHY: Card text — forced replacement gamble "does not count against their
+            // total played gambles." Clear any voluntary-gamble flag already written
+            // for the cancelled card, then mark FREE so actGambleCardChosen will not
+            // re-set duel_round.gambled.
+            $duelId = $game->globals->get(Game::DUEL_ID);
+            $round = $game->globals->get(Game::DUEL_ROUND);
+            $sql = "UPDATE duel_round SET gambled = NULL WHERE duel_id = $duelId AND round = $round";
+            $game->DbQuery($sql);
+
+            $actor = $game->theah->getDuelRoundActor();
+            [$cardCount, $explanations] = $game->theah->getNumberOfGambleCardsToReveal($actor);
+            if ($explanations != '')
+            {
+                $game->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
+                    "explanations" => $explanations,
+                ]);
+            }
+            $game->globals->set(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_FREE);
+            $game->globals->set(Game::GAMBLE_REVEAL_COUNT, $cardCount);
+            $game->globals->set(Game::GAMBLE_REVEAL_EXPLANATIONS, $explanations);
+
             $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $owner->Id, "01135", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
@@ -75,7 +96,7 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "opponent_name" => $game->getPlayerNameById($card->ControllerId),
             ]);
-    }
+        }
 
 
         if ($event instanceof EventDuelActionsDone && $this->cancelledCombatCardId != 0)
