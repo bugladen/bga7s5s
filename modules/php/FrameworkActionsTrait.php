@@ -1239,6 +1239,12 @@ trait FrameworkActionsTrait
             }
         }
 
+        // WHY: Basic Challenge always uses Combat — mirror Claim's DashedInfluence reject.
+        if ($performer->DashedCombat)
+        {
+            throw new UserException(clienttranslate("Performer cannot Challenge because it has a Dashed Combat."));
+        }
+
         $characters = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
 
         //Select the Ids of the characters

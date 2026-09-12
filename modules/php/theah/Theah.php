@@ -1292,6 +1292,10 @@ class Theah
         $charactersThatCanChallenge = [];
         foreach ($characters as $character) 
         {
+            // WHY: Basic Challenge always uses Combat. Dashed Combat cannot issue that
+            // challenge — same rule shape as DashedInfluence vs basic Claim.
+            if ($character->DashedCombat) continue;
+
             if ($character instanceof _01178)
             {
                 if (! $character->canChallenge($this)) continue;
@@ -1414,6 +1418,13 @@ class Theah
     public function characterCanBasicChallenge(Character $character): bool
     {
         if (! $this->cardInCity($character))
+        {
+            return false;
+        }
+
+        // WHY: Basic Challenge always uses Combat — dashed Combat cannot initiate it
+        // (parallel to characterCanBasicClaim's DashedInfluence gate).
+        if ($character->DashedCombat)
         {
             return false;
         }

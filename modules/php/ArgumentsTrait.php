@@ -615,6 +615,10 @@ trait ArgumentsTrait
         $charactersThatCanChallenge = [];
         foreach ($characters as $character)
         {
+            // WHY: Basic Challenge always uses Combat. Exclude dashed Combat performers
+            // here so the UI never offers them (same shape as Claim's DashedInfluence filter).
+            if ($character->DashedCombat) continue;
+
             //Special case for Carmella Vanessa Slavaggi
             if ($character instanceof _01178)
             {

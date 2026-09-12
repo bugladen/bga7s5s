@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
@@ -97,6 +98,20 @@ abstract class Character extends Card implements IHasTechniques
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
+
+        // WHY: Printed dashed Combat means the character cannot use Combat in challenges
+        // (pressures already gated via canPressure). Catch ability-issued Combat challenges
+        // that bypass the basic-Challenge performer filters — same belt as Térence (_03028).
+        if ($event instanceof EventChallengeIssued
+            && $event->challengerId == $this->Id
+            && $this->DashedCombat
+            && $event->theah->game->globals->get(Game::CHALLENGE_STAT) == Game::STAT_COMBAT)
+        {
+            throw new UserException(sprintf(
+                $event->theah->game->translate("%s has dashed Combat and cannot issue Combat challenges."),
+                $this->Name
+            ));
+        }
 
         // WHY: Harpoon (_03064) stamps HARPOON_CONDITION on the adversary for the
         // remainder of the duel. Enforce "cannot move" here so the condition itself
