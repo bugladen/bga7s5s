@@ -1756,6 +1756,12 @@ class Theah
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);
         $round = $this->game->globals->get(Game::DUEL_ROUND);
+        // WHY: Callers outside an active duel (challenge TechniqueActivated, etc.) must
+        // get null — not a broken `duel_id = AND round =` query. Return type is ?Character.
+        if ($duelId === null || $duelId === '' || $round === null || $round === '')
+        {
+            return null;
+        }
         $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
         $actorId = $this->db->getUniqueValue($sql);
         return $this->getCharacterById($actorId);

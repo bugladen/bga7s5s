@@ -146,10 +146,16 @@ class Reaction_03013a extends CardReaction
         // the printed "ability use" for duel maneuvers/techniques is "Daniella is actor."
         if ($event instanceof EventManeuverActivated || $event instanceof EventTechniqueActivated)
         {
-            $actor = $event->theah->getDuelRoundActor();
-            if ($actor !== null && $actor->Id === $owner->Id)
+            // WHY: getDuelRoundActor() requires DUEL_ID/ROUND. Challenge TechniqueActivated
+            // runs before any duel exists — querying then produced
+            // `duel_id = AND round =` SQL fatals (e.g. Langschwert +1 Thrust on challenge).
+            if ($event->theah->game->globals->get(Game::IN_DUEL, false))
             {
-                return true;
+                $actor = $event->theah->getDuelRoundActor();
+                if ($actor !== null && $actor->Id === $owner->Id)
+                {
+                    return true;
+                }
             }
 
             // Challenge-time TechniqueActivated: ownerId is the technique's owning card
