@@ -709,7 +709,27 @@ trait EventHub
                 $handler = function (Theah $theah, EventCardRemovedFromPlay $event)
                 {
                     $card = $theah->getCardById($event->cardId);
-                    $theah->game->moveCard($card->Id, $event->toLocation, $card->ControllerId, $card);
+                    // WHY: City Deck rows use location_arg 0. Passing ControllerId left
+                    // recruited characters (Penya Forced) owned in the deck table.
+                    $locationArg = ($event->toLocation == Game::LOCATION_CITY_DECK) ? 0 : $card->ControllerId;
+                    $theah->game->moveCard($card->Id, $event->toLocation, $locationArg, $card);
+
+                    // WHY: Same recreate as destroy / city-discard. EventCardRemovedFromPlay
+                    // only moved location — Penya (and any Character shuffled back into the
+                    // City Deck) kept ControllerId, wounds, and modified stats for a later muster.
+                    if ($card instanceof Character && $event->toLocation == Game::LOCATION_CITY_DECK)
+                    {
+                        $fullClassname = get_class($card);
+                        $pos = strrpos($fullClassname, '\\');
+                        $className = substr($fullClassname, $pos + 2);
+                        $card = $theah->game->instantiateCard($className, $card->Id);
+                        $card->Location = Game::LOCATION_CITY_DECK;
+                        $card->ControllerId = 0;
+                        $card->OwnerId = 0;
+                        $card->Engaged = false;
+                        $theah->addCardToWorld($card);
+                    }
+
                     $card->IsUpdated = true;
 
                     $message = clienttranslate('${card_inject_code} removed from play.');

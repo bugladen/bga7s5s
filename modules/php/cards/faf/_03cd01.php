@@ -122,7 +122,12 @@ class _03cd01 extends CityCharacter implements IHasActions
             $event->theah->queueEvent($cityCardEvent);
         }
 
-        // Remove Penya from play and move to city deck (shuffle handled by EventCardRemovedFromPlay listener above)
+        // WHY: Same as wound→destroy — attachments must leave before recreate wipes
+        // Attachments[], or equipped cards become orphaned in the world model.
+        $this->unEquipAllAttachments($event->theah);
+
+        // Remove Penya from play and move to city deck (shuffle handled by EventCardRemovedFromPlay listener above;
+        // EventHub recreates the Character so ControllerId/stats reset like destroy)
         $removeEvent = EventFactory::createCardRemovedFromPlayEvent($this->ControllerId, $this->Id, Game::LOCATION_CITY_DECK);
         $event->theah->queueEvent($removeEvent);
     }
