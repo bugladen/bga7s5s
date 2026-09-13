@@ -346,6 +346,36 @@
                 }
             },
 
+            'highDramaPhase04037': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase04037_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+
+                    args.args.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+
+                    $('choose_container_name').innerHTML = _('Top Cards of the City Deck');
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
             'planningPhaseEnd_04025': () => {
                 if (! this.isCurrentPlayerActive()) {
                     return;

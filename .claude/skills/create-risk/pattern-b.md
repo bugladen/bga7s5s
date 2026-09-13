@@ -364,3 +364,26 @@ Pass the same adjustment into **every** `getStealableAttachments(...)` call (gre
 
 References: `_04029` / `Action_04029` / `State_highDramaPhase04029` + `_2`; steal sequence `Maneuver_01113`; wealth pay `Action_01113` / `State_highDramaPhase01113_3`; draw `Action_04010`; city performer `Action_04011`.
 
+### Pattern B.10 — En Garde Academic Action: Discard available City Card • look at City Deck • may add one • sink rest • locked extra action
+
+Printed (Cats in Every Corner `_04037`): **`<b>En Garde Academic Action:</b> Discard an available City Card at this location • Look at the top five cards of the City Deck. You may add one to this location, then sink the rest. Then, your performer may perform another action. <i>(It must be performed and they must be the performer)</i>`**
+
+Composes a discard **cost** + City Deck look/add/sink + Pattern A.2 extra action. **Not** B.4 (sink from discard piles). **Not** A.11 / B.1 (no location chooser). **Not** Cesca (City Card chooser; text never says Target).
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true`. Heading gates: En Garde → `!$Engaged`; **Academic** → `hasTrait("Academic")` (not Sorcerer). Start from `parent::getPerformersForAction` (plain Action — home in pool). Grey when the performer has no discardable City Card at their location (Home usually fails this, not a city-only filter).
+2. **"Available City Card"** = `ICityDeckCard` + `!isControlled()` + `canBeDiscardedFromCity()` at `$performer->Location`. Mirror `Action_01112b` / `Action_04015::getDiscardableCityCardsAtLocation`.
+3. **State `"NNNNN"`** — in-play City Card chooser (bas `04015_2` / `01112` trio: `highlightCardsAsSelectable` + Confirm). **No Pass** — discard is the cost. **No Back** after the Risk is paid.
+4. **On discard confirm:**
+   - **Peek first** via `getCardsOnTopOfCityDeck(5)` and stash property arrays in `CHOSEN_CARD` (02014 / 03052). **WHY before the discard event:** that helper reshuffles City Discard when the deck is short. If the cost card has already landed in discard, it can shuffle back into the look.
+   - Queue `createCardAddedToCityDiscardPileEvent(..., $asEffect = false)` — discard is the printed cost (before the `•`), not the effect (Tomas-style cancel cares).
+   - If peeked count > 0 → look notify + `createTransitionEvent("NNNNN_2")`. If 0 → still grant A.2 extra action + `createActionResolvedEvent` (complete as much as possible; look is not a gate).
+   - `nextState("cardDiscarded")` → EVENTS so discard flushes before the look UI.
+5. **State `"NNNNN_2"`** — chooseList of peeked cards (`setSelectionMode(1)`). Confirm = add that card to `$performer->Location` via `createCityCardAddedToLocationEvent`. **Pass = add none**, then still sink the rest. Default EventHandlers single-select enable is enough (no custom handler).
+6. **Sink the rest** (every peeked id except the added one) via `createCardAddedToCityDeckEvent($playerId, $id, $onTop = false)`. No reorder. Queued sinks are fine — there is no top-insert race (contrast C.8).
+7. **Then Pattern A.2:** `EXTRA_ACTIONS = 1` + `EXTRA_ACTION_PERFORMER = $performer->Id`. "May" → Pass is allowed on the follow-up turn.
+8. **Wire** both `"NNNNN"` and `"NNNNN_2"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. GameState named transitions (`cardDiscarded` / `cardAdded` / `pass` / `zombie`) — no `""`.
+
+References: `_04037` / `Action_04037` / `State_highDramaPhase04037` + `_2`; discard filter `_01112b` / `_04015`; peek stash `Action_02014` / `Reaction_03052`; add-to-location `Action_03cd20`; extra action `Action_03032`.
+

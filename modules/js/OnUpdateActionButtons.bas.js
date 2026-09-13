@@ -159,6 +159,17 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'highDramaPhase04037': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase04037_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Add to Location'), () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
             'planningPhaseEnd_04025': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Draw Selected'), () => this.onMultipleChooseListCardsConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
