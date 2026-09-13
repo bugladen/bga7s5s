@@ -11,6 +11,7 @@ First real BGA statistics for this game. Docs: https://en.doc.boardgamearena.com
 - Player `characters_day_1`…`characters_day_5` (ids 13–17): controlled characters in play at that day's dusk end
 - Player `wounds_received` (id 19): cumulative wounds applied to characters the player controlled
 - Player `characters_sent_to_locker` (id 20): characters sent to The Locker (destroy→locker + CardSentToLocker Character)
+- Player `crew_cap_overage_locker` (id 21): characters sunk via Reaction_CrewCapLimit while TURN_PHASE is PLANNING
 
 ## Victory type labels (id 18) / Game::VICTORY_*
 0 None, 1 Assassination, 2 Dominance, 3 Economic, 4 Fifth Day
@@ -43,6 +44,11 @@ Inc in EventHub:
 1. `EventCharacterDestroyed` non-Brute path (Brutes → discard, not locker) → `ControllerId`
 2. `EventCardSentToLocker` when card is `Character` → `event->playerId`
 Destroy does not also fire CardSentToLocker, so no double-count. Schemes/attachments/combat cards ignored.
+
+## Crew cap overage locker (planning only)
+Inc in `Reaction_CrewCapLimit::performReaction` when `TURN_PHASE === PLANNING`.
+WHY phase gate: same reaction can fire on High Drama recruit / Lost Brute; user asked for planning overage only.
+Still also increments general `characters_sent_to_locker` via destroy→EventHub.
 
 ## Renown timing
 Dominance / 2p Leader kill set losers to -1 before end; that is what renown_ended records.

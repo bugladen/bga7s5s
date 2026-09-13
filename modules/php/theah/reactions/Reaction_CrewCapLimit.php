@@ -73,8 +73,15 @@ class Reaction_CrewCapLimit extends GameReaction
         }
 
         $character->unEquipAllAttachments($game->theah);
-        $event = EventFactory::createCharacterDestroyedEvent($game->getActivePlayerId(), $character->Id, $game->translate('Chosen for The Locker for Crew Cap Limit'));
+        $playerId = $game->getActivePlayerId();
+        $event = EventFactory::createCharacterDestroyedEvent($playerId, $character->Id, $game->translate('Chosen for The Locker for Crew Cap Limit'));
         $game->theah->queueEvent($event);
+
+        // WHY: Only Planning — this reaction can also fire on High Drama recruit / Lost Brute.
+        if ((int) $game->getGameStateValue(Game::TURN_PHASE) === Game::PLANNING) {
+            $game->bga->playerStats->inc(Game::STAT_CREW_CAP_OVERAGE_LOCKER, 1, $playerId);
+        }
+
         $game->gamestate->nextState("done");
 }
 }

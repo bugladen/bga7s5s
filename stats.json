@@ -56,6 +56,11 @@
       "id": 20,
       "name": "How many of the player's characters were sent to The Locker?",
       "type": "int"
+    },
+    "crew_cap_overage_locker": {
+      "id": 21,
+      "name": "How many characters were sent to The Locker during planning due to crew cap overage?",
+      "type": "int"
     }
   },
   "value_labels": {
