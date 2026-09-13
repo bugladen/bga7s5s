@@ -3,6 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -81,30 +83,146 @@ class Action_01130 extends RiskAction
         $theah->setLocationCanBecomeUncontrolled($locationName, $canBecomeUncontrolled);
     }
 
-    private function setConditionEnded(Game $game)
+    /**
+     * End Indomitable Will for a character. Idempotent — safe when Character and every
+     * discarded Action_01130 copy all see the same leave/destroy event.
+     *
+     * WHY character-side call sites exist: lasting state used to live only on the played
+     * Risk's Action. With two copies, a prior copy in discard (or a copy reshuffled into
+     * the faction deck, which buildCity does not load) can leave IsActive out of sync so
+     * destroy never clears control. The condition on the character is the correlator;
+     * location + flags clear from here even when no Action_01130 is in the event loop.
+     */
+    public static function endEffect(Game $game, Character $character, string $location): void
     {
-        $character = $game->theah->getCharacterById($this->ControllingCharacterId);
-        $character->removeCondition(Game::INDOMITABLE_WILL_CONDITION);
+        $hadCondition = $character->hasCondition(Game::INDOMITABLE_WILL_CONDITION);
+        $clearedAnyAction = self::clearActionsTrackingCharacter($game, $character->Id);
 
-        $game->notify->all("indomitableWillConditionEnded", '${character_inject_code} has lost Indomitable Will.', [
-            "character_inject_code" => $character->getInjectCode(),
-            "cardId" => $this->ControllingCharacterId,
-        ]);
+        if ( ! $hadCondition && ! $clearedAnyAction)
+        {
+            return;
+        }
+
+        if ($hadCondition)
+        {
+            $character->removeCondition(Game::INDOMITABLE_WILL_CONDITION);
+
+            $game->notify->all("indomitableWillConditionEnded", '${character_inject_code} has lost Indomitable Will.', [
+                "character_inject_code" => $character->getInjectCode(),
+                "cardId" => $character->Id,
+            ]);
+        }
+
+        if ( ! $game->theah->locationInCity($location))
+        {
+            return;
+        }
 
         // WHY: Clear CanBecomeUncontrolled before queueing the uncontrolled event so the
         // emit-site guard below (and any future ones) lets THIS legitimate uncontrol pass.
         // No Leshiye overlap to consider — IW cannot be active at a Leshiye location.
-        $this->setLocationClaimFlags($game->theah, $this->ControlledLocation, true, true);
+        $game->theah->setLocationCanBeClaimed($location, true);
+        $game->theah->setLocationCanBecomeUncontrolled($location, true);
 
-        $locationUncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($character->ControllerId, $this->ControlledLocation);
-        $game->theah->queueEvent($locationUncontrolledEvent);
+        $cityLocation = $game->theah->getCityLocation($location);
+        if ($cityLocation->Controller != 0)
+        {
+            $controllerId = $cityLocation->Controller;
+            $locationUncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent($controllerId, $location);
+            $game->theah->queueEvent($locationUncontrolledEvent);
+        }
+    }
 
-        $this->IsActive = false;
-        $this->ControllingCharacterId = 0;
-        $this->ControlledLocation = "";
-        $owner = $this->getOwningCard($game->theah);
-        $owner->IsUpdated = true;
+    private static function clearActionsTrackingCharacter(Game $game, int $characterId): bool
+    {
+        $cleared = false;
 
+        foreach ($game->theah->getWorldCards() as $card)
+        {
+            if (self::clearActionOnCard($card, $characterId))
+            {
+                $cleared = true;
+            }
+        }
+
+        // WHY: Faction decks are not in buildCity(). A prior IW Risk can be reshuffled
+        // there still carrying IsActive; clear it so a later dusk/draw cannot revive
+        // stale ControlledLocation cleanup against the wrong board state.
+        $playerIds = $game->loadPlayersBasicInfos();
+        foreach (array_keys($playerIds) as $playerId)
+        {
+            $deckName = $game->getPlayerFactionDeckName((int)$playerId);
+            $deckRows = $game->getGameDeckObject()->getCardsInLocation($deckName);
+            foreach ($deckRows as $row)
+            {
+                $card = $game->getCardObjectFromDb((int)$row['id']);
+                if ($card === null)
+                {
+                    continue;
+                }
+                if (self::clearActionOnCard($card, $characterId))
+                {
+                    $game->updateCardObjectInDb($card);
+                    $cleared = true;
+                }
+            }
+        }
+
+        return $cleared;
+    }
+
+    private static function clearActionOnCard($card, int $characterId): bool
+    {
+        if ( ! $card instanceof IHasActions)
+        {
+            return false;
+        }
+
+        $cleared = false;
+        foreach ($card->getActions() as $action)
+        {
+            if ( ! $action instanceof self)
+            {
+                continue;
+            }
+
+            if ($action->IsActive && $action->ControllingCharacterId == $characterId)
+            {
+                $action->IsActive = false;
+                $action->ControllingCharacterId = 0;
+                $action->ControlledLocation = "";
+                $card->IsUpdated = true;
+                $cleared = true;
+            }
+        }
+
+        return $cleared;
+    }
+
+    private function setConditionEnded(Game $game): void
+    {
+        $character = $game->theah->getCharacterById($this->ControllingCharacterId);
+        $location = $this->ControlledLocation;
+        if ($character === null)
+        {
+            // WHY: Character may already be a locker recreate mid-pipeline; still clear
+            // Action state and location flags using the stored ControlledLocation.
+            self::clearActionsTrackingCharacter($game, $this->ControllingCharacterId);
+            if ($game->theah->locationInCity($location))
+            {
+                $this->setLocationClaimFlags($game->theah, $location, true, true);
+                $cityLocation = $game->theah->getCityLocation($location);
+                if ($cityLocation->Controller != 0)
+                {
+                    $game->theah->queueEvent(
+                        EventFactory::createLocationBecomesUncontrolledEvent($cityLocation->Controller, $location)
+                    );
+                }
+            }
+            return;
+        }
+
+        self::endEffect($game, $character, $location !== '' ? $location : $character->Location);
     }
 
     public function handleEvent(Event $event)

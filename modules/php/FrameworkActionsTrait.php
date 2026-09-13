@@ -1247,6 +1247,12 @@ trait FrameworkActionsTrait
             }
         }
 
+        // WHY: Basic Challenge always uses Combat — mirror Claim's DashedInfluence reject.
+        if ($performer->DashedCombat)
+        {
+            throw new UserException(clienttranslate("Performer cannot Challenge because it has a Dashed Combat."));
+        }
+
         $characters = $this->theah->getCharactersInCityByPlayerId($activePlayerId);
 
         //Select the Ids of the characters
@@ -1736,6 +1742,9 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::DUEL_GAMBLED, true);
         $gambleType = $this->globals->get(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
+        // WHY: Only NORMAL gambles consume Finesse. ROLL_THE_DICE (01114) and FREE
+        // (01135 forced) still set DUEL_GAMBLED so gambling effects apply, but leave
+        // duel_round.gambled alone so gamblesLeft is unchanged.
         if ($gambleType == Game::GAMBLE_TYPE_NORMAL)
         {
             //Set that the player has gambled

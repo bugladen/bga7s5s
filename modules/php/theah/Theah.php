@@ -610,6 +610,15 @@ class Theah
         return $cards;
     }
 
+    // WHY: Indomitable Will (and similar) must clear Action state on every in-world
+    // copy — including discarded Risks — when the stamped character leaves. Private
+    // $cards is otherwise unreachable from Action_01130::endEffect.
+    /** @return array<int, Card> */
+    public function getWorldCards(): array
+    {
+        return $this->cards;
+    }
+
     public function getCardPropertiesAtLocation($location, $playerId = null)
     {
         $cards = [];
@@ -1308,6 +1317,10 @@ class Theah
         $charactersThatCanChallenge = [];
         foreach ($characters as $character) 
         {
+            // WHY: Basic Challenge always uses Combat. Dashed Combat cannot issue that
+            // challenge — same rule shape as DashedInfluence vs basic Claim.
+            if ($character->DashedCombat) continue;
+
             if ($character instanceof _01178)
             {
                 if (! $character->canChallenge($this)) continue;
@@ -1430,6 +1443,13 @@ class Theah
     public function characterCanBasicChallenge(Character $character): bool
     {
         if (! $this->cardInCity($character))
+        {
+            return false;
+        }
+
+        // WHY: Basic Challenge always uses Combat — dashed Combat cannot initiate it
+        // (parallel to characterCanBasicClaim's DashedInfluence gate).
+        if ($character->DashedCombat)
         {
             return false;
         }
@@ -1613,6 +1633,75 @@ class Theah
         $this->db->deleteTechniqueEvents($techniqueId);
     }
 
+    // WHY: Cancel reactions (01146b / 01047 / 03044) delete Resolve before it INSERTs
+    // the ability name into duel_round_*. Record a canceled marker so the duel table
+    // still shows what was announced. technique_is_main stays 0 so main-technique
+    // availability counts are unaffected. Only runs in-duel — cancel events outside
+    // a duel have no round row to annotate.
+    public function recordCanceledAbilityInDuelTable(string $mode, string $abilityId): void
+    {
+        if (! $this->game->globals->get(Game::IN_DUEL, false))
+        {
+            return;
+        }
+
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        if (! $duelId || ! $round)
+        {
+            return;
+        }
+
+        if ($mode === 'technique')
+        {
+            $ability = $this->getTechniqueById($abilityId);
+        }
+        else if ($mode === 'maneuver')
+        {
+            $ability = $this->getManeuverById($abilityId);
+        }
+        else
+        {
+            return;
+        }
+
+        if ($ability === null)
+        {
+            return;
+        }
+
+        $owningCard = $ability->getOwningCard($this);
+        if ($owningCard === null)
+        {
+            return;
+        }
+
+        $canceledLabel = clienttranslate('(Canceled)');
+        $displayName = $owningCard->Name . ': ' . $ability->Name . ' ' . $canceledLabel;
+        $name = substr(addslashes($displayName), 0, 500);
+
+        if ($mode === 'technique')
+        {
+            $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name, technique_is_main)
+                    VALUES ($duelId, $round, '{$abilityId}', '$name', 0)";
+        }
+        else
+        {
+            $sql = "INSERT INTO duel_round_maneuver (duel_id, round, maneuver_id, maneuver_name)
+                    VALUES ($duelId, $round, '{$abilityId}', '$name')";
+        }
+        $this->game->DbQuery($sql);
+
+        $this->game->notify->all('duelAbilityCanceled', '', [
+            'i18n' => ['cardName', 'effectName', 'canceled_label'],
+            'round' => $round,
+            'mode' => $mode,
+            'cardName' => $owningCard->Name,
+            'effectName' => $ability->Name,
+            'canceled_label' => $canceledLabel,
+        ]);
+    }
+
     public function deletePressureResultEvents()
     {
         $this->db->deletePressureResultEvents();
@@ -1761,6 +1850,12 @@ class Theah
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);
         $round = $this->game->globals->get(Game::DUEL_ROUND);
+        // WHY: Callers outside an active duel (challenge TechniqueActivated, etc.) must
+        // get null — not a broken `duel_id = AND round =` query. Return type is ?Character.
+        if ($duelId === null || $duelId === '' || $round === null || $round === '')
+        {
+            return null;
+        }
         $sql = "SELECT actor_id FROM duel_round where duel_id = $duelId AND round = $round";
         $actorId = $this->db->getUniqueValue($sql);
         return $this->getCharacterById($actorId);
@@ -1837,6 +1932,39 @@ class Theah
         }
 
         return 0;
+    }
+
+    // WHY: Comforting (Pattern C.6 excess) discards against round-start baseline, not
+    // ending_* (which already includes Technique/combat R/P). Same starting_* channel
+    // as Leja ThreatModified — maneuver/technique calcs rebuild ending from it.
+    public function getStartingDuelThreat(int $characterId): int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT challenger_id, defender_id, starting_challenger_threat, starting_defender_threat
+                FROM duel_round WHERE duel_id = $duelId AND round = $round";
+        $result = $this->db->getObjectList($sql)[0];
+        if ($characterId == $result['challenger_id'])
+        {
+            return (int)$result['starting_challenger_threat'];
+        }
+        if ($characterId == $result['defender_id'])
+        {
+            return (int)$result['starting_defender_threat'];
+        }
+
+        return 0;
+    }
+
+    // WHY: After Comforting shrinks starting_*, ending must be reapplied from stored
+    // technique/combat/maneuver R/P/T (combat mode is incremental and will not redo
+    // itself). Zero-delta maneuver rebuild reuses updateRoundWithCombatStats without
+    // inventing a second application path.
+    public function rebuildDuelRoundEndingThreats(): void
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $this->db->updateRoundWithCombatStats($duelId, $round, 'maneuver', 0, 0, 0);
     }
 
     public function getCurrentRoundThrust(): int

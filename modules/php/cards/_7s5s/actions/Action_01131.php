@@ -73,8 +73,7 @@ class Action_01131 extends RiskAction implements IAbilityThatTargetsCharacters
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, '01131', $this->Id);
             $event->theah->queueEvent($transition);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
-            $event->theah->queueEvent($actionResolvedEvent);
+            //No createActionResolvedEvent call is needed because it will be called at the end of the duel
         }
     }
 

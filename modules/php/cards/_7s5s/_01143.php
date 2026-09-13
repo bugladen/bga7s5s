@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01143;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -14,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01143 extends Scheme implements IHasActions
 {
@@ -46,34 +48,111 @@ class _01143 extends Scheme implements IHasActions
         ];
     }
 
+    // WHY: Continuous aura only while the scheme is the day's revealed scheme at Home.
+    // Once EventCardSentToLocker moves us to Locker-*, Location is no longer Home and
+    // we must not keep debuffing recruits (or leave stale stamps on anyone).
+    private function isSchemeInPlay(): bool
+    {
+        return $this->Location == Game::LOCATION_PLAYER_HOME;
+    }
+
+    private function applyMercenaryAura(Theah $theah, Character $mercenary, int $playerId): void
+    {
+        if ($mercenary->hasCondition(Game::CONTEMPT_AND_HATRED_CONDITION))
+        {
+            return;
+        }
+
+        if ($theah->game->characterIsInDiscardOrLocker($mercenary))
+        {
+            return;
+        }
+
+        $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+            $playerId,
+            $mercenary->Id,
+            $mercenary->ModifiedInfluence,
+            $mercenary->ModifiedInfluence - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($modifiedEvent);
+
+        $mercenary->addCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
+        $theah->game->updateCardObjectInDb($mercenary);
+
+        $theah->game->notify->all("contemptAndHatredConditionStarted", '', [
+            "cardId" => $mercenary->Id,
+        ]);
+    }
+
+    private function removeMercenaryAura(Theah $theah, Character $mercenary): void
+    {
+        if (! $mercenary->hasCondition(Game::CONTEMPT_AND_HATRED_CONDITION))
+        {
+            return;
+        }
+
+        if ($theah->game->characterIsInDiscardOrLocker($mercenary))
+        {
+            // WHY: Locker rows are not in $theah->cards, so a queued InfluenceModified
+            // event's IsUpdated flush would miss them. Write the +1 directly so a later
+            // Muster does not inherit the scheme's -1 after we are gone.
+            $mercenary->ModifiedInfluence = $mercenary->ModifiedInfluence + 1;
+        }
+        else
+        {
+            $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+                $this->ControllerId,
+                $mercenary->Id,
+                $mercenary->ModifiedInfluence,
+                $mercenary->ModifiedInfluence + 1,
+                $this->getInjectCode()
+            );
+            $theah->queueEvent($modifiedEvent);
+        }
+
+        $mercenary->removeCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
+        $theah->game->updateCardObjectInDb($mercenary);
+
+        $theah->game->notify->all("contemptAndHatredConditionEnded", '', [
+            "cardId" => $mercenary->Id,
+        ]);
+    }
+
+    private function clearAuraFromAllAffected(Theah $theah): void
+    {
+        foreach ($theah->getCharactersInPlay() as $character)
+        {
+            $this->removeMercenaryAura($theah, $character);
+        }
+
+        // WHY: buildCity() does not load Locker piles. Spend-to-Locker characters keep
+        // their serialized Conditions; strip the stamp so a later Muster does not look
+        // like the aura is still active after this scheme is gone.
+        foreach ($theah->game->loadPlayersBasicInfos() as $playerId => $player)
+        {
+            $lockerName = $theah->game->getPlayerLockerName($playerId);
+            foreach ($theah->getCardObjectsAtLocation($lockerName) as $card)
+            {
+                if ($card instanceof Character)
+                {
+                    $this->removeMercenaryAura($theah, $card);
+                }
+            }
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id) 
         {
-
-            //Decrease the influence of all mercenaries by 1
             $mercenaries = $event->theah->getCharactersInPlay();
             $mercenaries = array_filter($mercenaries, fn($character) => $character->hasTrait("Mercenary"));
             foreach ($mercenaries as $mercenary)
             {
-                $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
-                    $this->ControllerId,
-                    $mercenary->Id,
-                    $mercenary->ModifiedInfluence,
-                    $mercenary->ModifiedInfluence - 1,
-                    $this->getInjectCode()
-                );
-
-                $event->theah->queueEvent($modifiedEvent);
-
-                $mercenary->addCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
-                $event->theah->game->updateCardObjectInDb($mercenary);
-
-                $event->theah->game->notify->all("contemptAndHatredConditionStarted", '', [
-                    "cardId" => $mercenary->Id,
-                ]);
+                $this->applyMercenaryAura($event->theah, $mercenary, $this->ControllerId);
             }
 
             $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  Renown will be added to The City Forum.
@@ -93,51 +172,18 @@ class _01143 extends Scheme implements IHasActions
 
         if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
         {
-            //Restore the influence of all mercenaries
-            $mercenaries = $event->theah->getCharactersInPlay();
-            $mercenaries = array_filter($mercenaries, fn($character) => $character->hasTrait("Mercenary"));
-            foreach ($mercenaries as $mercenary)
-            {
-                $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
-                    $this->ControllerId,
-                    $mercenary->Id,
-                    $mercenary->ModifiedInfluence,
-                    $mercenary->ModifiedInfluence + 1,
-                    $this->getInjectCode()
-                );
-
-                $event->theah->queueEvent($modifiedEvent);
-
-                $mercenary->removeCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
-                $event->theah->game->updateCardObjectInDb($mercenary);
-
-                $event->theah->game->notify->all("contemptAndHatredConditionEnded", '', [
-                    "cardId" => $mercenary->Id,
-                ]);
-            }
+            $this->clearAuraFromAllAffected($event->theah);
         }
 
-        if ($event instanceof EventCharacterRecruited && $this->Location == Game::LOCATION_PLAYER_HOME)
+        // WHY: isSchemeInPlay — after dusk moves us to Locker-* we can still sit in
+        // $this->cards for the rest of that request; without this gate we would keep
+        // stamping recruits while already in The Locker.
+        if ($event instanceof EventCharacterRecruited && $this->isSchemeInPlay())
         {
             $character = $event->theah->getCharacterById($event->characterId);
             if ($character->hasTrait("Mercenary"))
             {
-                $modifiedEvent = EventFactory::createCharacterInfluenceModifiedEvent(
-                    $event->playerId,
-                    $event->characterId,
-                    $character->ModifiedInfluence,
-                    $character->ModifiedInfluence - 1,
-                    $this->getInjectCode()
-                );
-
-                $event->theah->queueEvent($modifiedEvent);
-
-                $character->addCondition(Game::CONTEMPT_AND_HATRED_CONDITION);
-                $event->theah->game->updateCardObjectInDb($character);
-
-                $event->theah->game->notify->all("contemptAndHatredConditionStarted", '', [
-                    "cardId" => $character->Id,
-                ]);
+                $this->applyMercenaryAura($event->theah, $character, $event->playerId);
             }
         }
     }

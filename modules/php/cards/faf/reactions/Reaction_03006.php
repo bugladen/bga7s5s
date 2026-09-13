@@ -22,13 +22,17 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_03006 extends CardReaction
 {
+    // WHY public: multi-stage cross-player state must survive serialize/DB round-trips
+    // (same discipline as Reaction_03044 / Reaction_03068). Private nested fields can
+    // reset on reload — then playerId=0 skips changeActivePlayer and Premonition's
+    // owner stays active seeing the opponent's hand as sink buttons.
     // '' (idle), 'offer' (owner clicks Force Sink/Pass),
     // 'pick1' (opponent picks first card), 'pick2' (opponent picks second card)
-    private string $stage = '';
-    private int $opponentId = 0;
-    private int $performerId = 0;
-    private int $targetCharacterId = 0;
-    private int $cardsSunk = 0;
+    public string $stage = '';
+    public int $opponentId = 0;
+    public int $performerId = 0;
+    public int $targetCharacterId = 0;
+    public int $cardsSunk = 0;
 
     public function __construct()
     {
@@ -209,7 +213,7 @@ class Reaction_03006 extends CardReaction
         $this->performerId = $performer->Id;
         $this->targetCharacterId = $target->Id;
         $this->cardsSunk = 0;
-        $owner->IsUpdated = true;
+        $this->persistReactionState($theah->game, $owner);
 
         $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
         $theah->queueEvent($transition);
@@ -258,35 +262,78 @@ class Reaction_03006 extends CardReaction
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
-        parent::performReaction($game, $state, $internalId, $reactionId);
-
         $owner = $this->getOwningCard($game->theah);
+        if ($owner == null)
+        {
+            $game->gamestate->nextState("done");
+            return;
+        }
+
+        // WHY: Keep the mutating reaction and theah->cards graph on one instance before
+        // any stage write. getCardById can return a DB copy that is not in theah->cards;
+        // writing that copy (or a second fetch) leaves stage stuck on 'offer' for the
+        // next playerReaction args load.
+        $game->theah->addCardToWorld($owner);
+
+        $activeId = (int)$game->getActivePlayerId();
+        $ownerId = (int)$owner->ControllerId;
 
         if ($this->stage === 'offer')
         {
             if ($reactionId === 'sink')
             {
-                $this->announceForcedOpponent($game, $owner);
-
-                if ($this->advanceToNextPick($game, $owner))
+                // WHY: Do NOT call parent::performReaction here. It stacks EventReactionActivated
+                // at HIGHEST_PRIORITY; other reactions can steal the next playerReaction
+                // transition before our opponent-pick handoff runs, so the opponent reloads
+                // still on stage 'offer' (Force Sink/Pass) and a second 'sink' then confuses
+                // who is the sinker — Premonition's owner ends up picking from their own hand.
+                if ($activeId === $ownerId)
                 {
+                    $this->announceForcedOpponent($game, $owner);
+                    if (! $this->advanceToNextPick($game, $owner))
+                    {
+                        $this->finalize($game, $owner);
+                    }
                     $game->gamestate->nextState("done");
                     return;
                 }
 
-                $this->finalize($game, $owner);
-                $game->gamestate->nextState("done");
-                return;
+                // Desync repair: opponent was wrongly left on the offer UI.
+                if ($activeId === $this->opponentId)
+                {
+                    if (! $this->advanceToNextPick($game, $owner))
+                    {
+                        $this->finalize($game, $owner);
+                    }
+                    $game->gamestate->nextState("done");
+                    return;
+                }
+
+                throw new \Bga\GameFramework\UserException($game->translate("Only Premonition's controller may force the sink."));
             }
 
+            // Pass — only the scheme owner.
+            if ($activeId !== $ownerId)
+            {
+                throw new \Bga\GameFramework\UserException($game->translate("Only Premonition's controller may pass this reaction."));
+            }
+
+            parent::performReaction($game, $state, $internalId, $reactionId);
             $this->resetStage();
-            $owner->IsUpdated = true;
+            $this->persistReactionState($game, $owner);
             $game->gamestate->nextState("done");
             return;
         }
 
         if ($this->stage === 'pick1' || $this->stage === 'pick2')
         {
+            // WHY: Card picks belong only to the triggering opponent — never Premonition's owner.
+            // Skip parent::performReaction — same ReactionActivated race as the offer→pick handoff.
+            if ($activeId !== $this->opponentId)
+            {
+                throw new \Bga\GameFramework\UserException($game->translate("Only the opposing player may choose cards to sink."));
+            }
+
             if (str_starts_with($reactionId, 'card-'))
             {
                 $cardId = (int)substr($reactionId, strlen('card-'));
@@ -319,6 +366,11 @@ class Reaction_03006 extends CardReaction
 
     private function advanceToNextPick(Game $game, Card $owner): bool
     {
+        if ($this->opponentId == 0 || $this->opponentId == $owner->ControllerId)
+        {
+            return false;
+        }
+
         $hand = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->opponentId);
         if (count($hand) == 0)
         {
@@ -326,12 +378,35 @@ class Reaction_03006 extends CardReaction
         }
 
         $this->stage = ($this->cardsSunk == 0) ? 'pick1' : 'pick2';
-        $owner->IsUpdated = true;
+        $this->persistReactionState($game, $owner);
 
         $transition = EventFactory::createReactionTransitionEvent($this->opponentId, $owner->Id, $this->Id);
+        // WHY: Ahead of other REACTION_PRIORITY offers queued while we skip ReactionActivated.
+        $transition->priority = Event::HIGH_PRIORITY;
         $game->theah->queueEvent($transition);
 
         return true;
+    }
+
+    private function persistReactionState(Game $game, Card $owner): void
+    {
+        $game->theah->addCardToWorld($owner);
+
+        // WHY: If $this is a detached reaction instance, copy stage onto the reaction
+        // actually nested on $owner before serialize — otherwise DB keeps stage 'offer'.
+        $hosted = $owner->getReactionById($this->Id);
+        if ($hosted !== null && $hosted !== $this)
+        {
+            $hosted->stage = $this->stage;
+            $hosted->opponentId = $this->opponentId;
+            $hosted->performerId = $this->performerId;
+            $hosted->targetCharacterId = $this->targetCharacterId;
+            $hosted->cardsSunk = $this->cardsSunk;
+            $hosted->Used = $this->Used;
+        }
+
+        $owner->IsUpdated = true;
+        $game->updateCardObjectInDb($owner);
     }
 
     private function sinkOneFromHand(Game $game, Card $owner, int $cardId): void
@@ -373,7 +448,7 @@ class Reaction_03006 extends CardReaction
     {
         $this->setUsed($game->theah, true);
         $this->resetStage();
-        $owner->IsUpdated = true;
+        $this->persistReactionState($game, $owner);
     }
 
     private function resetStage(): void

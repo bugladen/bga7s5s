@@ -61,6 +61,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPa
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
@@ -89,6 +90,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontr
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
 
@@ -709,7 +711,27 @@ trait EventHub
                 $handler = function (Theah $theah, EventCardRemovedFromPlay $event)
                 {
                     $card = $theah->getCardById($event->cardId);
-                    $theah->game->moveCard($card->Id, $event->toLocation, $card->ControllerId, $card);
+                    // WHY: City Deck rows use location_arg 0. Passing ControllerId left
+                    // recruited characters (Penya Forced) owned in the deck table.
+                    $locationArg = ($event->toLocation == Game::LOCATION_CITY_DECK) ? 0 : $card->ControllerId;
+                    $theah->game->moveCard($card->Id, $event->toLocation, $locationArg, $card);
+
+                    // WHY: Same recreate as destroy / city-discard. EventCardRemovedFromPlay
+                    // only moved location — Penya (and any Character shuffled back into the
+                    // City Deck) kept ControllerId, wounds, and modified stats for a later muster.
+                    if ($card instanceof Character && $event->toLocation == Game::LOCATION_CITY_DECK)
+                    {
+                        $fullClassname = get_class($card);
+                        $pos = strrpos($fullClassname, '\\');
+                        $className = substr($fullClassname, $pos + 2);
+                        $card = $theah->game->instantiateCard($className, $card->Id);
+                        $card->Location = Game::LOCATION_CITY_DECK;
+                        $card->ControllerId = 0;
+                        $card->OwnerId = 0;
+                        $card->Engaged = false;
+                        $theah->addCardToWorld($card);
+                    }
+
                     $card->IsUpdated = true;
 
                     $message = clienttranslate('${card_inject_code} removed from play.');
@@ -1450,6 +1472,14 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventTechniqueCanceled:
+                $handler = function (Theah $theah, EventTechniqueCanceled $event)
+                {
+                    $theah->recordCanceledAbilityInDuelTable('technique', $event->techniqueId);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventResolveTechnique:
                 $handler = function ($theah, EventResolveTechnique $event)
                 {
@@ -1615,6 +1645,14 @@ trait EventHub
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "maneuver_name" => $maneuver->Name,
                     ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventManeuverCanceled:
+                $handler = function (Theah $theah, EventManeuverCanceled $event)
+                {
+                    $theah->recordCanceledAbilityInDuelTable('maneuver', $event->maneuverId);
                 };
                 $handler($this, $event);
                 break;
@@ -2082,6 +2120,11 @@ trait EventHub
                         // WHY: moveCardInDeck — card is recreated below; Location set on the new instance.
                         $theah->game->moveCardInDeck($event->characterId, $locker);
 
+                        // WHY: Brutes go to discard, not locker — only count the locker path.
+                        if ($controllerId) {
+                            $theah->game->bga->playerStats->inc(Game::STAT_CHARACTERS_SENT_TO_LOCKER, 1, $controllerId);
+                        }
+
                         $theah->game->notify->all("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
                             'i18n' => ['reason'],
                             "playerId" => $event->playerId,
@@ -2112,6 +2155,12 @@ trait EventHub
                     $locker = $theah->game->getPlayerLockerName($event->playerId);
                     $theah->game->moveCard($event->cardId, $locker, 0, $card);
                     $card->IsUpdated = true;
+
+                    // WHY: Destroy path does not fire CardSentToLocker; this covers Spend-to-Locker
+                    // characters (e.g. Deal with the Devil dusk, Action_03067). Schemes/attachments skip.
+                    if ($card instanceof Character && $event->playerId) {
+                        $theah->game->bga->playerStats->inc(Game::STAT_CHARACTERS_SENT_TO_LOCKER, 1, $event->playerId);
+                    }
 
                     $theah->game->notify->all("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [
                         "playerId" => $event->playerId,

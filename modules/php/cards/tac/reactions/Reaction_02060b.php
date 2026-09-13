@@ -87,15 +87,33 @@ class Reaction_02060b extends RiskReaction
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent($this->MyParticipantId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($this->OpponentId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($woundEvent);
+            // WHY: "opposing adversary" means same location at resolve time. Between
+            // EventDuelEnd offer and pay/confirm, the adversary may have left — still
+            // wound your participant (Hubris), but skip the adversary wound.
+            $woundOpponent = $myParticipant !== null
+                && $opponent !== null
+                && $opponent->Location === $myParticipant->Location;
 
-            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. Wounding ${participant_inject_code} and ${opponent_inject_code}.'), [
-                "reaction_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                "participant_inject_code" => $myParticipant->getInjectCode(),
-                "opponent_inject_code" => $opponent->getInjectCode(),
-            ]);
+            if ($woundOpponent)
+            {
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($this->OpponentId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $game->theah->queueEvent($woundEvent);
+
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. Wounding ${participant_inject_code} and ${opponent_inject_code}.'), [
+                    "reaction_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "participant_inject_code" => $myParticipant->getInjectCode(),
+                    "opponent_inject_code" => $opponent->getInjectCode(),
+                ]);
+            }
+            else
+            {
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. Wounding ${participant_inject_code}. Opposing adversary is no longer at the same location.'), [
+                    "reaction_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "participant_inject_code" => $myParticipant->getInjectCode(),
+                ]);
+            }
 
             $this->setUsed($game->theah, true);
         }

@@ -3,14 +3,19 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards;
 
 use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01130;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -113,6 +118,21 @@ abstract class Character extends Card implements IHasTechniques
     // (Maryam cancel, Sigurd must-be-target, etc. — those are text-box abilities).
     public function eventCheckCore(Event $event): void
     {
+        // WHY: Printed dashed Combat means the character cannot use Combat in challenges
+        // (pressures already gated via canPressure). Catch ability-issued Combat challenges
+        // that bypass the basic-Challenge performer filters — same belt as Térence (_03028).
+        // Lives in eventCheckCore so Fate's Silence still enforces the printed stat rule.
+        if ($event instanceof EventChallengeIssued
+            && $event->challengerId == $this->Id
+            && $this->DashedCombat
+            && $event->theah->game->globals->get(Game::CHALLENGE_STAT) == Game::STAT_COMBAT)
+        {
+            throw new UserException(sprintf(
+                $event->theah->game->translate("%s has dashed Combat and cannot issue Combat challenges."),
+                $this->Name
+            ));
+        }
+
         // WHY: Harpoon (_03064) stamps HARPOON_CONDITION on the adversary for the
         // remainder of the duel. Enforce "cannot move" here so the condition itself
         // is the source of truth (not a Technique flag that dies if Harpoon leaves play).
@@ -473,6 +493,34 @@ abstract class Character extends Card implements IHasTechniques
             $this->IsDying = false;
             $this->WoundsHealedIncoming = 0;
             $this->IsUpdated = true;
+
+            // WHY: Same correlator pattern as Deal with the Devil — IW's Action lives on a
+            // discarded Risk that may not be the copy that still has IsActive (two copies /
+            // reshuffle into faction deck). Condition on the character is authoritative.
+            if ($this->hasCondition(Game::INDOMITABLE_WILL_CONDITION))
+            {
+                Action_01130::endEffect($event->theah->game, $this, $this->Location);
+            }
+        }
+
+        if ($event instanceof EventCardMoved && $event->cardId == $this->Id
+            && $this->hasCondition(Game::INDOMITABLE_WILL_CONDITION)
+            && $event->theah->locationInCity($event->fromLocation)
+            && $event->toLocation != $event->fromLocation)
+        {
+            Action_01130::endEffect($event->theah->game, $this, $event->fromLocation);
+        }
+
+        if ($event instanceof EventCardDiscardedFromPlay && $event->cardId == $this->Id
+            && $this->hasCondition(Game::INDOMITABLE_WILL_CONDITION))
+        {
+            $location = $event->fromLocation !== '' ? $event->fromLocation : $this->Location;
+            Action_01130::endEffect($event->theah->game, $this, $location);
+        }
+
+        if ($event instanceof EventDuskEndOfDay && $this->hasCondition(Game::INDOMITABLE_WILL_CONDITION))
+        {
+            Action_01130::endEffect($event->theah->game, $this, $this->Location);
         }
 
         // WHY: Deal with the Devil (_03062) stamps DEAL_WITH_THE_DEVIL when mustering
