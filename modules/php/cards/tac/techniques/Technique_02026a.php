@@ -32,6 +32,14 @@ class Technique_02026a extends Technique
             return false;
         }
 
+        // WHY: Card text is "Duelist Technique" — usable only when the equipped character has Duelist
+        // (equip itself is not restricted; see journal 2026-03-30-02).
+        $equipped = $this->getOwningCharacter($theah);
+        if ($equipped == null || ! $equipped->hasTrait("Duelist"))
+        {
+            return false;
+        }
+
         $adversary = $theah->getDuelRoundOpponent();
         if ($adversary == null)
         {
