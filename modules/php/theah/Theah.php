@@ -1617,6 +1617,75 @@ class Theah
         $this->db->deleteTechniqueEvents($techniqueId);
     }
 
+    // WHY: Cancel reactions (01146b / 01047 / 03044) delete Resolve before it INSERTs
+    // the ability name into duel_round_*. Record a canceled marker so the duel table
+    // still shows what was announced. technique_is_main stays 0 so main-technique
+    // availability counts are unaffected. Only runs in-duel — cancel events outside
+    // a duel have no round row to annotate.
+    public function recordCanceledAbilityInDuelTable(string $mode, string $abilityId): void
+    {
+        if (! $this->game->globals->get(Game::IN_DUEL, false))
+        {
+            return;
+        }
+
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        if (! $duelId || ! $round)
+        {
+            return;
+        }
+
+        if ($mode === 'technique')
+        {
+            $ability = $this->getTechniqueById($abilityId);
+        }
+        else if ($mode === 'maneuver')
+        {
+            $ability = $this->getManeuverById($abilityId);
+        }
+        else
+        {
+            return;
+        }
+
+        if ($ability === null)
+        {
+            return;
+        }
+
+        $owningCard = $ability->getOwningCard($this);
+        if ($owningCard === null)
+        {
+            return;
+        }
+
+        $canceledLabel = clienttranslate('(Canceled)');
+        $displayName = $owningCard->Name . ': ' . $ability->Name . ' ' . $canceledLabel;
+        $name = substr(addslashes($displayName), 0, 500);
+
+        if ($mode === 'technique')
+        {
+            $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name, technique_is_main)
+                    VALUES ($duelId, $round, '{$abilityId}', '$name', 0)";
+        }
+        else
+        {
+            $sql = "INSERT INTO duel_round_maneuver (duel_id, round, maneuver_id, maneuver_name)
+                    VALUES ($duelId, $round, '{$abilityId}', '$name')";
+        }
+        $this->game->DbQuery($sql);
+
+        $this->game->notify->all('duelAbilityCanceled', '', [
+            'i18n' => ['cardName', 'effectName', 'canceled_label'],
+            'round' => $round,
+            'mode' => $mode,
+            'cardName' => $owningCard->Name,
+            'effectName' => $ability->Name,
+            'canceled_label' => $canceledLabel,
+        ]);
+    }
+
     public function deletePressureResultEvents()
     {
         $this->db->deletePressureResultEvents();

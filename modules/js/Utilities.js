@@ -1780,6 +1780,18 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.setupDuelScrollSync();
     },
 
+    // WHY: canceled names are stored as "Card: Ability (Canceled)" — strike only the
+    // ability portion so the (Canceled) label stays readable.
+    formatDuelAbilityNameMarkup: function(name) {
+        const marker = '(Canceled)';
+        const idx = name.lastIndexOf(marker);
+        if (idx < 0)
+            return `<div>${name}</div>`;
+
+        const abilityName = name.substring(0, idx).trimEnd();
+        return `<div><span class="_7sfs-duel-ability-canceled">${abilityName}</span> ${marker}</div>`;
+    },
+
     setupDuelScrollSync: function() {
         const top = $('duel_scroll_top');
         const bottom = $('duel');
@@ -1816,14 +1828,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
             maneuvers = [];
         else
             //Surround the maneuver names with div tags
-            maneuvers = maneuvers.map((maneuver) => `<div>${maneuver}</div>`);
+            maneuvers = maneuvers.map((maneuver) => this.formatDuelAbilityNameMarkup(maneuver));
 
         var techniques = row.techniqueNames;
         if (!techniques)
             techniques = [];
         else
             //Surround the technique names with div tags
-            techniques = techniques.map((technique) => `<div>${technique}</div>`);
+            techniques = techniques.map((technique) => this.formatDuelAbilityNameMarkup(technique));
 
         let techniqueMarkup = '';
         techniques.forEach((technique) => {

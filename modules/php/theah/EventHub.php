@@ -61,6 +61,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventHighDramaPhasePlayerPa
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
@@ -89,6 +90,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontr
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueUsed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventThreatModified;
 
@@ -1470,6 +1472,14 @@ trait EventHub
                 $handler($this, $event);
                 break;
 
+            case $event instanceof EventTechniqueCanceled:
+                $handler = function (Theah $theah, EventTechniqueCanceled $event)
+                {
+                    $theah->recordCanceledAbilityInDuelTable('technique', $event->techniqueId);
+                };
+                $handler($this, $event);
+                break;
+
             case $event instanceof EventResolveTechnique:
                 $handler = function ($theah, EventResolveTechnique $event)
                 {
@@ -1635,6 +1645,14 @@ trait EventHub
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "maneuver_name" => $maneuver->Name,
                     ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventManeuverCanceled:
+                $handler = function (Theah $theah, EventManeuverCanceled $event)
+                {
+                    $theah->recordCanceledAbilityInDuelTable('maneuver', $event->maneuverId);
                 };
                 $handler($this, $event);
                 break;

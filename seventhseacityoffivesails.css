@@ -1821,6 +1821,11 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     background-color: silver;
 }
 
+/* WHY: canceled Maneuver/Technique names in the duel table (Let The Sword Decide etc.) */
+._7sfs-duel-ability-canceled {
+    text-decoration: line-through;
+}
+
 ._7sfs-ability-table {
     border: none;
     display: block;

@@ -113,6 +113,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['traitRemoved', 1],
             ['updateRoundThreats', 500],
             ['updateRoundWithCombatStats', 500],
+            ['duelAbilityCanceled', 500],
             ['yevgeniAdversaryChosen', 500],
             ['yevgeniAdversaryRemoved', 1],
         ];
@@ -2363,6 +2364,36 @@ return declare('seventhseacityoffivesails.notifications', null, {
             divId = `duel_round_${args.round}_defender_name`;
             $(divId).innerHTML = args.actor.name;
         }
+    },
+
+    // WHY: Cancel reactions delete Resolve before the normal updateRoundWithCombatStats
+    // name append. This notif writes the canceled ability into the Maneuver/Technique
+    // column. Stats stay greyed (no R/P/T applied).
+    notif_duelAbilityCanceled: function( notif )
+    {
+        debug( 'notif_duelAbilityCanceled' );
+        debug( notif );
+
+        const args = notif.args;
+        const element = $(`duel_round_${args.round}_${args.mode}`);
+        if (! element)
+        {
+            return;
+        }
+
+        if (element.innerHTML == 'Not Chosen')
+        {
+            element.innerHTML = '';
+        }
+
+        const abilityName = `${args.cardName}: ${args.effectName}`;
+        const effectName = `${abilityName} ${args.canceled_label}`;
+        if (! element.innerHTML.includes(effectName))
+        {
+            element.innerHTML += `<p><span class="_7sfs-duel-ability-canceled">${abilityName}</span> ${args.canceled_label}</p>`;
+        }
+
+        dojo.removeClass(`duel_round_${args.round}_${args.mode}`, '_7sfs-ability-not-chosen');
     },
 
     notif_updateRoundWithCombatStats: function( notif )
