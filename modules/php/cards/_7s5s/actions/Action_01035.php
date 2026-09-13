@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -164,6 +165,7 @@ class Action_01035 extends CharacterAction
         {
             $mercenaryId = $game->globals->get(Game::CHOSEN_CARD);
             $mercenary = $game->getCardObjectFromDb($mercenaryId);
+            $kaspar = $this->getOwningCharacter($game->theah);
 
             $game->notify->all("message", clienttranslate('${player_name} chooses to recruit ${mercenary}.'), [
                 "player_name" => $game->getActivePlayerName(),
@@ -171,7 +173,19 @@ class Action_01035 extends CharacterAction
             ]);
 
             $game->globals->set(Game::RECRUIT_TYPE, Game::KASPAR_RECRUIT_TYPE);
-            $game->gamestate->nextState("recruit");
+            $game->globals->set(Game::CHOSEN_PERFORMER, $kaspar->Id);
+
+            // WHY: "can parley even while engaged" only lifts the engaged
+            // restriction. Negotiable=false still cannot be parleyed with.
+            if ($mercenary instanceof CityCharacter && $mercenary->Negotiable)
+            {
+                $game->gamestate->nextState("recruit");
+            }
+            else
+            {
+                $game->globals->set(Game::DISCOUNT, 0);
+                $game->gamestate->nextState("recruitNoParley");
+            }
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01035_4)
@@ -182,6 +196,11 @@ class Action_01035 extends CharacterAction
 
             if ($id == 1)
             {
+                if ( ! $mercenary instanceof CityCharacter || ! $mercenary->Negotiable)
+                {
+                    throw new \BgaUserException($game->translate("You cannot Parley when recruiting this character."));
+                }
+
                 $game->notify->all("message", clienttranslate('${player_name} chooses to parley with ${mercenary}.'), [
                     "player_name" => $game->getActivePlayerName(),
                     "mercenary" => $mercenary->Name,

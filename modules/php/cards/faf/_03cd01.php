@@ -48,7 +48,9 @@ class _03cd01 extends CityCharacter implements IHasActions
             clienttranslate('Orphan'),
         ];
 
-        $this->Text = clienttranslate("<p>Negotiable (You may parley when paying for this card.)</p><p>Penya cannot intervene.</p><p><b>City Forced:</b> When Penya participates in a duel or would be wounded • Put the top card of the City Deck at his location. Then, shuffle him into the City Deck.</p><p><b>City Action:</b> Engage Penya • Move Penya and another of your characters at this location to the same adjacent <b>City</b> location.</p>");
+        $this->Text = clienttranslate("<p>Penya cannot intervene.</p>
+        <p><b>City Forced:</b> When Penya participates in a duel or would be wounded • Put the top card of the City Deck at his location. Then, shuffle him into the City Deck.</p>
+        <p><b>City Action:</b> Engage Penya • Move Penya and another of your characters at this location to the same adjacent <b>City</b> location.</p>");
 
         $this->resetCard();
 

@@ -452,12 +452,22 @@ trait FrameworkActionsTrait
             throw new \BgaUserException(clienttranslate("Chosen character is not a Mercenary at the Performer's Location."));
         }
 
+        $recruit = $this->theah->getCharacterById($recruitId);
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        $recruitType = $this->globals->get(Game::RECRUIT_TYPE);
+        // WHY: Parley is chosen before the target. A Yes must not stick to a
+        // Negotiable=false mercenary (no discount, and the performer would still engage).
+        if ($recruitType == Game::NORMAL_RECRUIT_TYPE && $performerParleyed
+            && ( ! $recruit instanceof CityCharacter || ! $recruit->Negotiable))
+        {
+            throw new \BgaUserException(clienttranslate("You cannot Parley when recruiting this character."));
+        }
+
         $this->globals->set(GAME::CHOSEN_CARD, $recruitId);
 
         $event = EventFactory::createEnteringPayStateEvent($playerId, $recruitId, Game::PAY_STATE_RECRUIT_MERCENARY);
         $this->theah->queueEvent($event);
 
-        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
         if ($performerParleyed && !$performer->Engaged)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId);

@@ -1848,7 +1848,8 @@ $machinestates = [
                 "transitions" => [
                     "mercenaryPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
                     "back" => States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE_TO_MERC,
-                    "backKaspar" => States::HIGH_DRAMA_PLAYER_TURN_01035_4
+                    "backKaspar" => States::HIGH_DRAMA_PLAYER_TURN_01035_4,
+                    "backKasparRecruit" => States::HIGH_DRAMA_PLAYER_TURN_01035_3
                 ]
             ],
 

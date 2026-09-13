@@ -640,7 +640,25 @@ trait StatesTrait
         $this->theah->buildCity();
         $id = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($id);
-        if ($performer->Engaged || $performer->hasTrait("Mercenary"))
+
+        // WHY: Parley is chosen before the mercenary. Skip the prompt when
+        // nobody at the location has Negotiable — you cannot parley with
+        // those cards during the basic Recruit Action.
+        $mercenariesAtLocation = array_filter(
+            $this->theah->getCharactersAtLocation($performer->Location, $includeUncontrolled = true),
+            fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary")
+        );
+        $hasNegotiableMercenary = false;
+        foreach ($mercenariesAtLocation as $mercenary)
+        {
+            if ($mercenary instanceof CityCharacter && $mercenary->Negotiable)
+            {
+                $hasNegotiableMercenary = true;
+                break;
+            }
+        }
+
+        if ($performer->Engaged || $performer->hasTrait("Mercenary") || ! $hasNegotiableMercenary)
         {
             [$discount, $explanations] = $this->theah->getParleyDiscount($performer, false);
             $this->globals->set(Game::DISCOUNT_EXPLAINATIONS, $explanations);
@@ -659,7 +677,15 @@ trait StatesTrait
         $performer = $this->theah->getCharacterById($performerId);
         $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
 
-        [$discount, $explanations] = $this->theah->getParleyDiscount($performer, $performerParleyed);
+        // WHY: Discount is recomputed after the mercenary is known. A Yes
+        // from the earlier prompt must not apply to Negotiable=false cards.
+        $recruitId = $this->globals->get(GAME::CHOSEN_CARD);
+        $recruit = $this->theah->getCharacterById($recruitId);
+        $parleyApplies = $performerParleyed
+            && $recruit instanceof CityCharacter
+            && $recruit->Negotiable;
+
+        [$discount, $explanations] = $this->theah->getParleyDiscount($performer, $parleyApplies);
 
         if ($discount != 0)
             $this->notify->player($performer->ControllerId, "message",

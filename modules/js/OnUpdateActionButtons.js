@@ -139,7 +139,11 @@ onUpdateActionButtons: function( stateName, args )
             if (args.recruitType == this.NORMAL_RECRUIT_TYPE)
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             else if (args.recruitType == this.KASPAR_RECRUIT_TYPE)
-                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBackWithTransition', { transition: 'backKaspar'}), { id: 'actBack', color: 'alert' });
+            {
+                // WHY: Non-Negotiable skips 01035_4. Back must not land on Parley / No Parley.
+                const backTransition = args.negotiable ? 'backKaspar' : 'backKasparRecruit';
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBackWithTransition', { transition: backTransition}), { id: 'actBack', color: 'alert' });
+            }
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onRecruitCharacterConfirmed());
         },
 
