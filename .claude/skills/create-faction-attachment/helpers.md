@@ -9,7 +9,8 @@
 - `$theah->getLeaderByPlayerId(int $playerId): ?Leader` — get a player's Leader (returns null if destroyed).
 - `$theah->getCardObjectsAtLocation(string $location, int $playerId = 0): Card[]` — all cards in a generic location (`Game::LOCATION_HAND`, `Game::LOCATION_PLAYER_HOME`, etc.). For hand, pass the player id.
 - `$theah->locationInCity(string $location): bool` / `$theah->cardInCity(Card $card): bool` — canonical City checks. **Required** for attachment City Actions (no `AttachmentCityAction` base).
-- `$theah->getCityLocations(): CityLocation[]` — all five city slots; map `->Name` when building destination lists.
+- `$theah->getCityLocations(): CityLocation[]` — all five city slots; map `->Name` when building destination lists. Each has `->Renown` (int). **Home has no Renown track** — `getCityLocation(LOCATION_PLAYER_HOME)` throws; treat Home as 0. A "more Renown than current" filter can never match Home (`Action_04036b`).
+- `$game->getNextEventBatchId()` — share one `batchId` across `createRenownMovingBetweenLocationsEvent` + `createRenownRemovedFromLocationEvent` + `createRenownAddedToLocationEvent(..., isMove=true)` so the UI plays a relocate as one animation (`_04034`, `Action_01007`, `Action_04036a`).
 - `$game->getCardObjectFromDb(int $id): ?Card` — hydrate any card from db (works even if it's not in `Theah::$cards`).
 - `$game->getGameDeckObject(int $playerId = 0): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` queries discard; `getPlayerHand($playerId)` queries hand.
 - `$game->getPlayerFactionDeckName(int $playerId): string` — the deck-table location string for a player's faction deck.
@@ -53,6 +54,9 @@ Event factories you'll likely need:
 - `createTechniqueTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — HIGHEST_PRIORITY choice interrupt (adversary discard picker, attachment destroy pick). Attachment-hosted: `$sourceId` = attachment id (`Technique_04017` / `04013`)
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)`
+- `createRenownMovingBetweenLocationsEvent($playerId, $from, $to, $amount, $description)` — animation/intent half of a relocate; pair with Removed + Added and a shared `batchId`
+- `createRenownRemovedFromLocationEvent($playerId, $location, $amount, $source)` — mutate the from-slot
+- `createRenownAddedToLocationEvent($playerId, $location, $amount, $description, $isMove = false)` — pass `$isMove = true` when this is the to-half of a relocate (not a fresh place)
 - `createActionResolvedEvent($playerId)`
 - `createSorcererAbilityStartEvent($playerId, $sourceId, $abilityId, $performerId, $targetId = 0, $targetLocation = '')`
 - `createSorcererAbilityPlayedEvent($playerId, $sourceId, $abilityId, $performerId, $targetId = 0, $targetLocation = '')`

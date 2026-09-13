@@ -242,6 +242,32 @@
                 }
             },
 
+            'highDramaPhase04036a': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+
+                    const card = this.cardProperties[this.clientStateArgs.performerId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, '_7sfs-chosen');
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04036b': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+
+                    const card = this.cardProperties[this.clientStateArgs.performerId];
+                    if (card) {
+                        const image = $(`${card.divId}_image`);
+                        dojo.removeClass(image, '_7sfs-chosen');
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseEnd_04025': () => {
                 dojo.addClass('choose_container', 'hidden');
                 dojo.addClass('chooseList', 'hidden');

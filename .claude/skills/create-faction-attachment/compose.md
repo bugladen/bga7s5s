@@ -15,7 +15,7 @@ class _NNNNN extends FactionAttachment implements IHasActions, IHasReactions, IH
     {
         parent::__construct();
         // ...
-        $this->Actions    = [new Action_NNNNN()];
+        $this->Actions    = [new Action_NNNNN()]; // or Action_NNNNNa + Action_NNNNNb
         $this->Reactions  = [new Reaction_NNNNN()];
         $this->Techniques = [new Technique_NNNNN()];
     }
@@ -35,3 +35,5 @@ The framework hydrates each ability separately. No cross-talk needed between the
 **Always-on gamble + normal Technique (Resolve-time trait clause):** `_04017` (Jägerarmbrust) overrides `getNumberOfGambleCardsToReveal` on the attachment (B''') and hosts `Technique_04017` (engage + +1 Thrust + Academic/Hunter adversary discard). The Technique is **not** Gambling — do not conflate the passive gamble paragraph with the Technique keyword. The Academic/Hunter check is Resolve-only so non-matching hosts still get engage/Thrust.
 
 **Diplomat equip + pressure-fail Reaction + engage +1 Parry Technique:** `_04026` (Pompon) hosts Pattern A Diplomat dual-gate, `Reaction_04026` (Objection pressure math + engage cost + "at this location"), and `Technique_04026` (engage + Parry — same availability as `04017` engage half, no picker). No cross-talk; no GameState.
+
+**Academic equip + two City Actions:** `_04036` (Ciphered Tome) hosts Pattern A Academic dual-gate, `Action_04036a` (renown relocate from host location — dest picker, `_04034` batch), and `Action_04036b` (move performer to a slot with strictly more Renown). No cross-talk. Separate GameStates because dest filters and resolve differ. Both "Engage this card" — `$attachment->Engaged` is the only shared gate. Home omitted on b: no Renown track, filter cannot match.

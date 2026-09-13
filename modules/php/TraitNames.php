@@ -48,6 +48,7 @@ class TraitNames
             "Cheating",
             "Cloak",
             "Coat",
+            "Codex",
             "Compass",
             "Compromise",
             "Conscription",
