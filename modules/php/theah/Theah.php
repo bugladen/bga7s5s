@@ -1840,6 +1840,39 @@ class Theah
         return 0;
     }
 
+    // WHY: Comforting (Pattern C.6 excess) discards against round-start baseline, not
+    // ending_* (which already includes Technique/combat R/P). Same starting_* channel
+    // as Leja ThreatModified — maneuver/technique calcs rebuild ending from it.
+    public function getStartingDuelThreat(int $characterId): int
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $sql = "SELECT challenger_id, defender_id, starting_challenger_threat, starting_defender_threat
+                FROM duel_round WHERE duel_id = $duelId AND round = $round";
+        $result = $this->db->getObjectList($sql)[0];
+        if ($characterId == $result['challenger_id'])
+        {
+            return (int)$result['starting_challenger_threat'];
+        }
+        if ($characterId == $result['defender_id'])
+        {
+            return (int)$result['starting_defender_threat'];
+        }
+
+        return 0;
+    }
+
+    // WHY: After Comforting shrinks starting_*, ending must be reapplied from stored
+    // technique/combat/maneuver R/P/T (combat mode is incremental and will not redo
+    // itself). Zero-delta maneuver rebuild reuses updateRoundWithCombatStats without
+    // inventing a second application path.
+    public function rebuildDuelRoundEndingThreats(): void
+    {
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        $this->db->updateRoundWithCombatStats($duelId, $round, 'maneuver', 0, 0, 0);
+    }
+
     public function getCurrentRoundThrust(): int
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);

@@ -207,7 +207,7 @@ So printed threat-pool maneuvers map to calc, not globals / `PENDING_*_THREAT` (
 |---|---|---|
 | **"Move all threat from your participant to the adversary"** | `$event->riposte += $theah->getCurrentDuelThreat($actor->Id)` | `Maneuver_03048` (Wily) |
 | **"Remove all threat from [participant]"** | `$event->parry += $theah->getCurrentDuelThreat($characterId)` | `Technique_02012` (Turais) |
-| **"Discard / remove threat … in excess of your adversary's [duel] stat"** | `$event->parry += max(0, threat - adversaryDuelStat)` | `Maneuver_03070` (Comforting) |
+| **"Discard / remove threat … in excess of your adversary's [duel] stat"** | Shrink `starting_*` by excess via `ThreatModified`, then Maneuver Calculate rebuilds `ending_*` | `Maneuver_03070` (Comforting) |
 
 ```php
 $actor = $event->theah->getDuelRoundActor();
@@ -219,7 +219,13 @@ if ($threat > 0)
 }
 ```
 
-**Excess-of-duel-stat (Comforting):** "Discard threat … in excess of your adversary's stat value used for the duel" is still C.6 (Parry / remove), **not** a full clear and **not** Riposte. Cap with the adversary's **Modified** duel-stat from `Game::CHALLENGE_STAT` — same `match` as Restricted Hostilities in `stDuelEndOfRound`:
+**Excess-of-duel-stat (Comforting):** "Discard threat … in excess of your adversary's stat value used for the duel" is still C.6 (remove), but **not** Maneuver Parry and **not** Riposte. Cap with the adversary's **Modified** duel-stat from `Game::CHALLENGE_STAT` — same `match` as Restricted Hostilities in `stDuelEndOfRound`.
+
+**WHY shrink `starting_*` + rebuild, not Parry / not `getCurrentDuelThreat`:** the discard is against **original round-start threat**. Technique and/or combat-card stats may already be in `ending_*` when the Maneuver resolves (order varies). Adding Parry on top double-counts against a post-stat pool; measuring excess against `ending_*` under-counts. Correct shape:
+
+1. `EventResolveManeuver` — `excess = max(0, getStartingDuelThreat(actor) − adversaryDuelStat)`; `stackEvent(createThreatModifiedEvent(…))` so it runs **before** the already-queued Calculate; store excess for cancel.
+2. `EventDuelCalculateManeuverValues` — leave R/P/T at 0. EventHub's `updateRoundWithCombatStats(maneuver, 0,0,0)` rebuilds `ending_*` from the reduced `starting_*` + stored technique/combat/maneuver columns (combat mode is incremental and will not redo itself).
+3. `EventManeuverCanceled` — if excess was applied: restore `starting_*` only, then `rebuildDuelRoundEndingThreats()` (do not plain `ThreatModified(+excess)` — clamp-sensitive).
 
 ```php
 $adversary = $event->theah->getDuelRoundOpponent();
@@ -229,22 +235,19 @@ $stat = match ($combatStatUsed) {
     Game::STAT_INFLUENCE => $adversary->ModifiedInfluence,
     default => $adversary->ModifiedCombat,
 };
-$excess = max(0, $threat - $stat);
-if ($excess > 0)
-{
-    $event->parry += $excess;
-}
+$starting = $event->theah->getStartingDuelThreat($actor->Id);
+$excess = max(0, $starting - $stat);
 ```
 
-**WHY `CHALLENGE_STAT`, not hardcoded Combat:** the italic example is an Influence duel → adversary's Influence. Do not invent a free-choice button or assume Combat. Null-check actor + adversary before reading.
+**WHY `CHALLENGE_STAT`, not hardcoded Combat / actor ModifiedCombat:** the italic example is an Influence duel → adversary's Influence. Do not invent a free-choice button or use the actor's Combat. Null-check actor + adversary before reading.
 
 **WHY skip the explanation when `$threat == 0` / `$excess == 0`:** avoid "moves/discards 0 Threat" noise; activating for no effect is still legal unless the text says otherwise — do not hide the Maneuver behind `threat > 0` / `excess > 0` in `isAvailable` unless the card requires a payoff.
 
-**Dashed Riposte does not kill Maneuver Riposte.** EventHub zeroes Technique riposte when every combat card this round has `DashedRiposte`, but `EventDuelCalculateManeuverValues` has **no** such clamp. Wily (`_03048`) prints dashed Riposte and still moves threat via Maneuver Riposte — do not "fix" that by adding a dashed check. Comforting's printed `DashedRiposte` is likewise irrelevant to its Maneuver **Parry** excess remove (and the card separately prints Parry on the combat-card line).
+**Dashed Riposte does not kill Maneuver Riposte.** EventHub zeroes Technique riposte when every combat card this round has `DashedRiposte`, but `EventDuelCalculateManeuverValues` has **no** such clamp. Wily (`_03048`) prints dashed Riposte and still moves threat via Maneuver Riposte — do not "fix" that by adding a dashed check. Comforting's printed `DashedRiposte` is irrelevant to its starting-threat discard (and the card separately prints Parry on the combat-card line).
 
-No sub-state, no sticky Maneuver fields → `// EventManeuverCanceled handler not needed`. Pure-calc shape (see next section).
+Comforting has sticky `$ExcessDiscarded` → real `EventManeuverCanceled` + clear on `EventDuelNewRound`. Move-all / remove-all stay pure-calc with `// EventManeuverCanceled handler not needed`.
 
-References: `Maneuver_03048` (move via Riposte + Scoundrel gate + gambled discount), `Technique_02012` (remove-all via Parry), `Maneuver_03070` (excess via Parry + `CHALLENGE_STAT`), `Theah::getCurrentDuelThreat`, `StatesTrait::stDuelEndOfRound` (Restricted Hostilities `match`).
+References: `Maneuver_03048` (move via Riposte + Scoundrel gate + gambled discount), `Technique_02012` (remove-all via Parry), `Maneuver_03070` (excess via starting `ThreatModified` + Calculate rebuild + `CHALLENGE_STAT`), `Theah::getCurrentDuelThreat` / `getStartingDuelThreat` / `rebuildDuelRoundEndingThreats`, `StatesTrait::stDuelEndOfRound` (Restricted Hostilities `match`).
 ### Pattern C.7 — "+X [stat] for each opposing character" (location-scoped, often unstated)
 
 For Maneuvers like **"Gambling Maneuver: +1[Parry] and +1[Thrust] for each opposing character."** — see `Maneuver_03058` (Courageous). The printed text often **omits** "at this location."
@@ -344,7 +347,7 @@ References: `_03069` / `Maneuver_03069a`/`b`, `Technique_03013` (duel swap in ac
 
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
-When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` / `Maneuver_03070` (Pattern C.6 threat move / excess remove — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling).
+When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling). **Exception:** Comforting (`Maneuver_03070`) is C.6 excess but **not** pure-calc — it uses Resolve `ThreatModified` on `starting_*` + zero-delta Calculate rebuild.
 
 ### Pure-resolve maneuvers (no calc branch)
 
