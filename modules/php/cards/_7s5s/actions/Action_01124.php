@@ -38,6 +38,11 @@ class Action_01124 extends CharacterAction implements ISorcererAbility, IAbility
             return false;
         }
 
+        if ($owner->Engaged)
+        {
+            return false;
+        }
+
         $cards = $theah->risksAvailableFromDiscardPile($owner);
         $cards = array_filter($cards, fn($card) => $card->hasTrait("Sorcery"));
         return count($cards) > 0;
