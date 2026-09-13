@@ -594,6 +594,15 @@ class Theah
         return $cards;
     }
 
+    // WHY: Indomitable Will (and similar) must clear Action state on every in-world
+    // copy — including discarded Risks — when the stamped character leaves. Private
+    // $cards is otherwise unreachable from Action_01130::endEffect.
+    /** @return array<int, Card> */
+    public function getWorldCards(): array
+    {
+        return $this->cards;
+    }
+
     public function getCardPropertiesAtLocation($location, $playerId = null)
     {
         $cards = [];
