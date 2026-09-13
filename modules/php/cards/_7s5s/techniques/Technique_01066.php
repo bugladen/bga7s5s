@@ -27,9 +27,18 @@ class Technique_01066 extends Technique
 
         $owner = $this->getOwningCharacter($theah);
         $adversary = $theah->getDuelRoundOpponent();
+        if ($adversary === null)
+            return false;
+
+        // Location can still have a different single enemy. Require that sole
+        // enemy to be the adversary.
         $allCharacters = $theah->getCharactersAtLocation($adversary->Location);
         $enemyCharacters = array_filter($allCharacters, fn($c) => $c->ControllerId != $owner->ControllerId);
-        return count($enemyCharacters) == 1;
+        if (count($enemyCharacters) != 1)
+            return false;
+
+        $onlyEnemy = reset($enemyCharacters);
+        return $onlyEnemy->Id == $adversary->Id;
     }
 
     public function handleEvent(Event $event)
