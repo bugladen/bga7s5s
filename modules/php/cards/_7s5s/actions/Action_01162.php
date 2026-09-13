@@ -45,11 +45,19 @@ class Action_01162 extends RiskAction implements IAbilityThatTargetsCharacters
             $event->theah->queueEvent($transition);
         }
 
-        // Keep CHOSEN_TARGET in sync if a reaction redirects the target via EventCharacterTargeted
+        // WHY: Location pick must wait until EventCharacterTargeted survives. Unyielding
+        // Loyalty (and Maryam / Vittoria) set canceled=true and queue a reaction during
+        // this event. If 01162_2 is already in the queue, runEvents hits that transition
+        // first, the move is chosen, and the cancel never stops Come Hither. Decline
+        // re-queues this event (canceled=false); success drops it, so 01162_2 never fires.
         if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
         {
             $game = $event->theah->game;
             $game->globals->set(Game::CHOSEN_TARGET, $event->targetId);
+
+            $owner = $this->getOwningCard($event->theah);
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01162_2", $this->Id);
+            $event->theah->queueEvent($transition);
         }
     }
 
@@ -105,9 +113,6 @@ class Action_01162 extends RiskAction implements IAbilityThatTargetsCharacters
 
             $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
             $game->theah->queueEvent($targetedEvent);
-
-            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01162_2", $this->Id);
-            $game->theah->queueEvent($transition);
 
             $game->gamestate->nextState();
         }
