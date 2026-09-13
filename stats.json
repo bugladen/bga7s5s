@@ -51,6 +51,11 @@
       "id": 19,
       "name": "Total wounds received by characters",
       "type": "int"
+    },
+    "characters_sent_to_locker": {
+      "id": 20,
+      "name": "How many of the player's characters were sent to The Locker?",
+      "type": "int"
     }
   },
   "value_labels": {

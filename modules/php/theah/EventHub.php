@@ -2083,6 +2083,11 @@ trait EventHub
                         // WHY: moveCardInDeck — card is recreated below; Location set on the new instance.
                         $theah->game->moveCardInDeck($event->characterId, $locker);
 
+                        // WHY: Brutes go to discard, not locker — only count the locker path.
+                        if ($controllerId) {
+                            $theah->game->bga->playerStats->inc(Game::STAT_CHARACTERS_SENT_TO_LOCKER, 1, $controllerId);
+                        }
+
                         $theah->game->notify->all("characterDestroyed", clienttranslate('${target_inject_code} has been destroyed and sent to the locker due to: ${reason} '), [
                             'i18n' => ['reason'],
                             "playerId" => $event->playerId,
@@ -2113,6 +2118,12 @@ trait EventHub
                     $locker = $theah->game->getPlayerLockerName($event->playerId);
                     $theah->game->moveCard($event->cardId, $locker, 0, $card);
                     $card->IsUpdated = true;
+
+                    // WHY: Destroy path does not fire CardSentToLocker; this covers Spend-to-Locker
+                    // characters (e.g. Deal with the Devil dusk, Action_03067). Schemes/attachments skip.
+                    if ($card instanceof Character && $event->playerId) {
+                        $theah->game->bga->playerStats->inc(Game::STAT_CHARACTERS_SENT_TO_LOCKER, 1, $event->playerId);
+                    }
 
                     $theah->game->notify->all("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [
                         "playerId" => $event->playerId,

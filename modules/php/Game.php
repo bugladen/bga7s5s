@@ -63,6 +63,7 @@ class Game extends \Bga\GameFramework\Table
     final const STAT_CHARACTERS_DAY_4 = "characters_day_4";
     final const STAT_CHARACTERS_DAY_5 = "characters_day_5";
     final const STAT_WOUNDS_RECEIVED = "wounds_received"; // Total wounds applied to the player's characters
+    final const STAT_CHARACTERS_SENT_TO_LOCKER = "characters_sent_to_locker"; // Characters sent to The Locker
     // WHY: BGA stats are int/float/bool only. Leader names display via value_labels;
     // indices here must stay in lockstep with stats.json value_labels for id 12.
     final const LEADER_STAT_LABELS = [
@@ -569,6 +570,7 @@ class Game extends \Bga\GameFramework\Table
             Game::STAT_CHARACTERS_DAY_4,
             Game::STAT_CHARACTERS_DAY_5,
             Game::STAT_WOUNDS_RECEIVED,
+            Game::STAT_CHARACTERS_SENT_TO_LOCKER,
         ], 0);
 
         // Activate first player once everything has been initialized and ready.
