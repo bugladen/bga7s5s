@@ -449,6 +449,16 @@
                 }
             },
 
+            'highDramaPhase04039': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04032': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

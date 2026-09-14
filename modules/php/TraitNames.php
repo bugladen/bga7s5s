@@ -140,6 +140,7 @@ class TraitNames
             "Orphan",
             "Pact",
             "Penance",
+            "Performance",
             "Pet",
             "Pirate",
             "Pistol",

@@ -157,7 +157,9 @@ $characters = array_filter($characters, fn(Character $c) => $c->canChallenge() &
 
 Reference: `Action_03021` (Cornered). The same rule applies to any non-City Action whose text engages the performer as a cost — the engage-already-engaged predicate goes wherever you'd normally just check `canChallenge()`.
 
-**When to pay the engage cost:** if a later sub-state still needs the player to pick a target, queue `createCardEngagedEvent` on `EventActionTriggered` *before* the transition to the chooser (cost paid at announcement). Mirror `Action_03021`, `Action_03030`, `Action_03034`. Only defer engage into `actFromActionWithId` when the engage and the effect resolve in the same atomic confirm (e.g. `Action_02051` engage-performer + engarde-target together).
+**When to pay the engage cost:**
+- **Chooser follows, cost is irreversible before the pick:** queue `createCardEngagedEvent` on `EventActionTriggered` *before* the transition (cost paid at announcement). Mirror `Action_03021`, `Action_03030`, `Action_03034`.
+- **Engage + effect resolve in the same atomic confirm** (no irreversible cost before a later pick): defer engage into `actFromActionWithId` / `actFromActionWithIds` with the effect. Mirror `Action_02051` (engage-performer + engarde-target together) and Pattern A.12 / `Action_04039` (engage + lose-control + claim on location confirm). **WHY defer:** a zombie / abandoned chooser must not leave the performer engaged with no payoff.
 
 ### Pattern A.1 — City Action that moves a chosen character (enemy OR friendly)
 
@@ -406,6 +408,27 @@ For City Actions like **"City Action: Move your performer to an adjacent City lo
 **WHY not B.5:** B.5 is character Target + move performer to target's spot. A.11 is self-move with no Target wording.
 
 References: `_04030` / `Action_04030` / `State_highDramaPhase04030`, `_01059` (adjacent move baseline), `Action_02023` (inverse less-Renown on opposing move).
+
+### Pattern A.12 — Engage + lose control of a City location you control • Claim performer location
+
+For City Actions like **"City Action: Engage your performer and lose control of a City location • Claim your performer's location."** — see `_04039` (Rapsodia). Both engage and lose-control are **costs** before the bullet; the sole payoff is Claim.
+
+1. **`RiskCityAction`**, `RequiresPerformerSelected = true`. **No** Cesca interfaces — location chooser only (text never says Target). Same JS location-chooser trio as A.11 / `04030`.
+2. **Availability / performer filter:**
+   - Grey when `getLocationsPlayerCanLoseControl` is empty: `$location->Controller == $playerId` **and** `canLocationBecomeUncontrolledBy` over `getCityLocations()` (Indomitable Will / empty board).
+   - Performers: `! Engaged` (engage cost) **and** `canLocationBeClaimedBy($playerId, $performer->Location)` — sole payoff is Claim (same discipline as `Action_03053` / `Action_01103a`).
+3. **`EventActionTriggered`:** only `createTransitionEvent(..., "NNNNN")` → location GameState. **Do not** engage at announce.
+4. **`actFromActionWithIds` on confirm (atomic):** validate chosen location still in lose-control pool → `createCardEngagedEvent` on performer → `createLocationBecomesUncontrolledEvent($controllerId, $location)` (pass the **current controller** / acting player — mirror `Action_01112a` / `Action_04034`) → if `canLocationBeClaimedBy`, `createLocationClaimedEvent` on performer's location → `createActionResolvedEvent` → `nextState("locationChosen")`. Notify-and-skip when unclaim/claim becomes illegal at emit (same as other claim Actions).
+5. **Text says "a City location" not "another" / not "this location":** allow any controlled City location, including the performer's current location (re-claim after self-unclaim is legal but pointless). Do **not** auto-unclaim the performer's location without a chooser — that is `Action_01112a` ("Make Location Uncontrolled"), not this wording.
+6. Often composes with Pattern E.2 (Action-only performer-trait discount; `_04039` Zealot/Academic/Bard).
+
+**WHY not engage-at-announce (A.3 / Cornered):** the chooser is itself selecting *which cost location to pay*, not a post-cost target. Deferring engage until confirm keeps zombie turns from leaving the performer engaged with no lose/claim.
+
+**WHY not B.1 / A.11:** those choosers pick a **destination** (opponent-controlled adjacent / more-Renown adjacent). A.12's chooser picks a **controlled location to unclaim** — filter is claim-control ownership of the *cost* location, not destination content/Renown.
+
+**WHY not B.7:** B.7 is opponent may-engage-or-you-claim with no self-unclaim cost and no engage-performer cost.
+
+References: `_04039` / `Action_04039` / `State_highDramaPhase04039`; unclaim emit `Action_01112a` / `Action_04034` / `Action_04cd04`; claim availability `Action_03053` / `Action_01103a`; location JS trio `04030`.
 
 ### Common precondition predicates
 

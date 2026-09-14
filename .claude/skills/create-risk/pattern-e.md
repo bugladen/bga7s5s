@@ -69,7 +69,7 @@ public function getActionFromHandDiscount(Theah $theah, ?Character $performer, C
 }
 ```
 
-**Performer-trait variant** (Seek Each Devil `_04018`: **"While your performer is an Academic or Hunter, this card has -1 cost"**):
+**Performer-trait variant** (Seek Each Devil `_04018`: **"While your performer is an Academic or Hunter, this card has -1 cost"**; also Rapsodia `_04039`: **"While your performer is a Zealot, Academic, or Bard, this card has -1 cost"**):
 
 ```php
 if ($action->Id == $this->Id)
@@ -78,6 +78,7 @@ if ($action->Id == $this->Id)
     {
         return $discount;
     }
+
     if ($performer->hasTrait("Academic") || $performer->hasTrait("Hunter"))
     {
         $discount += 1;
@@ -90,7 +91,9 @@ if ($action->Id == $this->Id)
 }
 ```
 
-**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), `_03071` (Leverage), and `_04018` (Seek Each Devil) all print a general "-1 cost if …" clause with **only** an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability.
+Null-check `$performer` before `hasTrait`. Gate `$action->Id == $this->Id`. Multi-trait OR lists are common (`Academic or Hunter`, `Zealot, Academic, or Bard`, `Merchant or Scoundrel` on E.2.1). Same hook — do not invent a Maneuver when none is printed.
+
+**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), `_03071` (Leverage), `_04018` (Seek Each Devil), and `_04039` (Rapsodia) all print a general "-1 cost if …" clause with **only** an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability.
 
 **When the Risk also prints a real Maneuver** and the card-level "-1 cost while your performer is …" clause should apply at combat-card pay too, see Pattern E.2.1 — do not leave combat-card at full WealthCost if the user/rules expect parity across both pay paths.
 
@@ -101,7 +104,7 @@ if ($action->Id == $this->Id)
 
 **Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, wounds comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader- / performer-trait discounts on Action-only cards belong on the Action.
 
-References: `Action_03071`, `Action_01160`, `Action_01159`, `Action_04018` (performer Academic/Hunter).
+References: `Action_03071`, `Action_01160`, `Action_01159`, `Action_04018` (performer Academic/Hunter), `Action_04039` (performer Zealot/Academic/Bard).
 
 ### Pattern E.2.1 — Card-level performer-trait "-1 cost" with **both** City Action and Maneuver
 
