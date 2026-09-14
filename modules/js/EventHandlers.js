@@ -1065,8 +1065,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         var items = this.factionHand.getSelection();
         let wealth = 0;
         items.forEach((item) => {
-            // With bga-cards, getSelection() returns card objects directly
-            wealth += item.traits.includes('Wealth') ? 2 : 1;
+            // WHY cardProperties first: notif_traitAdded updates cardProperties[id].traits.
+            // HandStock getSelection() can be a different object than that cache (cloned
+            // on addCard), so item.traits would still miss a just-granted Wealth
+            // (Panacea _04038, Anghos Reaction_02021).
+            const props = this.cardProperties[item.id];
+            const traits = (props && props.traits) ? props.traits : (item.traits || []);
+            wealth += traits.includes('Wealth') ? 2 : 1;
         });
         var translated = dojo.string.substitute(
             _("(${wealth} Wealth worth of cards selected)"),

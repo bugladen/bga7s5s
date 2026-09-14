@@ -217,3 +217,29 @@ When an equipped RiskAttachment blanks the host character's text box, stamp a **
 
 Reference: `_04008_Silence`, `Character::abilitiesAreBlanked` / `handleCoreCharacterEvent` / `eventCheckCore`, `Theah` blanked branches, `CardAction` / `Maneuver` / `Technique` availability gates.
 
+### Pattern E.4 — "When paying for this card, [Trait] cards gain Wealth"
+
+Automatic (not a Reaction). When the player pays **this Risk's** wealth cost (City Action from hand **or** combat-card maneuver), other cards in hand with the printed traits temporarily have Wealth (count as two; locker after paying). Italic reminder is the standard Wealth reminder (`_01170` / `Reaction_02021`) — it describes the granted trait, not Panacea itself.
+
+**Grant** on `EventEnteringPayState` when `$event->cardId == $this->Id` and pay type is `PAY_STATE_IN_HAND_ACTION` or `PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD`. Scan the paying player's hand:
+
+- Exclude the card being paid for (cannot discard itself as payment).
+- Skip cards that already `hasTrait("Wealth")` — Opulence lockers itself; double-grant would double-locker.
+- `addTrait($game, 'Wealth')` **not quietly** — JS pay UI uses `item.traits.includes('Wealth')` and only updates via `notif_traitAdded`.
+- **Mutate the cached card** (`$theah->getCardById($id)`), not the object from `getCardObjectsAtLocation`. That helper unserializes a fresh DB copy; `runEvents` only persists `$theah->cards`, so a grant on the copy notifies then evaporates and pay validation (`getCardObjectFromDb`) still sees no Wealth. Anghos uses `getAttachmentById` for the same reason. JS `payForCard` should read `cardProperties[id].traits` (what `notif_traitAdded` updates), not HandStock `item.traits` (may be a clone).
+
+Sticky `$GrantedWealthCardIds` on the **Risk** (not the Action) so locker/revoke still work after the Risk leaves hand (purgatory / discard / dueling line). `buildCity` loads those locations.
+
+**Locker** on `EventCardDiscardedFromHand` + `AsPayment` for granted ids — same event as `_01170`. `runEventHubAfterCards = true` so the card is still in hand when cards handle, then EventHub moves it to discard, then the queued locker event fires.
+
+**Revoke leftover Wealth** (cards granted but not discarded as payment):
+
+- `EventActionTriggered` `sourceId == this` (after City Action pay)
+- `EventManeuverActivated` `ownerId == this` (after combat-card pay — `ownerId` is the combat card id)
+- `EventPlayerTurnEnd` / `EventDuelEnd` (Back from pay with no follow-up payment)
+- A later `EventEnteringPayState` that is **not** `PAY_STATE_IN_HAND_REACTION` — Back then pay for something else. **Do not** revoke on nested reaction pay (Anghos `Reaction_02021` fires during Panacea's own pre-pay events).
+
+**WHY not a Reaction:** printed text is automatic "when paying", not "you may". **WHY not FrameworkActionsTrait special-case** (Bravos Thugs): JS would still count those cards as 1 unless traits update. **WHY OR not AND** on "Alquimia and Discovery cards": cards of those types, not cards that have both traits.
+
+Reference: `_04038`, `_01170` locker, `Reaction_02021` addTrait/locker/turn-end cleanup (optional chooser; Panacea is automatic + all matching cards).
+

@@ -181,6 +181,7 @@ class TraitNames
             "Sorcerer",
             "Sorcery",
             "Sorte",
+            "Spagyrics",
             "Spy",
             "Squabble",
             "Squire",
