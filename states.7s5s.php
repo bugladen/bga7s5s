@@ -688,7 +688,8 @@ $machinestates += [
         ],
         "transitions" => [
             "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-            "recruit" => States::HIGH_DRAMA_PLAYER_TURN_01035_4
+            "recruit" => States::HIGH_DRAMA_PLAYER_TURN_01035_4,
+            "recruitNoParley" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
         ]
     ],
     States::HIGH_DRAMA_PLAYER_TURN_01035_4 => [

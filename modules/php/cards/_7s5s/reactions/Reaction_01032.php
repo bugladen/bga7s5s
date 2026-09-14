@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
@@ -28,6 +29,8 @@ class Reaction_01032 extends RiskReaction
     private ?EventChallengeIssued $challengeIssuedEvent = null;
     private ?EventCharacterTargeted $characterTargetedEvent = null;
 
+    // '' = offer Play/Pass (before wealth). 'cost' = destroy Red Hand / discard Thug (after pay).
+    private string $stage = '';
     private bool $inPlayRedHand = false;
     private bool $inHandThug = false;
     private bool $skipNextEvent = false;
@@ -41,45 +44,60 @@ class Reaction_01032 extends RiskReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        $message = '';
-        if ($this->inHandThug)
+        if ($this->stage === 'cost')
         {
-            $message = $theah->game->translate('${you} may choose a Thug in your Hand to discard: ');
-        }
-        if ($this->inPlayRedHand)
-        {
-            $message = $theah->game->translate('${you} may choose an In-Play Red Hand to destroy: ');
+            $message = '';
+            if ($this->inPlayRedHand && $this->inHandThug)
+            {
+                $message = $theah->game->translate('${you} must destroy an In-Play Red Hand or discard a Thug from your Hand: ');
+            }
+            else if ($this->inHandThug)
+            {
+                $message = $theah->game->translate('${you} must choose a Thug in your Hand to discard: ');
+            }
+            else if ($this->inPlayRedHand)
+            {
+                $message = $theah->game->translate('${you} must choose an In-Play Red Hand to destroy: ');
+            }
+
+            return parent::getReactionDescription($theah) . $message;
         }
 
-        return parent::getReactionDescription($theah) . $message;
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may play this Risk to cancel the targeted ability: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        $owner = $this->getOwningCard($theah);
-
-        if ($this->inPlayRedHand)
+        if ($this->stage === 'cost')
         {
-            $cards = $theah->getCharactersInPlayByPlayerId($owner->ControllerId);
-            $cards = array_filter($cards, fn($card) => $card->hasTrait("Red Hand"));
-            foreach ($cards as $card)
+            $owner = $this->getOwningCard($theah);
+
+            if ($this->inPlayRedHand)
             {
-                $array[] = $this->createButtonProperty($theah->game, $card->Name, "destroy-$card->Id");
+                $cards = $theah->getCharactersInPlayByPlayerId($owner->ControllerId);
+                $cards = array_filter($cards, fn($card) => $card->hasTrait("Red Hand"));
+                foreach ($cards as $card)
+                {
+                    $array[] = $this->createButtonProperty($theah->game, $card->Name, "destroy-$card->Id");
+                }
             }
+
+            if ($this->inHandThug)
+            {
+                $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
+                $cards = array_filter($cards, fn($card) => $card->hasTrait("Thug"));
+                foreach ($cards as $card)
+                {
+                    $array[] = $this->createButtonProperty($theah->game, $card->Name, "discard-$card->Id");
+                }
+            }
+
+            return $array;
         }
 
-        if ($this->inHandThug)
-        {
-            $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-            $cards = array_filter($cards, fn($card) => $card->hasTrait("Thug"));
-            foreach ($cards as $card)
-            {
-                $array[] = $this->createButtonProperty($theah->game, $card->Name, "discard-$card->Id");
-            }
-        }
-
+        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Play Unyielding Loyalty'), 'use');
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
 
         return $array;
@@ -119,7 +137,48 @@ class Reaction_01032 extends RiskReaction
         $characters = $theah->getCharactersInPlayByPlayerId($owner->ControllerId);
         $characters = array_filter($characters, fn($character) => $character->hasTrait("Red Hand"));
         return count($characters) > 0;
-    }    
+    }
+
+    // WHY: Wealth is paid first (Play → pay state). Additional cost (Red Hand / Thug)
+    // is a second playerReaction after EventRiskReactionTriggered. Do not setUsed
+    // before that second transition — Theah skips reaction transitions when
+    // ! isAvailable().
+    private function interceptEvent(Event $event, string $property): void
+    {
+        $owner = $this->getOwningCard($event->theah);
+
+        if ($this->skipNextEvent)
+        {
+            $this->skipNextEvent = false;
+            $owner->IsUpdated = true;
+            return;
+        }
+
+        $hasRedHand = $this->redHandsInPlay($event->theah);
+        $hasThug = $this->thugsInHand($event->theah);
+        if (! $hasRedHand && ! $hasThug)
+        {
+            return;
+        }
+
+        $clone = clone $event;
+        unset($clone->theah);
+        $this->$property = $clone;
+        $this->inPlayRedHand = $hasRedHand;
+        $this->inHandThug = $hasThug;
+        $this->stage = '';
+        $owner->IsUpdated = true;
+
+        $event->canceled = true;
+
+        if ($event->batchId)
+        {
+            $event->theah->deleteEventBatch($event->batchId);
+        }
+
+        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+        $event->theah->queueEvent($reactionTransitionEvent);
+    }
 
     public function handleEvent(Event $event)
     {
@@ -134,47 +193,7 @@ class Reaction_01032 extends RiskReaction
                 if ($owner->ControllerId == $card->ControllerId && 
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
-                    if ($this->skipNextEvent)
-                    {
-                        $this->skipNextEvent = false;
-                        $owner->IsUpdated = true;
-                        return;
-                    }
-
-                    if ($this->redHandsInPlay($event->theah))
-                    {
-                        $this->engagedEvent = clone $event;
-                        unset($this->engagedEvent->theah);
-                        $this->inPlayRedHand = true;                    
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
-                    else if ($this->thugsInHand($event->theah))
-                    {
-                        $this->engagedEvent = clone $event;
-                        unset($this->engagedEvent->theah);
-                        $this->inHandThug = true;
-                        $owner->IsUpdated = true;                        
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
+                    $this->interceptEvent($event, 'engagedEvent');
                 }
             }
         }
@@ -188,47 +207,7 @@ class Reaction_01032 extends RiskReaction
                 if ($owner->ControllerId == $character->ControllerId && 
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
-                    if ($this->skipNextEvent)
-                    {
-                        $this->skipNextEvent = false;
-                        $owner->IsUpdated = true;
-                        return;
-                    }
-
-                    if ($this->redHandsInPlay($event->theah))
-                    {
-                        $this->engardedEvent = clone $event;
-                        unset($this->engardedEvent->theah);
-                        $this->inPlayRedHand = true;                    
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
-                    else if ($this->thugsInHand($event->theah))
-                    {
-                        $this->engardedEvent = clone $event;
-                        unset($this->engardedEvent->theah);
-                        $this->inHandThug = true;
-                        $owner->IsUpdated = true;                        
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
+                    $this->interceptEvent($event, 'engardedEvent');
                 }
             }
         }
@@ -242,47 +221,7 @@ class Reaction_01032 extends RiskReaction
                 if ($owner->ControllerId == $card->ControllerId && 
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
-                    if ($this->skipNextEvent)
-                    {
-                        $this->skipNextEvent = false;
-                        $owner->IsUpdated = true;
-                        return;
-                    }
-
-                    if ($this->redHandsInPlay($event->theah))
-                    {
-                        $this->cardMovingEvent = clone $event;
-                        unset($this->cardMovingEvent->theah);
-                        $this->inPlayRedHand = true;                    
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
-                    else if ($this->thugsInHand($event->theah))
-                    {
-                        $this->cardMovingEvent = clone $event;
-                        unset($this->cardMovingEvent->theah);
-                        $this->inHandThug = true;
-                        $owner->IsUpdated = true;                        
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
+                    $this->interceptEvent($event, 'cardMovingEvent');
                 }
             }
         }
@@ -296,47 +235,7 @@ class Reaction_01032 extends RiskReaction
                 if ($owner->ControllerId == $character->ControllerId && 
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
-                    if ($this->skipNextEvent)
-                    {
-                        $this->skipNextEvent = false;
-                        $owner->IsUpdated = true;
-                        return;
-                    }
-
-                    if ($this->redHandsInPlay($event->theah))
-                    {
-                        $this->characterWoundedEvent = clone $event;
-                        unset($this->characterWoundedEvent->theah);
-                        $this->inPlayRedHand = true;                    
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
-                    else if ($this->thugsInHand($event->theah))
-                    {
-                        $this->characterWoundedEvent = clone $event;
-                        unset($this->characterWoundedEvent->theah);
-                        $this->inHandThug = true;
-                        $owner->IsUpdated = true;                        
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
+                    $this->interceptEvent($event, 'characterWoundedEvent');
                 }
             }
         }
@@ -350,47 +249,7 @@ class Reaction_01032 extends RiskReaction
                 if ($owner->ControllerId == $character->ControllerId && 
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
-                    if ($this->skipNextEvent)
-                    {
-                        $this->skipNextEvent = false;
-                        $owner->IsUpdated = true;
-                        return;
-                    }
-
-                    if ($this->redHandsInPlay($event->theah))
-                    {
-                        $this->characterHealedEvent = clone $event;
-                        unset($this->characterHealedEvent->theah);
-                        $this->inPlayRedHand = true;                    
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
-                    else if ($this->thugsInHand($event->theah))
-                    {
-                        $this->characterHealedEvent = clone $event;
-                        unset($this->characterHealedEvent->theah);
-                        $this->inHandThug = true;
-                        $owner->IsUpdated = true;                        
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
+                    $this->interceptEvent($event, 'characterHealedEvent');
                 }
             }
         }
@@ -404,47 +263,7 @@ class Reaction_01032 extends RiskReaction
                 if ($owner->ControllerId == $character->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
-                    if ($this->skipNextEvent)
-                    {
-                        $this->skipNextEvent = false;
-                        $owner->IsUpdated = true;
-                        return;
-                    }
-
-                    if ($this->redHandsInPlay($event->theah))
-                    {
-                        $this->characterTargetedEvent = clone $event;
-                        unset($this->characterTargetedEvent->theah);
-                        $this->inPlayRedHand = true;
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
-                    else if ($this->thugsInHand($event->theah))
-                    {
-                        $this->characterTargetedEvent = clone $event;
-                        unset($this->characterTargetedEvent->theah);
-                        $this->inHandThug = true;
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
+                    $this->interceptEvent($event, 'characterTargetedEvent');
                 }
             }
         }
@@ -459,72 +278,61 @@ class Reaction_01032 extends RiskReaction
                 if (($owner->ControllerId == $defender->ControllerId || $owner->ControllerId == $challenger->ControllerId) && 
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
-                    if ($this->skipNextEvent)
-                    {
-                        $this->skipNextEvent = false;
-                        $owner->IsUpdated = true;
-                        return;
-                    }
-
-                    if ($this->redHandsInPlay($event->theah))
-                    {
-                        $this->challengeIssuedEvent = clone $event;
-                        unset($this->challengeIssuedEvent->theah);
-                        $this->inPlayRedHand = true;                    
-                        $owner->IsUpdated = true;
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
-                    else if ($this->thugsInHand($event->theah))
-                    {
-                        $this->challengeIssuedEvent = clone $event;
-                        unset($this->challengeIssuedEvent->theah);
-                        $this->inHandThug = true;
-                        $owner->IsUpdated = true;                        
-
-                        $event->canceled = true;
-
-                        if ($event->batchId)
-                        {
-                            $event->theah->deleteEventBatch($event->batchId);
-                        }
-
-                        $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                        $event->theah->queueEvent($reactionTransitionEvent);
-                    }
+                    $this->interceptEvent($event, 'challengeIssuedEvent');
                 }
             }
         }
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
-            if ($event->reactionId != 'pass')
-            {
-                $owner = $this->getOwningCard($event->theah);
-                $this->clearEvents($event->theah->game);
-                $this->inHandThug = false;
-                $this->inPlayRedHand = false;
-                $owner->IsUpdated = true;
-            }
+            $this->beginCostChoice($event->theah);
         }
+    }
+
+    // After wealth is paid (or Night of Drinking cancelled the Risk), collect the
+    // additional cost. Recompute live — a Thug may have been discarded as payment.
+    private function beginCostChoice(Theah $theah): void
+    {
+        $owner = $this->getOwningCard($theah);
+        if ($owner === null)
+        {
+            return;
+        }
+
+        $this->inPlayRedHand = $this->redHandsInPlay($theah);
+        $this->inHandThug = $this->thugsInHand($theah);
+
+        if (! $this->inPlayRedHand && ! $this->inHandThug)
+        {
+            $theah->game->notify->all('message', clienttranslate('${reaction_inject_code}: ${player_name} has no Red Hand in play or Thug in hand left to pay the additional cost. The cancel does not resolve.'), [
+                'reaction_inject_code' => $owner->getInjectCode(),
+                'player_name' => $theah->game->getPlayerNameById($owner->ControllerId),
+            ]);
+            $this->releaseEvent($theah->game);
+            $this->finalize($theah);
+            return;
+        }
+
+        $this->stage = 'cost';
+        $owner->IsUpdated = true;
+
+        $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+        $theah->queueEvent($transition);
     }
 
     private function payCost(Game $game, string $reactionId): void
     {
         $owner = $this->getOwningCard($game->theah);
 
-        if ($this->inHandThug)
+        if (str_starts_with($reactionId, 'discard-'))
         {
-            $characterId = str_replace("discard-", "", $reactionId);
+            $characterId = (int) str_replace('discard-', '', $reactionId);
             $character = $game->theah->getCardById($characterId);
+            if ($character === null || $character->Location != Game::LOCATION_HAND || $character->ControllerId != $owner->ControllerId || ! $character->hasTrait('Thug'))
+            {
+                throw new UserException($game->translate('Invalid Thug selection.'));
+            }
+
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($owner->ControllerId, $characterId, $owner->Id);
             $game->theah->queueEvent($discardEvent);
 
@@ -533,15 +341,18 @@ class Reaction_01032 extends RiskReaction
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "character_inject_code" => $character->getInjectCode(),
             ]);
-
-            $this->inHandThug = false;
-            $owner->IsUpdated = true;
+            return;
         }
 
-        if ($this->inPlayRedHand)
+        if (str_starts_with($reactionId, 'destroy-'))
         {
-            $characterId = str_replace("destroy-", "", $reactionId);
+            $characterId = (int) str_replace('destroy-', '', $reactionId);
             $character = $game->theah->getCardById($characterId);
+            if ($character === null || $character->ControllerId != $owner->ControllerId || ! $character->hasTrait('Red Hand'))
+            {
+                throw new UserException($game->translate('Invalid Red Hand selection.'));
+            }
+
             $destroyEvent = EventFactory::createCharacterDestroyedEvent($character->ControllerId, $characterId, $character->Location);
             $game->theah->queueEvent($destroyEvent);
 
@@ -550,10 +361,10 @@ class Reaction_01032 extends RiskReaction
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "character_inject_code" => $character->getInjectCode(),
             ]);
-
-            $this->inPlayRedHand = false;
-            $owner->IsUpdated = true;
+            return;
         }
+
+        throw new UserException($game->translate('Invalid choice.'));
     }
 
     private function clearEvents(Game $game)
@@ -572,10 +383,10 @@ class Reaction_01032 extends RiskReaction
         $this->challengeIssuedEvent = null;
     }
 
-    public function revertCancellation(Theah $theah): void
+    private function finalize(Theah $theah): void
     {
-        $game = $theah->game;
-        $this->releaseEvent($game);
+        $this->setUsed($theah, true);
+        $this->stage = '';
         $this->inHandThug = false;
         $this->inPlayRedHand = false;
 
@@ -584,6 +395,17 @@ class Reaction_01032 extends RiskReaction
         {
             $owner->IsUpdated = true;
         }
+    }
+
+    public function revertCancellation(Theah $theah): void
+    {
+        $game = $theah->game;
+        $this->releaseEvent($game);
+
+        // WHY: Night of Drinking (01109) deletes EventRiskReactionTriggered, so the
+        // normal post-pay cost choice never starts. 01109 says all costs are still
+        // paid — queue the Red Hand / Thug choice here after restoring the effect.
+        $this->beginCostChoice($theah);
     }
 
     private function releaseEvent(Game $game)
@@ -635,14 +457,24 @@ class Reaction_01032 extends RiskReaction
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
 
-        if ($reactionId != 'pass')
+        $owner = $this->getOwningCard($game->theah);
+        if ($owner === null)
         {
-            // WHY: Thug discard / Red Hand destroy must resolve before pay state
-            // queues EventRiskPlayed — otherwise Night of Drinking (01109) can
-            // cancel Unyielding Loyalty without the additional cost being paid.
-            $this->payCost($game, $reactionId);
+            $game->gamestate->nextState('done');
+            return;
+        }
 
-            $owner = $this->getOwningCard($game->theah);
+        if ($this->stage === 'cost')
+        {
+            $this->payCost($game, $reactionId);
+            $this->clearEvents($game);
+            $this->finalize($game->theah);
+            $game->gamestate->nextState('done');
+            return;
+        }
+
+        if ($reactionId == 'use')
+        {
             $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
             $game->theah->queueEvent($event);
 
@@ -652,33 +484,12 @@ class Reaction_01032 extends RiskReaction
 
         if ($reactionId == 'pass')
         {
-            $owner = $this->getOwningCard($game->theah);
-
-            if ($this->inHandThug)
-            {
-                $this->releaseEvent($game);                    
-                $this->inHandThug = false;
-                $this->skipNextEvent = true;
-                $owner->IsUpdated = true;
-            }
-
-            if ($this->inPlayRedHand)
-            {
-                $this->inPlayRedHand = false;
-                $owner->IsUpdated = true;
-
-                if ($this->thugsInHand($game->theah))
-                {
-                    $this->inHandThug = true;
-                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $game->theah->queueEvent($transitionEvent);
-                }
-                else
-                {
-                    $this->releaseEvent($game);
-                    $this->skipNextEvent = true;
-                }
-            }    
+            $this->releaseEvent($game);
+            $this->skipNextEvent = true;
+            $this->stage = '';
+            $this->inHandThug = false;
+            $this->inPlayRedHand = false;
+            $owner->IsUpdated = true;
         }
 
         $game->gamestate->nextState('done');

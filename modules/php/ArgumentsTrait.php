@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
 trait ArgumentsTrait
@@ -194,6 +195,16 @@ trait ArgumentsTrait
 
         $characters = $this->theah->getCharactersAtLocation($performer->Location, $includeUncontrolled = true);
         $characters = array_values(array_filter($characters, fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary")));
+
+        $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
+        if ($performerParleyed && $args["recruitType"] == Game::NORMAL_RECRUIT_TYPE)
+        {
+            $characters = array_values(array_filter(
+                $characters,
+                fn($character) => $character instanceof CityCharacter && $character->Negotiable
+            ));
+        }
+
         $args["characterIds"] = array_map(fn($character) => $character->Id, $characters);
 
         return $args;
@@ -218,7 +229,8 @@ trait ArgumentsTrait
             "recruitId" => $recruitId,
             "discount" => $discount,
             "recruitType" => $recruitType,
-            "cost" => $cost
+            "cost" => $cost,
+            "negotiable" => $recruit instanceof CityCharacter && $recruit->Negotiable,
         ];
     }
 
