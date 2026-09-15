@@ -503,7 +503,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const attachment = args.attachment;
         const performer = this.cardProperties[args.performerId];
 
-        const fromHand = this.factionHand.getCards().some(c => c.id === attachment.id);
+        // WHY getCardElement (not getCards() ===): HandStock may store id as string while
+        // the notif attachment.id is a number — same pitfall as notif_updateRoundWithCombatStats.
+        // WHY args.fromHand: server saw LOCATION_HAND before moveCard; survives optimistic
+        // client removes and opponent views (no hand cards).
+        const handAttachmentElement = this.factionHand.getCardElement(attachment);
+        const fromHand = !!args.fromHand || !!handAttachmentElement;
         const oldCard = this.cardProperties[attachment.id];
         // WHY: deckOrigin === 'City' and no from_character_code — fresh equip from the
         // city row (or deck), not a character-to-character move.
@@ -513,12 +518,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         let cityAttachmentElement = null;
 
-        if (fromHand)
-        {
-            const card = this.cardProperties[attachment.id];
-            this.factionHand.removeCard(card);
-        }
-        else if (oldCard != undefined)
+        if (!fromHand && oldCard != undefined)
         {
             if (isCityAttachmentEquip && oldCard.divId && this.isCardInCity(attachment.id))
             {
@@ -543,10 +543,45 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const performerElement = $(performer.divId);
         const animationsActive = performerElement && this.animationManager && this.animationManager.animationsActive();
 
-        // WHY: Fly the city attachment into the character BEFORE attachCard +
-        // createCard — otherwise the equipped art appears instantly and the fly
-        // reads as a duplicate trailing behind.
-        if (isCityAttachmentEquip && animationsActive)
+        // WHY: Fly into the character BEFORE attachCard + createCard — otherwise the
+        // equipped art appears instantly and the fly reads as a duplicate trailing behind.
+        if (fromHand)
+        {
+            if (animationsActive)
+            {
+                // Prefer the live hand node; if already gone (optimistic remove / other
+                // player), FLIP from the equipping player's seal.
+                const fromElement = handAttachmentElement
+                    || $(`${args.player_id}-score-seal`);
+                if (fromElement)
+                {
+                    // WHY FLIP via temp at the character (not animateCardToElement on the
+                    // hand node): HandStock fan CSS transforms fight WAAPI on the real
+                    // hand element. Hide the hand copy so only the flying temp is visible.
+                    const tempDivId = `temp-equip-${attachment.id}`;
+                    const savedAttachedToId = attachment.attachedToId;
+                    attachment.attachedToId = 0;
+                    attachment.attachmentIndex = null;
+                    this.createCard(tempDivId, attachment, performer.divId);
+                    if (handAttachmentElement)
+                    {
+                        handAttachmentElement.style.opacity = '0';
+                    }
+                    await this.animateCardFromElement($(tempDivId), fromElement, {
+                        duration: 400,
+                        preserveScale: true,
+                    });
+                    dojo.destroy(tempDivId);
+                    attachment.attachedToId = savedAttachedToId;
+                    attachment.divId = null;
+                }
+            }
+            if (handAttachmentElement)
+            {
+                this.factionHand.removeCard(attachment);
+            }
+        }
+        else if (isCityAttachmentEquip && animationsActive)
         {
             if (cityAttachmentElement)
             {
@@ -606,7 +641,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.createCard(performer.divId, performer, placeholderId);
 
         const newElement = $(performer.divId);
-        if (!isCityAttachmentEquip && newElement && this.animationManager && this.animationManager.animationsActive())
+        // WHY: Skip the pop-scale when we already flew the card in (hand or city).
+        if (!isCityAttachmentEquip && !fromHand && newElement && this.animationManager && this.animationManager.animationsActive())
         {
             await newElement.animate([
                 { transform: 'scale(0.8)' },

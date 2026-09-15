@@ -175,6 +175,10 @@ trait EventHub
                     //Attachments might not be in the world (came from the City Deck, or created by an action), add it to the world
                     $theah->addCardToWorld($attachment);
 
+                    // WHY before moveCard: client fly needs a reliable fromHand flag;
+                    // Location is overwritten below and hand UI may already be empty.
+                    $fromHand = $attachment->Location == Game::LOCATION_HAND;
+
                     $performer->addAttachment($theah, $attachment);
                     $modifiedResolve = $performer->ModifiedResolve;
                     $modifiedCombat = $performer->ModifiedCombat;
@@ -223,7 +227,8 @@ trait EventHub
                         "modifiedFinesse" => $modifiedFinesse,
                         "modifiedInfluence" => $modifiedInfluence,
                         "explanations" => $event->explanations,
-                        'handCount' => count($deck->getPlayerHand($event->playerId))
+                        'handCount' => count($deck->getPlayerHand($event->playerId)),
+                        'fromHand' => $fromHand,
                     ]);
                 };
                 $handler($this, $event);

@@ -352,7 +352,10 @@ return declare('seventhseacityoffivesails.actions', null, {
         }).then(() =>  {
             if (!errors) 
             {
-                if (this.clientStateArgs.chosenCardId) {
+                // WHY not remove chosenCardId here for hand equip: notif_attachmentEquipped
+                // flies it from the hand node. Optimistic remove left fromHand empty and
+                // the equip popped with no fly. Payment cards still leave here / via discard notif.
+                if (action !== 'actHighDramaEquipAttachment' && this.clientStateArgs.chosenCardId) {
                     const chosenCard = this.cardProperties[this.clientStateArgs.chosenCardId];
                     if (chosenCard) this.factionHand.removeCard(chosenCard);
                 }
