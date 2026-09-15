@@ -430,6 +430,22 @@ For City Actions like **"City Action: Engage your performer and lose control of 
 
 References: `_04039` / `Action_04039` / `State_highDramaPhase04039`; unclaim emit `Action_01112a` / `Action_04034` / `Action_04cd04`; claim availability `Action_03053` / `Action_01103a`; location JS trio `04030`.
 
+### Pattern A.13 — Target opposing equipped • send one attachment to The Locker • wound
+
+For City Actions like **"Academic City Action: Target an opposing equipped character • Send an attachment equipped to them to The Locker. Wound that character."** — see `_04040` (Solvente Universal). Contrast A.10 (destroy **all engaged**, then engage remaining — no locker, no wound, no choose-one) and B.9 (steal equipped attachment to your character).
+
+1. **`RiskCityAction`**, Academic (or other heading-trait) performer gate, `RequiresPerformerSelected = true`, **`IAbilityThatTargetsCharacters`** + Risk **`IRiskThatTargetsCharacters`** — printed **"Target"**.
+2. **Target filter:** opposing at performer location with ≥1 non-`FakeAttachment` attachment ("equipped character").
+3. **Two GameStates (B.8 wiring):** step 1 character chooser → `characterChosen` **directly** to `_2` (only `"NNNNN"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`). Step 2: attachment **name buttons** from `args.attachments[]` (`04019` / `01197_2` shape) + Back. **Do not** put `IAbilityThatTargetsCards` on the same Action — pre-commit forbids mixing with Characters; button chooser is enough.
+4. **On attachment confirm:** `createAttachmentUnequippedEvent` (`eventCheck`) → `createCardSentToLockerEvent` → `createCharacterBeingWoundedEvent` on the target (`eventCheck`) → `createActionResolvedEvent`. WHY unequip first: `EventCardSentToLocker` only moves the card — it does not detach (mirror `_01154_RiskClone` / A.10 destroy). Skip FakeAttachment always.
+5. Often pairs with an Academic pure-resolve Maneuver ("Wound the adversary") — `Maneuver_03033` resolve + Academic `isAvailable` gate; hide when adversary in discard/locker; `EventManeuverCanceled handler not needed`.
+
+**WHY not A.10:** A.10 is destroy-all-engaged + engage remaining (discard-from-play), not choose-one locker + wound.
+
+**WHY not B.9:** B.9 steals to your character and pays equip costs; no Target character Cesca path on the Action.
+
+References: `_04040` / `Action_04040` / `Maneuver_04040` / `State_highDramaPhase04040` + `_2`; unequip+locker `_01154_RiskClone`; attachment buttons `Action_04019` / `Action_01197`; Cesca Target `Action_03072` / `Action_04038`.
+
 ### Common precondition predicates
 
 A few wordings recur often:

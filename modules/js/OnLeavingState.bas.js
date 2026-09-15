@@ -284,6 +284,27 @@
                 }
             },
 
+            'highDramaPhase04040': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04040_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.characterId];
+                    image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04037_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     if (this.clientStateArgs.performerId) {

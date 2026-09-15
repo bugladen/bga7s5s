@@ -8,6 +8,7 @@ class TraitNames
     {
         "traits": [
             "Academic",
+            "Acid",
             "Ad Hoc",
             "Aldana",
             "Alquimia",
@@ -46,6 +47,7 @@ class TraitNames
             "Chains",
             "Challenge",
             "Cheating",
+            "Chymystry",
             "Cloak",
             "Coat",
             "Codex",

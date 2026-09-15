@@ -169,6 +169,18 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase04040': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase04040_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
             'highDramaPhase04037_2': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Add to Location'), () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
