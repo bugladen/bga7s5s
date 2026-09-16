@@ -15,6 +15,7 @@
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04003a;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04043;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -1740,6 +1741,11 @@ trait StatesTrait
         // her reaction instance was reinstantiated and EventDuelEnd may miss her —
         // flush any leftover per-player globals here.
         Reaction_04003a::flushPendingRecovers($this);
+
+        // WHY: Tomoe Sango _04043 — primary clear is immediate on Destroy/Locker. This is a
+        // safety-net flush if that path missed after destroy recreate (AffectedCharacterId
+        // wiped; locker cards not in buildCity so EventDuelEnd never hits her).
+        _04043::clearPendingDebuff($this);
 
         $this->globals->delete(Game::CHALLENGE_CANCELLED);
         $this->globals->delete(Game::DUEL_CURRENT_PLAYER);

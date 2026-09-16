@@ -132,6 +132,11 @@ class Game extends \Bga\GameFramework\Table
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
     final const GIACINTO_INFLUENCE_REDUCTION_CONDITION = "Influence Reduced by Giacinto";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
+    // WHY: Tomoe Sango (_04043) -1 Finesse on her duel adversary. Tooltip source like Soline.
+    final const TOMOE_SANGO_CONDITION = "Finesse Modified by Tomoe Sango";
+    // WHY: Destroy recreates Sango (wipes AffectedCharacterId). Primary clear is immediate
+    // on Destroy/Locker; this global + stDuelEnd clearPendingDebuff is a safety-net flush.
+    final const TOMOE_SANGO_PENDING_DEBUFF_CHARACTER_ID = "tomoeSangoPendingDebuffCharacterId";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
     // WHY: Forged for Battle (_04014) +1 Finesse for the duration of a challenge/intervention.
     // Condition surfaces the source on the character tooltip (Soline / Harpoon pattern).

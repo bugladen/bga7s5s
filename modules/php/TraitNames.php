@@ -172,6 +172,7 @@ class TraitNames
             "Romance",
             "Rumor",
             "Sabotage",
+            "Samurai",
             "Sarmatian",
             "Savvy",
             "Schadenfreude",

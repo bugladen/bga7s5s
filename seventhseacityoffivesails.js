@@ -170,6 +170,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
             this.GIACINTO_INFLUENCE_REDUCTION_CONDITION = 'Influence Reduced by Giacinto';
             this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
+            this.TOMOE_SANGO_CONDITION = 'Finesse Modified by Tomoe Sango';
             this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
             this.FORGED_FOR_BATTLE_CONDITION = 'Finesse Modified by Forged for Battle';
             this.HARPOON_CONDITION = 'Harpooned (-1 Finesse; cannot swap or move)';

@@ -710,3 +710,24 @@ For Andare `_04031`: **"En Garde Reaction: When a duel occurs at this location, 
 No state / no JS. Owner need not be a duel participant — only present at the duel location.
 
 Reference: `Reaction_04031`; fuller sibling `Reaction_01203`.
+
+### End of High Drama → claim uncontrolled location
+
+For Tomoe Sango `_04043`: **"En Garde Reaction: At the end of High Drama, if Sango's location is uncontrolled • Claim her location."**
+
+**Trigger:** `EventHighDramaPhaseEnd` — same phase event as `Reaction_01045` (end-of-HD Gain Renown).
+
+**Gates:**
+
+1. `$this->isAvailable()`
+2. Owner controlled + not discard/locker
+3. **En Garde** = `!$owner->Engaged` (precondition, not Engage cost)
+4. **`cardInCity($owner)`** — Home is never uncontrolled/claimable
+5. **`getControllerForLocation($owner->Location) == 0`** — text says uncontrolled
+6. **`canLocationBeClaimedBy($owner->ControllerId, $owner->Location)`** — Indomitable Will / `CanBeClaimed` flag
+
+WHY both controller `== 0` and `canLocationBeClaimedBy`: neither alone is enough. CanBeClaimed can be false under IW while the location is still uncontrolled; CanBeClaimed alone does not mean uncontrolled (already-controlled locations must not prompt).
+
+**Effect:** Claim/Pass buttons (stash `$location` on the Reaction like `Reaction_03005`). On Claim: re-check Engaged + uncontrolled + claimable, then `createLocationClaimedEvent($owner->ControllerId, $owner->Id, $location)`. `setUsed(true)` on Claim. Pass declines without `setUsed`. No state / no JS.
+
+Reference: `Reaction_04043`; phase sibling `Reaction_01045`; claim sibling `Reaction_03005`.

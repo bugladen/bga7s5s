@@ -129,6 +129,32 @@ The factories are:
 
 When the predicate that drives the modifier changes (a character moves into/out of the affected location, a duel ends), queue the inverse event to undo it. See `_01089` Soline el Gato — `lowerFinesse` on `EventDuelStarted`, `raiseFinesse` on `EventDuelEnd` / opposite swap. Track which character was affected on `$this->AffectedCharacterId` and set `$this->IsUpdated = true` so the change persists.
 
+### During a duel, Owner's adversary has −N[Stat]
+
+For Tomoe Sango `_04043` ("During a duel, Sango's adversary has −1[Finesse]"):
+
+**Lifecycle** — same duel-boundary events as Soline `_01089`:
+- `EventDuelStarted` — if Owner is challenger → debuff defender; if Owner is defender → debuff challenger
+- `EventDuelEnd` — restore
+- `EventDefenderSwapped` / `EventChallengerSwapped` — clear if Owner leaves; apply if Owner enters; transfer if Owner's adversary is swapped while she remains
+
+**Identity gate ≠ Soline.** Soline's printed text is a location aura ("adversaries at Soline's location") implemented as duel-time when *your* participant is at her location. Sango's printed text is **"Sango's adversary"** — gate on `$event->challengerId == $this->Id` / `$event->defenderId == $this->Id` (Owner herself participating). Do not copy Soline's controller+location gate onto "Owner's adversary" wording.
+
+**Condition + client notifs** — stamp a named `Game::*_CONDITION` on the adversary and fire `*ConditionStarted` / `*ConditionEnded` notifs (Giacinto / Soline tooltip pattern). Wire the string constant in `Game.php`, `seventhseacityoffivesails.js`, and `Notifications.js`. Idempotent `hasCondition` before ±1 so double-apply cannot stack.
+
+**Clear immediately when Owner leaves play mid-duel** (user-confirmed for Sango):
+
+| Event | Why |
+|---|---|
+| `EventCharacterDestroyed` + `characterId == Owner.Id` | Destroy has `runEventHubAfterCards = true`, then EventHub **recreates** the card (`instantiateCard`) — wipes `$AffectedCharacterId`. Clear in card `handleEvent` **before** that recreate. |
+| `EventCardSentToLocker` + `cardId == Owner.Id` | Destroy does **not** emit CardSentToLocker (EventHub comment). This covers spend-to-locker paths. |
+
+WHY not rely on `EventDuelEnd` alone after destroy: locker cards are not loaded by `Theah::buildCity`, so `EventDuelEnd` never runs on the recreated Owner. Leaving the sticky condition on the adversary forever is the regression.
+
+**Optional safety-net** (Sango): mirror the debuffed id into a game global on apply; clear the global on restore; call a static `clearPendingDebuff($game)` from `StatesTrait::stDuelEnd` (Desideria `flushPendingRecovers` shape). Primary path is still immediate Destroy/Locker clear — the flush is a no-op when the global was already zeroed.
+
+Reference: `_04043` Tomoe Sango; Soline lifecycle sibling `_01089`; leave-play clear sibling `_04032` Giacinto (Destroy + CardSentToLocker pair).
+
 ### While equipped with a Weapon (count-transition, not a bool flag)
 
 For "While <Owner> is equipped with a **Weapon**, he gains +N[Stat]" — mirror Rena `_01040` / Íñigo `_03039`. Hook `EventAttachmentEquipped` and `EventAttachmentUnequipped` with `characterId == $this->Id`. After the event, count Weapons in `$this->Attachments` (Attachments already reflects the new set). Queue `+N` only when `weaponsCount == 1` (transition into "has a Weapon"); queue `−N` only when `weaponsCount == 0` (last Weapon left).
@@ -1151,7 +1177,9 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
 | `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006` |
 | `EventSchemeCardRevealed` | A scheme is revealed | Leaders react via the base `Leader::handleEvent`; only override if you have card-specific logic |
-| `EventCharacterDestroyed` | A character is destroyed (`runEventHubAfterCards = true`, so the destroyed character's `.Location` is STILL set during `handleEvent` — the locker move runs AFTER all card handlers). Look up via `getCharacterById($event->characterId)` and compare `.Location == $owner->Location` for "another character at this location" triggers. | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent. "After another character at this location is destroyed …" — `_03027` Odette, `Reaction_01013`. |
+| `EventCharacterDestroyed` | A character is destroyed (`runEventHubAfterCards = true`, so the destroyed character's `.Location` is STILL set during `handleEvent` — the locker move runs AFTER all card handlers). Look up via `getCharacterById($event->characterId)` and compare `.Location == $owner->Location` for "another character at this location" triggers. **After card handlers, EventHub recreates the card** (`instantiateCard`) — instance fields like `$AffectedCharacterId` are wiped. | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent. "After another character at this location is destroyed …" — `_03027` Odette, `Reaction_01013`. Duel-scoped debuffs that track instance state: clear **before** recreate (`_04043` Sango) — see "During a duel, Owner's adversary has −N[Stat]". |
+| `EventCardSentToLocker` | Card moved to locker without going through Destroy (`$event->cardId`, `$event->playerId`). **Destroy does not emit this** (EventHub). | Spend-to-locker / non-destroy locker paths. Pair with `EventCharacterDestroyed` when clearing leave-play auras/debuffs (`_04032` Giacinto, `_04043` Sango). |
+| `EventHighDramaPhaseEnd` | High Drama phase ending | "At the end of High Drama …" Reactions / Forced. Reference: `Reaction_01045`, `Reaction_04043` (claim uncontrolled). |
 | `EventSorcererAbilityPlayed` | A sorcerer ability resolved | "After <X> performs a Sorcerer ability …" reactions, Pattern D below |
 | `EventActionResolved` | An action just resolved | "After an Action resolves …" reactions, `Reaction_01089` |
 | `EventCardMoving` / `EventCardMoved` | Pre / past tense of a card-to-location move | `Moving` is cancelable (`$event->canceled = true`) — use for opt-out Reactions (Pattern D "Cancel-and-reissue"). `Moved` is the past-tense receiver — use for "after X moves to/from this location" triggers. The Dusk auto-move emits `Moving` with `$sourceId == 0`; ability-driven moves pass a non-zero sourceId. Reference: `Reaction_03016a` (cancel), `Reaction_03016b` (react to). |

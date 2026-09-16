@@ -88,6 +88,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['giacintoInfluenceReductionEnded', 1],
             ['solineElGatoConditionStarted', 1],
             ['solineElGatoConditionEnded', 1],
+            ['tomoeSangoConditionStarted', 1],
+            ['tomoeSangoConditionEnded', 1],
             ['epeeSanglanteConditionStarted', 1],
             ['epeeSanglanteConditionEnded', 1],
             ['forgedForBattleConditionStarted', 1],
@@ -2024,6 +2026,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.SOLINE_EL_GATO_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_tomoeSangoConditionStarted: function( notif )
+    {
+        debug( 'notif_tomoeSangoConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.TOMOE_SANGO_CONDITION))
+                card.conditions.push(this.TOMOE_SANGO_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_tomoeSangoConditionEnded: function( notif )
+    {
+        debug( 'notif_tomoeSangoConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.TOMOE_SANGO_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },
