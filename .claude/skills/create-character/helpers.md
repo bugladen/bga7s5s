@@ -7,12 +7,14 @@
 - `$theah->getCityLocations(): array` — keyed by location id. `array_keys($theah->getCityLocations())` enumerates the ACTIVE city locations (3 in 2p / 4 in 3p / 5 in 4p — Ole's Inn and Governor's Garden are excluded in smaller games). Always use this over hardcoded `LOCATION_*` arrays for "pick any city location" pickers. The actual city-location constants are `LOCATION_CITY_DOCKS`, `LOCATION_CITY_FORUM`, `LOCATION_CITY_BAZAAR`, `LOCATION_CITY_OLES_INN`, `LOCATION_CITY_GOVERNORS_GARDEN` — there is no `LOCATION_BORDELLO` / `LOCATION_CATHEDRAL` / `LOCATION_DOCKS` / `LOCATION_MARKET` (those are hallucinated names; check before using).
 - `$theah->getCharactersAtLocation(string $location, bool $includeUncontrolled = false): array` — all characters at a location (default excludes uncontrolled, which is usually what you want).
 - `$theah->getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false): array` — friendly characters at a location.
+- `$theah->getCharactersAtHomeByPlayerId(int $playerId): array` — **your** characters at Home. Use this for Home hosts / Home-scoped counts. **Never** `getCharactersAtLocation(LOCATION_PLAYER_HOME)` — Home is a shared location string across players.
 - `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing = different controller AND same location.
 - `$theah->getCharactersInPlayByPlayerId(int $playerId): array` — all characters in play controlled by a player.
 - `$theah->getCharactersInCityByPlayerId(int $playerId): array` — characters in city (not Home, not approach).
 - `$theah->getAdjacentCityLocations(string $location, bool $includeHome = true): array` — adjacency for move actions.
+- `$game->getControllerForLocation(string $location): int` — claim controller for a City location (`0` = uncontrolled). Use for "City location you do not control" filters (`!= $playerId` includes uncontrolled and opponent).
 - `$game->characterIsInDiscardOrLocker(Character $character): bool` — "is this character out of play (discard or locker)?" The Leader-equivalent of `isInPlay`. Gate phase-event handlers on `! characterIsInDiscardOrLocker($this)`.
-- `$this->getInjectCode()` — inline-styled card name for notifications (`${card_inject_code}` placeholder).
+- `$this->getInjectCode()` — inline-styled card name for notifications (`${card_inject_code}` placeholder). For **public logs of City Deck / otherwise-unhydrated cards**, also pass `"cards" => […getPropertyArray…]` so opponents' `logCardCache` can hover — inject codes alone are not enough when cards aren't in their `cardProperties` (gamble reveal / Risk play / Kaj Artifact search).
 - `$this->hasTrait(string $trait): bool` — check a trait against `$this->ModifiedTraits`. English trait strings compare directly against `clienttranslate()`-wrapped values.
 
 Duel-specific (used in Pattern E and the in-duel branch of any ability):

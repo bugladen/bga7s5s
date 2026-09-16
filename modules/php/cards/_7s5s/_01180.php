@@ -25,6 +25,7 @@ class _01180 extends CityCharacter implements IHasActions
         $this->CardNumber = 180;
 
         $this->Title = clienttranslate('The Thorn');
+        $this->InPlayXImageOffset = 10;
 
         $this->Resolve = 4;
         $this->Combat = 1;

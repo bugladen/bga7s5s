@@ -271,6 +271,31 @@ Sibling: Makepeace `Action_01092` moves an **opposing engaged** character with �
 
 Reference: `Action_04011` Hans, `Action_01092` Makepeace.
 
+### En Garde Action: Artifact + move opposing engaged to uncontrolled
+
+Printed (Kaj `_04042` Relic Raider): **En Garde Action: If you control an Artifact at this location • Move target opposing engaged character to a City location you do not control.**
+
+**Do not confuse with city Kaj `_01180` (The Thorn)** — different card (City Action: reveal top 4 / equip Artifact). Faction Relic Raider has no printed Artifact equip discount unless the text says so.
+
+| Gate | Implementation |
+|---|---|
+| **En Garde** | `!$owner->Engaged` in `isAvailableToPlayer` — trichotomy (c); **no** `createCardEngagedEvent` |
+| **Control an Artifact at this location** | Your non-`FakeAttachment` Artifact on your characters at Owner's location (`ControllerId` match), **or** an available City Artifact you already control there. Uncontrolled available Artifacts do **not** count. Smuggled Item `_01187` is a valid Artifact. |
+| **Target opposing engaged** | `getOpposingCharactersAtLocation` + `$character->Engaged` (same as Makepeace) |
+| **City location you do not control** | `getControllerForLocation($name) != $playerId` (includes uncontrolled `0` and opponent). Exclude the target's current location (move no-op). Gate availability on `count(destinations) > 0` so the Action never opens with nowhere to send them. |
+| **Home / not in City** | Short-circuit: opposing-at-location is broken on shared `LOCATION_PLAYER_HOME` (Benci / Axelle). Require `cardInCity($owner)` for targets. |
+
+**Two-step UX:**
+
+1. Step 1 (`HIGH_DRAMA_PLAYER_TURN_NNNNN`): Makepeace-style highlight of valid engaged opposing ids + Confirm (`IAbilityThatTargetsCharacters`).
+2. Step 2 (`…_2`): city location highlight via `actFromCardWithLocations` → `actFromActionWithIds`. Move `engage=false` (En Garde was precondition only).
+
+**EVENTS wiring:** only `"NNNNN"` on `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Step 1 → step 2 via the state class's named `nextState("characterChosen")` — do **not** add `"NNNNN_2"` to the EVENTS lookup unless you `createTransitionEvent("NNNNN_2")`.
+
+**Playtest trap:** "I have an Artifact and an opposing character" is not enough — the opposing character must be **Engaged** (turned), and there must be another City location you do not control. Upright opponents correctly hide the Action.
+
+Reference: `Action_04042`; target sibling `Action_01092`; location-picker sibling Depose / Pattern C city-location picker; city-Kaj contrast `Action_01180`.
+
 ### City-location picker for CharacterActions — override `actFromActionWithIds`
 
 For step-N states where the player picks a city location (the JS submits via `onCityLocationsSelected → bgaPerformAction('actFromCardWithLocations', ...)`):
@@ -448,6 +473,7 @@ Reference: `Action_04032`; Pass/prevent sibling `Action_02036a`; move-both sibli
 | `Action_03038b` | Move equipped character (`engage=false`) → attachment button destroy → draw `WealthCost + 1`. Dual-action `a`/`b` sibling of `Action_03038a`. |
 | `Action_03040` | Engage + Finesse pressure (win ties via dedicated `SOLINE_PRESSURE_TYPE`) → mandatory claim-or-engage choice state. |
 | `Action_04032` | En Garde City Action: target → Reveal Hand/Pass → Owner chooseList ack → hand-owner discard **or** adjacent move-both. ACTIVE_PLAYER chooseList (not multi-ack). |
+| `Action_04042` | En Garde Action: control Artifact at location → move opposing **engaged** to City location you do not control. Two-step Makepeace + location picker; not city Kaj `_01180`. |
 
 ### Pressure (win ties) — Engage + Pressure with [Stat]
 

@@ -606,6 +606,35 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_04022` (Axelle — adversary combat card → threat) | **`EventCombatCardAnnounced`** + asymmetric `createThreatModifiedEvent`; your participant by ControllerId; En Garde rider `!$Engaged` adds adversary threat. Risk sibling `Reaction_02039` (both + pay). |
 | `Reaction_04031` (Andare — first round remove your participant's threat) | **`EventDuelNewRound` `round == 1`** + duel-at-location + En Garde `!$Engaged`; remove-only via `createThreatModifiedEvent(-1,0)`/`(0,-1)`; threat > 0 valid-target gate. Fuller sibling `Reaction_01203` (add or remove either participant). |
 | `Reaction_04023` (Monet — reveal deck / optional equip / discard any / sink) | **En Garde** + Owner-moves-to-city (`Reaction_03025`) + multi-stage in-reaction reveal/equip/pay/discard/sink. No states/JS. Equip pay = Tomas click-to-pay (not `PAY_STATE_EQUIP_ATTACHMENT`). Deck→discard = Action_01134 notify+`moveCard`; sink = `createCardAddedToFactionDeckEvent(..., false)`. |
+| `Reaction_04042` (Kaj Relic Raider — muster → City Deck Artifact → Home equip) | **Muster OR Approach** + multi-stage in-reaction search/equip/pay. Affordability gate before prompt (keep — Approach before Planning Draw). Home hosts via `getCharactersAtHomeByPlayerId`. Public search log needs `cards[]`. Not HD / not `PAY_STATE_EQUIP_ATTACHMENT` (contrast city Kaj `Action_01180`). |
+
+### Muster → search City Deck Artifact → equip at Home
+
+Printed (Kaj `_04042`): **Reaction: After Kaj musters • Search the City Deck for an Artifact and equip it to your character at Home, paying all costs. *(Shuffle the City Deck.)***
+
+**Trigger:** OR `EventCharacterMustered` AND `EventApproachCharacterPlayed` with `characterId == $owner->Id` (checklist 24 / Joern). `EventCharacterMustered` alone misses Approach.
+
+**WHY multi-stage inside `playerReaction` (not High Drama states / not `PAY_STATE_EQUIP_ATTACHMENT`):** Muster fires during Approach **and** High Drama. City Kaj `Action_01180` uses HD states + the shared equip-pay state — that path is HD-cycle coupled and will not return correctly from Approach. Monet/Tomas shape: `$stage` + `requeue()` via `createReactionTransitionEvent`.
+
+**Affordability gate before prompt — keep it.** Require ≥1 City Deck Artifact with ≥1 eligible Home host the player can afford (`canAttachTo` + `!hasEquipRestrictions` + `handWealthCount >= equipCost`). Playtest: Approach in Planning with an empty hand correctly skipped the Reaction. Approach runs *before* Planning Draw, so empty-hand Approach is common. Do **not** remove the gate to "always prompt" — a no-op Search/Pass when nothing is payable is wrong.
+
+**Hosts:** `getCharactersAtHomeByPlayerId($owner->ControllerId)` — **never** `getCharactersAtLocation(LOCATION_PLAYER_HOME)` (shared Home string).
+
+**Search UI:** Name-deduped Artifact buttons from `getCardObjectsAtLocation(LOCATION_CITY_DECK)` (city-event search button shape). Skip `FakeAttachment`.
+
+**Public search log (hover for all players):** On opening search, `notify->all` with implode of `getInjectCode()` **and** `"cards" => array of getPropertyArray()`. WHY `cards[]`: City Deck Artifacts are not in opponents' `cardProperties`; `format_string_recursive_with_injection` seeds `logCardCache` from notify args that carry id+type objects (including arrays) — same as gamble reveal / Risk play. Inject codes alone leave opponents with bold names / broken hover.
+
+**Shuffle:** Parenthetical applies once the deck was searched (set a `$didSearch` / equivalent when the reaction opens into search). Pass/abort after looking still shuffles. (If the UI opens directly into search, Pass always shuffles — acceptable; they saw the list.)
+
+**Stages** (typical): search Artifact → pick Home host → click-to-pay (Tomas) → finalize. Skip pay when cost is 0.
+
+**Finalize:** Queue payment discards atomically → `getRequiredAttachTargetId` → `createAttachmentEquippedEvent` (pre-commit). Hub moves the City Deck card.
+
+**setUsed(true)** when the player commits to searching (or on successful equip — match sibling discipline; Kaj uses search-open / equip finalize consistently with Monet's Reveal-vs-Pass).
+
+Contrast: city Kaj `Action_01180` (HD reveal top 4 / sink rest / `PAY_STATE_EQUIP_ATTACHMENT`); Monet `Reaction_04023` (faction deck reveal after self-move); Tomas `Reaction_04013` (click-to-pay equip).
+
+Reference: `Reaction_04042`; muster pair Joern / Cirilo; pay sibling `Reaction_04013`; city-Action contrast `Action_01180`.
 
 ### En Garde Reaction: reveal deck, optional equip paying costs, discard any, sink rest
 
@@ -633,9 +662,9 @@ For Monet `_04023`: **"En Garde Reaction: After Monet moves to a City location �
 
 **setUsed(true)** on Reveal (mandatory first effect), not on Pass. Mid-flow has no Decline after reveal — player must finish discard/sink.
 
-Contrast: Kaj `Action_01180` uses High Drama states + `PAY_STATE_EQUIP_ATTACHMENT` (City Deck, Action-only). Yevgeni `Reaction_03052` uses phase-scoped private states (Dusk only).
+Contrast: city Kaj `Action_01180` uses High Drama states + `PAY_STATE_EQUIP_ATTACHMENT` (City Deck, Action-only). Faction Kaj `Reaction_04042` is the in-reaction City Deck Artifact search sibling (muster/Approach — also must not use HD pay state). Yevgeni `Reaction_03052` uses phase-scoped private states (Dusk only).
 
-Reference: `Reaction_04023`; trigger sibling `Reaction_03025`; pay sibling `Reaction_04013`; reveal-Action sibling `Action_01038` / `Action_01180`.
+Reference: `Reaction_04023`; trigger sibling `Reaction_03025`; pay sibling `Reaction_04013`; reveal-Action sibling `Action_01038` / `Action_01180`; muster-search sibling `Reaction_04042`.
 
 ### Adversary announces combat card → threat
 
