@@ -103,8 +103,21 @@ class Reaction_01032 extends RiskReaction
         return $array;
     }
 
-    private function shouldReactToEvent(Theah $theah, int $sourceId, string $abilityId): bool{
+    // $initiatingPlayerId: fallback when sourceId is 0 (e.g. BasicChallenge).
+    private function shouldReactToEvent(Theah $theah, int $sourceId, string $abilityId, int $initiatingPlayerId = 0): bool
+    {
+        $owner = $this->getOwningCard($theah);
         $source = $theah->getCardById($sourceId);
+
+        // WHY: Cancel is for opposing targeting, not your own costs/self-effects.
+        // Cirilo recruit (Action_01009) is IAbilityThatTargetsCards and engages Cirilo
+        // himself — that was firing Unyielding Loyalty during your own Recruit.
+        $initiatorId = $source ? $source->ControllerId : $initiatingPlayerId;
+        if ($initiatorId === 0 || $initiatorId === $owner->ControllerId)
+        {
+            return false;
+        }
+
         if ($source)
         {
             $ability = $source->getAbilityById($abilityId);
@@ -191,7 +204,7 @@ class Reaction_01032 extends RiskReaction
             {
                 $card = $event->theah->getCardById($event->cardId);
                 if ($owner->ControllerId == $card->ControllerId && 
-                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'engagedEvent');
                 }
@@ -205,7 +218,7 @@ class Reaction_01032 extends RiskReaction
             {
                 $character = $event->theah->getCharacterById($event->cardId);
                 if ($owner->ControllerId == $character->ControllerId && 
-                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'engardedEvent');
                 }
@@ -219,7 +232,7 @@ class Reaction_01032 extends RiskReaction
             {
                 $card = $event->theah->getCardById($event->cardId);
                 if ($owner->ControllerId == $card->ControllerId && 
-                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->initiatingPlayerId))
                 {
                     $this->interceptEvent($event, 'cardMovingEvent');
                 }
@@ -261,7 +274,7 @@ class Reaction_01032 extends RiskReaction
             {
                 $character = $event->theah->getCharacterById($event->targetId);
                 if ($owner->ControllerId == $character->ControllerId &&
-                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'characterTargetedEvent');
                 }
@@ -276,7 +289,7 @@ class Reaction_01032 extends RiskReaction
                 $defender = $event->theah->getCharacterById($event->defenderId);
                 $challenger = $event->theah->getCharacterById($event->challengerId);
                 if (($owner->ControllerId == $defender->ControllerId || $owner->ControllerId == $challenger->ControllerId) && 
-                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'challengeIssuedEvent');
                 }
