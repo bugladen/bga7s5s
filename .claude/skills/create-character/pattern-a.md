@@ -70,6 +70,32 @@ Contrast: Yevgeni `_01116` adds +1 Thrust on every combat card (`actorId` only, 
 
 Reference: `_03037` Sanjay, `_01116` Yevgeni.
 
+### Combat-card trait → Lethal
+
+For text like **"When Jak-Sen's combat card is a Sorcery, gain Lethal"** / **"When Rosa's combat card is a Revelry, gain Lethal"** — passive on the **card class**, not a Technique:
+
+```php
+if ($event instanceof EventDuelCalculateCombatCardStats && $event->actorId == $this->Id)
+{
+    $combatCard = $event->theah->game->getCardObjectFromDb($event->combatCardId);
+    if ($combatCard && $combatCard->hasTrait("Sorcery"))  // or "Revelry", etc.
+    {
+        $lethalEvent = EventFactory::createGainLethalEvent($this->Id, $event->theah);
+        $event->theah->queueEvent($lethalEvent);
+        $event->explanations[] = sprintf(
+            $event->theah->game->translate('%s: Combat card is Sorcery — Threat is Lethal.'),
+            $this->getInjectCode()
+        );
+    }
+}
+```
+
+WHY `EventDuelCalculateCombatCardStats` (not Technique Calculate): the printed ability is an unconditional duel passive tied to the combat card trait, not a chosen Technique. Rosa `_02033` is the Revelry sibling; Jak-Sen `_04041` is Sorcery.
+
+WHY `getCardObjectFromDb($event->combatCardId)`: the calc event carries the combat card id directly — same load path as Rosa. Contrast Elena/Daichi Techniques that filter `getCombatCardsForCurrentRound()` by `ControllerId` for Technique availability.
+
+Reference: `_04041` Jak-Sen, `_02033` Rosa.
+
 ### Drawing cards
 
 - One card: `EventFactory::createCardDrawnEvent($playerId, $reason)` then `queueEvent`.
@@ -1121,7 +1147,7 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
 | `EventDuelNewRound` | A new duel round is starting (`$event->actorId` is whose turn it is; `$event->round`) | "At the beginning of the first round" (gate `round == 1` — Andare `Reaction_04031`); "**adversary's next round**" deferred Technique effects (gate `actorId != owner.Id` — Iago `Technique_04033`, Lorenzo `Technique_01090`). |
 | `EventResolveManeuver` | A Maneuver is resolving (`$event->playerId` actor, `$event->adversaryId` opponent, `$event->maneuverId`) | "Adversary cannot perform Maneuvers" backstop — gate `adversaryId == Owner.Id`. `_04012` Raven (live line condition); `Technique_01186` Maryam (armed flag). |
-| `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel (`$event->gambled` is set from `duel_round.gambled`) | "+X to combat card stats" — `_01116` Yevgeni (every card); gambled-only — `_03037` Sanjay (`$event->gambled` gate) |
+| `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel (`$event->gambled` is set from `duel_round.gambled`) | "+X to combat card stats" — `_01116` Yevgeni (every card); gambled-only — `_03037` Sanjay (`$event->gambled` gate); combat-card trait → Lethal — `_04041` Jak-Sen / `_02033` Rosa |
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
 | `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006` |
 | `EventSchemeCardRevealed` | A scheme is revealed | Leaders react via the base `Leader::handleEvent`; only override if you have card-specific logic |

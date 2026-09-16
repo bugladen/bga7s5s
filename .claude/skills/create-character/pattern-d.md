@@ -501,6 +501,27 @@ Reference: `Reaction_03016a` (Ise Dusk opt-out, on a Character in play), `Reacti
 
 **Discard events also support `cancelDeclinedByCardIds`.** `EventCardDiscardedFromPlay` and `EventCardAddedToCityDiscardPile` carry the same array field as `EventCardMoving` (added for Tomas `_04013`). Clone before `$event->canceled = true`, Decline re-queues with `cancelDeclinedByCardIds[] = $owner->Id`. Do not invent a parallel marker.
 
+### Cancel opponent move or engage
+
+Printed shape (Jak-Sen `_04041`): **"<b>City Reaction:</b> When your character at <Owner>'s location would be moved or engaged by an opponent's effect • Cancel that move or engage."**
+
+This is cancel-and-reissue on **two** event types — not a past-tense "after moved/engaged" Reaction, and not a full-ability cancel (Unyielding Loyalty / Hexenwerk). Only the move **or** the engage is canceled; other effects in the same ability batch still resolve.
+
+**Triggers:**
+
+| Event | Location gate | Decline re-queue guard |
+|---|---|---|
+| `EventCardMoving` | `$event->fromLocation == $owner->Location` (location write deferred — `runEventHubAfterCards`) | `$event->cancelDeclinedByCardIds[] = $owner->Id` (built-in, Stubborn/Ise) |
+| `EventCardEngaged` | `$character->Location == $owner->Location` | `$skipNextEngagedEvent` on the Reaction — **`EventCardEngaged` has no `cancelDeclinedByCardIds`** (Unyielding Loyalty shape) |
+
+**Shared gates:** `isAvailable()`, `cardInCity($owner)` (City Reaction), Owner in play, your character (`ControllerId == owner.ControllerId`, `instanceof Character`), **opponent's effect** via Aimée `Reaction_04021::isOpponentEffect` / `Reaction_03031` (`sourceId==0` is framework auto-engage / dusk move-home — **not** an effect), `!$event->canceled`, Moving also `!$event->unstoppable`.
+
+**Flow:** clone + `unset($clone->theah)` → `$event->canceled = true` → `stackEvent` reaction transition → Cancel/Decline buttons. Cancel path: notify + `setUsed(true)` (event already canceled). Decline path: re-queue clone with the guard above. Do **not** `deleteEventBatch` — text cancels only that move/engage.
+
+WHY Opponent-effect via `sourceId`/`abilityId`, not `initiatingPlayerId`: some Maneuvers set initiating player to the victim (`Maneuver_01033`). Same trap as Aimée / faction-attachment helpers.
+
+Reference: `Reaction_04041` Jak-Sen; cancel-move siblings `Reaction_03016a` / `Reaction_01140`; opponent-effect helper `Reaction_04021`; engage Decline skip `Reaction_01032`.
+
 ### Would-be-discarded attachment → equip paying costs
 
 Printed shape (Tomas `_04013`): **"City Reaction: When a non-Artifact attachment equipped to your character at this location would be put into a discard pile • Equip it to your character at this location instead, paying all costs."**
@@ -581,8 +602,7 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_04003a` (Desideria — Thug destroy → hand) | **En Garde City Reaction** + duel/opponent cause gate + **deferred mid-duel Hand return**. `EventCharacterWounded` marks opponent lethal; Destroyed ORs `IN_DUEL`; locker/discard → hand; `stDuelEnd` flush. |
 | `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |
 | `Reaction_04021` (Aimée — opponent engages ally Musketeer) | **Continuous** on `EventCardEngaged`; opponent-effect gate (`sourceId==0` skip); other Trait at location; En Garde via `createCardEngardedEvent`; Engaged re-check in `performReaction` (`runEventHubAfterCards`). |
-
-
+| `Reaction_04041` (Jak-Sen — cancel opponent move/engage) | **City Reaction** cancel-and-reissue on `EventCardMoving` **and** `EventCardEngaged`; opponent-effect gate; Cancel/Decline; Moving → `cancelDeclinedByCardIds`; Engaged → `skipNextEngagedEvent`; cancel only that event (no batch delete). |
 | `Reaction_04022` (Axelle — adversary combat card → threat) | **`EventCombatCardAnnounced`** + asymmetric `createThreatModifiedEvent`; your participant by ControllerId; En Garde rider `!$Engaged` adds adversary threat. Risk sibling `Reaction_02039` (both + pay). |
 | `Reaction_04031` (Andare — first round remove your participant's threat) | **`EventDuelNewRound` `round == 1`** + duel-at-location + En Garde `!$Engaged`; remove-only via `createThreatModifiedEvent(-1,0)`/`(0,-1)`; threat > 0 valid-target gate. Fuller sibling `Reaction_01203` (add or remove either participant). |
 | `Reaction_04023` (Monet — reveal deck / optional equip / discard any / sink) | **En Garde** + Owner-moves-to-city (`Reaction_03025`) + multi-stage in-reaction reveal/equip/pay/discard/sink. No states/JS. Equip pay = Tomas click-to-pay (not `PAY_STATE_EQUIP_ATTACHMENT`). Deck→discard = Action_01134 notify+`moveCard`; sink = `createCardAddedToFactionDeckEvent(..., false)`. |
