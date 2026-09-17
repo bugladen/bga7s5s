@@ -40,6 +40,15 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             return false;
         }
 
+        // WHY: Only opposing characters in the city are legal targets — Home is not
+        // "opposing" in the city sense (LOCATION_PLAYER_HOME is shared across players).
+        $characters = $theah->getCharactersInPlay();
+        $characters = array_filter($characters, fn($character) => $theah->cardInCity($character) && $character->isNotControlledByPlayer($playerId));
+        if (count($characters) == 0)
+        {
+            return false;
+        }
+
         $discardName = $theah->game->getPlayerDiscardDeckName($playerId);
         $risks = $theah->getCardObjectsAtLocation($discardName);
         $risks = array_filter($risks, fn($risk) => $risk instanceof Risk);
@@ -103,6 +112,13 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
         if ($character->ControllerId == $owner->ControllerId)
         {
             return [false, $game->translate("You cannot place a Risk under your own character")];
+        }
+
+        // WHY: Mirror getArgs city filter — without this, API/redirect paths can
+        // target Home characters that the UI never offered.
+        if (! $game->theah->cardInCity($character))
+        {
+            return [false, $game->translate("Character is not in the City")];
         }
 
         return [true, ""];
