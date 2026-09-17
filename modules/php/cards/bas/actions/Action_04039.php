@@ -86,6 +86,30 @@ class Action_04039 extends RiskCityAction
         return $discount;
     }
 
+    // WHY: Engage is half the printed cost (performer already chosen). Pay it in
+    // announceAction — before EventActionActivated / EventActionTriggered — so
+    // Night of Drinking (01109) cancel still leaves engage in the queue.
+    // ("All costs are still paid.") Lose-control still needs a location pick and
+    // stays on confirm with the claim.
+    public function announceAction(Game $game): void
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+        $owner = $this->getOwningCard($game->theah);
+        if ($performer && ! $performer->Engaged)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent(
+                $performer->ControllerId,
+                $performer->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $game->theah->queueEvent($engageEvent);
+        }
+
+        parent::announceAction($game);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -130,10 +154,8 @@ class Action_04039 extends RiskCityAction
                 throw new UserException($game->translate("Invalid performer"));
             }
 
-            if ($performer->Engaged)
-            {
-                throw new UserException($game->translate("Performer is already engaged."));
-            }
+            // WHY: Engage already queued in announceAction (and may already have
+            // applied). Do not re-check Engaged or queue a second engage.
 
             $validLocations = $this->getLocationsPlayerCanLoseControl($game->theah, $performer->ControllerId);
             if (! in_array($location, $validLocations))
@@ -141,17 +163,9 @@ class Action_04039 extends RiskCityAction
                 throw new UserException($game->translate("You cannot lose control of that location."));
             }
 
-            // WHY: Engage + lose-control costs resolve together with the claim on confirm
-            // (Action_04cd04 shape). Delaying engage until confirm avoids zombie leaving
-            // the performer engaged with no payoff (contrast Action_03034 engage-at-announce).
-            $engageEvent = EventFactory::createCardEngagedEvent(
-                $performer->ControllerId,
-                $performer->Id,
-                $owner->Id,
-                $this->Id
-            );
-            $game->theah->queueEvent($engageEvent);
-
+            // WHY: Lose-control cost + claim resolve together on confirm. Engage
+            // was paid at announce (01109-safe). Location pick cannot precede
+            // cancel, so lose-control only runs when the effect path survives.
             if ($game->theah->canLocationBecomeUncontrolledBy($performer->ControllerId, $location))
             {
                 $uncontrolledEvent = EventFactory::createLocationBecomesUncontrolledEvent(
