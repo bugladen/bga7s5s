@@ -44,10 +44,13 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
         if ($event instanceof EventCharacterIntervened && $this->isAvailable())
         {
             $andriana = $this->getOwningCharacter($event->theah);
-            if ($andriana->ControllerId != $event->playerId)
+            // WHY: Printed text is "target opposing non-Sorcerer". Opposing = different
+            // controller at the same city location. Without the co-location gate, Andriana
+            // at Home would still offer this when someone intervenes elsewhere.
+            if ($andriana->ControllerId != $event->playerId && $event->theah->cardInCity($andriana))
             {
                 $character = $event->theah->getCharacterById($event->newTargetId);
-                if (! $character->hasTrait("Sorcerer"))
+                if ($character->Location == $andriana->Location && ! $character->hasTrait("Sorcerer"))
                 {
                     $this->CharacterId = $character->Id;
                     $andriana->IsUpdated = true;
@@ -63,7 +66,11 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
         {
             $andriana = $this->getOwningCharacter($event->theah);
             $character = $event->theah->getCharacterById($event->targetId);
-            if ($andriana->ControllerId != $character->ControllerId && ! $character->hasTrait("Sorcerer"))
+            // WHY: Same "opposing" gate as intervene — must share Andriana's city location.
+            if ($andriana->ControllerId != $character->ControllerId
+                && $event->theah->cardInCity($andriana)
+                && $character->Location == $andriana->Location
+                && ! $character->hasTrait("Sorcerer"))
             {
                 $this->CharacterId = $character->Id;
                 $andriana->IsUpdated = true;
@@ -88,7 +95,9 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
             return [false, $game->translate("You cannot wound a sorcerer.")];
         }
 
-        if ($character->Location != $andriana->Location)
+        // WHY: Opposing requires co-location in the city; Home shares LOCATION_PLAYER_HOME
+        // across players, so same Location string alone is not enough.
+        if (! $game->theah->cardInCity($andriana) || $character->Location != $andriana->Location)
         {
             return [false, $game->translate("Character is not at the same location as Andriana.")];
         }

@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\LocationAction;
@@ -753,8 +754,17 @@ trait FrameworkActionsTrait
             $this->theah->eventCheck($smuggledUnattachedEvent);
             $this->theah->queueEvent($smuggledUnattachedEvent);
 
-            $smuggledDiscardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($smuggledItem->ControllerId, $smuggledItem->Id, $smuggledItem->Location, $smuggledItem->Id, $asEffect = false);
-            $this->theah->queueEvent($smuggledDiscardEvent);
+            if ($smuggledItem instanceof Attachment)
+            {
+                $smuggledDiscardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                    $smuggledItem,
+                    $smuggledItem->Id,
+                    $asEffect = false,
+                    $fromLocation = null,
+                    $playerId
+                );
+                $this->theah->queueEvent($smuggledDiscardEvent);
+            }
         }
 
         //If the Equip event was caused by Let's Haggle, we need to announce it here

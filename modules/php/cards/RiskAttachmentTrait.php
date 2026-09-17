@@ -19,7 +19,7 @@ trait RiskAttachmentTrait
         //Place this card in discard pile, then remove it and hide it silently
         $unequipEvent = EventFactory::createAttachmentUnequippedEvent($this->OwnerId, $this->AttachedToId, $this->Id);
         $theah->queueEvent($unequipEvent);
-        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($this->OwnerId, $this->Id, $this->Location);
+        $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($this);
         $theah->queueEvent($discardEvent);
         $hiddenEvent = EventFactory::createCardHiddenEvent($this->OwnerId, $this->Id);
         $theah->queueEvent($hiddenEvent);

@@ -116,7 +116,7 @@ class _01153 extends FactionAttachment
                 $detachEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $event->characterId, $this->Id);
                 $event->theah->queueEvent($detachEvent);
 
-                $destroyEvent = EventFactory::createCardDiscardedFromPlayEvent($this->ControllerId, $this->Id, $this->Location, $this->Id, $asEffect = true);
+                $destroyEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($this, $this->Id, $asEffect = true);
                 $event->theah->queueEvent($destroyEvent);
            }
         }

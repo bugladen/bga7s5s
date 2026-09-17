@@ -42,7 +42,8 @@ Event factories you'll likely need:
 - `createAttachmentUnequippedEvent($playerId, $characterId, $attachmentId)`
 - `createCardRemovedFromPlayEvent($playerId, $cardId, $toLocation, $hidden = false)` — first step of "Sink this card" UI cleanup after unequip
 - `createCardAddedToFactionDeckEvent($playerId, $cardId, $onTop)` — `$onTop = false` sinks to bottom; use `$attachment->OwnerId` for the playerId
-- `createCardDiscardedFromPlayEvent($playerId, $cardId, $location, $sourceId, $asEffect)`
+- `createAttachmentDiscardedFromPlayEvent($attachment, $sourceId = 0, $asEffect = false, ?$fromLocation = null, $cityDiscardPlayerId = 0)` — city vs faction discard; use this for destroy/discard of attachments
+- `createCardDiscardedFromPlayEvent($ownerId, $cardId, $location, $sourceId, $asEffect)` — faction cards / characters only; prefer `createAttachmentDiscardedFromPlayEvent` for attachments
 - `createCardDiscardedFromHandEvent($ownerId, $cardId, $sourceId, $asPayment, $asPlayed, $asEffect)` — adversary hand discard from Technique (`Technique_04017` / `01093`); usually `$asEffect = true`
 - `createCardEngagedEvent($playerId, $cardId, $sourceId, $abilityId)` — "Engage this card" on an attachment Technique: `$cardId` = attachment id
 - `createCardMovingEvent($playerId, $cardId, $from, $to, $engage = true, $sourceId = 0, $abilityId = '')` — default `$engage = true`; pass `false` when move is an effect and engage/sink was a separate cost. `$unstoppable = true` bypasses Harpoon-style move blocks (Lodestone Home-from-opponent gate does not check unstoppable — printed text is ability-scoped).

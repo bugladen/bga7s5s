@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
@@ -348,14 +348,15 @@ class Reaction_02048 extends RiskReaction
         $removedEvent = EventFactory::createCardRemovedFromPlayEvent($playerId, $attachment->Id, $attachment->Location);
         $event->queueEvent($removedEvent);
 
-        if ($attachment instanceof CityAttachment)
+        if ($attachment instanceof Attachment)
         {
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($playerId, $attachment->Id, $attachment->Location);
-            $event->queueEvent($discardEvent);
-        }
-        else
-        {
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                $attachment,
+                $sourceId = 0,
+                $asEffect = false,
+                $fromLocation = null,
+                $playerId
+            );
             $event->queueEvent($discardEvent);
         }
     }

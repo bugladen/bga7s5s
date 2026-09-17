@@ -144,10 +144,8 @@ class Action_03072 extends RiskCityAction implements IAbilityThatTargetsCharacte
                 $game->theah->eventCheck($unequipEvent);
                 $game->theah->queueEvent($unequipEvent);
 
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
-                    $attachment->OwnerId,
-                    $attachment->Id,
-                    $attachment->Location,
+                $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                    $attachment,
                     $owner->Id,
                     $asEffect = true
                 );

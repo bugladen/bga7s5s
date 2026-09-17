@@ -41,7 +41,13 @@ class Action_01191 extends AttachmentAction implements IRangedAbility
                 $unequippedEvent = EventFactory::createAttachmentUnequippedEvent($event->playerId, $owner->Id, $duckfootPistol->Id);
                 $event->theah->queueEvent($unequippedEvent);
     
-                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $duckfootPistol->Id, $location, $duckfootPistol->Id, $asEffect = false);
+                $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                    $duckfootPistol,
+                    $duckfootPistol->Id,
+                    $asEffect = false,
+                    $location,
+                    $event->playerId
+                );
                 $event->theah->queueEvent($discardEvent);    
             }
 

@@ -38,6 +38,8 @@ class Maneuver_01142 extends Maneuver implements IAbilityThatTargetsCards
     {
         parent::handleEvent($event);
 
+        // EventManeuverCanceled handler not needed
+
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
@@ -89,7 +91,12 @@ class Maneuver_01142 extends Maneuver implements IAbilityThatTargetsCards
             $game->theah->queueEvent($unequipEvent);
 
             $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($adversary->ControllerId, $attachment->Id, $adversary->Location, $owner->Id, $asEffect = true);
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                $attachment,
+                $owner->Id,
+                $asEffect = true,
+                $adversary->Location
+            );
             $game->theah->queueEvent($discardEvent);            
 
             $game->gamestate->nextState();

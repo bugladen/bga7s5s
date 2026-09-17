@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
@@ -96,24 +97,22 @@ class _03cd21 extends CityAttachment
 
                 // WHY discard the would-be attachment: EventAttachmentEquipping was canceled,
                 // so EventAttachmentEquipped never fires to place the card. Without this the
-                // attachment is left in limbo. Same shape as _01186's handler — CityAttachment
-                // routes to city discard, faction attachments to owner discard.
+                // attachment is left in limbo. Same shape as _01186's handler — route via
+                // createAttachmentDiscardedFromPlayEvent (city vs faction discard).
                 $attachment = $event->theah->getCardById($event->attachmentId);
-                if ($attachment)
+                if ($attachment instanceof Attachment)
                 {
                     $removedEvent = EventFactory::createCardRemovedFromPlayEvent($event->playerId, $attachment->Id, $attachment->Location);
                     $event->theah->queueEvent($removedEvent);
 
-                    if ($attachment instanceof CityAttachment)
-                    {
-                        $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $attachment->Id, $attachment->Location);
-                        $event->queueEvent($discardEvent);
-                    }
-                    else
-                    {
-                        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
-                        $event->queueEvent($discardEvent);
-                    }
+                    $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                        $attachment,
+                        $sourceId = 0,
+                        $asEffect = false,
+                        $fromLocation = null,
+                        $event->playerId
+                    );
+                    $event->queueEvent($discardEvent);
                 }
 
                 $event->canceled = true;

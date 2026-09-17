@@ -127,13 +127,13 @@ if ($event instanceof EventHighDramaPhaseEnd && $this->isAttached())
     {
         // notify why, then:
         $event->theah->queueEvent(EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $owner->Id, $this->Id));
-        $event->theah->queueEvent(EventFactory::createCardDiscardedFromPlayEvent($this->ControllerId, $this->Id, $this->Location, $this->Id, $asEffect = true));
+        $event->theah->queueEvent(EventFactory::createAttachmentDiscardedFromPlayEvent($this, $this->Id, $asEffect = true));
     }
 }
 ```
 
 - Trigger: `EventHighDramaPhaseEnd` (not `EventDuskEndOfDay` / phase-start). Mirror `_01025_Burden`.
-- Destroy chain: unequip then discard (`_01153` / `_01050`). Unequip clears the while-equipped condition.
+- Destroy chain: unequip then `createAttachmentDiscardedFromPlayEvent` (`_01153` / `_01050`). Unequip clears the while-equipped condition.
 - Use `$this->ControllerId` (equipper) for both events — correct even when attached to an opponent.
 
 ## Pattern B''' — Duel-scoped conditional stat / gamble reveal

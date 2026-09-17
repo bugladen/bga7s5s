@@ -118,7 +118,7 @@ class Technique_02026b extends Technique
             $game->theah->queueEvent($unequipEvent);
 
             $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true);
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $owner->Id, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
             $game->gamestate->nextState();

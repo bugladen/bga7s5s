@@ -154,6 +154,8 @@ class Action_01134 extends RiskAction implements ISorcererAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_4)
         {
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $owner = $this->getOwningCard($game->theah);
+
             if ($id == 1)
             {
                 $performer = $game->theah->getCharacterById($performerId);
@@ -162,17 +164,18 @@ class Action_01134 extends RiskAction implements ISorcererAbility
                     throw new \BgaUserException($game->translate("Character is already engaged"));
                 }
 
-                $owner = $this->getOwningCard($game->theah);
-
                 $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $performerId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
 
                 $drawEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
                 $game->theah->queueEvent($drawEvent);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
             }
+
+            // WHY: Ability already resolved (look/discard/reorder). Engage-to-draw is optional;
+            // ActionResolved + SorcererAbilityPlayed must fire either way so reactions like
+            // Elina (01118) can trigger.
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
 
             $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
             $game->theah->queueEvent($sorceryPlayedEvent);
@@ -185,8 +188,25 @@ class Action_01134 extends RiskAction implements ISorcererAbility
     {
         parent::actFromActionPass($game, $state);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_2 || $state == States::HIGH_DRAMA_PLAYER_TURN_01134_4)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_2)
         {
+            $game->gamestate->nextState("pass");
+        }
+
+        // WHY: UI uses Pass for "decline engage" and when performer is already engaged
+        // (Engage button hidden). Previously this path skipped SorcererAbilityPlayed, so
+        // Elina's "after she performs a Sorcerer ability" renown reaction never opened.
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_4)
+        {
+            $owner = $this->getOwningCard($game->theah);
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $game->theah->queueEvent($sorceryPlayedEvent);
+
             $game->gamestate->nextState("pass");
         }
     }

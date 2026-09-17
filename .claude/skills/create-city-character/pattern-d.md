@@ -319,7 +319,7 @@ foreach ($this->getAttachmentsInDeck($game, $owner->ControllerId) as $card)
 
 (This applies to deck/hand pickers; it does NOT apply to in-play card pickers where each copy has distinct state — wounds, attachments, location, controller.)
 
-**Destroy a non-city attachment in play** (pattern from `Action_01174` and `Reaction_03cd18`):
+**Destroy an attachment in play** (pattern from `Action_01174` and `Reaction_03cd18`):
 
 ```php
 $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
@@ -328,13 +328,13 @@ $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
 $game->theah->eventCheck($unequipEvent);
 $game->theah->queueEvent($unequipEvent);
 
-$discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
-    $attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true
+$discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+    $attachment, $owner->Id, $asEffect = true
 );
 $game->theah->queueEvent($discardEvent);
 ```
 
-Two events, in this order: unequip from the character, then discard from play. The `$asEffect = true` flag marks this as effect-driven destruction (as opposed to a pay/discard cost). For city attachments, route to `createCardAddedToCityDiscardPileEvent` instead — see `Character::unEquipAllAttachments`.
+Two events, in this order: unequip from the character, then discard via the helper (city → city discard, faction → owner discard). The `$asEffect = true` flag marks this as effect-driven destruction (as opposed to a pay/discard cost).
 
 ### Pre-commit hook
 

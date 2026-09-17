@@ -5,7 +5,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\reactions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -120,14 +119,7 @@ class Reaction_AttachmentTypeLimit extends GameReaction
         $unequipEvent = EventFactory::createAttachmentUnequippedEvent($character->ControllerId, $character->Id, $attachment->Id);
         $game->theah->queueEvent($unequipEvent);
 
-        if ($attachment instanceof CityAttachment)
-        {
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($character->ControllerId, $attachment->Id, $attachment->Location, $character->Id);
-        }
-        else
-        {
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $character->Id);
-        }
+        $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $character->Id);
         $game->theah->queueEvent($discardEvent);
 
         $game->gamestate->nextState("done");

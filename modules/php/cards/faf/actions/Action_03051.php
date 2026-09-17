@@ -46,7 +46,11 @@ class Action_03051 extends CharacterAction
             return false;
         }
 
-        return count($this->getEngardeableAttachments($theah, $owner, $leader->Location)) > 0;
+        // WHY no attachment gate: City Action has no cost (nothing before a •).
+        // Effects apply left-to-right if applicable — move always; En Garde only
+        // when an engaged attachment will be at the destination. Available with
+        // no attachment, or with attachments already En Garde.
+        return true;
     }
 
     public function handleEvent(Event $event)
@@ -74,8 +78,17 @@ class Action_03051 extends CharacterAction
             );
             $event->theah->queueEvent($moveEvent);
 
-            $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "03051", $this->Id);
-            $event->theah->queueEvent($transition);
+            // Second effect only if applicable (02007 / 02040 shape).
+            if (count($this->getEngardeableAttachments($event->theah, $owner, $leader->Location)) > 0)
+            {
+                $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "03051", $this->Id);
+                $event->theah->queueEvent($transition);
+            }
+            else
+            {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $event->theah->queueEvent($actionResolvedEvent);
+            }
         }
     }
 
@@ -149,6 +162,7 @@ class Action_03051 extends CharacterAction
      * Engaged non-Fake attachments controlled by the player that will be at the
      * destination after Yepikhodov moves there (his own engaged attachments +
      * engaged attachments already on your characters at that location).
+     * Used only for the optional "Then, en garde" step — not for availability.
      *
      * @return Attachment[]
      */

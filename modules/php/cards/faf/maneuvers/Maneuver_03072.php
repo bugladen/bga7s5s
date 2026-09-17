@@ -61,10 +61,8 @@ class Maneuver_03072 extends Maneuver
                 $event->theah->eventCheck($unequipEvent);
                 $event->theah->queueEvent($unequipEvent);
 
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
-                    $attachment->OwnerId,
-                    $attachment->Id,
-                    $attachment->Location,
+                $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                    $attachment,
                     $owner->Id,
                     $asEffect = true
                 );

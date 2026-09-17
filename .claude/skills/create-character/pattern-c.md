@@ -158,11 +158,13 @@ $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
 $game->theah->eventCheck($unequipEvent);
 $game->theah->queueEvent($unequipEvent);
 
-$discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
-    $attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true
+$discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+    $attachment, $owner->Id, $asEffect = true
 );
 $game->theah->queueEvent($discardEvent);
 ```
+
+WHY the helper: CityAttachments must enter the city discard (Forced abilities like Eager Blade listen for that event). Faction attachments go to the owner's discard. Never call `createCardDiscardedFromPlayEvent` alone for a destroy-any-attachment effect.
 
 If the effect draws cards equal to printed cost (+N), **read `$attachment->WealthCost` before queueing destroy** — after unequip/discard the card is no longer a reliable in-play cost source. Cost `0` → still draw `0 + 1 = 1` when the text says "plus one."
 
@@ -206,17 +208,15 @@ For text like Yepikhodov `_03051`: **"City Action: Move <Owner> to your Leader's
 | **Engage** | `createCardEngagedEvent` | `$card->Engaged = true` (spend / tap) |
 | **En Garde** | `createCardEngardedEvent` | `$card->Engaged = false` (ready / untap) |
 
-**Availability:**
+**Availability (no attachment gate):**
 
 1. `cardInCity($owner)` (City Action).
 2. `$theah->getLeaderByPlayerId($playerId)` exists.
 3. `$owner->Location != $leader->Location` — strict "moves to"; already-there is unavailable.
-4. ≥1 Engaged non-`FakeAttachment` that will be at the destination after the move:
-   - Owner's own engaged attachments (they travel with him), **plus**
-   - Engaged attachments on other controlled characters already at `$leader->Location`.
-5. Helper must **not** double-count the owner when looking up destination characters (skip `$character->Id == $owner->Id` in the destination loop) — works both before the move (availability) and after (args/act once EVENTS has flushed the move).
 
-WHY require Engaged: En Garde on an already-ready attachment is a no-op (`EventCardEngarded` unconditionally sets `Engaged = false`). Gating on Engaged also synergizes with Techniques that Engage attachments as a cost.
+WHY no attachment gate: City Action has **no cost** (nothing before a `•`). Effects apply **left-to-right if applicable** — move always; En Garde only when an engaged attachment will be at the destination. Still available with no attachment, or with attachments already En Garde.
+
+**"Then, en garde" candidates** (picker / skip only — not availability): Engaged non-`FakeAttachment` that will be at the destination after the move = owner's own engaged attachments (they travel) **plus** engaged attachments on other controlled characters already at `$leader->Location`. Helper must **not** double-count the owner (skip `$character->Id == $owner->Id` in the destination loop). Already-ready attachments are not candidates (`EventCardEngarded` would be a no-op).
 
 **Flow:**
 
@@ -227,9 +227,15 @@ $moveEvent = EventFactory::createCardMovingEvent(
     $engage = false, $owner->Id, $this->Id
 );
 $event->theah->queueEvent($moveEvent);
-$event->theah->queueEvent(EventFactory::createTransitionEvent(
-    $event->playerId, $owner->Id, "NNNNN", $this->Id
-));
+
+// Second effect only if applicable (02007 / 02040 shape):
+if (count($engardeable) > 0) {
+    $event->theah->queueEvent(EventFactory::createTransitionEvent(
+        $event->playerId, $owner->Id, "NNNNN", $this->Id
+    ));
+} else {
+    $event->theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
+}
 
 // HIGH_DRAMA_PLAYER_TURN_NNNNN — attachment button picker (Adelheide / Damya _2 shape):
 // getArgsFromAction → args['attachments'] = [['id'=>…,'name'=>…], …]
@@ -238,7 +244,7 @@ $event->theah->queueEvent(EventFactory::createTransitionEvent(
 
 Destination may be **Home** when the Leader is Home — City Action only requires the *performer* in city. Move still uses `engage=false` (Engage not printed).
 
-Reference: `Action_03051`, attachment-button sibling `Action_03038b_2` / `Action_01194`.
+Reference: `Action_03051`, skip sibling `Action_02007` / `Action_02040`, attachment-button sibling `Action_03038b_2` / `Action_01194`.
 
 ### Move target Mercenary Home ("in play and not available")
 
