@@ -354,6 +354,13 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04044': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseResolveSchemes_04004_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();

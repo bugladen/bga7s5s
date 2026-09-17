@@ -106,3 +106,8 @@
 | `modules/php/cards/_7s5s/_01152.php` | Always-offer add-or-move-adjacent sibling (no fewest gate); Pass → move path. |
 | `modules/php/cards/_7s5s/_01144.php` | Fewest-then-second-Add sibling (unique fewest / no ties). |
 | `modules/php/cards/_7s5s/maneuvers/Maneuver_01110.php` | Wound vs location-uncontrolled button choice sibling. |
+| `modules/php/cards/bas/_04044.php` (Adrift in the Wind) | **Two-different-locations Renown + Leader-at-uncontrolled +1 Finesse passive + Leader Reaction (challenge → uncontrolled).** Scaffold name was "Shallow Harbor" — art is Adrift. Initiative 65 / Panache 0 / Brawl+Relentless. |
+| `modules/php/cards/bas/reactions/Reaction_04044.php` | Leader trait gate on `EventChallengeIssued`; `Controller != 0` + `canLocationBecomeUncontrolledBy`; Pass without `setUsed`. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04044.php` | Two-location planning resolve (`actCityLocationsForReknownSelected` — needs `PlayerActions.js` actionMap). |
+| `modules/php/cards/_7s5s/_01143.php` (Contempt and Hatred) | Scheme-at-Home aura sibling (`isSchemeInPlay` + clear on `EventCardSentToLocker` + condition tooltip). |
+| `modules/php/cards/_7s5s/_01120.php` (Pavel) | Character sibling: location-control → ±1 Influence (Claim / Uncontrolled / CardMoved listeners). |

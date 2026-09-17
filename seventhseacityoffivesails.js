@@ -173,6 +173,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.TOMOE_SANGO_CONDITION = 'Finesse Modified by Tomoe Sango';
             this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
             this.FORGED_FOR_BATTLE_CONDITION = 'Finesse Modified by Forged for Battle';
+            this.ADRIFT_IN_THE_WIND_CONDITION = 'Finesse Modified by Adrift in the Wind';
             this.HARPOON_CONDITION = 'Harpooned (-1 Finesse; cannot swap or move)';
             this.LODESTONE_CONDITION = 'Lodestone (opponents cannot move Home)';
             this.SHACKLES_CONDITION = 'Shackled (cannot move)';

@@ -235,3 +235,18 @@ Card text:
 8. **JS (bas).** Planning: two-location + actionMap. HD1: `locationIds` selectable. HD2: highlight `ids` + Confirm + Pass.
 
 Full implementation: `modules/php/cards/bas/_04015.php`, `actions/Action_04015.php`, `States/bas/State_planningPhaseResolveSchemes04015.php`, `State_highDramaPhase04015{,_2}.php`.
+
+## Walkthrough: implementing `_04044` (Adrift in the Wind)
+
+Card text:
+
+> Add a Renown to two different locations.
+> While your **Leader** is at an uncontrolled location, they gain +1[Finesse].
+> **Leader Reaction:** When your performer issues a challenge • Their location becomes uncontrolled.
+
+1. **Constructor.** Ussura, Init 65 / Panache 0 (match art). Traits Brawl + Relentless. **Fix Name from art** — scaffold said "Shallow Harbor"; title band is Adrift in the Wind. Register `IHasReactions` + `Reaction_04044`.
+2. **Resolve.** Same as `_04015`: notify + `createTransitionEvent(..., "04044")` + `actCityLocationsForReknownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap**. Constant `2604044`.
+3. **Passive (on the scheme).** `isSchemeInPlay` = `LOCATION_PLAYER_HOME`. Uncontrolled = `locationInCity` + `Controller == 0` (Home never). Recompute on ResolveScheme (scheme already Home from Approach), Leader `EventCardMoved` (**`$event->toLocation`** — Location still old), Claim/Uncontrolled at Leader's location (hub-first — Controller already updated). Clear on scheme `EventCardSentToLocker`. `createCharacterFinesseModifedEvent` ±1 + `ADRIFT_IN_THE_WIND_CONDITION` + Started/Ended notifs (`hasCondition` idempotent). Wire `Game.php` / `seventhseacityoffivesails.js` / `Notifications.js`.
+4. **Reaction.** `EventChallengeIssued` + challenger owned + `hasTrait("Leader")` + `Controller != 0` + `canLocationBecomeUncontrolledBy`. Capture location; Use/Pass; Pass without `setUsed`. Resolve → `createLocationBecomesUncontrolledEvent`. Synergy with the passive is intentional.
+
+Full implementation: `modules/php/cards/bas/_04044.php`, `reactions/Reaction_04044.php`, `States/bas/State_planningPhaseResolveSchemes04044.php`.

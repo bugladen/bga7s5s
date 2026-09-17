@@ -141,6 +141,9 @@ class Game extends \Bga\GameFramework\Table
     // WHY: Forged for Battle (_04014) +1 Finesse for the duration of a challenge/intervention.
     // Condition surfaces the source on the character tooltip (Soline / Harpoon pattern).
     final const FORGED_FOR_BATTLE_CONDITION = "Finesse Modified by Forged for Battle";
+    // WHY: Adrift in the Wind (_04044) +1 Finesse while Leader at uncontrolled location.
+    // Condition surfaces the source on the Leader tooltip (Contempt / Forged pattern).
+    final const ADRIFT_IN_THE_WIND_CONDITION = "Finesse Modified by Adrift in the Wind";
     final const HARPOON_CONDITION = "Harpooned (-1 Finesse; cannot swap or move)";
     final const LODESTONE_CONDITION = "Lodestone (opponents cannot move Home)";
     final const SHACKLES_CONDITION = "Shackled (cannot move)";

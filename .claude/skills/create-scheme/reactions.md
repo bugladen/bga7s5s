@@ -41,6 +41,22 @@ public function handleEvent(Event $event)
 
 Reference: `Reaction_03005` (claim a location after Red Hand's challenge refused), `Reaction_02004` (move adjacent performer when opponent initiates pressure at scheme controller's location).
 
+### Leader Reaction — challenge issued → location becomes uncontrolled
+
+Scheme text like Adrift in the Wind (`_04044`):
+
+> **Leader Reaction:** When your performer issues a challenge • Their location becomes uncontrolled.
+
+1. **Trigger:** `EventChallengeIssued` + `isAvailable()` + `!$event->canceled`.
+2. **Identity:** challenger controlled by scheme owner **and** `hasTrait("Leader")` — Leader is a trait gate (same family as Duelist/Merchant), not a Sorcerer ability. The challenger *is* the performer of the challenge.
+3. **Payoff gates before offering:** location is a city location that is **currently controlled** (`Controller != 0`) **and** `$theah->canLocationBecomeUncontrolledBy(...)` (Indomitable Will). Do not offer when already uncontrolled — "becomes" would be a no-op.
+4. Capture `$this->location = $challenger->Location` + `$owner->IsUpdated = true`. Surface the location name in `getReactionDescription`.
+5. Buttons: Make Uncontrolled + Pass. Pass clears capture without `setUsed`.
+6. On confirm: recheck both gates; queue `createLocationBecomesUncontrolledEvent($owner->ControllerId, $location)`; `setUsed(true)` only on success. Notify if blocked mid-window.
+7. **Synergy with a co-printed Leader-at-uncontrolled Finesse passive is intentional** — resolving this Reaction can immediately unlock the passive if the Leader stays at that location (scheme `handleEvent` on `EventLocationBecomesUncontrolled` recomputes).
+
+Reference: `Reaction_04044`; uncontrol action siblings `Action_01112a` / `Action_04034`.
+
 ### Pressure total bonus (+1 per Trait at location)
 
 Scheme text like Meeting of the Minds (`_04035`):
