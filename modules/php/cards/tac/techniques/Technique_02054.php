@@ -92,17 +92,27 @@ class Technique_02054 extends Technique implements IRangedAbility
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_02054)
         {
             $owner = $this->getOwningCard($game->theah);
-            $adversaryId = $game->theah->getDuelOpponentId($owner->ControllerId);
+            // WHY: getDuelOpponentId expects a duel participant character id
+            // (challenger_id/defender_id), not a player ControllerId. Passing
+            // ControllerId never matches, so it always returns challenger_id —
+            // often wounding the wrong character (same bug as Maneuver_01110).
+            $actor = $game->theah->getDuelRoundActor();
+            $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
+            $adversary = $game->theah->getCharacterById($adversaryId);
 
             if ($id == 1)
             {
                 $this->AdversarySufferedWound = true;
                 $owner->IsUpdated = true;
+                // WHY: nextState → stRunEvents rebuilds the city from DB before
+                // runEvents. IsUpdated is only flushed at the end of each event,
+                // so without an immediate write AdversarySufferedWound is lost
+                // and +1 Parry still applies after they chose the wound.
+                $game->updateCardObjectInDb($owner);
 
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($adversaryId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $adversary = $game->theah->getCharacterById($adversaryId);
                 $game->notify->all("message", clienttranslate('${player_name} has chosen to suffer a wound.'), [
                     "player_name" => $game->getPlayerNameById($adversary->ControllerId),
                 ]);
@@ -110,7 +120,6 @@ class Technique_02054 extends Technique implements IRangedAbility
 
             if ($id == 2)
             {
-                $adversary = $game->theah->getCharacterById($adversaryId);
                 $game->notify->all("message", clienttranslate('${player_name} has declined to suffer a wound. +1 Parry.'), [
                     "player_name" => $game->getPlayerNameById($adversary->ControllerId),
                 ]);
