@@ -109,5 +109,10 @@
 | `modules/php/cards/bas/_04044.php` (Adrift in the Wind) | **Two-different-locations Renown + Leader-at-uncontrolled +1 Finesse passive + Leader Reaction (challenge → uncontrolled).** Scaffold name was "Shallow Harbor" — art is Adrift. Initiative 65 / Panache 0 / Brawl+Relentless. |
 | `modules/php/cards/bas/reactions/Reaction_04044.php` | Leader trait gate on `EventChallengeIssued`; `Controller != 0` + `canLocationBecomeUncontrolledBy`; Pass without `setUsed`. |
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04044.php` | Two-location planning resolve (`actCityLocationsForReknownSelected` — needs `PlayerActions.js` actionMap). |
+| `modules/php/cards/bas/_04045.php` (Stand Your Ground) | **Docks-or-Bazaar Renown pick + En Garde Duelist unrefusable Combat challenge.** Init 81 / Panache -1 / Challenge+Relentless. Performer stays En Garde. |
+| `modules/php/cards/bas/actions/Action_04045.php` | `STAND_YOUR_GROUND_CHALLENGE_TYPE`; no engage; reject throw + JS disable; issuer = owner controls challenger (mirror match); `EventGenerateChallengeThreat` actorThreat; destroy-during-duel score Renown (issuer's defender only). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04045.php` | Planning Docks/Bazaar pick (`actFromCardWithLocations`). |
+| `modules/php/cards/tac/actions/Action_02061.php` | Unrefusable Combat challenge sibling (Risk; **does** engage in `stSetupChallenge`). |
+| `modules/php/cards/_7s5s/actions/Action_01071.php` | Epee unrefusable + during-duel `IN_DUEL`/`CHALLENGE_TYPE` correlator sibling. |
 | `modules/php/cards/_7s5s/_01143.php` (Contempt and Hatred) | Scheme-at-Home aura sibling (`isSchemeInPlay` + clear on `EventCardSentToLocker` + condition tooltip). |
 | `modules/php/cards/_7s5s/_01120.php` (Pavel) | Character sibling: location-control → ±1 Influence (Claim / Uncontrolled / CardMoved listeners). |

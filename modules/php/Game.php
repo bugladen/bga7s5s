@@ -266,6 +266,7 @@ class Game extends \Bga\GameFramework\Table
     final const RATTLE_THE_RIGGING_CHALLENGE_TYPE = 26;
     final const RAVEN_CHALLENGE_TYPE = 27;
     final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;
+    final const STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
 
     //Duel global variables
     //Duel Names

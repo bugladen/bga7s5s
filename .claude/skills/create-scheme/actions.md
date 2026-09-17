@@ -17,7 +17,7 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 Pre-commit hook: `SchemeAction` / `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`, `_04034`.
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`, `_04034`, `_04045`.
 
 **Action-object persistence:** public fields on the Action (`$MoveMode`, `$pendingMusterId`, …) survive only if you call `$game->updateCardObjectInDb($owner)` after mutating them. `$owner->IsUpdated = true` alone is **not** flushed before `stRunEvents` rebuilds cards from DB (learned on `_03029` / `_03062` / `_03063`).
 
@@ -317,7 +317,24 @@ Use when the text is **"Engage your performer • They issue a [Stat] challenge 
 3. `"NNNNN"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` maps to **`HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`** (framework target picker — no custom HD state for the target pick). Implement `isValidTargetForAbility` for server validation.
 4. Mint a `CHALLENGE_TYPE` kept **out of** `stIssueChallenge`'s auto-engage list. WHY: engage already ran in step 2; `NORMAL_CHALLENGE_TYPE` would double-engage. Same idea as Cornered / Sanjay / Don Constanzo.
 
-**Engagement trichotomy** (see `create-character` Pattern F): (a) Engage printed → engage in ActionTriggered + custom type out of auto-engage (`_03042`, Cornered); (b) conditional engage; (c) never engages (Sanjay). Do not copy the wrong case.
+**Engagement trichotomy** (see `create-character` Pattern F): (a) Engage printed → engage in ActionTriggered + custom type out of auto-engage (`_03042`, Cornered); (b) conditional engage; (c) never engages (Sanjay, **En Garde** `_04045`). Do not copy the wrong case.
+
+### En Garde Duelist unrefusable Combat challenge (same performer issues)
+
+Use when the printed text is **"En Garde Duelist Action: Your performer issues an unrefusable [Combat] challenge to target opposing character"** plus accept-time threat and/or destroy-during-duel payoff. Canonical: `_04045` (Stand Your Ground). Unrefusable sibling: Unsanctioned Duel `Action_02061`. During-duel correlator: Epee `Action_01071`. Accept-time threat: Sworn Swords `Action_03030`.
+
+**Flow:**
+
+1. `SchemeCityAction` + `IAbilityThatTargetsCharacters` + `RequiresPerformerSelected = true`. Printed "Action" (not City Action) still needs a city performer to issue a challenge — use City Action base.
+2. `getPerformersForAction`: `hasTrait("Duelist")` + `!$Engaged` (En Garde) + `canChallenge` + ≥1 opposing at location. `isAvailableToPlayer` = `count(...) > 0`.
+3. `EventActionTriggered`: re-validate. **Do not engage.** Set `STAT_COMBAT` + custom `CHALLENGE_TYPE`. Transition `"NNNNN"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`.
+4. Keep the type **off** `stIssueChallenge` auto-engage **and** off Unsanctioned's `stSetupChallenge` engage special-case. En Garde means the performer stays unengaged.
+5. **Unrefusable (lockstep):** `FrameworkActionsTrait::actHighDramaChallengeActionReject` throw; `OnUpdateActionButtons.js` disable Refuse (same `if` as Epee/Unsanctioned); matching JS int in `seventhseacityoffivesails.js`; **ZombieTrait accept-challenge must Accept** (default is Reject — would throw). Do **not** gate intervene.
+6. **When accepted, your participant gains a threat:** `EventGenerateChallengeThreat` + type match **and this scheme's owner controls `$event->actorId`** (the challenger). Do **not** persist `$IssuedThisChallenge` — `EventActionResolved` `!IN_DUEL` fires in the challenge pipeline and wipes it before threat generate. Mirror match: the opponent's scheme owner is not the challenger, so they do not add a second threat.
+7. **If your adversary is destroyed during the duel, gain a Renown:** Action `handleEvent` on `EventCharacterDestroyed`. Gate scheme `LOCATION_PLAYER_HOME` + `IN_DUEL` + type + **challenger controlled by this scheme's owner**. Destroyed id is the **defender** (issuer's adversary). Do **not** pay the defending mirror scheme when the challenger dies. Queue `createPlayerGainsReknownEvent` (score).
+8. Pre-commit: challenge-flow `createActionResolvedEvent()` comment (Cornered / `_03042`).
+
+Reference: `Action_04045`, `Action_02061`, `Action_01071`, `Action_03030`.
 
 ### Pattern G — Discard-to-refuse (conditional refuse cost)
 

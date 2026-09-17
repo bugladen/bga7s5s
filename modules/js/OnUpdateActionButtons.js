@@ -297,7 +297,7 @@ onUpdateActionButtons: function( stateName, args )
                 : _('Refuse');
             this.addActionButton(`btnRefuse`, refuseLabel, () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
-            if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+            if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE || args.challengeType == this.STAND_YOUR_GROUND_CHALLENGE_TYPE)
                 dojo.addClass('btnRefuse', 'disabled');
             if (args.challengeType == this.AJA_CHALLENGE_TYPE && args.defenderFinesse < 3)
                 dojo.addClass('btnRefuse', 'disabled');

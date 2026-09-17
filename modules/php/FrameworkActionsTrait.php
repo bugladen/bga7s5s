@@ -1377,6 +1377,11 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Unsanctioned Duel: Refusing a Challenge is not allowed."));
         }
 
+        if ($challengeType == Game::STAND_YOUR_GROUND_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("Stand Your Ground: Refusing a Challenge is not allowed."));
+        }
+
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
 

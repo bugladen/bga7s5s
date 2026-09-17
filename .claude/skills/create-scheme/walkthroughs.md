@@ -250,3 +250,20 @@ Card text:
 4. **Reaction.** `EventChallengeIssued` + challenger owned + `hasTrait("Leader")` + `Controller != 0` + `canLocationBecomeUncontrolledBy`. Capture location; Use/Pass; Pass without `setUsed`. Resolve → `createLocationBecomesUncontrolledEvent`. Synergy with the passive is intentional.
 
 Full implementation: `modules/php/cards/bas/_04044.php`, `reactions/Reaction_04044.php`, `States/bas/State_planningPhaseResolveSchemes04044.php`.
+
+## Walkthrough: implementing `_04045` (Stand Your Ground)
+
+Card text:
+
+> Add a Renown to [The City Docks] or [The Grand Bazaar].
+> **En Garde Duelist Action:** Your performer issues an unrefusable [Combat] challenge to target opposing character. When accepted, your participant gains a threat. If your adversary is destroyed during the duel, gain a Renown. *(Intervening accepts the challenge)*
+
+1. **Constructor.** Ussura, Init 81 / Panache -1 (match art). Traits Challenge + Relentless. Register `IHasActions` + `Action_04045`.
+2. **Resolve.** One planning pick: `locationIds` = Docks and Bazaar from `getCityLocations()`. `actFromCardWithLocations`. Constant `2604045`. JS like `_04014` (`locationIds`, not two-different actionMap).
+3. **Action.** `SchemeCityAction` + `IAbilityThatTargetsCharacters`. En Garde = `!$Engaged` (no Engage). Duelist trait. Full legality includes opposing at location.
+4. **Challenge type `STAND_YOUR_GROUND_CHALLENGE_TYPE = 29`.** Off `stIssueChallenge` auto-engage **and** Unsanctioned `stSetupChallenge` engage. `"04045"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. Matching JS int.
+5. **Unrefusable.** `actHighDramaChallengeActionReject` throw; JS disable Refuse; ZombieTrait Accept (not default Reject). Intervene stays legal.
+6. **Accept-time threat.** `EventGenerateChallengeThreat` → `actorThreat += 1` only if this scheme's owner controls the challenger (`$event->actorId`). Do not persist `$IssuedThisChallenge`.
+7. **Destroy during duel.** `EventCharacterDestroyed` only if **this** scheme's owner is the duel challenger and the **defender** died. Mirror match: the opponent's Stand Your Ground does not pay. `createPlayerGainsReknownEvent` (score).
+
+Full implementation: `modules/php/cards/bas/_04045.php`, `actions/Action_04045.php`, `States/bas/State_planningPhaseResolveSchemes04045.php`.

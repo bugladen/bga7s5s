@@ -167,6 +167,17 @@ public function actFromCardWithIds(Game $game, int $state, string $stateName, st
 
 Reference: `_01071`, `_02014`, `_02046`, `_02052`.
 
+### Docks or Bazaar (two named locations)
+
+When the scheme says **"Add a Renown to [The City Docks] or [The Grand Bazaar]"**:
+
+1. `argsFromCard` / `locationIds` = those two names that exist in `getCityLocations()` (both are always in play, including 2p).
+2. `actFromCardWithLocations` / `actFromCardWithIds`. Re-validate membership.
+3. Do **not** use `actCityLocationsForReknownSelected` (that helper is N free city picks).
+4. JS: same as `_04014` (`locationIds` + Confirm Location).
+
+Reference: `_04045`.
+
 ### Fixed location + pick another
 
 When the scheme says **"Add a Renown to [City Docks] and another location"** (one destination printed, one chosen):
