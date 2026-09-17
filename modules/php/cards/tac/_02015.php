@@ -35,6 +35,21 @@ class _02015 extends Scheme
         $this->resetCard();
     }
 
+    /**
+     * @return list<string>
+     */
+    private function cityLocationNamesWithNoRenown(Game $game): array
+    {
+        $locations = $game->theah->getCityLocations();
+        $names = [];
+        foreach ($locations as $location) {
+            if ($location->Renown == 0) {
+                $names[] = $location->Name;
+            }
+        }
+        return $names;
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
@@ -57,17 +72,39 @@ class _02015 extends Scheme
 
         if ($event instanceof EventResolveScheme && $event->scheme->Id == $this->Id)
         {
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves.  
-            Renown will be added to two locations that have no Renown. '), [
+            $game = $event->theah->game;
+            $emptyNames = $this->cityLocationNamesWithNoRenown($game);
+            // WHY: "two locations with no Renown" is do-as-much-as-possible — if fewer than
+            // two empty locations exist, place on what remains (or skip if none). Hard-requiring
+            // two picks stranded the player when only one empty location was available.
+            if (count($emptyNames) == 0) {
+                $game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. There are no city locations without Renown; no Renown is placed.'), [
+                    "scheme_inject_code" => $this->getInjectCode(),
+                ]);
+                return;
+            }
+
+            $game->notify->all("message", clienttranslate('${scheme_inject_code} now resolves. ${player_name} must choose city location(s) with no Renown to place Renown onto (up to two different locations).'), [
                 "scheme_inject_code" => $this->getInjectCode(),
+                "player_name" => $event->playerName,
             ]);
 
-            //Transition to the state where player can choose a location.
             $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "02015");
             $transition->priority = Event::MEDIUM_PRIORITY;
-            $event->theah->queueEvent($transition);            
-
+            $event->theah->queueEvent($transition);
         }
+    }
+
+    public function argsFromCard(Game $game, int $state, string $stateName, string $internalId): array
+    {
+        $args = parent::argsFromCard($game, $state, $stateName, $internalId);
+
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_02015) {
+            $args["locationIds"] = $this->cityLocationNamesWithNoRenown($game);
+            $args["requiredLocationCount"] = min(2, count($args["locationIds"]));
+        }
+
+        return $args;
     }
 
     public function actFromCardWithIds(Game $game, int $state, string $stateName, string $internalId, array $ids): void
@@ -75,23 +112,35 @@ class _02015 extends Scheme
         parent::actFromCardWithIds($game, $state, $stateName, $internalId, $ids);
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_02015)
-        {            
-            if (count($ids) != 2)
+        {
+            $empty = $this->cityLocationNamesWithNoRenown($game);
+            $required = min(2, count($empty));
+
+            if (count($ids) != $required)
             {
-                throw new UserException($game->translate("You must choose two locations that have no Renown."));
+                if ($required == 2) {
+                    throw new UserException($game->translate("You must choose two different locations that have no Renown."));
+                }
+                throw new UserException($game->translate("You must choose a location that has no Renown."));
             }
 
-            if ($ids[0] == $ids[1])
+            $ids = array_values(array_unique($ids));
+            if (count($ids) != $required)
             {
-                throw new UserException($game->translate("You must choose two different locations."));
+                throw new UserException($game->translate("You must choose different locations."));
             }
 
             foreach ($ids as $id)
             {
-                $location = $game->theah->getCityLocation($id);
-                if ($location->Renown > 0)
+                if (! in_array($id, $empty, true))
                 {
-                    throw new UserException(sprintf($game->translate("%s has/have Renown."), $location->Name));
+                    throw new UserException($game->translate("Each chosen location must have no Renown."));
+                }
+
+                $location = $game->theah->getCityLocation($id);
+                if ($location == null)
+                {
+                    throw new UserException($game->translate("Location not found"));
                 }
 
                 $event = EventFactory::createRenownAddedToLocationEvent($this->ControllerId, $id, 1, $this->getInjectCode());

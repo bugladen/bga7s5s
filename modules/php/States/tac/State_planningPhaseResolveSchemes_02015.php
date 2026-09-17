@@ -20,8 +20,8 @@ class State_planningPhaseResolveSchemes_02015 extends GameState
             name: "planningPhaseResolveSchemes_02015",
 
             // optional
-            description: clienttranslate('${actplayer} is choosing options to resolve their Scheme.'),
-            descriptionMyTurn: clienttranslate('Teeth of the Drachen') . clienttranslate(': ${you} must choose two locations that have no Renown: '),
+            description: clienttranslate('Teeth of the Drachen') . clienttranslate(': ${actplayer} must choose location(s) with no Renown to place Renown onto (up to two).'),
+            descriptionMyTurn: clienttranslate('Teeth of the Drachen') . clienttranslate(': ${you} must choose location(s) with no Renown to place Renown onto (up to two): '),
             transitions: [
                 "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
             ],
