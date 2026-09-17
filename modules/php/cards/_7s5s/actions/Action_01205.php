@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -60,6 +61,46 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharact
         {
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01205", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Effects must wait until EventCharacterTargeted survives. Unyielding Loyalty
+        // (and Maryam / Vittoria) set canceled=true during that event. Queuing engage+move
+        // beside the cost engage let UL land on a later Moving after Elena was already
+        // Engaged — cancel stopped the kidnap move but not the effect engage. Cost
+        // (Engage Giacinto) is queued first with no batchId so it always pays.
+        // Giacinto sits in a city row (before HAND in buildCity), so this handler may
+        // queue effects before UL cancels; batchId + deleteEventBatch still strips them.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $giacinto = $this->getOwningCharacter($event->theah);
+            $victimId = $game->globals->get(Game::CHOSEN_CARD);
+            $victim = $event->theah->getCharacterById($victimId);
+            $locationName = $game->globals->get(Game::CHOSEN_LOCATION);
+
+            if ($victim === null || $locationName === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id, $giacinto->Id, $this->Id);
+            $victimEngageEvent->batchId = $batchId;
+            $event->theah->queueEvent($victimEngageEvent);
+
+            // WHY engage=false: Engage is its own clause above. Tying engage to CardMoved
+            // left Lodestone/cancel targets engaged when only the move was stopped (01104).
+            $giacintoMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Location, $locationName, false, $giacinto->Id, $this->Id);
+            $giacintoMoveEvent->batchId = $batchId;
+            $event->theah->queueEvent($giacintoMoveEvent);
+
+            $victimMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $victim->Id, $victim->Location, $locationName, false, $giacinto->Id, $this->Id);
+            $victimMoveEvent->batchId = $batchId;
+            $event->theah->queueEvent($victimMoveEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($giacinto->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -132,7 +173,7 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharact
 
             $game->gamestate->nextState("victimChosen");
         }
-}
+    }
 
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void  
     {
@@ -152,35 +193,23 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new \BgaUserException(sprintf($game->translate("Location %s is not adjacent to Location %s."), $location->Name, $giacinto->Location));
             }
 
-            $batchId = $game->getNextEventBatchId();
+            $game->globals->set(Game::CHOSEN_LOCATION, $location->Name);
 
+            // WHY no batchId: printed cost. Must survive Unyielding Loyalty / Maryam cancel
+            // of the effect batch. Not moved to announceAction — multi-step UI can still
+            // Back from location pick; cost pays only on final location commit. (Risk
+            // Actions use announce for Night of Drinking; this City Action is not canceled by 01109.)
             $giacintoEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Id, $this->Id);
-            $giacintoEngageEvent->batchId = $batchId;
             $game->theah->eventCheck($giacintoEngageEvent);
-
-            $victimEngageEvent = EventFactory::createCardEngagedEvent($giacinto->ControllerId, $victim->Id, $giacinto->Id, $this->Id);
-            $victimEngageEvent->batchId = $batchId;
-            $game->theah->eventCheck($victimEngageEvent);
-
-            $giacintoMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $giacinto->Id, $giacinto->Location, $location->Name, false, $giacinto->Id, $this->Id);
-            $giacintoMoveEvent->batchId = $batchId;
-            $game->theah->eventCheck($giacintoMoveEvent);
-
-            $victimMoveEvent = EventFactory::createCardMovingEvent($giacinto->ControllerId, $victim->Id, $victim->Location, $location->Name, true, $giacinto->Id, $this->Id);
-            $victimMoveEvent->batchId = $batchId;
-            $game->theah->eventCheck($victimMoveEvent);
-
             $game->theah->queueEvent($giacintoEngageEvent);
-            $game->theah->queueEvent($victimEngageEvent);
 
-            $game->theah->queueEvent($giacintoMoveEvent);
-            $game->theah->queueEvent($victimMoveEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($giacinto->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($giacinto->ControllerId, $victim->Id, $giacinto->Id, $this->Id);
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("locationChosen");
-
         }
     }
 }
