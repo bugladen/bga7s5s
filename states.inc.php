@@ -1422,6 +1422,8 @@ $machinestates = [
             "transitions" => [
                 "accepted" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS,
                 "rejected" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS,
+                // WHY: Accepted but challenged already destroyed (Stiletto) — threat fizzles.
+                "fizzled" => States::NEXT_PLAYER,
                 ]
         ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS => [

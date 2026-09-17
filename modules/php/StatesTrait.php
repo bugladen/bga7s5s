@@ -910,6 +910,8 @@ trait StatesTrait
                 "defendingPlayerId" => $defender->ControllerId
             ]);
 
+            $this->clearChallengeLastKnownParticipants();
+
             $this->gamestate->nextState("cancelled");
         }
         else
@@ -971,100 +973,144 @@ trait StatesTrait
     public function stHighDramaChallengeActionResolution()
     {
         $this->globals->set(GAME::PASS_COUNT, 0);
+        $this->theah->buildCity();
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
-        $performer = $this->getCardObjectFromDb($performerId);
+        $performer = $this->theah->getCharacterById($performerId);
+        $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
+        $target = $this->theah->getCharacterById($targetId);
 
         if ($this->globals->get(GAME::CHALLENGE_ACCEPTED))
         {
+            // WHY: Challenged destroyed by ChallengeIssued reaction (e.g. Stiletto) before
+            // Accept — no duel participant; threat fizzles (absent adversary). Do not start
+            // a duel with a dead round-1 actor.
+            if ($target === null || $this->characterIsInDiscardOrLocker($target))
+            {
+                $this->notifyAllPlayers("message", clienttranslate('The Challenge ends: the challenged character is no longer present. Threat fizzles.'), []);
+
+                $resolvedPlayerId = $performer !== null
+                    ? $performer->ControllerId
+                    : (int) $this->globals->get(GAME::CURRENT_PLAYER);
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($resolvedPlayerId);
+                $this->theah->queueEvent($actionResolvedEvent);
+                $this->clearChallengeLastKnownParticipants();
+                $this->gamestate->nextState("fizzled");
+                return;
+            }
+
             $this->gamestate->nextState("accepted");
         }
         else
         {
-            //Challenge was rejected, wound the target by the threat value.  
-            $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
-            $target = $this->getCardObjectFromDb($targetId);
-
+            //Challenge was rejected, wound the target by the threat value.
             $challengerThreat = $this->globals->get(GAME::CHALLENGER_THREAT);
             $defenderThreat = $this->globals->get(GAME::DEFENDER_THREAT);
             $defenderThreatIsLethal = $this->globals->get(GAME::DEFENDER_THREAT_IS_LETHAL);
             $combatStatUsed = $this->globals->get(GAME::CHALLENGE_STAT);
 
-            if ($challengerThreat > 0)
-            {
-                $stat = $target->ModifiedCombat;
-                $reason = "<p>";
-                switch ($combatStatUsed)
-                {
-                    case GAME::STAT_COMBAT:
-                        $stat = $target->ModifiedCombat;
-                        $reason .= $this->translate("Stat Used for Challenge was Combat.");
-                        break;
-                    case GAME::STAT_FINESSE:
-                        $stat = $target->ModifiedFinesse;
-                        $reason .= $this->translate("Stat Used for Challenge was Finesse.");
-                        break;
-                    case GAME::STAT_INFLUENCE:
-                        $stat = $target->ModifiedInfluence;
-                        $reason .= $this->translate("Stat Used for Challenge was Influence.");
-                        break;
-                }    
+            $performerGone = $performer === null || $this->characterIsInDiscardOrLocker($performer);
+            $targetGone = $target === null || $this->characterIsInDiscardOrLocker($target);
 
-                $wounds = $challengerThreat;
-                $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $challengerThreat . ".";
-                if ($challengerThreat > $stat)
+            // WHY: Challenged already destroyed — refuse threat has no recipient; fizzle.
+            if ($targetGone)
+            {
+                $this->notifyAllPlayers("message", clienttranslate('Challenge refused, but the challenged character is no longer present. Threat fizzles.'), []);
+            }
+            else
+            {
+                if ($challengerThreat > 0 && ! $performerGone)
                 {
-                    $wounds = $stat;
-                    $reduction = $challengerThreat - $stat;
-                    $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
+                    $stat = $target->ModifiedCombat;
+                    $reason = "<p>";
+                    switch ($combatStatUsed)
+                    {
+                        case GAME::STAT_COMBAT:
+                            $stat = $target->ModifiedCombat;
+                            $reason .= $this->translate("Stat Used for Challenge was Combat.");
+                            break;
+                        case GAME::STAT_FINESSE:
+                            $stat = $target->ModifiedFinesse;
+                            $reason .= $this->translate("Stat Used for Challenge was Finesse.");
+                            break;
+                        case GAME::STAT_INFLUENCE:
+                            $stat = $target->ModifiedInfluence;
+                            $reason .= $this->translate("Stat Used for Challenge was Influence.");
+                            break;
+                    }
+
+                    $wounds = $challengerThreat;
+                    $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $challengerThreat . ".";
+                    if ($challengerThreat > $stat)
+                    {
+                        $wounds = $stat;
+                        $reduction = $challengerThreat - $stat;
+                        $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
+                    }
+
+                    if ($wounds > 0)
+                    {
+                        $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $target->Id, $wounds, $reason);
+                        $this->theah->queueEvent($event);
+                    }
                 }
 
-                if ($wounds > 0)
+                if ($defenderThreat > 0)
                 {
-                    $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $target->Id, $wounds, $reason);
-                    $this->theah->queueEvent($event);
+                    // WHY: Challenger may be dead (Stiletto) — RH cap uses last-known duel stat.
+                    $rhSource = $performer;
+                    if ($performerGone)
+                    {
+                        $lastKnown = $this->getChallengeLastKnownCharacter($performerId);
+                        if ($lastKnown !== null)
+                        {
+                            $rhSource = $lastKnown;
+                        }
+                    }
+
+                    $stat = $rhSource->ModifiedCombat;
+                    $reason = "<p>";
+                    switch ($combatStatUsed)
+                    {
+                        case GAME::STAT_COMBAT:
+                            $stat = $rhSource->ModifiedCombat;
+                            $reason .= $this->translate("Stat Used for Challenge was Combat.");
+                            break;
+                        case GAME::STAT_FINESSE:
+                            $stat = $rhSource->ModifiedFinesse;
+                            $reason .= $this->translate("Stat Used for Challenge was Finesse.");
+                            break;
+                        case GAME::STAT_INFLUENCE:
+                            $stat = $rhSource->ModifiedInfluence;
+                            $reason .= $this->translate("Stat Used for Challenge was Influence.");
+                            break;
+                    }
+
+                    $wounds = $defenderThreat;
+                    $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $defenderThreat . ".";
+                    if ($defenderThreat > $stat && ! $defenderThreatIsLethal)
+                    {
+                        $wounds = $stat;
+                        $reduction = $defenderThreat - $stat;
+                        $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
+                    }
+
+                    if ($wounds > 0)
+                    {
+                        $sourceId = $performer !== null ? $performer->Id : $performerId;
+                        $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $sourceId, $wounds, $reason);
+                        $this->theah->queueEvent($event);
+                    }
                 }
             }
 
-            if ($defenderThreat > 0)
-            {
-                $stat = $performer->ModifiedCombat;
-                $reason = "<p>";
-                switch ($combatStatUsed)
-                {
-                    case GAME::STAT_COMBAT:
-                        $stat = $performer->ModifiedCombat;
-                        $reason .= $this->translate("Stat Used for Challenge was Combat.");
-                        break;
-                    case GAME::STAT_FINESSE:
-                        $stat = $performer->ModifiedFinesse;
-                        $reason .= $this->translate("Stat Used for Challenge was Finesse.");
-                        break;
-                    case GAME::STAT_INFLUENCE:
-                        $stat = $performer->ModifiedInfluence;
-                        $reason .= $this->translate("Stat Used for Challenge was Influence.");
-                        break;
-                }    
+            $resolvedPlayerId = $performer !== null
+                ? $performer->ControllerId
+                : (int) $this->globals->get(GAME::CURRENT_PLAYER);
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($resolvedPlayerId);
+            $this->theah->queueEvent($actionResolvedEvent);
+            $this->clearChallengeLastKnownParticipants();
 
-                $wounds = $defenderThreat;
-                $reason .= "<p>" . $this->translate("Challenge was Rejected. Generated Threat was ") . $defenderThreat . ".";
-                if ($defenderThreat > $stat && ! $defenderThreatIsLethal)
-                {
-                    $wounds = $stat;
-                    $reduction = $defenderThreat - $stat;
-                    $reason .= "<p>" . $this->translate("Threat was reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
-                }
-
-                if ($wounds > 0)
-                {
-                    $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, $wounds, $reason);
-                    $this->theah->queueEvent($event);
-                }
-            }
-            
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $this->theah->queueEvent($actionResolvedEvent);    
-    
             $this->gamestate->nextState("rejected");
         }
     }
@@ -1748,6 +1794,7 @@ trait StatesTrait
         _04043::clearPendingDebuff($this);
 
         $this->globals->delete(Game::CHALLENGE_CANCELLED);
+        $this->clearChallengeLastKnownParticipants();
         $this->globals->delete(Game::DUEL_CURRENT_PLAYER);
         $this->globals->delete(Game::CHALLENGE_STAT);
         $this->globals->delete(Game::CHALLENGER_THREAT);

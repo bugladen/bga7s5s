@@ -131,7 +131,7 @@ Reference: `_03021` (Cornered) — `CORNERED_CHALLENGE_TYPE` is consumed for cor
 
 #### Dual purpose when the card also prints "Engage your performer"
 
-`stIssueChallenge` auto-engages the performer only for `NORMAL_CHALLENGE_TYPE`, `SERVO_SCARPA_CHALLENGE_TYPE`, `TORVO_ESPADA_CHALLENGE_TYPE`, and `AJA_CHALLENGE_TYPE`. When the Action pays the engage cost itself on `EventActionTriggered` (printed "Engage your performer"), the fresh `CHALLENGE_TYPE` must stay **off** that list — otherwise the performer is engaged twice (second `EventCardEngaged` can re-trigger reactions). So the same constant often serves **both** correlator and "keep off auto-engage." Mirror `Action_03021` (Cornered), `Action_03042` (When Least Expected), `Action_03057` (Censure).
+`stIssueChallenge` auto-engages the performer only for `NORMAL_CHALLENGE_TYPE`, `SERVO_SCARPA_CHALLENGE_TYPE`, `TORVO_ESPADA_CHALLENGE_TYPE`, and `AJA_CHALLENGE_TYPE`. When the Action pays the engage cost itself in `announceAction()` (printed "Engage your performer"), the fresh `CHALLENGE_TYPE` must stay **off** that list — otherwise the performer is engaged twice (second `EventCardEngaged` can re-trigger reactions). So the same constant often serves **both** correlator and "keep off auto-engage." Mirror `Action_03021` (Cornered), `Action_03042` (When Least Expected — Scheme, engage on Triggered OK), `Action_03057` (Censure).
 
 Contrast: `_03008` (Arrogant) uses `NORMAL_CHALLENGE_TYPE` because it does **not** engage the performer as a cost — the auto-engage *is* the challenge's engage.
 
@@ -157,9 +157,7 @@ $characters = array_filter($characters, fn(Character $c) => $c->canChallenge() &
 
 Reference: `Action_03021` (Cornered). The same rule applies to any non-City Action whose text engages the performer as a cost — the engage-already-engaged predicate goes wherever you'd normally just check `canChallenge()`.
 
-**When to pay the engage cost:**
-- **Chooser follows, cost is irreversible before the pick:** queue `createCardEngagedEvent` on `EventActionTriggered` *before* the transition (cost paid at announcement). Mirror `Action_03021`, `Action_03030`, `Action_03034`.
-- **Engage + effect resolve in the same atomic confirm** (no irreversible cost before a later pick): defer engage into `actFromActionWithId` / `actFromActionWithIds` with the effect. Mirror `Action_02051` (engage-performer + engarde-target together) and Pattern A.12 / `Action_04039` (engage + lose-control + claim on location confirm). **WHY defer:** a zombie / abandoned chooser must not leave the performer engaged with no payoff.
+**When to pay the engage cost (Risk Actions / Night of Drinking):** queue `createCardEngagedEvent` in `announceAction()` *before* `parent::announceAction()` — not on `EventActionTriggered`. WHY: Night of Drinking (01109) cancels by deleting `EventActionTriggered`; costs queued inside that handler never run, which violates "(All costs are still paid.)". Announce runs after wealth payment and before ActionActivated, so the engage survives cancel. Keep challenge/type setup on `EventActionTriggered`. Mirror `Action_03057`, `Action_03021`, `Action_03034`. Character/Scheme Actions that 01109 cannot cancel may still engage on Triggered (`Action_03030`, `Action_03042`). Only defer engage into `actFromActionWithId` when the engage and the effect resolve in the same atomic confirm (e.g. `Action_02051`).
 
 ### Pattern A.1 — City Action that moves a chosen character (enemy OR friendly)
 
@@ -229,7 +227,7 @@ Composition of existing pieces (do not invent a new ability file type):
    - Reject non-controlled / wrong controller.
    - Same location as performer.
    - **`$character->Engaged` must be true** — "En garde" verb only applies to engaged characters (`createCardEngardedEvent`). Mirror `Action_02051` / skill item 16.
-4. **`EventActionTriggered`:** queue `createCardEngagedEvent` on the performer, then `createTransitionEvent(..., "NNNNN")` into the character chooser. Do **not** wait until target confirm to pay the engage cost when a chooser follows.
+4. **`announceAction`:** queue `createCardEngagedEvent` on the performer *before* `parent::announceAction()` (01109-safe cost). **`EventActionTriggered`:** only `createTransitionEvent(..., "NNNNN")` into the character chooser — do not re-engage. Do **not** wait until target confirm to pay the engage cost when a chooser follows.
 5. **`actFromActionWithId` (chooser state):** validate target → `createCardEngardedEvent` on the target → stash `CHOSEN_TARGET` → then branch:
    - **`Wounds > 0`:** queue transition `"NNNNN_2"` into a heal-or-draw sub-state.
    - **`Wounds == 0`:** they cannot heal → queue `createCardDrawnEvent` + `createActionResolvedEvent` immediately (mirror `Action_01049`'s already-engaged auto-wound when the "may" option is impossible).
@@ -273,7 +271,7 @@ Composition of Pattern A challenge + correlator side-effect (not a new chooser f
 
 1. **`RiskCityAction implements IAbilityThatTargetsCharacters`**, `RequiresPerformerSelected = true`. Mark the Risk with `IRiskThatTargetsCharacters`.
 2. **Performer filter:** `canChallenge()` **and** `! Engaged` (engage cost) **and** `! DashedInfluence` when the printed challenge is Influence (or the matching `DashedX` for other stats) **and** at least one opposing character at the performer's location.
-3. **`EventActionTriggered`:** queue `createCardEngagedEvent` on the performer, set a fresh `CHALLENGE_TYPE` (correlator **and** off the auto-engage list), set `CHALLENGE_STAT` to the printed stat, transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. No card-specific GameState / JS.
+3. **`announceAction`:** queue `createCardEngagedEvent` on the performer *before* `parent::announceAction()` so Night of Drinking cancel still pays the cost. **`EventActionTriggered`:** set a fresh `CHALLENGE_TYPE` (correlator **and** off the auto-engage list), set `CHALLENGE_STAT` to the printed stat, transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. No card-specific GameState / JS. Do **not** queue engage on Triggered.
 4. **Refuse side effect on the Risk class** (`EventChallengeRejected` + `CHALLENGE_TYPE` match):
    - Resolve the performer via `$event->challengerId` (not `CHOSEN_PERFORMER` — may have shifted).
    - Gate with `cardInCity($challenger)` and `canLocationBeClaimedBy($challenger->ControllerId, $location)`.

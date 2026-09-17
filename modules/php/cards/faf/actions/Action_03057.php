@@ -75,6 +75,24 @@ class Action_03057 extends RiskCityAction implements IAbilityThatTargetsCharacte
         return [true, ""];
     }
 
+    // WHY: Engage is the printed cost. Pay it in announceAction — before
+    // EventActionActivated / EventActionTriggered — so Night of Drinking (01109)
+    // cancel (deleteActionTriggeredEvents) still leaves the engage in the queue.
+    // ("All costs are still paid.") Keep CENSURE off stIssueChallenge's auto-engage
+    // list so a non-cancelled play does not double-engage.
+    public function announceAction(Game $game): void
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+        if ($performer && ! $performer->Engaged)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id);
+            $game->theah->queueEvent($engageEvent);
+        }
+
+        parent::announceAction($game);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -82,17 +100,6 @@ class Action_03057 extends RiskCityAction implements IAbilityThatTargetsCharacte
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $game = $event->theah->game;
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $event->theah->getCharacterById($performerId);
-
-            // WHY: Engage is the printed cost. Keep CENSURE out of stIssueChallenge's
-            // auto-engage list so we do not double-engage.
-            if ($performer && ! $performer->Engaged)
-            {
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id);
-                $event->theah->queueEvent($engageEvent);
-            }
-
             $owner = $this->getOwningCard($event->theah);
             // WHY CENSURE_CHALLENGE_TYPE: (1) correlator for refuse→claim on the Risk
             // (EventChallengeRejected has no actionId); (2) stays off the auto-engage list.

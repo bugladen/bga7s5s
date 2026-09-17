@@ -99,15 +99,16 @@
 
             'planningPhaseResolveSchemes_02015': () => {
                 if (this.isCurrentPlayerActive()) {
-                    this.numberOfCityLocationsSelectable = 2;
-                    const locations = this.getListofAvailableCityLocationImages();
-                    locations.forEach((location) => {
-                        const imageElement = $(location);
-                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                        const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown > 0) return;
-    
-                        this.makeCityLocationSelectable(location);
+                    // WHY: requiredLocationCount is min(2, empty locations) so a single empty
+                    // location still unlocks Confirm — mirrored from Castillian Caper (02035).
+                    this.numberOfCityLocationsSelectable = args.args.args.requiredLocationCount;
+                    args.args.args.locationIds.forEach((locationId) => {
+                        if (locationId == this.LOCATION_PLAYER_HOME) {
+                            this.makeHomeEndcapMarkerSelectable();
+                        } else {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
                     });
                 }
             },

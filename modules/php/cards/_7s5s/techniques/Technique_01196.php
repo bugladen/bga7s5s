@@ -40,6 +40,8 @@ class Technique_01196 extends Technique
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $actor = $event->theah->getCharacterById($event->actorId);
@@ -54,11 +56,30 @@ class Technique_01196 extends Technique
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
+            // WHY: Null-safe after Stiletto unequip — techniqueId identifies the activation.
             $owner = $this->getOwningCharacter($event->theah);
-            if ($owner->Id == $event->actorId)
+            if ($owner === null || $owner->Id == $event->actorId)
             {
                 $actor = $event->theah->getCharacterById($event->actorId);
                 $adversary = $event->theah->getCharacterById($event->adversaryId);
+
+                // Prefer last-known when either side was destroyed before GenerateThreat.
+                if ($event->theah->game->characterIsInDiscardOrLocker($actor))
+                {
+                    $lastKnown = $event->theah->game->getChallengeLastKnownCharacter($actor->Id);
+                    if ($lastKnown !== null)
+                    {
+                        $actor = $lastKnown;
+                    }
+                }
+                if ($event->theah->game->characterIsInDiscardOrLocker($adversary))
+                {
+                    $lastKnown = $event->theah->game->getChallengeLastKnownCharacter($adversary->Id);
+                    if ($lastKnown !== null)
+                    {
+                        $adversary = $lastKnown;
+                    }
+                }
 
                 if ($actor->ModifiedCombat >= $adversary->ModifiedCombat && $actor->ModifiedInfluence >= $adversary->ModifiedInfluence)
                 {

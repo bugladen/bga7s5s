@@ -70,20 +70,26 @@ class Action_03021 extends RiskCityAction implements IAbilityThatTargetsCharacte
         return [true, ""];
     }
 
+    // WHY: Engage is the printed cost. Pay at announce so Night of Drinking (01109)
+    // cancel — which deletes ActionTriggered — still leaves engage in the queue.
+    // ("All costs are still paid.") Same shape as Action_03057.
+    public function announceAction(Game $game): void
+    {
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $performer = $game->theah->getCharacterById($performerId);
+        if ($performer && ! $performer->Engaged) {
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id);
+            $game->theah->queueEvent($engageEvent);
+        }
+
+        parent::announceAction($game);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id) {
-            $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $event->theah->getCharacterById($performerId);
-
-            // Engage the performer first
-            if ($performer && ! $performer->Engaged) {
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id);
-                $event->theah->queueEvent($engageEvent);
-            }
-
             $owner = $this->getOwningCard($event->theah);
             $event->theah->game->globals->set(Game::CHALLENGE_TYPE, Game::CORNERED_CHALLENGE_TYPE);
             $event->theah->game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);

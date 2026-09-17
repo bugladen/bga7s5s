@@ -1297,6 +1297,11 @@ trait EventHub
                     $defender = $theah->cards[$event->defenderId];
                     $defender->addCondition(GAME::DUEL_DEFENDER);
 
+                    // WHY: Snapshot before ChallengeIssued reactions (Stiletto) can destroy
+                    // either participant and wipe Modified* via EventCharacterDestroyed recreate.
+                    $theah->game->globals->set(Game::CHALLENGE_LAST_KNOWN_CHALLENGER, serialize($challenger));
+                    $theah->game->globals->set(Game::CHALLENGE_LAST_KNOWN_DEFENDER, serialize($defender));
+
                     $statUsed = $theah->game->globals->get(Game::CHALLENGE_STAT);
                     
                     $message = clienttranslate('${player_name} has chosen ${challenger_inject_code} to Challenge ${defender_inject_code}. ');

@@ -74,6 +74,25 @@ class Action_03034 extends RiskCityAction implements IAbilityThatTargetsCharacte
         return [true, ""];
     }
 
+    // WHY: Engage is the printed cost. Pay at announce so Night of Drinking (01109)
+    // cancel — which deletes ActionTriggered — still leaves engage in the queue.
+    // ("All costs are still paid.") Diplomat / unengaged checks stay on Triggered
+    // (effect path); announce only pays the cost once the pay-for-action UI already
+    // filtered performers.
+    public function announceAction(Game $game): void
+    {
+        $owner = $this->getOwningCard($game->theah);
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER, 0);
+        $performer = $game->theah->getCharacterById($performerId);
+        if ($performer && ! $performer->Engaged)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $game->theah->queueEvent($engageEvent);
+        }
+
+        parent::announceAction($game);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -90,14 +109,8 @@ class Action_03034 extends RiskCityAction implements IAbilityThatTargetsCharacte
                 throw new UserException($game->translate("Performer must be a Diplomat."));
             }
 
-            if ($performer->Engaged)
-            {
-                throw new UserException($game->translate("Performer is already engaged."));
-            }
-
-            // WHY: engage cost resolves at announcement (before target chooser), same shape as Action_03021 / Action_03030.
-            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
-            $event->theah->queueEvent($engageEvent);
+            // WHY: Engage already queued in announceAction (and may already have
+            // applied). Do not re-check Engaged or queue a second engage.
 
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "03034", $this->Id);
             $event->theah->queueEvent($transition);

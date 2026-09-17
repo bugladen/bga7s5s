@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 
@@ -705,15 +706,46 @@ trait ArgumentsTrait
         $targetId = $this->globals->get(Game::CHOSEN_TARGET);
         $target = $this->theah->getCharacterById($targetId);
 
-        $challengeStat = $this->globals->get(Game::CHALLENGE_STAT);
-        $defenderThreat = match ($challengeStat) {
-            Game::STAT_FINESSE => $performer->ModifiedFinesse,
-            Game::STAT_INFLUENCE => $performer->ModifiedInfluence,
-            default => $performer->ModifiedCombat,
-        };
+        // WHY: Fallback if locker load missed (or id missing) — never fatal the Accept UI.
+        if ($performer === null)
+        {
+            $fromDb = $this->getCardObjectFromDb($performerId);
+            $performer = $fromDb instanceof Character ? $fromDb : null;
+        }
+        if ($target === null)
+        {
+            $fromDb = $this->getCardObjectFromDb($targetId);
+            $target = $fromDb instanceof Character ? $fromDb : null;
+        }
 
-        //Get a list of characters that could intervene
-        $charactersAtLocation = $this->theah->getCharactersAtLocation($target->Location);
+        $challengeStat = $this->globals->get(Game::CHALLENGE_STAT);
+        // WHY: Stiletto can destroy the challenger before Accept — preview must use
+        // ChallengeIssued snapshot, not recreated printed Modified*.
+        $threatSource = $performer;
+        if ($performer !== null && $this->characterIsInDiscardOrLocker($performer))
+        {
+            $lastKnown = $this->getChallengeLastKnownCharacter($performerId);
+            if ($lastKnown !== null)
+            {
+                $threatSource = $lastKnown;
+            }
+        }
+        $defenderThreat = 0;
+        if ($threatSource !== null)
+        {
+            $defenderThreat = match ($challengeStat) {
+                Game::STAT_FINESSE => $threatSource->ModifiedFinesse,
+                Game::STAT_INFLUENCE => $threatSource->ModifiedInfluence,
+                default => $threatSource->ModifiedCombat,
+            };
+        }
+
+        // WHY: Use challenge city site (set in stSetupChallenge before Stiletto), not
+        // $target->Location — a destroyed challenged character is in Locker-*.
+        $challengeLocation = $this->globals->get(Game::CHOSEN_LOCATION, $target !== null ? $target->Location : '');
+        $charactersAtLocation = $challengeLocation !== '' && $challengeLocation !== null
+            ? $this->theah->getCharactersAtLocation($challengeLocation)
+            : [];
         //Characters must be controlled by the player and not be the target
         $charactersAtLocation = array_filter($charactersAtLocation, 
             fn($character) => $character->ControllerId && $character->ControllerId == $playerId && $character->Id != $targetId);
@@ -762,8 +794,37 @@ trait ArgumentsTrait
         }
 
         $mustDiscardToRefuse = $challengeType == Game::WHEN_LEAST_EXPECTED_CHALLENGE_TYPE
+            && $performer !== null
             && $performer->hasTrait("Duelist");
-        $defenderHand = $this->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId);
+        $defenderControllerId = $target !== null ? $target->ControllerId : $playerId;
+        $defenderHand = $this->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $defenderControllerId);
+
+        $daichiChallenger = $performer;
+        if ($performer !== null && $this->characterIsInDiscardOrLocker($performer))
+        {
+            $lastKnown = $this->getChallengeLastKnownCharacter($performerId);
+            if ($lastKnown !== null)
+            {
+                $daichiChallenger = $lastKnown;
+            }
+        }
+        $daichiDefender = $target;
+        $defenderFinesse = $target !== null ? $target->ModifiedFinesse : 0;
+        if ($target !== null && $this->characterIsInDiscardOrLocker($target))
+        {
+            $lastKnown = $this->getChallengeLastKnownCharacter($targetId);
+            if ($lastKnown !== null)
+            {
+                $daichiDefender = $lastKnown;
+                $defenderFinesse = $lastKnown->ModifiedFinesse;
+            }
+        }
+
+        $cannotRefuseDueToDaichi = false;
+        if ($daichiChallenger !== null && $daichiDefender !== null)
+        {
+            $cannotRefuseDueToDaichi = _03050::challengeRefusalBlocked($daichiChallenger, $daichiDefender);
+        }
 
         return [
             "performerId" => $performerId,
@@ -771,13 +832,15 @@ trait ArgumentsTrait
             "ids" => array_values(array_map(fn($character) => $character->Id, $charactersCanIntervene)),
             "challengeType" => $challengeType,
             "defenderThreat" => $defenderThreat,
-            "defenderFinesse" => $target->ModifiedFinesse,
+            "defenderFinesse" => $defenderFinesse,
             "mustDiscardToRefuse" => $mustDiscardToRefuse,
             "defenderHandCount" => count($defenderHand),
             // WHY: Mōri Daichi Combat-gate — client disables Refuse; not a CHALLENGE_TYPE flag.
-            "cannotRefuseDueToDaichi" => _03050::challengeRefusalBlocked($performer, $target),
+            // Use last-known challenger/defender when a participant is already destroyed.
+            "cannotRefuseDueToDaichi" => $cannotRefuseDueToDaichi,
             // WHY: Knives Out location gate — same Daichi-style client disable path.
-            "cannotRefuseDueToKnivesOut" => _04cd09::challengeRefusalBlocked($this->theah, $target),
+            // Pass live $target (not last-known): destroyed defenders are out of city → gate off.
+            "cannotRefuseDueToKnivesOut" => $target !== null && _04cd09::challengeRefusalBlocked($this->theah, $target),
         ];
 
     }
