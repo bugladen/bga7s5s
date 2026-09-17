@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -24,7 +25,11 @@ class Technique_01011 extends Technique
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
         {
             $actor = $event->theah->getCharacterById($event->actorId);
-            $characters = $event->theah->getCharactersAtLocation($actor->Location);
+            // WHY: Dead challenger is in Locker; Red Hands are still at the challenge city site.
+            $location = $event->theah->game->characterIsInDiscardOrLocker($actor)
+                ? $event->theah->game->globals->get(Game::CHOSEN_LOCATION, $actor->Location)
+                : $actor->Location;
+            $characters = $event->theah->getCharactersAtLocation($location);
             $redHands = array_values(array_filter($characters, fn($character) => $character->Id != $actor->Id && $character->ControllerId == $actor->ControllerId && $character->hasTrait("Red Hand")));
 
             $event->adversaryThreat += count($redHands);

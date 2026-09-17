@@ -974,6 +974,35 @@ trait UtilitiesTrait
         return strpos($character->Location, "Discard-") !== false || strpos($character->Location, "Locker-") !== false;
     }
 
+    /**
+     * WHY: Lethal ChallengeIssued reactions (e.g. Stiletto) destroy a participant before
+     * GenerateThreat / refuse RH / round-1 getDuelRoundOpponent. Snapshot was taken at
+     * EventChallengeIssued while both were still in play.
+     */
+    public function getChallengeLastKnownCharacter(int $characterId): ?Character
+    {
+        foreach ([Game::CHALLENGE_LAST_KNOWN_CHALLENGER, Game::CHALLENGE_LAST_KNOWN_DEFENDER] as $key)
+        {
+            $serialized = $this->globals->get($key, null);
+            if ($serialized === null || $serialized === '')
+            {
+                continue;
+            }
+            $character = $this->safeUnserialize($serialized);
+            if ($character instanceof Character && $character->Id == $characterId)
+            {
+                return $character;
+            }
+        }
+        return null;
+    }
+
+    public function clearChallengeLastKnownParticipants(): void
+    {
+        $this->globals->delete(Game::CHALLENGE_LAST_KNOWN_CHALLENGER);
+        $this->globals->delete(Game::CHALLENGE_LAST_KNOWN_DEFENDER);
+    }
+
     public function getNextEventBatchId(): int
     {
         $batchId = $this->globals->get(Game::EVENT_BATCH_ID, 0) + 1;

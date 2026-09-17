@@ -211,6 +211,10 @@ class Game extends \Bga\GameFramework\Table
 
     //Challenge global variables
     final const CHALLENGE_CANCELLED = "challengeCancelled";
+    // WHY: Full Character serialize at ChallengeIssued — destroy recreates printed stats
+    // before Accept/GenerateThreat. Same pattern as duel_round.actor_serialized.
+    final const CHALLENGE_LAST_KNOWN_CHALLENGER = "challengeLastKnownChallenger";
+    final const CHALLENGE_LAST_KNOWN_DEFENDER = "challengeLastKnownDefender";
     final const CHALLENGE_TYPE = "challengeType";
     final const NORMAL_CHALLENGE_TYPE = 0;
     final const TRISKELION_CHALLENGE_TYPE = 1;

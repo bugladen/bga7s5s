@@ -136,6 +136,13 @@ class Theah
             $discardCards = $this->db->getCardObjectsAtLocation($discardDeckName);
             $this->repairDiscardPileLocations($discardCards, $discardDeckName);
             $this->cards += $discardCards;
+
+            // WHY: Destroyed characters sit in Locker-* (not discard). Without loading
+            // lockers, getCharacterById returns null after Stiletto kills a challenge
+            // participant — argsHighDramaChallengeActionAcceptChallenge fatals and the
+            // challenged player never sees Accept/Refuse/Intervene (soft-lock).
+            $lockerName = $this->game->getPlayerLockerName($playerId["id"]);
+            $this->cards += $this->db->getCardObjectsAtLocation($lockerName);
         }
 
         $this->backfillIndomitableWillFlags();
@@ -1863,7 +1870,7 @@ class Theah
         $opponent = $this->getCharacterById($opponentId);
 
         //Get last known information about the opponent
-        if ($this->game->characterIsInDiscardOrLocker($opponent))
+        if ($opponent !== null && $this->game->characterIsInDiscardOrLocker($opponent))
         {
             $duelId = $this->game->globals->get(Game::DUEL_ID);
             $round = $this->game->globals->get(Game::DUEL_ROUND) - 1;
@@ -1873,6 +1880,16 @@ class Theah
                 $sql = "SELECT actor_serialized FROM duel_round WHERE duel_id = $duelId AND round = $round";
                 $result = $this->db->getObject($sql);
                 $opponent = $this->game->safeUnserialize($result['actor_serialized']);
+            }
+            else
+            {
+                // WHY: Round 1 with a pre-dead challenger (Stiletto) has no prior
+                // actor_serialized — restore ChallengeIssued snapshot instead.
+                $lastKnown = $this->game->getChallengeLastKnownCharacter($opponentId);
+                if ($lastKnown !== null)
+                {
+                    $opponent = $lastKnown;
+                }
             }
         }
 
@@ -2102,7 +2119,10 @@ class Theah
     public function interventionCheck(Character $character): void
     {
         $target = $this->getCardById($this->game->globals->get(GAME::CHOSEN_TARGET));
-        if ($target->Location != $character->Location) {
+        // WHY: Challenged may already be in Locker after Stiletto; challenge city site is
+        // CHOSEN_LOCATION from stSetupChallenge (set before ChallengeIssued reactions).
+        $challengeLocation = $this->game->globals->get(Game::CHOSEN_LOCATION, $target->Location);
+        if ($challengeLocation != $character->Location) {
             throw new UserException($this->game->translate("Character is not at the same location"));
         }    
 

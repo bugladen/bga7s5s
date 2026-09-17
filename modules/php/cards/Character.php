@@ -383,19 +383,31 @@ abstract class Character extends Card implements IHasTechniques
 
         if ($event instanceof EventGenerateChallengeThreat && $event->actorId == $this->Id)
         {
+            // WHY: Destroy recreates printed Modified*; use ChallengeIssued snapshot when
+            // the challenger was killed by a reaction (e.g. Stiletto) before GenerateThreat.
+            $statSource = $this;
+            if ($event->theah->game->characterIsInDiscardOrLocker($this))
+            {
+                $lastKnown = $event->theah->game->getChallengeLastKnownCharacter($this->Id);
+                if ($lastKnown !== null)
+                {
+                    $statSource = $lastKnown;
+                }
+            }
+
             switch ($event->statUsed)
             {
                 case Game::STAT_COMBAT:
-                    $event->adversaryThreat += $this->ModifiedCombat;
-                    $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Combat Stat."), $this->Name, $this->ModifiedCombat);
+                    $event->adversaryThreat += $statSource->ModifiedCombat;
+                    $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Combat Stat."), $statSource->Name, $statSource->ModifiedCombat);
                     break;
                 case Game::STAT_FINESSE:
-                    $event->adversaryThreat += $this->ModifiedFinesse;
-                    $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Finesse Stat."), $this->Name, $this->ModifiedFinesse);
+                    $event->adversaryThreat += $statSource->ModifiedFinesse;
+                    $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Finesse Stat."), $statSource->Name, $statSource->ModifiedFinesse);
                     break;
                 case Game::STAT_INFLUENCE:
-                    $event->adversaryThreat += $this->ModifiedInfluence;
-                    $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Influence Stat."), $this->Name, $this->ModifiedInfluence);
+                    $event->adversaryThreat += $statSource->ModifiedInfluence;
+                    $event->explanations[] = sprintf($event->theah->game->translate("%s adds %d Threat from their Influence Stat."), $statSource->Name, $statSource->ModifiedInfluence);
                     break;
             }
         }

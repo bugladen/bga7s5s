@@ -20,8 +20,11 @@ class Technique_PlusOneThrust extends Technique
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id) 
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            if ($owner->Id == $event->actorId)
+            // WHY: techniqueId already identifies the activated challenge technique.
+            // getOwningCharacter() is null after lethal Stiletto unequips the host —
+            // do not require an attached owner (same as Technique_DestroyPlusOneThrust).
+            $ownerChar = $this->getOwningCharacter($event->theah);
+            if ($ownerChar === null || $ownerChar->Id == $event->actorId)
             {
                 $owner = $this->getOwningCard($event->theah);
                 $event->adversaryThreat += 1;

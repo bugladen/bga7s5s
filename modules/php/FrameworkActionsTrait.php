@@ -1369,17 +1369,39 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Unsanctioned Duel: Refusing a Challenge is not allowed."));
         }
 
-        $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
-        $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
+        $this->theah->buildCity();
+        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
+        $performer = $this->theah->getCharacterById($performerId);
+        $target = $this->theah->getCharacterById($targetId);
 
-        if ($challengeType == Game::AJA_CHALLENGE_TYPE && $target->ModifiedFinesse < 3)
+        $refuseCheckChallenger = $performer;
+        $refuseCheckDefender = $target;
+        if ($performer !== null && $this->characterIsInDiscardOrLocker($performer))
+        {
+            $lastKnown = $this->getChallengeLastKnownCharacter($performerId);
+            if ($lastKnown !== null)
+            {
+                $refuseCheckChallenger = $lastKnown;
+            }
+        }
+        if ($target !== null && $this->characterIsInDiscardOrLocker($target))
+        {
+            $lastKnown = $this->getChallengeLastKnownCharacter($targetId);
+            if ($lastKnown !== null)
+            {
+                $refuseCheckDefender = $lastKnown;
+            }
+        }
+
+        if ($challengeType == Game::AJA_CHALLENGE_TYPE && $refuseCheckDefender->ModifiedFinesse < 3)
         {
             throw new UserException(clienttranslate("Aja: Only characters with 3 Finesse or more may refuse this challenge."));
         }
 
         // WHY: Mōri Daichi — refuse locked by relative Combat for ANY challenge type
         // involving him (not a dedicated CHALLENGE_TYPE; applies when he is challenged too).
-        if (_03050::challengeRefusalBlocked($performer, $target))
+        if (_03050::challengeRefusalBlocked($refuseCheckChallenger, $refuseCheckDefender))
         {
             throw new UserException(clienttranslate("Mōri Daichi: This challenge cannot be refused (greater Combat)."));
         }
