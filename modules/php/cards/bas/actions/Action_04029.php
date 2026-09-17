@@ -248,6 +248,10 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($host->ControllerId, $host->Id, $attachment->Id);
             $game->theah->queueEvent($unequipEvent);
 
+            // WHY not createAttachmentDiscardedFromPlayEvent: steal-to-hand stages through
+            // player discard then createCardRemovedFromPlayerDiscardPileEvent. City routing
+            // would break that remove step and fire Eager Blade → Bazaar mid-steal.
+            // Same staging as Maneuver_01113.
             $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($host->ControllerId, $attachment->Id, $attachment->Location, $owner->Id);
             $game->theah->queueEvent($discardEvent);
 

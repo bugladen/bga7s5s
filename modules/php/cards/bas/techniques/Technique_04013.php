@@ -4,7 +4,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\techniques;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -130,26 +129,11 @@ class Technique_04013 extends Technique
             $game->theah->eventCheck($unequipEvent);
             $game->theah->queueEvent($unequipEvent);
 
-            if ($attachment instanceof CityAttachment)
-            {
-                $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent(
-                    $owner->ControllerId,
-                    $attachment->Id,
-                    $attachment->Location,
-                    $owner->Id,
-                    $asEffect = true
-                );
-            }
-            else
-            {
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
-                    $attachment->OwnerId,
-                    $attachment->Id,
-                    $attachment->Location,
-                    $owner->Id,
-                    $asEffect = true
-                );
-            }
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                $attachment,
+                $owner->Id,
+                $asEffect = true
+            );
             $game->theah->queueEvent($discardEvent);
 
             $game->gamestate->nextState();
