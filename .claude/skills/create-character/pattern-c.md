@@ -158,11 +158,13 @@ $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
 $game->theah->eventCheck($unequipEvent);
 $game->theah->queueEvent($unequipEvent);
 
-$discardEvent = EventFactory::createCardDiscardedFromPlayEvent(
-    $attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true
+$discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+    $attachment, $owner->Id, $asEffect = true
 );
 $game->theah->queueEvent($discardEvent);
 ```
+
+WHY the helper: CityAttachments must enter the city discard (Forced abilities like Eager Blade listen for that event). Faction attachments go to the owner's discard. Never call `createCardDiscardedFromPlayEvent` alone for a destroy-any-attachment effect.
 
 If the effect draws cards equal to printed cost (+N), **read `$attachment->WealthCost` before queueing destroy** — after unequip/discard the card is no longer a reliable in-play cost source. Cost `0` → still draw `0 + 1 = 1` when the text says "plus one."
 

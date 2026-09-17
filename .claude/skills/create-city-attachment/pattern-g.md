@@ -62,21 +62,22 @@ When you cancel `EventAttachmentEquipping`, the matching `EventAttachmentEquippe
 
 ```php
 $attachment = $event->theah->getCardById($event->attachmentId);
-if ($attachment) {
+if ($attachment instanceof Attachment) {
     $removedEvent = EventFactory::createCardRemovedFromPlayEvent($event->playerId, $attachment->Id, $attachment->Location);
     $event->theah->queueEvent($removedEvent);
 
-    if ($attachment instanceof CityAttachment) {
-        $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $attachment->Id, $attachment->Location);
-        $event->queueEvent($discardEvent);
-    } else {
-        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
-        $event->queueEvent($discardEvent);
-    }
+    $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+        $attachment,
+        $sourceId = 0,
+        $asEffect = false,
+        $fromLocation = null,
+        $event->playerId
+    );
+    $event->queueEvent($discardEvent);
 }
 ```
 
-`Reaction_02048` (Blood Like Winter) and `_01186` use the identical CityAttachment-vs-faction split — keep them in sync if you change it. The 2026-04-14-04 RiskClone journal documents a related bug where `createCardInLocation` cards didn't land in `Theah::$cards` and the discard branch silently desynced; that fix is now in `Action_02008`, but be aware if you mint a new "Risk that equips a clone" mechanic.
+`Reaction_02048` (Blood Like Winter) and `_01186` use the same helper — keep them in sync if you change it. The 2026-04-14-04 RiskClone journal documents a related bug where `createCardInLocation` cards didn't land in `Theah::$cards` and the discard branch silently desynced; that fix is now in `Action_02008`, but be aware if you mint a new "Risk that equips a clone" mechanic.
 
 ### `sourceId` nullability across the five events
 

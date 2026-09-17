@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01186;
@@ -158,14 +158,15 @@ class _01186 extends CityCharacter
                 $removedEvent = EventFactory::createCardRemovedFromPlayEvent($event->playerId, $attachment->Id, $attachment->Location);
                 $event->theah->queueEvent($removedEvent);
 
-                if ($attachment instanceof CityAttachment)
+                if ($attachment instanceof Attachment)
                 {
-                    $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($event->playerId, $attachment->Id, $attachment->Location);
-                    $event->queueEvent($discardEvent);
-                }
-                else
-                {
-                    $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location);
+                    $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                        $attachment,
+                        $sourceId = 0,
+                        $asEffect = false,
+                        $fromLocation = null,
+                        $event->playerId
+                    );
                     $event->queueEvent($discardEvent);
                 }
 

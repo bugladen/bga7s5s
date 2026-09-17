@@ -90,7 +90,7 @@ class Action_01174 extends RiskAction implements IAbilityThatTargetsCards
             $game->theah->queueEvent($unequipEvent);
 
             $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, $asEffect = true);
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $owner->Id, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);

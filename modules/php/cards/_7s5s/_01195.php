@@ -67,7 +67,7 @@ class _01195 extends CityAttachment
             $unequipEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->AttachedToId, $this->Id);
             $event->queueEvent($unequipEvent);
 
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($this->ControllerId, $this->Id, $this->Location, $this->Id, $asEffect = true);
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($this, $this->Id, $asEffect = true);
             $event->queueEvent($discardEvent);
         }
     }

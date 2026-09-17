@@ -78,7 +78,7 @@ class _01050 extends FactionAttachment implements IHasTechniques
                 $unequipEvent = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($unequipEvent);
 
-                $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($this->ControllerId, $this->Id, $this->Location, $this->Id, $asEffect = true);
+                $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($this, $this->Id, $asEffect = true);
                 $event->theah->queueEvent($discardEvent);
             }
         }

@@ -173,7 +173,7 @@ class Action_01194 extends CharacterAction implements IAbilityThatTargetsCharact
             $game->theah->eventCheck($unequipEvent);
 
             //Discard the attachment
-            $discardEvent = EventFactory::createCardAddedToCityDiscardPileEvent($attachment->ControllerId, $attachmentId, $attachment->Location, $adelheide->Id, $asEffect = false);
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $adelheide->Id, $asEffect = false);
             $game->theah->eventCheck($discardEvent);
 
             //Wound the target character

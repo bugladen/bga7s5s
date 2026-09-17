@@ -365,7 +365,7 @@ class Reaction_03cd18 extends CardReaction
         $game->theah->eventCheck($unequipEvent);
         $game->theah->queueEvent($unequipEvent);
 
-        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($attachment->OwnerId, $attachment->Id, $attachment->Location, $owner->Id, true);
+        $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $owner->Id, true);
         $game->theah->queueEvent($discardEvent);
 
         $game->notify->all("message",

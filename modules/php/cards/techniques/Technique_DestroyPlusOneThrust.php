@@ -87,7 +87,7 @@ class Technique_DestroyPlusOneThrust extends Technique
             $theah->queueEvent($unequipEvent);
         }
 
-        $discardEvent = EventFactory::createCardDiscardedFromPlayEvent($owner->OwnerId, $owner->Id, $owner->Location, $owner->Id);
+        $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($owner, $owner->Id);
         $theah->queueEvent($discardEvent);
     }
 }

@@ -12,6 +12,8 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -221,6 +223,52 @@ class EventFactory
         }
 
         return $event;
+    }
+
+    /**
+     * Discard an attachment from play into the correct discard pile.
+     *
+     * WHY: CityAttachments must enter the city discard so Forced abilities
+     * (e.g. Eager Blade) that listen for EventCardAddedToCityDiscardPile can fire.
+     * Faction attachments go to the owner's discard. Call sites that always used
+     * createCardDiscardedFromPlayEvent silently broke city Forceds.
+     *
+     * WHY OwnerId for faction: cards like Shackles can be controlled by an opponent
+     * while still belonging to the owner's discard.
+     *
+     * @param int $cityDiscardPlayerId Optional override for city-discard attribution
+     *        (cancel-before-equip paths where ControllerId may still be unset).
+     * @return EventCardAddedToCityDiscardPile|EventCardDiscardedFromPlay
+     */
+    public static function createAttachmentDiscardedFromPlayEvent(
+        Attachment $attachment,
+        int $sourceId = 0,
+        bool $asEffect = false,
+        ?string $fromLocation = null,
+        int $cityDiscardPlayerId = 0
+    ): Event
+    {
+        $fromLocation = $fromLocation ?? $attachment->Location;
+
+        if ($attachment instanceof CityAttachment)
+        {
+            $playerId = $cityDiscardPlayerId ?: $attachment->ControllerId ?: $attachment->OwnerId;
+            return self::createCardAddedToCityDiscardPileEvent(
+                $playerId,
+                $attachment->Id,
+                $fromLocation,
+                $sourceId,
+                $asEffect
+            );
+        }
+
+        return self::createCardDiscardedFromPlayEvent(
+            $attachment->OwnerId,
+            $attachment->Id,
+            $fromLocation,
+            $sourceId,
+            $asEffect
+        );
     }
 
     public static function createCalculatePayDiscountEvent(int $playerId, int $cardId, int $payStateType, string $internalId = ""): EventCalculatePayDiscount
