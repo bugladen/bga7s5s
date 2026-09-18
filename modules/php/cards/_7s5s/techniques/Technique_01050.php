@@ -24,12 +24,6 @@ class Technique_01050 extends Technique
             return false;
         }
         
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        if (! $inDuel)
-        {
-            return false;
-        }
-
         $thrust = $theah->getCurrentRoundThrust();
         if ($thrust < 1)
         {
