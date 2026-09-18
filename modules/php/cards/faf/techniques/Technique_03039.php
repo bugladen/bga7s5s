@@ -31,6 +31,11 @@ class Technique_03039 extends Technique
             return false;
         }
 
+        if (! $theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            return false;
+        }
+
         $owner = $this->getOwningCharacter($theah);
         $actor = $theah->getDuelRoundActor();
         if ($actor === null || $actor->Id !== $owner->Id)
