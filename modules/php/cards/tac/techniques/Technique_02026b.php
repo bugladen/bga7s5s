@@ -26,12 +26,6 @@ class Technique_02026b extends Technique
             return false;
         }
 
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        if (! $inDuel)
-        {
-            return false;
-        }
-
         // WHY: Card text is "Duelist Technique" — usable only when the equipped character has Duelist
         // (equip itself is not restricted; see journal 2026-03-30-02).
         $equipped = $this->getOwningCharacter($theah);
