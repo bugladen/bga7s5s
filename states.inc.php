@@ -1322,6 +1322,10 @@ $machinestates = [
                 "transitions" => [
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION,
+                    // WHY: Croc de Lion attachment chooser deferred until Accept/Intervene
+                    // (queued from EventGenerateChallengeThreat + CHALLENGE_ACCEPTED).
+                    "02026a" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_02026a,
+                    "02026b" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_02026b,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION,
                     "endOfGame" => States::END_GAME
                     ]

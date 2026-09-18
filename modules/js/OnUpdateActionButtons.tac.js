@@ -316,6 +316,18 @@
                 });
             },
 
+            'highDramaChallengeActionResolveTechnique_02026a': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
+            'highDramaChallengeActionResolveTechnique_02026b': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
             'duelChooseTechnique_02043b': () => {
                 args.args.cards.forEach((card) => {
                     this.addActionButton(`actChooseCard-${card.id}`, card.name, () => this.bgaPerformAction('actFromCardWithId', {id: card.id}));

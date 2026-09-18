@@ -3,11 +3,13 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques;
 
 use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -17,6 +19,59 @@ class Technique_02026a extends Technique
     {
         parent::__construct();
         $this->Name = clienttranslate("Engage target attachment equipped to the adversary");
+    }
+
+    /**
+     * WHY: Challenge has no duel round — do not call getDuelRoundOpponent() there
+     * (null actor → fatal). Adversary is CHOSEN_TARGET via
+     * stHighDramaChallengeActionResolveTechnique. Same rule as Technique_01193 / 04017.
+     */
+    private function getAdversary(Theah $theah): ?Character
+    {
+        if ($theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            return $theah->getDuelRoundOpponent();
+        }
+
+        $adversaryId = (int) $theah->game->globals->get(Game::CHOSEN_TARGET, 0);
+        if (! $adversaryId)
+        {
+            return null;
+        }
+
+        return $theah->getCharacterById($adversaryId);
+    }
+
+    private function adversaryHasUnengagedAttachment(Theah $theah): bool
+    {
+        $adversary = $this->getAdversary($theah);
+        if ($adversary === null)
+        {
+            return false;
+        }
+
+        foreach ($adversary->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if ($attachment && ! $attachment->Engaged)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function queueAttachmentChooser(Theah $theah): void
+    {
+        if (! $this->adversaryHasUnengagedAttachment($theah))
+        {
+            return;
+        }
+
+        $owner = $this->getOwningCard($theah);
+        $transitionEvent = EventFactory::createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "02026a", $this->Id);
+        $theah->queueEvent($transitionEvent);
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
@@ -34,22 +89,7 @@ class Technique_02026a extends Technique
             return false;
         }
 
-        $adversary = $theah->getDuelRoundOpponent();
-        if ($adversary == null)
-        {
-            return false;
-        }
-
-        foreach ($adversary->Attachments as $attachmentId)
-        {
-            $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment && ! $attachment->Engaged)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->adversaryHasUnengagedAttachment($theah);
     }
 
     public function handleEvent(Event $event)
@@ -58,9 +98,24 @@ class Technique_02026a extends Technique
 
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
-            $owner = $this->getOwningCard($event->theah);
-            $transitionEvent = EventFactory::createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "02026a", $this->Id);
-            $event->theah->queueEvent($transitionEvent);
+            // WHY: Challenge Resolve runs before Accept/Refuse. Engage must not fire on
+            // Refuse — defer the chooser to EventGenerateChallengeThreat + CHALLENGE_ACCEPTED
+            // (04017 shape). In-duel Resolve is the real effect timing.
+            if ($event->inDuel)
+            {
+                $this->queueAttachmentChooser($event->theah);
+            }
+        }
+
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            // WHY: GENERATE_THREAT also runs on Refuse (to apply wound threat). Intervene
+            // sets CHALLENGE_ACCEPTED without EventChallengeAccepted. Gate here so Refuse
+            // never prompts; Accept/Intervene get the chooser from GENERATE_THREAT_EVENTS.
+            if ($event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            {
+                $this->queueAttachmentChooser($event->theah);
+            }
         }
     }
 
@@ -68,16 +123,20 @@ class Technique_02026a extends Technique
     {
         $args = parent::getArgsFromTechnique($game, $state, $stateName);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_02026a)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_02026a
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_02026a)
         {
-            $adversary = $game->theah->getDuelRoundOpponent();
+            $adversary = $this->getAdversary($game->theah);
             $attachments = [];
-            foreach ($adversary->Attachments as $attachmentId)
+            if ($adversary !== null)
             {
-                $attachment = $game->theah->getAttachmentById($attachmentId);
-                if ($attachment && ! $attachment->Engaged)
+                foreach ($adversary->Attachments as $attachmentId)
                 {
-                    $attachments[] = $attachment;
+                    $attachment = $game->theah->getAttachmentById($attachmentId);
+                    if ($attachment && ! $attachment->Engaged)
+                    {
+                        $attachments[] = $attachment;
+                    }
                 }
             }
             $args["attachments"] = array_map(fn($attachment) => ["id" => $attachment->Id, "name" => $attachment->Name], $attachments);
@@ -90,9 +149,14 @@ class Technique_02026a extends Technique
     {
         parent::actFromTechniqueWithId($game, $state, $stateName, $id);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_02026a)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_02026a
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_02026a)
         {
-            $adversary = $game->theah->getDuelRoundOpponent();
+            $adversary = $this->getAdversary($game->theah);
+            if ($adversary === null)
+            {
+                throw new UserException($game->translate("Adversary not found"));
+            }
 
             if (! in_array($id, $adversary->Attachments))
             {
