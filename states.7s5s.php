@@ -1627,23 +1627,6 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
-    // WHY: Keep machinestates entry so SFTP of tracked files registers 45504017.
-    // Name kept for bas JS handlers; hub is GENERATE_THREAT_EVENTS (Accept/Intervene),
-    // not RESOLVE_TECHNIQUE_EVENTS — discard must not run before Accept/Refuse.
-    States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04017 => [
-        "name" => "highDramaChallengeActionResolveTechnique_04017",
-        "description" => clienttranslate('${actplayer} is choosing a card to discard.'),
-        "descriptionmyturn" => clienttranslate('Jägerarmbrust') . clienttranslate(': ${you} must choose a card to discard:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS,
-        ]
-    ],
-
     States::DUEL_CHOOSE_TECHNIQUE_01013 => [
         "name" => "duelChooseTechnique_01013",
         "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
