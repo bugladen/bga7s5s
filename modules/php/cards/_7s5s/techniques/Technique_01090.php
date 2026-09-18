@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -9,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -27,37 +29,113 @@ class Technique_01090 extends Technique
         $this->CardPlayerId = 0;
     }
 
+    /**
+     * WHY: Challenge has no duel round — getDuelRoundOpponent() fatals on a null actor.
+     * Adversary is CHOSEN_TARGET via stHighDramaChallengeActionResolveTechnique /
+     * GenerateThreat (Intervene can retarget). Same rule as Technique_01193 / 02026.
+     */
+    private function getAdversary(Theah $theah, int $adversaryId = 0): ?Character
+    {
+        if ($adversaryId)
+        {
+            return $theah->getCharacterById($adversaryId);
+        }
+
+        if ($theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            return $theah->getDuelRoundOpponent();
+        }
+
+        $chosenId = (int) $theah->game->globals->get(Game::CHOSEN_TARGET, 0);
+        if (! $chosenId)
+        {
+            return null;
+        }
+
+        return $theah->getCharacterById($chosenId);
+    }
+
+    private function getActor(Theah $theah, int $actorId = 0): ?Character
+    {
+        if ($actorId)
+        {
+            return $theah->getCharacterById($actorId);
+        }
+
+        if ($theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            return $theah->getDuelRoundActor();
+        }
+
+        $performerId = (int) $theah->game->globals->get(Game::CHOSEN_PERFORMER, 0);
+        if (! $performerId)
+        {
+            return null;
+        }
+
+        return $theah->getCharacterById($performerId);
+    }
+
+    private function revealAdversaryTopCard(Theah $theah, Character $actor, Character $adversary): void
+    {
+        $game = $theah->game;
+        $owner = $this->getOwningCharacter($theah);
+
+        $playerName = $game->getPlayerNameById($actor->ControllerId);
+        $opponentName = $game->getPlayerNameById($adversary->ControllerId);
+
+        $dbCardInfo = $game->getCardsOnTopOfPlayerFactionDeck($adversary->ControllerId, 1)[0];
+        $card = $game->getCardObjectFromDb($dbCardInfo['id']);
+
+        $this->RevealedCardId = $card->Id;
+        $this->CardPlayerId = $adversary->ControllerId;
+        $owner->IsUpdated = true;
+
+        $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} reveals and replaces the top card of ${opponent_name}\'s Faction Deck. Card revealed: ${card_inject_code}.'), [
+            "owner_inject_code" => $owner->getInjectCode(),
+            "player_name" => $playerName,
+            "opponent_name" => $opponentName,
+            "card_inject_code" => $card->getInjectCode(),
+        ]);
+
+        $transition = EventFactory::createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "01090", $this->Id);
+        $theah->queueEvent($transition);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
-            $game = $event->theah->game;
-            $owner = $this->getOwningCharacter($event->theah);
+            // WHY: Challenge Resolve runs before Accept/Refuse. Reveal must not fire on
+            // Refuse — defer to EventGenerateChallengeThreat + CHALLENGE_ACCEPTED
+            // (02026 / 04017 shape). In-duel Resolve is the real effect timing.
+            if ($event->inDuel)
+            {
+                $actor = $this->getActor($event->theah, $event->actorId);
+                $adversary = $this->getAdversary($event->theah, $event->adversaryId);
+                if ($actor !== null && $adversary !== null)
+                {
+                    $this->revealAdversaryTopCard($event->theah, $actor, $adversary);
+                }
+            }
+        }
 
-            $actor = $game->theah->getDuelRoundActor();
-            $playerName = $game->getPlayerNameById($actor->ControllerId);
-
-            $adversary = $game->theah->getDuelRoundOpponent();
-            $opponentName = $game->getPlayerNameById($adversary->ControllerId);
-
-            $dbCardInfo = $game->getCardsOnTopOfPlayerFactionDeck($adversary->ControllerId, 1)[0];
-            $card = $game->getCardObjectFromDb($dbCardInfo['id']);
-
-            $this->RevealedCardId = $card->Id;
-            $this->CardPlayerId = $adversary->ControllerId;
-            $owner->IsUpdated = true;
-
-            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} reveals and replaces the top card of ${opponent_name}\'s Faction Deck. Card revealed: ${card_inject_code}.'), [
-                "owner_inject_code" => $owner->getInjectCode(),
-                "player_name" => $playerName,
-                "opponent_name" => $opponentName,
-                "card_inject_code" => $card->getInjectCode(),
-            ]);
-
-            $transition = EventFactory::createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "01090", $this->Id);
-            $event->theah->queueEvent($transition);
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            // WHY: GENERATE_THREAT also runs on Refuse (wound threat). Intervene sets
+            // CHALLENGE_ACCEPTED without EventChallengeAccepted. Gate so Refuse never
+            // reveals; Accept/Intervene get the reveal from GENERATE_THREAT_EVENTS.
+            if ($event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            {
+                $actor = $this->getActor($event->theah, $event->actorId);
+                $adversary = $this->getAdversary($event->theah, $event->adversaryId);
+                if ($actor !== null && $adversary !== null)
+                {
+                    $this->revealAdversaryTopCard($event->theah, $actor, $adversary);
+                }
+            }
         }
 
         if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
@@ -92,11 +170,14 @@ class Technique_01090 extends Technique
     {
         $args = parent::getArgsFromTechnique($game, $state, $stateName);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_01090 || $state == States::DUEL_NEW_ROUND_01090)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_01090
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01090
+            || $state == States::DUEL_NEW_ROUND_01090)
         {
-            $adversary = $game->theah->getDuelRoundOpponent();
-            $playerName = $game->getPlayerNameById($adversary->ControllerId);
-            $args['opponentName'] = $playerName;
+            // WHY: CardPlayerId is the deck owner captured at reveal. Do not use
+            // getDuelRoundOpponent() — on NewRound the actor IS the adversary, and on
+            // Challenge there is no duel opponent yet.
+            $args['opponentName'] = $game->getPlayerNameById($this->CardPlayerId);
 
             $card = $game->getCardObjectFromDb($this->RevealedCardId);
             $args['card'] = $card->getPropertyArray($game);

@@ -2585,6 +2585,22 @@
                 this.chooseList.setSelectionMode(0);
             },
 
+            'highDramaChallengeActionResolveTechnique_01090': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+
+                this.addCardToDeck(this.chooseList, args.args.args.card);
+
+                var translated = dojo.string.substitute(
+                    _("Top Card in ${opponentName}'s Faction Deck"),
+                    {
+                        opponentName: args.args.args.opponentName
+                    }
+                );
+                $('choose_container_name').innerHTML = translated;
+                this.chooseList.setSelectionMode(0);
+            },
+
             'duelResolveManeuver_01059': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;

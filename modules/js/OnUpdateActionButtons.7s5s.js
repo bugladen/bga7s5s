@@ -954,6 +954,10 @@
                 this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
             },
 
+            'highDramaChallengeActionResolveTechnique_01090': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+            },
+
             'duelChooseTechnique_01093': () => {
                 this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
                 dojo.addClass('actChooseDiscardCard', 'disabled');
