@@ -27,17 +27,6 @@ class Technique_01090 extends Technique
         $this->CardPlayerId = 0;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-        {
-            return false;
-        }
-
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        return $inDuel;
-    }
-
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
