@@ -24,12 +24,6 @@ class Technique_01093 extends Technique
         if (! parent::isAvailableToPlayer($playerId, $theah))
             return false;
 
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        if (!$inDuel)
-        {
-            return false;
-        }
-
         $riposte = $theah->getCurrentRoundRiposte();
         return $riposte > 0;
     }
