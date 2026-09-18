@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -38,16 +39,22 @@ class Technique_04033 extends Technique
             return false;
         }
 
-        if (! $theah->game->globals->get(Game::IN_DUEL, false))
+        $owner = $this->getOwningCharacter($theah);
+        if ($owner === null)
         {
             return false;
         }
 
-        $owner = $this->getOwningCharacter($theah);
-        $actor = $theah->getDuelRoundActor();
-        if ($owner === null || $actor === null || $actor->Id !== $owner->Id)
+        // WHY: Challenge activation has no duel round actor — only gate actor==owner
+        // when IN_DUEL. Outside duel (challenge TechniqueAvailable), performer is
+        // already the host via getAvailableCharacterTechniques (04017 / 04021b).
+        if ($theah->game->globals->get(Game::IN_DUEL, false))
         {
-            return false;
+            $actor = $theah->getDuelRoundActor();
+            if ($actor === null || $actor->Id !== $owner->Id)
+            {
+                return false;
+            }
         }
 
         return true;
@@ -71,6 +78,9 @@ class Technique_04033 extends Technique
 
             // WHY createTechniqueTransitionEvent: HIGHEST_PRIORITY so Thrust/Parry choice
             // completes before EventDuelCalculateTechniqueValues (queued after Resolve).
+            // Same key "04033" is dispatcher-scoped: RESOLVE_TECHNIQUE_EVENTS → challenge
+            // picker; DUEL_CHOOSE_TECHNIQUE_EVENTS → duel picker; DUEL_NEW_ROUND_EVENTS →
+            // deferred threat prompt.
             $transition = EventFactory::createTechniqueTransitionEvent(
                 $owner->ControllerId,
                 $owner->Id,
@@ -80,6 +90,28 @@ class Technique_04033 extends Technique
             $event->theah->queueEvent($transition);
 
             $this->setUsed($event->theah, true);
+        }
+
+        // WHY: Challenge has no EventDuelCalculateTechniqueValues — +1 Thrust becomes
+        // +1 adversary threat here (PlusOneThrust / 04017). Parry does nothing on
+        // challenge; UseThrust is set by the Resolve-time picker before this fires.
+        // AdversaryId is already CHOSEN_TARGET from stHighDramaChallengeActionGenerateThreat
+        // (post-Intervene final defender) — do not use getDuelRoundOpponent().
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            if ($this->UseThrust)
+            {
+                $owner = $this->getOwningCharacter($event->theah);
+                if ($owner === null || $owner->Id == $event->actorId)
+                {
+                    $event->adversaryThreat += 1;
+                    $event->explanations[] = sprintf(
+                        $event->theah->game->translate("%s: Technique [%s] adds 1 Threat."),
+                        $owner !== null ? $owner->getInjectCode() : $this->Name,
+                        $this->Name
+                    );
+                }
+            }
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
@@ -194,7 +226,11 @@ class Technique_04033 extends Technique
     {
         parent::actFromTechniqueWithId($game, $state, $stateName, $id);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04033)
+        // WHY: Challenge picker is a separate state so nextState returns to
+        // RESOLVE_TECHNIQUE_EVENTS — reusing DUEL_CHOOSE_TECHNIQUE_04033 would
+        // jump into the duel event hub mid-challenge (04017 lesson).
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04033
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04033)
         {
             $owner = $this->getOwningCharacter($game->theah);
             $this->UseThrust = $id == 1;

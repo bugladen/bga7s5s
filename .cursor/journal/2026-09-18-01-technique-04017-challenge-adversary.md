@@ -27,9 +27,15 @@ Do not regress:
 - Attachment `sourceId` on `createTechniqueTransitionEvent`.
 - Empty hand → notify + skip transition.
 
-Must upload: `states.7s5s.php` (return hub), `states.inc.php` (`"04017"` on GENERATE_THREAT_EVENTS, removed from RESOLVE), `Technique_04017.php`. States const + bas JS unchanged (same state name/id).
+## State registration (Eddie 2026-09-18)
+
+**Wrong:** Put `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04017` only in `states.7s5s.php`. New-framework pickers (04033 challenge) live as `States/bas/State_*.php` GameState classes — machinestates-only entry does not register the interactive state properly → Accept skips picker straight into duel round 1.
+
+**Right:** `State_highDramaChallengeActionResolveTechnique_04017` GameState class (mirror duel 04017 + 04033 challenge). Return hub = `GENERATE_THREAT_EVENTS` (post-Accept). Removed from `states.7s5s.php`. Transition `"04017"` stays on GENERATE_THREAT_EVENTS in `states.inc.php`.
+
+Must upload: `State_highDramaChallengeActionResolveTechnique_04017.php`, `states.inc.php`, `Technique_04017.php`, bas JS. Do **not** rely on states.7s5s for this state.
 
 Smoke:
-1. Academic/Hunter activates Technique on Challenge → Accept → adversary discard picker during generate-threat events → then Resolution/duel.
-2. Same → Intervene → intervener (new adversary) gets discard picker.
-3. Same → Refuse → engage + threat, **no** discard picker.
+1. Academic/Hunter + Technique on Challenge → Accept → discard picker → then Resolution/duel.
+2. Same → Intervene → intervener discards.
+3. Same → Refuse → engage + threat, no discard.
