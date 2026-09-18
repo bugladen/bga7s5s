@@ -22,22 +22,6 @@ class Technique_02017 extends Technique
         $this->Name = clienttranslate("Adversary Cannot Activate Techniques Next Round");
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-        {
-            return false;
-        }
-        
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        if (! $inDuel)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
