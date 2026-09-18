@@ -26,15 +26,6 @@ class Technique_01204 extends Technique
         $this->ReduceAdversaryParry = false;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-            return false;
-        
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        return $inDuel;
-    }
-
     /**
      * WHY: Dame of Swords (02055) / I Know That Trick (01165) clone this technique
      * onto the participant Character. The original lives on Syrneth Hand and must
