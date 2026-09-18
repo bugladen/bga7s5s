@@ -17,9 +17,13 @@ References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_
 
 ### Gambling Technique / Gambling Maneuver
 
-**"Gambling"** is a *mechanical cost of how the combat card was obtained*, NOT a performer trait. Do NOT `hasTrait("Gambling")`. Gate availability with:
+**"Gambling"** is a *mechanical cost of how the combat card was obtained*, NOT a performer trait. Do NOT `hasTrait("Gambling")`. **Always** gate `Game::IN_DUEL` **and** `Game::DUEL_GAMBLED` (plus actor identity):
 
 ```php
+if (! $theah->game->globals->get(Game::IN_DUEL, false))
+{
+    return false;
+}
 if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false))
 {
     return false;
@@ -33,7 +37,9 @@ if ($owner === null || $actor === null || $actor->Id !== $owner->Id)
 }
 ```
 
-Also require `Game::IN_DUEL`. Optional printed conditions (greater Finesse than adversary, adversary wounded, combat card ≥ N Thrust) go in the same `isAvailableToPlayer` using `ModifiedFinesse` / `getDuelRoundOpponent()` / `getCurrentRoundThrust()` — see `Technique_03002`, `Maneuver_03008`, `Technique_03039`, `Technique_03043`.
+WHY `IN_DUEL` is mandatory here: gambling only exists inside a duel round — do not rely on `DUEL_GAMBLED` alone. Optional printed conditions (greater Finesse than adversary, adversary wounded, combat card ≥ N Thrust) go in the same `isAvailableToPlayer` using `ModifiedFinesse` / `getDuelRoundOpponent()` / `getCurrentRoundThrust()` — see `Technique_03002`, `Maneuver_03008`, `Technique_03039`, `Technique_03043`.
+
+**"Adversary" cost vs effect:** gate `IN_DUEL` when "adversary" appears in the **cost / condition before the •** (availability must read duel-opponent state — e.g. "If the adversary is wounded • …"). Do **not** add `IN_DUEL` solely because the **effect after the •** names the adversary ("Wound the adversary", "−1 Thrust to Adversary"). Gambling Techniques still always need `IN_DUEL` regardless. See create-character Pattern E "In-duel availability gate" for the full table. References: cost-side `Technique_03002` / `Technique_02023`; effect-only `Technique_01193` / `Technique_01204`.
 
 When the cost is **"Engage this card"** (the attachment), also gate `! $attachment->Engaged` and queue `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)` on `EventResolveTechnique` — mirror `Technique_01049` / `Technique_03064`.
 

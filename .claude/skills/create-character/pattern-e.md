@@ -36,6 +36,21 @@ public function isAvailableToPlayer(int $playerId, Theah $theah): bool
 }
 ```
 
+**"Adversary" in printed Technique text — when `IN_DUEL` is required:**
+
+Printed Technique lines use **cost • effect** (the bullet / "dot"). "Adversary" does **not** always force an explicit `IN_DUEL` availability gate:
+
+| Where "adversary" appears | Gate `IN_DUEL`? | Why |
+|---|---|---|
+| **Cost / condition before the •** (or equivalent "If …," preface) — e.g. "If the adversary is wounded • …", "If the adversary is a Thug or Mercenary • …", "… has more [Stat] than the adversary • …" | **Yes** | Availability must read duel-opponent state; outside a duel there is no adversary. |
+| **Effect only after the •** (or the whole line is an effect) — e.g. "Wound the adversary", "−1 Thrust to Adversary", "the Adversary discards a card" | **No** (not for that word alone) | The duel action menu already offers Techniques in-round; do not add `IN_DUEL` solely because the payoff names the adversary. |
+
+**Always** gate `IN_DUEL` for **Gambling Technique** / **Gambling Maneuver** (with `DUEL_GAMBLED`) — see "Gambling Technique gate" below. Independent of whether the printed line mentions adversary.
+
+WHY the adversary split: agents previously over-applied "any Technique that says adversary ⇒ `IN_DUEL`". Cost-side checks need the duel global; effect-side wording does not invent a new availability predicate. Challenge-context Techniques (`Technique_03013` shape) remain their own dual-dispatcher case — do not treat "adversary in the effect" as a reason to hide them outside duels.
+
+References (cost-side adversary → must gate): `Technique_03002`, `Technique_02023`, `Technique_03018`, `Technique_02021`, `Technique_01039`, `Technique_01066`. Contrast effect-only: `Technique_01193`, `Technique_01204`, `Technique_01093`.
+
 Helpers worth knowing:
 - `$theah->getDuelRoundActor(): ?Character` — the participant whose turn it is this round.
 - `$theah->getDuelRoundOpponent(): ?Character` — the other participant. Returns the *last-known* state when the opponent is in discard/locker (e.g., already destroyed).
@@ -45,15 +60,16 @@ Helpers worth knowing:
 
 ### Gambling Technique gate
 
-"**Gambling Technique:** …" — only available if the actor has gambled for their combat card this round. Add one extra check on top of the in-duel gate:
+"**Gambling Technique:** …" — **always** gate `Game::IN_DUEL` **and** `Game::DUEL_GAMBLED` (plus actor-is-owner). Gambling is a duel-round cost; `DUEL_GAMBLED` alone is not enough — always require an in-duel check first:
 
 ```php
+if (! $theah->game->globals->get(Game::IN_DUEL, false)) return false;
 if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false)) return false;
 ```
 
-WHY use the global (and not query `duel_round.gambled` directly): the global is set in `FrameworkActionsTrait::actChooseGambleCard` at the moment the gambled combat card is locked in, and cleared in `stDoneRound`. It's the cheapest authoritative answer to "has the actor gambled this round." `isAvailableToPlayer` runs on a hot path (every time the action menu refreshes), so the SQL alternative is wasteful.
+WHY both: gambling only exists inside a duel round. WHY the `DUEL_GAMBLED` global (and not query `duel_round.gambled` directly): set in `FrameworkActionsTrait::actChooseGambleCard` when the gambled combat card is locked in, cleared in `stDoneRound`. Cheapest authoritative "has the actor gambled this round" for the hot `isAvailableToPlayer` path.
 
-Reference: `Technique_03002` (Aja).
+Reference: `Technique_03002` (Aja), `Technique_03052`, `Technique_03064`.
 
 ### Privately look at adversary's hand
 

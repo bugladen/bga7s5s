@@ -15,7 +15,8 @@
 5. **Parse keyword(s) literally** before picking interfaces:
    - "Sorcerer …" → `implements ISorcererAbility` + emit Start/Played events in the Action/Reaction class.
    - "Strega …" / "Mercenary …" / "Diplomat …" / etc. → performer-trait gate (`hasTrait("Strega")` on the equipped character or chosen performer). NOT a Sorcerer ability.
-   - **"Gambling Technique/Maneuver"** → `Game::DUEL_GAMBLED` + actor identity gate. NOT a trait gate.
+   - **"Gambling Technique/Maneuver"** → always `Game::IN_DUEL` **and** `Game::DUEL_GAMBLED` + actor identity. NOT a trait gate; do not rely on `DUEL_GAMBLED` alone.
+   - **Technique "adversary" cost vs effect:** `IN_DUEL` when "adversary" is in the **cost before the •**; effect-only wording does not force that gate (Gambling still always needs `IN_DUEL`). See Pattern E.
    - Both Sorcerer and trait gates can stack ("Sorcerer Strega Reaction" is both).
 6. For Reactions with **engage cost**, gate the trigger on `! $owner->Engaged` AND `$this->isAvailable()`, then queue `createCardEngagedEvent` on the attachment in `performReaction`. The dusk reset handles both `Engaged` and `Used`. **If a later stage still needs a reaction transition, do not `setUsed` on Engage** — `runEvents` skips reaction transitions when `!isAvailable()`. Defer to finalize (`03007`, `03044`).
 7. **Cross-player reactions** (opponent must do part of the resolve): use multi-stage `$stage` + `createReactionTransitionEvent($opponentId, ...)`. Do NOT create a dedicated sub-state — reactions can fire from any phase and a sub-state is only reachable from its phase's `*_EVENTS` transitions. During duel cancel interrupts, set **`HIGH_PRIORITY` on every** reaction transition in the chain (default `REACTION_PRIORITY` is later than MEDIUM Resolve).
