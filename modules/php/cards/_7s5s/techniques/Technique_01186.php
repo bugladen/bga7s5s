@@ -23,15 +23,6 @@ class Technique_01186 extends Technique
         $this->CancelOpponentManeuvers = false;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-            return false;
-
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-        return $inDuel;
-    }
-
     public function handleEvent(Event $event)
     { 
         parent::handleEvent($event);
