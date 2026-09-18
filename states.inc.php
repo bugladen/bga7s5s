@@ -1383,6 +1383,9 @@ $machinestates = [
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION,
                     // WHY: Danilo intervene wound-or-draw choice (queued from EventCharacterIntervened).
                     "04002_3" => States::HIGH_DRAMA_PLAYER_TURN_04002_3,
+                    // WHY: Jägerarmbrust adversary discard — only after Accept/Intervene
+                    // (queued from EventGenerateChallengeThreat when CHALLENGE_ACCEPTED).
+                    "04017" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04017,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION,
                     "endOfGame" => States::END_GAME
                     ]

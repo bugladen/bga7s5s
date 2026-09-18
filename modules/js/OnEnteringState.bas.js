@@ -926,6 +926,13 @@
                 }
             },
 
+            'highDramaChallengeActionResolveTechnique_04017': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
         };
 
         if (methods[stateName])

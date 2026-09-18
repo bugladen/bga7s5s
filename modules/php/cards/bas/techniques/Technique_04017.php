@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -26,11 +27,6 @@ class Technique_04017 extends Technique
             return false;
         }
 
-        if (! $theah->game->globals->get(Game::IN_DUEL, false))
-        {
-            return false;
-        }
-
         $attachment = $this->getOwningCard($theah);
         if ($attachment === null || $attachment->Engaged)
         {
@@ -38,10 +34,21 @@ class Technique_04017 extends Technique
         }
 
         $owner = $this->getOwningCharacter($theah);
-        $actor = $theah->getDuelRoundActor();
-        if ($owner === null || $actor === null || $actor->Id !== $owner->Id)
+        if ($owner === null)
         {
             return false;
+        }
+
+        // WHY: Challenge activation has no duel round actor — only gate actor==owner
+        // when IN_DUEL. Outside duel (challenge TechniqueAvailable), performer is
+        // already the host via getAvailableCharacterTechniques.
+        if ($theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            $actor = $theah->getDuelRoundActor();
+            if ($actor === null || $actor->Id !== $owner->Id)
+            {
+                return false;
+            }
         }
 
         return true;
@@ -70,36 +77,57 @@ class Technique_04017 extends Technique
             );
             $event->theah->queueEvent($engageEvent);
 
-            // WHY: Academic/Hunter is a Resolve-time effect gate, not an availability gate —
-            // printed "If …" so +1 Thrust/engage still works for other hosts.
-            if ($owner->hasTrait("Academic") || $owner->hasTrait("Hunter"))
+            // WHY: Challenge discard waits for Accept/Intervene (EventGenerateChallengeThreat
+            // + CHALLENGE_ACCEPTED). Refuse still runs Resolve and GenerateThreat — queuing
+            // discard here would force it even when the challenge is rejected.
+            if ($event->inDuel)
             {
-                $adversary = $event->theah->getDuelRoundOpponent();
-                if ($adversary === null)
+                $participant = $event->theah->getCharacterById($event->actorId) ?? $owner;
+                $this->queueAdversaryDiscardIfEligible(
+                    $event->theah,
+                    $participant,
+                    $attachment,
+                    $event->adversaryId
+                );
+            }
+        }
+
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            // WHY: Challenge has no EventDuelCalculateTechniqueValues — +1 Thrust becomes
+            // +1 adversary threat here (same as Technique_PlusOneThrust). Applies on Accept
+            // and Reject (refuse wounds); discard below is separately gated.
+            $ownerChar = $this->getOwningCharacter($event->theah);
+            if ($ownerChar === null || $ownerChar->Id == $event->actorId)
+            {
+                $attachment = $this->getOwningCard($event->theah);
+                $event->adversaryThreat += 1;
+                $event->explanations[] = sprintf(
+                    $event->theah->game->translate("%s: Technique [%s] adds 1 Threat."),
+                    $attachment !== null ? $attachment->getInjectCode() : $this->Name,
+                    $this->Name
+                );
+            }
+
+            // WHY: GENERATE_THREAT runs after Accept, Intervene, and Reject. Intervene does
+            // not fire EventChallengeAccepted but sets CHALLENGE_ACCEPTED. Gate discard on
+            // that flag so Refuse never prompts. AdversaryId is CHOSEN_TARGET post-Intervene.
+            if ($event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            {
+                $attachment = $this->getOwningCard($event->theah);
+                $owner = $this->getOwningCharacter($event->theah);
+                if ($attachment === null || $owner === null)
                 {
                     return;
                 }
 
-                $hand = $event->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $adversary->ControllerId);
-                if (count($hand) > 0)
-                {
-                    // WHY: sourceId = attachment — FrameworkActionsTrait hydrates source and
-                    // getTechniqueById; character sourceId would hide an attachment-hosted technique.
-                    $transition = EventFactory::createTechniqueTransitionEvent(
-                        $adversary->ControllerId,
-                        $attachment->Id,
-                        "04017",
-                        $this->Id
-                    );
-                    $event->theah->queueEvent($transition);
-                }
-                else
-                {
-                    $event->theah->game->notify->all("message", clienttranslate('${technique_inject_code}: ${player_name} has no cards to discard.'), [
-                        "technique_inject_code" => $attachment->getInjectCode(),
-                        "player_name" => $event->theah->game->getPlayerNameById($adversary->ControllerId),
-                    ]);
-                }
+                $participant = $event->theah->getCharacterById($event->actorId) ?? $owner;
+                $this->queueAdversaryDiscardIfEligible(
+                    $event->theah,
+                    $participant,
+                    $attachment,
+                    $event->adversaryId
+                );
             }
         }
 
@@ -115,11 +143,66 @@ class Technique_04017 extends Technique
         }
     }
 
+    /**
+     * Academic/Hunter Resolve-time "If" gate — not availability.
+     * Queues adversary hand discard picker when hand is non-empty.
+     */
+    private function queueAdversaryDiscardIfEligible(
+        Theah $theah,
+        $participant,
+        $attachment,
+        int $adversaryId
+    ): void
+    {
+        if ($participant === null
+            || (! $participant->hasTrait("Academic") && ! $participant->hasTrait("Hunter")))
+        {
+            return;
+        }
+
+        if (! $adversaryId)
+        {
+            $adversaryId = (int) $theah->game->globals->get(Game::CHOSEN_TARGET, 0);
+        }
+        $adversary = $theah->getCharacterById($adversaryId);
+        if ($adversary === null && $adversaryId)
+        {
+            $adversary = $theah->game->getChallengeLastKnownCharacter($adversaryId);
+        }
+        if ($adversary === null)
+        {
+            return;
+        }
+
+        $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $adversary->ControllerId);
+        if (count($hand) > 0)
+        {
+            // WHY: sourceId = attachment — FrameworkActionsTrait hydrates source and
+            // getTechniqueById; character sourceId would hide an attachment-hosted technique.
+            // Challenge path transitions from GENERATE_THREAT_EVENTS (Accept/Intervene hub).
+            $transition = EventFactory::createTechniqueTransitionEvent(
+                $adversary->ControllerId,
+                $attachment->Id,
+                "04017",
+                $this->Id
+            );
+            $theah->queueEvent($transition);
+        }
+        else
+        {
+            $theah->game->notify->all("message", clienttranslate('${technique_inject_code}: ${player_name} has no cards to discard.'), [
+                "technique_inject_code" => $attachment->getInjectCode(),
+                "player_name" => $theah->game->getPlayerNameById($adversary->ControllerId),
+            ]);
+        }
+    }
+
     public function actFromTechniqueWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromTechniqueWithId($game, $state, $stateName, $id);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04017)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04017
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04017)
         {
             $card = $game->getCardObjectFromDb($id);
 

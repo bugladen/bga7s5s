@@ -423,6 +423,11 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'highDramaChallengeActionResolveTechnique_04017': () => {
+                this.addActionButton(`actChooseDiscardCard`, _('Confirm Selection'), () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             'duelChooseTechnique_04033': () => {
                 this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
                 this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));

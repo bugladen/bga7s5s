@@ -663,6 +663,13 @@
                 }
             },
 
+            'highDramaChallengeActionResolveTechnique_04017': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
         };
 
         if (methods[stateName])
