@@ -27,16 +27,6 @@ class Technique_02037 extends Technique
         $this->BlockedAdversaryCharacterId = 0;
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-            return false;
-
-        $inDuel = $theah->game->globals->get(Game::IN_DUEL, false);
-
-        return $inDuel;
-    }
-
     private function clearGambleLock(Theah $theah): void
     {
         $this->CancelAdversaryGamble = false;
