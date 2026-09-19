@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
@@ -2232,6 +2233,15 @@ trait EventHub
                     // characters (e.g. Deal with the Devil dusk, Action_03067). Schemes/attachments skip.
                     if ($card instanceof Character && $event->playerId) {
                         $theah->game->bga->playerStats->inc(Game::STAT_CHARACTERS_SENT_TO_LOCKER, 1, $event->playerId);
+                    }
+
+                    // WHY: Dusk cleanup queues scheme→locker at MEDIUM priority, while
+                    // reaction transitions sit at REACTION_PRIORITY (lower). A destroy in
+                    // the same batch can leave a scheme reaction transition queued after
+                    // the scheme is already sunk (Great Game draw after move-home). Drop
+                    // those prompts — the scheme is out of play.
+                    if ($card instanceof Scheme) {
+                        $theah->deleteTransitionEventsBySourceId($card->Id);
                     }
 
                     $theah->game->notify->all("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [

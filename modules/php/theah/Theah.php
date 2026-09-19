@@ -354,18 +354,31 @@ class Theah
 
             if (! $skipTransitions && $event instanceof EventTransition) {              
                 
-                //If a reaction transition, make sure it is available.  
-                //This prevents multiple transition triggers of the same reaction from running.
-                if ($event->transition == "reaction") 
+                // If a card reaction transition, require a live available reaction.
+                // WHY fail-closed (vs old fail-open when card/reaction missing): orphaned
+                // transitions after a scheme hits The Locker (dusk cleanup) were still
+                // offered — Great Game draw with no destroy / scheme already sunk.
+                // Game-framework reactions (Crew Cap / Name Gate) use THEAH_ID and skip this.
+                if ($event->transition == "reaction" && $event->sourceId != Game::THEAH_ID)
                 {
                     $card = $this->getCardById($event->sourceId);
-                    if ($card && $card instanceof IHasReactions)
+                    if (! $card || ! ($card instanceof IHasReactions))
                     {
-                        $reaction = $card->getReactionById($event->internalId);
-                        if ($reaction && ! $reaction->isAvailable())
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
+
+                    $reaction = $card->getReactionById($event->internalId);
+                    if (! $reaction || ! $reaction->isAvailable())
+                    {
+                        continue;
+                    }
+
+                    // WHY: Same dusk priority race — scheme/attachment already in Locker-*
+                    // (or discard) must not open a playerReaction prompt.
+                    if (strpos($card->Location, 'Locker-') !== false
+                        || strpos($card->Location, 'Discard-') !== false)
+                    {
+                        continue;
                     }
                 }
 
