@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterHealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseEnd;
@@ -99,6 +100,16 @@ abstract class Character extends Card implements IHasTechniques
         return true;
     }
 
+    // WHY: Approach-deck eligibility is a character property (Brutes; Lucas Damned _02032
+    // "cannot be in an Approach deck"). Effects that offer "put into Approach" (Object of
+    // Wonder, Manipulative return) must filter on this — eventCheck alone only throws after
+    // the player already got a prompt. Deck construction also bans these; this is the
+    // in-game mirror.
+    public function canEnterApproachDeck(): bool
+    {
+        return ! $this->hasTrait("Brute");
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
@@ -113,6 +124,16 @@ abstract class Character extends Card implements IHasTechniques
         {
             throw new UserException(sprintf(
                 $event->theah->game->translate("%s has dashed Combat and cannot issue Combat challenges."),
+                $this->Name
+            ));
+        }
+
+        if ($event instanceof EventCharacterPutIntoApproachDeck
+            && $event->characterId == $this->Id
+            && ! $this->canEnterApproachDeck())
+        {
+            throw new UserException(sprintf(
+                $event->theah->game->translate("%s cannot be put into an Approach deck."),
                 $this->Name
             ));
         }
