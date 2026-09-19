@@ -136,13 +136,11 @@ class Theah
             $discardCards = $this->db->getCardObjectsAtLocation($discardDeckName);
             $this->repairDiscardPileLocations($discardCards, $discardDeckName);
             $this->cards += $discardCards;
-
-            // WHY: Destroyed characters sit in Locker-* (not discard). Without loading
-            // lockers, getCharacterById returns null after Stiletto kills a challenge
-            // participant — argsHighDramaChallengeActionAcceptChallenge fatals and the
-            // challenged player never sees Accept/Refuse/Intervene (soft-lock).
-            $lockerName = $this->game->getPlayerLockerName($playerId["id"]);
-            $this->cards += $this->db->getCardObjectsAtLocation($lockerName);
+            // WHY deliberately NOT loading Locker-* here: runEvents walks $this->cards
+            // and calls handleEvent on every card. Cards in The Locker must stay out of
+            // that loop (schemes/auras/reactions would keep firing after sink). Stiletto
+            // dead-participant challenge uses getCardById's DB fallback + Accept-args
+            // getCardObjectFromDb + CHALLENGE_LAST_KNOWN_* / CHOSEN_LOCATION instead.
         }
 
         $this->backfillIndomitableWillFlags();
@@ -2119,9 +2117,14 @@ class Theah
     public function interventionCheck(Character $character): void
     {
         $target = $this->getCardById($this->game->globals->get(GAME::CHOSEN_TARGET));
-        // WHY: Challenged may already be in Locker after Stiletto; challenge city site is
-        // CHOSEN_LOCATION from stSetupChallenge (set before ChallengeIssued reactions).
-        $challengeLocation = $this->game->globals->get(Game::CHOSEN_LOCATION, $target->Location);
+        // WHY: Challenged may already be in Locker after Stiletto (and Locker is not in
+        // buildCity). Challenge city site is CHOSEN_LOCATION from stSetupChallenge.
+        // getCardById's DB fallback still finds the corpse for ControllerId etc.; do not
+        // dereference $target->Location when preferring CHOSEN_LOCATION.
+        $challengeLocation = $this->game->globals->get(
+            Game::CHOSEN_LOCATION,
+            $target !== null ? $target->Location : ''
+        );
         if ($challengeLocation != $character->Location) {
             throw new UserException($this->game->translate("Character is not at the same location"));
         }    

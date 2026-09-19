@@ -4,7 +4,9 @@
 
 `buildCity()` loaded discard piles but **not** `Locker-*`. After Stiletto destroys the challenged character, `getCharacterById(CHOSEN_TARGET)` returned null → `argsHighDramaChallengeActionAcceptChallenge` fatals on `$target->Location` → no Accept/Refuse/Intervene buttons.
 
-Fix: load each player's locker in `buildCity` (same loop as discard). Also null-safe the Accept args with DB fallback.
+Fix (revised 2026-09-19): **do not** load lockers into `buildCity` — that put sunk cards into `runEvents`'s handleEvent loop. Keep Accept args null-safe with DB fallback; use `CHOSEN_LOCATION` + `CHALLENGE_LAST_KNOWN_*`. See `2026-09-19-01-buildcity-no-locker.md`.
+
+Original soft-lock: without any corpse lookup, `argsHighDramaChallengeActionAcceptChallenge` fatals on `$target->Location` → no Accept/Refuse/Intervene buttons.
 
 ### Unstick live table
 
