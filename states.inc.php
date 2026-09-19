@@ -2397,7 +2397,10 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
-                        "01135" => States::DUEL_GAMBLE_REVEALED,
+                        // WHY SETUP not REVEALED: May 2025 registered REVEALED as a crash
+                        // stopgap; that skipped EventGambleSetup (Devil Jonah's Bones).
+                        // Match combat-card / choose-gamble-card entry points.
+                        "01135" => States::DUEL_GAMBLE_SETUP,
                         "reaction" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_REACTIONS,
                         "pay" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD,
@@ -2603,6 +2606,11 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        // WHY: Reaction_01135 may resolve while leftover announce-reactions
+                        // are still draining inside setup (e.g. second Mireli in hand). Same
+                        // gap class as May 2025 cost-events (5230) — without this entry,
+                        // nextState("01135") throws at state 52740.
+                        "01135" => States::DUEL_GAMBLE_SETUP,
                         "03cd05" => States::DUEL_GAMBLE_SETUP_03CD05,
                         "reaction" => States::DUEL_GAMBLE_SETUP_REACTIONS,
                         "pay" => States::DUEL_GAMBLE_SETUP_PAY_FOR_REACTION,
@@ -2652,6 +2660,10 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+                        // WHY: Cost-events path used to jump straight to REVEALED; a second
+                        // 01135 cancel queued behind that entry must re-enter full setup
+                        // (EventGambleSetup / 03cd05), not crash here.
+                        "01135" => States::DUEL_GAMBLE_SETUP,
                         "03047" => States::DUEL_CHOOSE_GAMBLE_CARD_03047,
                         "reaction" => States::DUEL_GAMBLE_REVEALED_REACTIONS,
                         "pay" => States::DUEL_GAMBLE_REVEALED_PAY_FOR_REACTION,
