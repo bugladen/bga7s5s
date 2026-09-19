@@ -499,10 +499,16 @@ trait EventHub
             case $event instanceof EventCardDiscardedFromHand:
                 $handler = function (Theah $theah, EventCardDiscardedFromHand $event)
                 {
-                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
-
                     $deckObject = $theah->game->getGameDeckObject();
                     $card = $theah->getCardById($event->cardId);
+
+                    // WHY OwnerId for discard pile: stolen cards (Improvising 01106, etc.)
+                    // keep OwnerId as the faction owner while ControllerId is the thief.
+                    // WHY ControllerId for hand UI: the card left the controller's hand.
+                    $discardOwnerId = $card->OwnerId ?: $event->ownerId;
+                    $handPlayerId = $card->ControllerId ?: $event->ownerId;
+                    $discardPileName = $theah->game->getPlayerDiscardDeckName($discardOwnerId);
+
                     $theah->game->moveCard($card->Id, $discardPileName, 0, $card);
                     $card->IsUpdated = true;
 
@@ -514,11 +520,12 @@ trait EventHub
                         $message = '${player_name} discarded ${card_inject_code} as payment.';
 
                     $theah->game->notify->all("cardDiscardedFromHand", clienttranslate($message), [
-                        "player_name" => $theah->game->getPlayerNameById($event->ownerId),
+                        "player_name" => $theah->game->getPlayerNameById($handPlayerId),
                         "card_inject_code" => $card->getInjectCode(),
-                        "playerId" => $event->ownerId,
+                        "playerId" => $handPlayerId,
+                        "discardPlayerId" => $discardOwnerId,
                         "card" => $card->getPropertyArray($theah->game),
-                        "handCount" => count($deckObject->getPlayerHand($event->ownerId)),
+                        "handCount" => count($deckObject->getPlayerHand($handPlayerId)),
                     ]);
                 };
                 $handler($this, $event);

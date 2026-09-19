@@ -30,15 +30,18 @@ class _01106_RiskClone extends Risk implements IHasActions
 
         if ($event instanceof EventCardDiscardedFromHand && $event->cardId == $this->Id)
         {
-            //Remove the clone from the discard pile and hide it
+            //Remove the clone from the owner's discard pile and hide it
+            // WHY OwnerId: EventHub routes discard to OwnerId's pile; remove must match.
             $game = $event->theah->game;
-            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->ownerId, $this->Id);
+            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($this->OwnerId, $this->Id);
             $event->theah->queueEvent($removeEvent);
             $game->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $this);
 
-            //Sink the cloned card to the bottom of the controller's faction deck
+            //Sink the cloned card to the bottom of the owner's faction deck
+            // WHY OwnerId: Improvising steals control; ownership is unchanged. Card text:
+            // "Cards return to their owner's deck when sunk."
             $clonedCard = $game->getCardObjectFromDb($this->ClonedCardId);
-            $sinkEvent = EventFactory::createCardAddedToFactionDeckEvent($clonedCard->ControllerId, $clonedCard->Id, false);
+            $sinkEvent = EventFactory::createCardAddedToFactionDeckEvent($clonedCard->OwnerId, $clonedCard->Id, false);
             $event->theah->queueEvent($sinkEvent);
 
             //Move Improvising to the Locker

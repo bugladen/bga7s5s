@@ -1015,15 +1015,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
         let card = args.card;
         this.cardProperties[card.id] = card;
 
-        $(`${args.playerId}-score-hand-count`).innerHTML = args.handCount;
+        // WHY: Improvising (and similar) can leave OwnerId != ControllerId.
+        // Hand left the controller; physical discard pile is the owner's.
+        const handPlayerId = args.playerId;
+        const discardPlayerId = args.discardPlayerId ?? card.ownerId ?? args.playerId;
 
-        if (args.playerId == this.player_id)
+        $(`${handPlayerId}-score-hand-count`).innerHTML = args.handCount;
+
+        if (handPlayerId == this.player_id)
         {
             this.factionHand.removeCard(card);
         }
 
         card.location = this.LOCATION_PLAYER_DISCARD;
-        const player = this.gamedatas.players[args.playerId];
+        const player = this.gamedatas.players[discardPlayerId];
         player.discard.push(card);
     },
 
