@@ -24,3 +24,13 @@ Belt-and-suspenders for one Accept UI soft-lock is not worth putting every locke
 ## Note for later
 
 Mid-request, `EventCharacterDestroyed` still `addCardToWorld`s the recreated locker corpse, and `EventCardSentToLocker` leaves the card in `$this->cards` until next `buildCity`. That is same-request leakage only; cross-request is what this revert fixes.
+
+## Follow-up: Accept after Stiletto (2026-09-19)
+
+Accept still runs `stHighDramaChallengeActionGenerateThreat` *before* Resolution's fizzle check. EventHub used `$theah->cards[$adversaryId]` for the notify → fatal when challenged was in Locker (id absent from world).
+
+Fixed `EventGenerateChallengeThreat` hub handler:
+- Resolve actor/adversary via `getCardById` + `CHALLENGE_LAST_KNOWN_*` (never raw `$theah->cards[]`)
+- If challenger absent from `$theah->cards`, apply base Threat from last-known (Character::handleEvent never ran)
+
+After hub succeeds, Resolution still fizzles Accept+dead-challenged as designed.

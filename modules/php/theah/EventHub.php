@@ -1439,6 +1439,52 @@ trait EventHub
             case $event instanceof EventGenerateChallengeThreat:
                 $handler = function ($theah, EventGenerateChallengeThreat $event)
                 {
+                    // WHY: Locker is not in buildCity. A Stiletto-killed challenger is absent
+                    // from $theah->cards, so Character::handleEvent never added base Threat —
+                    // apply ChallengeIssued snapshot here (same logic as Character.php).
+                    if (! array_key_exists($event->actorId, $theah->cards))
+                    {
+                        $statSource = $theah->game->getChallengeLastKnownCharacter($event->actorId);
+                        if ($statSource === null)
+                        {
+                            $fromDb = $theah->getCardById($event->actorId);
+                            if ($fromDb instanceof Character)
+                            {
+                                $statSource = $fromDb;
+                            }
+                        }
+                        if ($statSource !== null)
+                        {
+                            switch ($event->statUsed)
+                            {
+                                case Game::STAT_COMBAT:
+                                    $event->adversaryThreat += $statSource->ModifiedCombat;
+                                    $event->explanations[] = sprintf(
+                                        $theah->game->translate("%s adds %d Threat from their Combat Stat."),
+                                        $statSource->Name,
+                                        $statSource->ModifiedCombat
+                                    );
+                                    break;
+                                case Game::STAT_FINESSE:
+                                    $event->adversaryThreat += $statSource->ModifiedFinesse;
+                                    $event->explanations[] = sprintf(
+                                        $theah->game->translate("%s adds %d Threat from their Finesse Stat."),
+                                        $statSource->Name,
+                                        $statSource->ModifiedFinesse
+                                    );
+                                    break;
+                                case Game::STAT_INFLUENCE:
+                                    $event->adversaryThreat += $statSource->ModifiedInfluence;
+                                    $event->explanations[] = sprintf(
+                                        $theah->game->translate("%s adds %d Threat from their Influence Stat."),
+                                        $statSource->Name,
+                                        $statSource->ModifiedInfluence
+                                    );
+                                    break;
+                            }
+                        }
+                    }
+
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
                     }
@@ -1447,8 +1493,36 @@ trait EventHub
                     $theah->game->globals->set(Game::DEFENDER_THREAT, $event->adversaryThreat);
                     $theah->game->globals->set(Game::DEFENDER_THREAT_IS_LETHAL, $event->adversaryThreatIsLethal);
 
-                    $actor = $theah->cards[$event->actorId];
-                    $adversary = $theah->cards[$event->adversaryId];
+                    // WHY: getCardById (not $theah->cards[]) — dead participants sit in Locker-*
+                    // which buildCity deliberately omits. Accept-with-dead-challenged still runs
+                    // GenerateThreat before Resolution fizzles.
+                    $actor = $theah->getCardById($event->actorId);
+                    $adversary = $theah->getCardById($event->adversaryId);
+                    if (
+                        ! ($actor instanceof Character)
+                        || $theah->game->characterIsInDiscardOrLocker($actor)
+                    )
+                    {
+                        $lastKnown = $theah->game->getChallengeLastKnownCharacter($event->actorId);
+                        if ($lastKnown !== null)
+                        {
+                            $actor = $lastKnown;
+                        }
+                    }
+                    if (
+                        ! ($adversary instanceof Character)
+                        || $theah->game->characterIsInDiscardOrLocker($adversary)
+                    )
+                    {
+                        $lastKnown = $theah->game->getChallengeLastKnownCharacter($event->adversaryId);
+                        if ($lastKnown !== null)
+                        {
+                            $adversary = $lastKnown;
+                        }
+                    }
+
+                    $actorName = $actor instanceof Character ? $actor->Name : clienttranslate('Unknown');
+                    $adversaryName = $adversary instanceof Character ? $adversary->Name : clienttranslate('Unknown');
 
                     $message = clienttranslate('${actor_name} has ${actor_threat} total Threat for the Challenge. ${adversary_name} has ${adversary_threat} total Threat. ');
                     if ($event->adversaryThreatIsLethal)
@@ -1457,9 +1531,9 @@ trait EventHub
                     }
 
                     $theah->game->notify->all("message", $message, [
-                        "actor_name" => $actor->Name,
+                        "actor_name" => $actorName,
                         "actor_threat" => $event->actorThreat,
-                        "adversary_name" => $adversary->Name,
+                        "adversary_name" => $adversaryName,
                         "adversary_threat" => $event->adversaryThreat,
                     ]);
                 };
