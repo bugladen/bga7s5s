@@ -114,6 +114,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['updateRoundThreats', 500],
             ['updateRoundWithCombatStats', 500],
             ['duelAbilityCanceled', 500],
+            ['duelRoundColumnNote', 500],
             ['yevgeniAdversaryChosen', 500],
             ['yevgeniAdversaryRemoved', 1],
         ];
@@ -2427,6 +2428,34 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (! element.innerHTML.includes(effectName))
         {
             element.innerHTML += `<p><span class="_7sfs-duel-ability-canceled">${abilityName}</span> ${args.canceled_label}</p>`;
+        }
+
+        dojo.removeClass(`duel_round_${args.round}_${args.mode}`, '_7sfs-ability-not-chosen');
+    },
+
+    // WHY: Passive modifiers (So It Begins) persist a label via duel_round_maneuver /
+    // technique (same tables as cancel notes). Live append only — no R/P/T, stats stay
+    // greyed. Reload already reads *_name from those tables.
+    notif_duelRoundColumnNote: function( notif )
+    {
+        debug( 'notif_duelRoundColumnNote' );
+        debug( notif );
+
+        const args = notif.args;
+        const element = $(`duel_round_${args.round}_${args.mode}`);
+        if (! element)
+        {
+            return;
+        }
+
+        if (element.innerHTML == 'Not Chosen')
+        {
+            element.innerHTML = '';
+        }
+
+        if (! element.innerHTML.includes(args.note))
+        {
+            element.innerHTML += `<p>${args.note}</p>`;
         }
 
         dojo.removeClass(`duel_round_${args.round}_${args.mode}`, '_7sfs-ability-not-chosen');

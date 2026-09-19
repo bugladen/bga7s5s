@@ -58,6 +58,16 @@ class _01183 extends CityEventCard
             {
                 $event->explanations[] = sprintf($event->theah->game->translate("%s: -1 Parry for being at same location"), $this->getInjectCode());
                 $event->removeParry(1);
+
+                // WHY Maneuver column (not Combat Card): mirrors recordCanceledAbilityInDuelTable
+                // — reuse duel_round_maneuver for reload-safe text without a new table.
+                // Combat Card column only stores card ids. Skip when Parry is dashed.
+                // Plain Name (not inject code) matches other column labels.
+                if (! $event->dashedParry)
+                {
+                    $note = sprintf($event->theah->game->translate("%s: -1 Parry to combat card"), $this->Name);
+                    $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+                }
             }
         }
         

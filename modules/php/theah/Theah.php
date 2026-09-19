@@ -1691,6 +1691,53 @@ class Theah
         ]);
     }
 
+    // WHY: Passive combat-card modifiers (So It Begins) have nowhere in the Combat
+    // Card column to store a reload-safe label without a new table. Maneuver/Technique
+    // already persist display names (same path as recordCanceledAbilityInDuelTable).
+    // Put the note in the Maneuver column so F5 keeps it. sourceId is opaque (e.g.
+    // "note_{cardId}") — not a real maneuver. Only in-duel.
+    public function recordDuelRoundColumnNote(string $mode, string $sourceId, string $displayName): void
+    {
+        if (! $this->game->globals->get(Game::IN_DUEL, false))
+        {
+            return;
+        }
+
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        if (! $duelId || ! $round)
+        {
+            return;
+        }
+
+        if ($mode !== 'maneuver' && $mode !== 'technique')
+        {
+            return;
+        }
+
+        $escapedId = addslashes($sourceId);
+        $name = substr(addslashes($displayName), 0, 500);
+
+        if ($mode === 'technique')
+        {
+            $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name, technique_is_main)
+                    VALUES ($duelId, $round, '{$escapedId}', '$name', 0)";
+        }
+        else
+        {
+            $sql = "INSERT INTO duel_round_maneuver (duel_id, round, maneuver_id, maneuver_name)
+                    VALUES ($duelId, $round, '{$escapedId}', '$name')";
+        }
+        $this->game->DbQuery($sql);
+
+        $this->game->notify->all('duelRoundColumnNote', '', [
+            'i18n' => ['note'],
+            'round' => $round,
+            'mode' => $mode,
+            'note' => $displayName,
+        ]);
+    }
+
     public function deletePressureResultEvents()
     {
         $this->db->deletePressureResultEvents();
