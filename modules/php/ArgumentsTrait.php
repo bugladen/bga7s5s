@@ -952,7 +952,6 @@ trait ArgumentsTrait
         $this->theah->buildCity();
 
         $cardId = $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD);
-        $gambled = $this->globals->get(Game::DUEL_GAMBLED, false);
         $round = $this->globals->get(Game::DUEL_ROUND);
 
         $maneuvers = [];
@@ -966,16 +965,14 @@ trait ArgumentsTrait
             }
         }
 
-        $abnormalFlow = $this->globals->get(Game::ABNORMAL_FLOW, false);
-
+        // WHY no gambled/abnormalFlow: Back is always shown; those flags only mattered
+        // for the old hide-Back gate. Pay still exposes them for its Back branch.
         return [
             "_private" => [
                 "active" => [
                     "cardId" => $cardId,
                     "maneuvers" => $maneuvers,
-                    "gambled" => $gambled,
                     "card" => $card->getPropertyArray($this),
-                    "abnormalFlow" => $abnormalFlow,
                     "round" => $round
                 ]
             ]

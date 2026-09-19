@@ -50,6 +50,14 @@ class _02032 extends Character implements IHasReactions
         ];
     }
 
+    // WHY: Printed Forced — Damned cannot enter Approach (only musters from Locker).
+    // DeckValidator already blocks him at construction; this is the in-game gate so
+    // Object of Wonder / PutIntoApproachDeck cannot save him there either.
+    public function canEnterApproachDeck(): bool
+    {
+        return false;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);

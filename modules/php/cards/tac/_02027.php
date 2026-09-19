@@ -33,6 +33,11 @@ class _02027 extends FactionAttachment
         $this->InfluenceModifier = 0;
 
         $this->WealthCost = 0;
+
+        $this->Riposte = 2;
+        $this->Parry = 0;
+        $this->Thrust = 1;
+
         $this->Traits = [
             clienttranslate('Attire'),
             clienttranslate('Fan'),

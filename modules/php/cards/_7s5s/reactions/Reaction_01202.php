@@ -41,7 +41,12 @@ class Reaction_01202 extends AttachmentReaction
 
     private function isValidCharacter(Character $character): bool
     {
-        return ! $character instanceof Leader && ! $character->hasTrait("Mercenary") && ! $character->hasTrait("Brute");
+        // WHY: canEnterApproachDeck covers Brutes + Damned (_02032) "cannot be in an
+        // Approach deck". Without it Object of Wonder offered Damned a save into Approach
+        // after Dawn destroy — illegal per his Forced text (only deck-build was gated).
+        return ! $character instanceof Leader
+            && ! $character->hasTrait("Mercenary")
+            && $character->canEnterApproachDeck();
     }
 
     public function handleEvent(Event $event)

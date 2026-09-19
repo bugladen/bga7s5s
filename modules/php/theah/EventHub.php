@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
@@ -499,10 +500,16 @@ trait EventHub
             case $event instanceof EventCardDiscardedFromHand:
                 $handler = function (Theah $theah, EventCardDiscardedFromHand $event)
                 {
-                    $discardPileName = $theah->game->getPlayerDiscardDeckName($event->ownerId);
-
                     $deckObject = $theah->game->getGameDeckObject();
                     $card = $theah->getCardById($event->cardId);
+
+                    // WHY OwnerId for discard pile: stolen cards (Improvising 01106, etc.)
+                    // keep OwnerId as the faction owner while ControllerId is the thief.
+                    // WHY ControllerId for hand UI: the card left the controller's hand.
+                    $discardOwnerId = $card->OwnerId ?: $event->ownerId;
+                    $handPlayerId = $card->ControllerId ?: $event->ownerId;
+                    $discardPileName = $theah->game->getPlayerDiscardDeckName($discardOwnerId);
+
                     $theah->game->moveCard($card->Id, $discardPileName, 0, $card);
                     $card->IsUpdated = true;
 
@@ -514,11 +521,12 @@ trait EventHub
                         $message = '${player_name} discarded ${card_inject_code} as payment.';
 
                     $theah->game->notify->all("cardDiscardedFromHand", clienttranslate($message), [
-                        "player_name" => $theah->game->getPlayerNameById($event->ownerId),
+                        "player_name" => $theah->game->getPlayerNameById($handPlayerId),
                         "card_inject_code" => $card->getInjectCode(),
-                        "playerId" => $event->ownerId,
+                        "playerId" => $handPlayerId,
+                        "discardPlayerId" => $discardOwnerId,
                         "card" => $card->getPropertyArray($theah->game),
-                        "handCount" => count($deckObject->getPlayerHand($event->ownerId)),
+                        "handCount" => count($deckObject->getPlayerHand($handPlayerId)),
                     ]);
                 };
                 $handler($this, $event);
@@ -1439,6 +1447,52 @@ trait EventHub
             case $event instanceof EventGenerateChallengeThreat:
                 $handler = function ($theah, EventGenerateChallengeThreat $event)
                 {
+                    // WHY: Locker is not in buildCity. A Stiletto-killed challenger is absent
+                    // from $theah->cards, so Character::handleEvent never added base Threat —
+                    // apply ChallengeIssued snapshot here (same logic as Character.php).
+                    if (! array_key_exists($event->actorId, $theah->cards))
+                    {
+                        $statSource = $theah->game->getChallengeLastKnownCharacter($event->actorId);
+                        if ($statSource === null)
+                        {
+                            $fromDb = $theah->getCardById($event->actorId);
+                            if ($fromDb instanceof Character)
+                            {
+                                $statSource = $fromDb;
+                            }
+                        }
+                        if ($statSource !== null)
+                        {
+                            switch ($event->statUsed)
+                            {
+                                case Game::STAT_COMBAT:
+                                    $event->adversaryThreat += $statSource->ModifiedCombat;
+                                    $event->explanations[] = sprintf(
+                                        $theah->game->translate("%s adds %d Threat from their Combat Stat."),
+                                        $statSource->Name,
+                                        $statSource->ModifiedCombat
+                                    );
+                                    break;
+                                case Game::STAT_FINESSE:
+                                    $event->adversaryThreat += $statSource->ModifiedFinesse;
+                                    $event->explanations[] = sprintf(
+                                        $theah->game->translate("%s adds %d Threat from their Finesse Stat."),
+                                        $statSource->Name,
+                                        $statSource->ModifiedFinesse
+                                    );
+                                    break;
+                                case Game::STAT_INFLUENCE:
+                                    $event->adversaryThreat += $statSource->ModifiedInfluence;
+                                    $event->explanations[] = sprintf(
+                                        $theah->game->translate("%s adds %d Threat from their Influence Stat."),
+                                        $statSource->Name,
+                                        $statSource->ModifiedInfluence
+                                    );
+                                    break;
+                            }
+                        }
+                    }
+
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
                     }
@@ -1447,8 +1501,36 @@ trait EventHub
                     $theah->game->globals->set(Game::DEFENDER_THREAT, $event->adversaryThreat);
                     $theah->game->globals->set(Game::DEFENDER_THREAT_IS_LETHAL, $event->adversaryThreatIsLethal);
 
-                    $actor = $theah->cards[$event->actorId];
-                    $adversary = $theah->cards[$event->adversaryId];
+                    // WHY: getCardById (not $theah->cards[]) — dead participants sit in Locker-*
+                    // which buildCity deliberately omits. Accept-with-dead-challenged still runs
+                    // GenerateThreat before Resolution fizzles.
+                    $actor = $theah->getCardById($event->actorId);
+                    $adversary = $theah->getCardById($event->adversaryId);
+                    if (
+                        ! ($actor instanceof Character)
+                        || $theah->game->characterIsInDiscardOrLocker($actor)
+                    )
+                    {
+                        $lastKnown = $theah->game->getChallengeLastKnownCharacter($event->actorId);
+                        if ($lastKnown !== null)
+                        {
+                            $actor = $lastKnown;
+                        }
+                    }
+                    if (
+                        ! ($adversary instanceof Character)
+                        || $theah->game->characterIsInDiscardOrLocker($adversary)
+                    )
+                    {
+                        $lastKnown = $theah->game->getChallengeLastKnownCharacter($event->adversaryId);
+                        if ($lastKnown !== null)
+                        {
+                            $adversary = $lastKnown;
+                        }
+                    }
+
+                    $actorName = $actor instanceof Character ? $actor->Name : clienttranslate('Unknown');
+                    $adversaryName = $adversary instanceof Character ? $adversary->Name : clienttranslate('Unknown');
 
                     $message = clienttranslate('${actor_name} has ${actor_threat} total Threat for the Challenge. ${adversary_name} has ${adversary_threat} total Threat. ');
                     if ($event->adversaryThreatIsLethal)
@@ -1457,9 +1539,9 @@ trait EventHub
                     }
 
                     $theah->game->notify->all("message", $message, [
-                        "actor_name" => $actor->Name,
+                        "actor_name" => $actorName,
                         "actor_threat" => $event->actorThreat,
-                        "adversary_name" => $adversary->Name,
+                        "adversary_name" => $adversaryName,
                         "adversary_threat" => $event->adversaryThreat,
                     ]);
                 };
@@ -2170,6 +2252,15 @@ trait EventHub
                     // characters (e.g. Deal with the Devil dusk, Action_03067). Schemes/attachments skip.
                     if ($card instanceof Character && $event->playerId) {
                         $theah->game->bga->playerStats->inc(Game::STAT_CHARACTERS_SENT_TO_LOCKER, 1, $event->playerId);
+                    }
+
+                    // WHY: Dusk cleanup queues scheme→locker at MEDIUM priority, while
+                    // reaction transitions sit at REACTION_PRIORITY (lower). A destroy in
+                    // the same batch can leave a scheme reaction transition queued after
+                    // the scheme is already sunk (Great Game draw after move-home). Drop
+                    // those prompts — the scheme is out of play.
+                    if ($card instanceof Scheme) {
+                        $theah->deleteTransitionEventsBySourceId($card->Id);
                     }
 
                     $theah->game->notify->all("cardSentToLocker", clienttranslate('${card_inject_code} has been sent to the locker.'), [

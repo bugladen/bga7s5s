@@ -38,6 +38,16 @@ class Reaction_01015 extends CardReaction
         if ($event instanceof EventCharacterDestroyed && $this->isAvailable())
         {
             $scheme = $this->getOwningCard($event->theah);
+            // WHY: Chosen schemes sit at Home until dusk locker. After CardSentToLocker
+            // the card can still be in $theah->cards for the rest of that request
+            // (buildCity does not reload mid-run). Without this gate, a destroy that
+            // lands in the same dusk cleanup batch as scheme-to-locker still queues
+            // the draw prompt after the scheme has already left play.
+            if ($scheme === null || $scheme->Location != Game::LOCATION_PLAYER_HOME)
+            {
+                return;
+            }
+
             $reactionEvent = EventFactory::createReactionTransitionEvent($scheme->ControllerId, $scheme->Id, $this->Id);
             $event->theah->queueEvent($reactionEvent);
         }
@@ -59,6 +69,10 @@ class Reaction_01015 extends CardReaction
             ]);
 
             $this->setUsed($game->theah, true);
+            // WHY: Multiple destroys before the first response can queue several
+            // transitions. Once Used, the framework skip should no-op them, but
+            // deleting is the same discipline as Reaction_01182 / Reaction_01181.
+            $game->theah->deleteTransitionEvents($this->Id);
         }
 
         $game->gamestate->nextState("done");

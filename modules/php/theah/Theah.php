@@ -136,13 +136,11 @@ class Theah
             $discardCards = $this->db->getCardObjectsAtLocation($discardDeckName);
             $this->repairDiscardPileLocations($discardCards, $discardDeckName);
             $this->cards += $discardCards;
-
-            // WHY: Destroyed characters sit in Locker-* (not discard). Without loading
-            // lockers, getCharacterById returns null after Stiletto kills a challenge
-            // participant — argsHighDramaChallengeActionAcceptChallenge fatals and the
-            // challenged player never sees Accept/Refuse/Intervene (soft-lock).
-            $lockerName = $this->game->getPlayerLockerName($playerId["id"]);
-            $this->cards += $this->db->getCardObjectsAtLocation($lockerName);
+            // WHY deliberately NOT loading Locker-* here: runEvents walks $this->cards
+            // and calls handleEvent on every card. Cards in The Locker must stay out of
+            // that loop (schemes/auras/reactions would keep firing after sink). Stiletto
+            // dead-participant challenge uses getCardById's DB fallback + Accept-args
+            // getCardObjectFromDb + CHALLENGE_LAST_KNOWN_* / CHOSEN_LOCATION instead.
         }
 
         $this->backfillIndomitableWillFlags();
@@ -372,18 +370,31 @@ class Theah
 
             if (! $skipTransitions && $event instanceof EventTransition) {              
                 
-                //If a reaction transition, make sure it is available.  
-                //This prevents multiple transition triggers of the same reaction from running.
-                if ($event->transition == "reaction") 
+                // If a card reaction transition, require a live available reaction.
+                // WHY fail-closed (vs old fail-open when card/reaction missing): orphaned
+                // transitions after a scheme hits The Locker (dusk cleanup) were still
+                // offered — Great Game draw with no destroy / scheme already sunk.
+                // Game-framework reactions (Crew Cap / Name Gate) use THEAH_ID and skip this.
+                if ($event->transition == "reaction" && $event->sourceId != Game::THEAH_ID)
                 {
                     $card = $this->getCardById($event->sourceId);
-                    if ($card && $card instanceof IHasReactions)
+                    if (! $card || ! ($card instanceof IHasReactions))
                     {
-                        $reaction = $card->getReactionById($event->internalId);
-                        if ($reaction && ! $reaction->isAvailable())
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
+
+                    $reaction = $card->getReactionById($event->internalId);
+                    if (! $reaction || ! $reaction->isAvailable())
+                    {
+                        continue;
+                    }
+
+                    // WHY: Same dusk priority race — scheme/attachment already in Locker-*
+                    // (or discard) must not open a playerReaction prompt.
+                    if (strpos($card->Location, 'Locker-') !== false
+                        || strpos($card->Location, 'Discard-') !== false)
+                    {
+                        continue;
                     }
                 }
 
@@ -1709,6 +1720,53 @@ class Theah
         ]);
     }
 
+    // WHY: Passive combat-card modifiers (So It Begins) have nowhere in the Combat
+    // Card column to store a reload-safe label without a new table. Maneuver/Technique
+    // already persist display names (same path as recordCanceledAbilityInDuelTable).
+    // Put the note in the Maneuver column so F5 keeps it. sourceId is opaque (e.g.
+    // "note_{cardId}") — not a real maneuver. Only in-duel.
+    public function recordDuelRoundColumnNote(string $mode, string $sourceId, string $displayName): void
+    {
+        if (! $this->game->globals->get(Game::IN_DUEL, false))
+        {
+            return;
+        }
+
+        $duelId = $this->game->globals->get(Game::DUEL_ID);
+        $round = $this->game->globals->get(Game::DUEL_ROUND);
+        if (! $duelId || ! $round)
+        {
+            return;
+        }
+
+        if ($mode !== 'maneuver' && $mode !== 'technique')
+        {
+            return;
+        }
+
+        $escapedId = addslashes($sourceId);
+        $name = substr(addslashes($displayName), 0, 500);
+
+        if ($mode === 'technique')
+        {
+            $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name, technique_is_main)
+                    VALUES ($duelId, $round, '{$escapedId}', '$name', 0)";
+        }
+        else
+        {
+            $sql = "INSERT INTO duel_round_maneuver (duel_id, round, maneuver_id, maneuver_name)
+                    VALUES ($duelId, $round, '{$escapedId}', '$name')";
+        }
+        $this->game->DbQuery($sql);
+
+        $this->game->notify->all('duelRoundColumnNote', '', [
+            'i18n' => ['note'],
+            'round' => $round,
+            'mode' => $mode,
+            'note' => $displayName,
+        ]);
+    }
+
     public function deletePressureResultEvents()
     {
         $this->db->deletePressureResultEvents();
@@ -2135,9 +2193,14 @@ class Theah
     public function interventionCheck(Character $character): void
     {
         $target = $this->getCardById($this->game->globals->get(GAME::CHOSEN_TARGET));
-        // WHY: Challenged may already be in Locker after Stiletto; challenge city site is
-        // CHOSEN_LOCATION from stSetupChallenge (set before ChallengeIssued reactions).
-        $challengeLocation = $this->game->globals->get(Game::CHOSEN_LOCATION, $target->Location);
+        // WHY: Challenged may already be in Locker after Stiletto (and Locker is not in
+        // buildCity). Challenge city site is CHOSEN_LOCATION from stSetupChallenge.
+        // getCardById's DB fallback still finds the corpse for ControllerId etc.; do not
+        // dereference $target->Location when preferring CHOSEN_LOCATION.
+        $challengeLocation = $this->game->globals->get(
+            Game::CHOSEN_LOCATION,
+            $target !== null ? $target->Location : ''
+        );
         if ($challengeLocation != $character->Location) {
             throw new UserException($this->game->translate("Character is not at the same location"));
         }    

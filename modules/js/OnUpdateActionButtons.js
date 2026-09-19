@@ -386,8 +386,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'duelUseManeuverFromCombatCard': () => {
-            if (! args._private.gambled && ! args._private.abnormalFlow)
-                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+            // WHY always show Back: Maneuver is a hub opt-in like Technique; returns to
+            // duelChooseAction without clearing DUEL_PENDING_MANEUVER_CARD.
+            this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             args._private.maneuvers.forEach((maneuver) => { 
                 this.addActionButton(
                     `btnChooseManeuver_${maneuver.id}`, maneuver.name, () => this.bgaPerformAction('actDuelUseManeuverFromCombatCard', { maneuverId: maneuver.id})) 

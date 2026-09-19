@@ -1579,6 +1579,13 @@
                 this.chooseList.setSelectionMode(0);
             },
 
+            'highDramaChallengeActionResolveTechnique_01090': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+
             'duelChooseTechnique_01093': () => {
                 if (this.isCurrentPlayerActive()) 
                 {

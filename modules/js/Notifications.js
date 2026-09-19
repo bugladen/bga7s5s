@@ -123,6 +123,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['updateRoundThreats', 500],
             ['updateRoundWithCombatStats', 500],
             ['duelAbilityCanceled', 500],
+            ['duelRoundColumnNote', 500],
             ['yevgeniAdversaryChosen', 500],
             ['yevgeniAdversaryRemoved', 1],
         ];
@@ -1023,15 +1024,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
         let card = args.card;
         this.cardProperties[card.id] = card;
 
-        $(`${args.playerId}-score-hand-count`).innerHTML = args.handCount;
+        // WHY: Improvising (and similar) can leave OwnerId != ControllerId.
+        // Hand left the controller; physical discard pile is the owner's.
+        const handPlayerId = args.playerId;
+        const discardPlayerId = args.discardPlayerId ?? card.ownerId ?? args.playerId;
 
-        if (args.playerId == this.player_id)
+        $(`${handPlayerId}-score-hand-count`).innerHTML = args.handCount;
+
+        if (handPlayerId == this.player_id)
         {
             this.factionHand.removeCard(card);
         }
 
         card.location = this.LOCATION_PLAYER_DISCARD;
-        const player = this.gamedatas.players[args.playerId];
+        const player = this.gamedatas.players[discardPlayerId];
         player.discard.push(card);
     },
 
@@ -2599,6 +2605,34 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (! element.innerHTML.includes(effectName))
         {
             element.innerHTML += `<p><span class="_7sfs-duel-ability-canceled">${abilityName}</span> ${args.canceled_label}</p>`;
+        }
+
+        dojo.removeClass(`duel_round_${args.round}_${args.mode}`, '_7sfs-ability-not-chosen');
+    },
+
+    // WHY: Passive modifiers (So It Begins) persist a label via duel_round_maneuver /
+    // technique (same tables as cancel notes). Live append only — no R/P/T, stats stay
+    // greyed. Reload already reads *_name from those tables.
+    notif_duelRoundColumnNote: function( notif )
+    {
+        debug( 'notif_duelRoundColumnNote' );
+        debug( notif );
+
+        const args = notif.args;
+        const element = $(`duel_round_${args.round}_${args.mode}`);
+        if (! element)
+        {
+            return;
+        }
+
+        if (element.innerHTML == 'Not Chosen')
+        {
+            element.innerHTML = '';
+        }
+
+        if (! element.innerHTML.includes(args.note))
+        {
+            element.innerHTML += `<p>${args.note}</p>`;
         }
 
         dojo.removeClass(`duel_round_${args.round}_${args.mode}`, '_7sfs-ability-not-chosen');

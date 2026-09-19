@@ -12,7 +12,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01139;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 
 class _01139 extends Risk implements IHasActions, IHasManeuvers
 {
@@ -62,6 +63,7 @@ class _01139 extends Risk implements IHasActions, IHasManeuvers
     {
         parent::handleEvent($event);
 
+        // Action path: hand play discards with AsPlayed, then redirect to locker.
         if ($event instanceof EventCardDiscardedFromHand && $event->cardId == $this->Id && $event->AsPlayed && $this->goToLocker)
         {
             $removedEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->ownerId, $event->cardId);
@@ -74,14 +76,30 @@ class _01139 extends Risk implements IHasActions, IHasManeuvers
             $this->IsUpdated = true;
         }
 
-        if ($event instanceof EventDuelCalculateCombatCardStats && $event->combatCardId == $this->Id && $this->goToLocker)
+        // WHY Maneuver path uses EndOfRound (not EventDuelCalculateCombatCardStats):
+        // Combat-card stats fire when the Risk is played; the Maneuver sets goToLocker
+        // later on EventDuelCalculateManeuverValues. Listening on stats meant the flag
+        // was always still false, so the card sat on the Dueling Line and was discarded
+        // at duel end. Defer like Technique_02043a so the card stays in Theah::$cards
+        // for the rest of the round, then leave the line before stDuelEnd's discard sweep.
+        if ($event instanceof EventDuelEndOfRound && $this->goToLocker)
         {
-            $lockerEvent = EventFactory::createCardSentToLockerEvent($this->ControllerId, $this->Id);
-            $event->theah->queueEvent($lockerEvent);
-
-            $this->goToLocker = false;
-            $this->IsUpdated = true;
+            $this->sendToLocker($event);
         }
+
+        if ($event instanceof EventDuelEnd && $this->goToLocker)
+        {
+            $this->sendToLocker($event);
+        }
+    }
+
+    private function sendToLocker(Event $event): void
+    {
+        $lockerEvent = EventFactory::createCardSentToLockerEvent($this->ControllerId, $this->Id);
+        $event->theah->queueEvent($lockerEvent);
+
+        $this->goToLocker = false;
+        $this->IsUpdated = true;
     }
 
 }

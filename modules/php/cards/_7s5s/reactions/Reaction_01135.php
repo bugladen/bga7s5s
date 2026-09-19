@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -64,6 +65,12 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
 
             $owner = $this->getOwningCard($game->theah);
 
+            // WHY: Starter decks run two copies. CombatCardAnnounced queues a reaction
+            // transition per copy; after the first cancel succeeds, a leftover sibling
+            // prompt can resolve inside DUEL_GAMBLE_SETUP_EVENTS and queue another
+            // "01135" transition (state 52740 historically lacked that edge).
+            $this->clearSiblingMireliReactionTransitions($game, $owner->Id, $owner->ControllerId);
+
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->ControllerId, $this->cancelledCombatCardId, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
@@ -122,6 +129,27 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
         }
 
         $game->gamestate->nextState("done");
+    }
+
+    private function clearSiblingMireliReactionTransitions(Game $game, int $ownerCardId, int $controllerId): void
+    {
+        $handCards = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $controllerId);
+        foreach ($handCards as $handCard)
+        {
+            if ($handCard->Id == $ownerCardId || ! ($handCard instanceof IHasReactions))
+            {
+                continue;
+            }
+
+            foreach ($handCard->getReactions() as $otherReaction)
+            {
+                if ($otherReaction instanceof Reaction_01135)
+                {
+                    $game->theah->deleteTransitionEvents($otherReaction->Id);
+                    $game->theah->deleteTransitionEventsBySourceId($handCard->Id);
+                }
+            }
+        }
     }
 
 }

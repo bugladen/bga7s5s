@@ -201,8 +201,11 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
             $game->theah->queueEvent($moveEvent);
 
             //Create a clone of the risk card
+            // WHY OwnerId = stolen risk's OwnerId, ControllerId = Improvising player:
+            // discard-from-hand routes to OwnerId's pile (card returns to its owner);
+            // ControllerId keeps the clone playable from the thief's hand.
             $owner = $this->getOwningCard($game->theah);
-            $card = $game->createCardInLocation('01106_RiskClone', Game::LOCATION_HAND, $owner->ControllerId, $owner->ControllerId);
+            $card = $game->createCardInLocation('01106_RiskClone', Game::LOCATION_HAND, $riskCard->OwnerId, $owner->ControllerId);
             $game->theah->addCardToWorld($card);
             $card->Name = $riskCard->Name;
             $card->Image = $riskCard->Image;

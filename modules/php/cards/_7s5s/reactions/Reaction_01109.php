@@ -24,12 +24,20 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
 {
     private int $RiskId;
     private string $ManeuverId = '';
+    // WHY: When canceling a Risk Action, ActionTriggered is deleted so the
+    // action never queues its own ActionResolved. Store the announcer so we
+    // can fire it — Soline (01089) and other "after an Action resolves"
+    // listeners still need a window. 0 = not canceling an Action (Reaction /
+    // Maneuver / Not Today paths).
+    private int $CancelledActionPlayerId = 0;
+
     public function __construct()
     {
         parent::__construct();
         $this->Name = clienttranslate("Cancel a Non-Sorcery Risk Card");
         $this->RiskId = 0;
         $this->ManeuverId = '';
+        $this->CancelledActionPlayerId = 0;
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -80,6 +88,8 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
                         $event->theah->stackEvent($transitionEvent);
 
                         $this->RiskId = $risk->Id;
+                        $this->CancelledActionPlayerId = $event->playerId;
+                        $this->ManeuverId = '';
                         $owner->IsUpdated = true;
                     }
                 }
@@ -106,6 +116,8 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
                     $event->theah->stackEvent($transitionEvent);
 
                     $this->RiskId = $risk->Id;
+                    $this->CancelledActionPlayerId = 0;
+                    $this->ManeuverId = '';
                     $owner->IsUpdated = true;
                 }
             }
@@ -126,6 +138,7 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
     
                     $this->RiskId = $risk->Id;
                     $this->ManeuverId = $event->maneuverId;
+                    $this->CancelledActionPlayerId = 0;
                     $owner->IsUpdated = true;
                 }
             }
@@ -146,6 +159,8 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
                     $event->theah->stackEvent($reactionEvent);                
     
                     $this->RiskId = $event->combatCardId;
+                    $this->CancelledActionPlayerId = 0;
+                    $this->ManeuverId = '';
                     $owner->IsUpdated = true;
                 }
             }
@@ -206,6 +221,20 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
             {
                 $game->theah->deleteManeuverEvents($this->ManeuverId);
                 $this->ManeuverId = '';
+            }
+
+            // WHY: Deleting ActionTriggered means the cancelled Risk Action never
+            // reaches createActionResolvedEvent in its effect path. Without this,
+            // HIGH_DRAMA_PLAYER_TURN_EVENTS hits endOfEvents → NEXT_PLAYER and
+            // Soline (Reaction_01089) never gets her "after an Action resolves"
+            // window. Costs were paid; the Action sequence is complete with
+            // effects cancelled. Only fire for Action cancels (not Reaction /
+            // Maneuver / Not Today).
+            if ($this->CancelledActionPlayerId > 0)
+            {
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($this->CancelledActionPlayerId);
+                $game->theah->queueEvent($actionResolvedEvent);
+                $this->CancelledActionPlayerId = 0;
             }
 
             $this->RiskId = 0;
