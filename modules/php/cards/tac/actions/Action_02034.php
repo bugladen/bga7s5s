@@ -24,12 +24,10 @@ class Action_02034 extends CharacterAction implements IAbilityThatTargetsCharact
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
-
-        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $torvo = $this->getOwningCharacter($game->theah);
 
         $allowed = $this->getSelectableOpponentCharacterIds($game->theah, $torvo);
-        
+
         if (! in_array($character->Id, $allowed, true)) {
             return [false, $game->translate('Invalid character choice')];
         }
@@ -40,9 +38,15 @@ class Action_02034 extends CharacterAction implements IAbilityThatTargetsCharact
     private function getSelectableOpponentCharacterIds(Theah $theah, Character $torvo): array
     {
         $opponents = $theah->getOpposingCharactersAtLocation($torvo->Location, $torvo->ControllerId);
+        // WHY: Card text is only "opposing character with 2[Combat] or more" — no Engaged
+        // gate. Same "They may X. If they do not, Y" shape as Duckfoot (01049): engaged
+        // targets are still legal (decline → Torvo draws). Torvo's own Engaged status is
+        // also irrelevant — City Action has no Engage cost. Challenger auto-engage was
+        // intentionally removed from TORVO_ESPADA (Aug 2026), so accepting while already
+        // Engaged is safe.
         $opponents = array_filter(
             $opponents,
-            fn(Character $c) => ! $c->Engaged && $c->ModifiedCombat >= 2
+            fn(Character $c) => $c->ModifiedCombat >= 2
         );
 
         return array_values(array_map(fn(Character $c) => $c->Id, $opponents));
@@ -78,12 +82,9 @@ class Action_02034 extends CharacterAction implements IAbilityThatTargetsCharact
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02034) {
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $args['performerId'] = $performerId;
-            $torvo = $game->theah->getCharacterById($performerId);
-            $args['ids'] = $torvo
-                ? $this->getSelectableOpponentCharacterIds($game->theah, $torvo)
-                : [];
+            $torvo = $this->getOwningCharacter($game->theah);
+            $args['performerId'] = $torvo->Id;
+            $args['ids'] = $this->getSelectableOpponentCharacterIds($game->theah, $torvo);
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02034_2) {
