@@ -29,6 +29,8 @@ class _01090 extends Character implements IHasActions, IHasReactions, IHasTechni
         $this->ExpansionNumber = 1;
         $this->CardNumber = 90;
 
+        $this->InPlayXImageOffset = 20;
+
         $this->initializeFaction("Castille");
         $this->Title = clienttranslate("Bad News");
         $this->Resolve = 4;
