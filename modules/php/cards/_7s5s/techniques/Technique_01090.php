@@ -245,6 +245,14 @@ class Technique_01090 extends Technique
                 $game->theah->queueEvent($transition);
             }
 
+            // WHY: Card text is "when their next round begins" (once). CardPlayerId
+            // gates EventDuelNewRound — leave it set and the prompt re-fires every
+            // adversary round for the rest of the duel.
+            $this->RevealedCardId = 0;
+            $this->CardPlayerId = 0;
+            $owner = $this->getOwningCharacter($game->theah);
+            $owner->IsUpdated = true;
+
             $game->gamestate->nextState();
         }
     }
