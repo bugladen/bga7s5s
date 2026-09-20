@@ -466,6 +466,45 @@ Composition of A.5-style engage+challenge **without** refuse→claim, plus an in
 
 References: `_04047` / `Action_04047`; cancel hook `_02061` / `Risk::effectsCannotBeCancelled` / `Reaction_01109`; Aja intervene+refuse `Action_03002` / `AJA_CHALLENGE_TYPE`; engage-at-announce `Action_03057` / `Action_03021`; Finesse performer gate `Action_04012`.
 
+### Pattern A.15 — Target opposing lower Influence • they may engage or must move adjacent
+
+For City Actions like **"City Action: Target an opposing character with lower [Influence] than your performer • They may engage. If they do not, they must move to an adjacent City location."** — see `_04049` (Point of Order).
+
+Same "they may engage / if they do not …" family as B.7 / Yield / Duckfoot, but:
+
+- Heading is plain **City Action** (`RiskCityAction`) — **not** En Garde Diplomat / `RiskAction`.
+- Decline stake is **mandatory adjacent City move** (target chooses destination) — **not** you claim.
+- Target filter is Influence **strict `<`** via `ModifiedInfluence` — **not** Arrogant `_03008` equal-or-lower `<=`, and **not** B.7's en garde + non-Leader.
+
+**Recipe:**
+
+1. **`RiskCityAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"Target"**).
+2. **Targets:** opposing at performer location with `$character->ModifiedInfluence < $performer->ModifiedInfluence`. No Leader / en garde filter unless printed.
+3. **Three GameStates:**
+   - `"NNNNN"` — owner character chooser (bas Cesca trio).
+   - `"NNNNN_2"` — **target controller** Engage / **Decline and Move** buttons (Yield/B.7 labeled shape — not Pass).
+   - `"NNNNN_3"` — target controller adjacent City location chooser (`getAdjacentCityLocations($target->Location, false)`; `actFromCardWithLocations`).
+4. **Player swap from step 1:** `createTransitionEvent($target->ControllerId, …, "NNNNN_2"|"NNNNN_3")` then `characterChosen` → EVENTS (same as B.7 `_04027`). **Decline `_2`→`_3` is direct** (`"declined"` named transition) — same active player, no EVENTS hop (Depose `characterChosen`→`_2` discipline).
+5. **Already Engaged → skip `_2`:** print has **no** "en garde" target filter (unlike B.7). Mirror Duckfoot `_01049` / D.1.2 — auto-resolve the "if they do not" half → EVENTS `"NNNNN_3"`. En garde targets always get the Engage choice.
+6. **Engage (`id == 1`):** `createCardEngagedEvent` (target's ControllerId as engage playerId) → `createActionResolvedEvent` → `"done"`.
+7. **Decline → move:** validate adjacent → `createCardMovingEvent` with `engage=false`; initiating player = **ability owner** (Confusion `_03068`) even though target's controller picks the destination; `eventCheck` then queue → ActionResolved → `"locationChosen"`.
+8. **WHY ActionResolved after opponent finishes:** effect *is* engage-or-move (B.7 discipline). Do **not** resolve after target pick.
+9. **WHY three states, not location-as-decline:** Engage must stay an explicit button; picking a location is only the decline branch.
+10. **Wire all three** under `HIGH_DRAMA_PLAYER_TURN_EVENTS` — `"NNNNN_3"` is required for the already-Engaged path even when decline goes direct. bas JS: character trio + Engage/Decline buttons + location-chooser trio (highlight performer + target on `_2`/`_3`).
+11. **Stub hygiene:** `Bureaucracy` not `Beauracracy`; add missing Traits (`Authority`, etc.) to `TraitNames`.
+
+**Contrast:**
+
+| | B.7 `_04027` | Yield `_02020` | A.15 `_04049` | B.8 `_04028` |
+|---|---|---|---|---|
+| Base | `RiskAction` En Garde Diplomat | `RiskCityAction` | `RiskCityAction` | `RiskAction` En Garde Musketeer |
+| Target filter | non-Leader en garde | attachment Engage cost first | Influence `<` (any engage state) | opposing (same location) |
+| Decline stake | you claim | wound target | target moves adjacent | N/A (you pick dest for both) |
+| Who picks move dest | N/A | N/A | **target controller** | **you** |
+| Already Engaged | illegal target | auto-wound | skip to move chooser | legal target |
+
+References: `_04049` / `Action_04049` / `State_highDramaPhase04049` + `_2` + `_3`; B.7 buttons `_04027`; Duckfoot already-Engaged `Action_01049`; adjacent move emit `Action_02023` / Confusion `Reaction_03068`; Influence compare wording `Action_03008` (`<=` contrast).
+
 ### Common precondition predicates
 
 A few wordings recur often:

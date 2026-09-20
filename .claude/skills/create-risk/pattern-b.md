@@ -266,15 +266,16 @@ This is **not** A.5 (claim-on-refuse after a challenge — no `CHALLENGE_TYPE`),
 
 **Contrast:**
 
-| | Yield `_02020` | Wrath `_01034` | A.5 Censure `_03057` | B.7 `_04027` |
-|---|---|---|---|---|
-| Base | `RiskCityAction` | `RiskAction` | `RiskCityAction` | `RiskAction` |
-| Cost before choice | Engage attachment | Wound performer | Engage performer + challenge | None (En Garde precondition only) |
-| Opponent UI | Engage / Decline and Wound | Engage / Pass | Challenge accept/refuse | Engage / Decline and Claim |
-| Decline effect | Wound target | En garde performer | Claim via `EventChallengeRejected` | Claim via Action act |
-| ActionResolved | After attachment paid (before response) | After opponent chooses | Challenge pipeline | After opponent chooses |
+| | Yield `_02020` | Wrath `_01034` | A.5 Censure `_03057` | B.7 `_04027` | A.15 `_04049` |
+|---|---|---|---|---|---|
+| Base | `RiskCityAction` | `RiskAction` | `RiskCityAction` | `RiskAction` | `RiskCityAction` |
+| Cost before choice | Engage attachment | Wound performer | Engage performer + challenge | None (En Garde precondition only) | None |
+| Opponent UI | Engage / Decline and Wound | Engage / Pass | Challenge accept/refuse | Engage / Decline and Claim | Engage / Decline and Move → location |
+| Decline effect | Wound target | En garde performer | Claim via `EventChallengeRejected` | Claim via Action act | Target moves adjacent |
+| ActionResolved | After attachment paid (before response) | After opponent chooses | Challenge pipeline | After opponent chooses | After engage **or** location confirm |
+| Already Engaged | auto-wound | N/A | N/A | illegal target (print says en garde) | skip to move chooser |
 
-References: `_04027` / `Action_04027` / `State_highDramaPhase04027` + `_2`; Yield buttons `Action_02020` / `highDramaPhase02020_3`; claim emit `Action_03057` / `_03057`; Cesca Target `Action_04018`.
+References: `_04027` / `Action_04027` / `State_highDramaPhase04027` + `_2`; Yield buttons `Action_02020` / `highDramaPhase02020_3`; claim emit `Action_03057` / `_03057`; Cesca Target `Action_04018`; City Action engage-or-adjacent-move sibling Pattern A.15 / `_04049`.
 
 ### Pattern B.8 — En Garde Action: Target opposing • move both to controlled or Leader City location
 

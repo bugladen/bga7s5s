@@ -277,6 +277,21 @@
                 this.addActionButton(`actDecline`, _('Decline and Claim'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 
+            'highDramaPhase04049': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase04049_2': () => {
+                this.addActionButton(`actEngage`, _('Engage'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                this.addActionButton(`actDecline`, _('Decline and Move'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
+            },
+
+            'highDramaPhase04049_3': () => {
+                this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase04028': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

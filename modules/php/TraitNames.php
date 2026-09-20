@@ -27,6 +27,7 @@ class TraitNames
             "Assassin",
             "Assassination",
             "Attire",
+            "Authority",
             "Avalon",
             "Bard",
             "Bargain",

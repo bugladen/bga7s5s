@@ -475,6 +475,36 @@
                 }
             },
 
+            'highDramaPhase04049': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04049_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04049_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    card = this.cardProperties[this.clientStateArgs.performerId];
+                    let image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+
+                    card = this.cardProperties[this.clientStateArgs.characterId];
+                    image = $(`${card.divId}_image`);
+                    dojo.removeClass(image, '_7sfs-chosen');
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04028': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
