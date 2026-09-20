@@ -345,6 +345,36 @@ No printed **"Target"/"target"** → no `IRiskThatTargetsCharacters` / `IAbility
 
 References: `_03069` / `Maneuver_03069a`/`b`, `Technique_03013` (duel swap in act), `Technique_01063Swap` (Harpoon activate WHY), `Theah::swapParticipantsInDuel`, contrast move-only attachments `_03065` / `_03066`.
 
+### Pattern C.10 — Dual Duelist Maneuver: +stat + claim-if-uncontrolled / unclaim-if-controlled
+
+For Risks like **"Duelist Maneuver: +1[Riposte]. If this location is uncontrolled, claim it."** paired with **"Duelist Maneuver: +1[Riposte]. If this location is controlled, it becomes uncontrolled."** — see `_04048` (Iaijutsu Strike). Calc Riposte (or other printed stat) **plus** resolve-time location claim/unclaim. No chooser, no states, no JS.
+
+#### Shape
+
+1. Split `Maneuver_NNNNNa` / `Maneuver_NNNNNb` (same dual-Duelist discipline as `_04007` — do **not** merge into one mode class).
+2. Each: Duelist gate on `getDuelRoundActor()`; `EventDuelCalculateManeuverValues` for the shared `+N` Riposte; `EventResolveManeuver` for the location If; `// EventManeuverCanceled handler not needed`.
+3. **"This location"** = `$actor->Location` (duel site). **Do not** use `$adversary->Location` — after mid-round destruction that can be `Locker-*` (same WHY as `Maneuver_01110`).
+4. **No Cesca** — no printed Target / no character chooser.
+
+#### Availability vs emit (printed If)
+
+Both Maneuvers always grant the Riposte; the location clause is a printed **If**. **Do not** grey `a` when the location is already controlled, or `b` when it is uncontrolled — that would hide a still-useful Riposte pick. Same emit-only discipline as A.5 refuse-claim / B.7 decline-claim for Indomitable Will:
+
+| Resolve branch | Controller check | Then |
+|---|---|---|
+| Claim if uncontrolled | `getControllerForLocation($location) == 0` | if `canLocationBeClaimedBy` → `createLocationClaimedEvent(actorController, actorId, location)`; else notify cannot be claimed |
+| Unclaim if controlled | `getControllerForLocation($location) != 0` | if `canLocationBecomeUncontrolledBy` → `createLocationBecomesUncontrolledEvent(ownerController, location)`; else notify cannot become uncontrolled |
+
+**WHY explicit controller before `can*`:** `canLocationBeClaimedBy` does **not** require uncontrolled; `canLocationBecomeUncontrolledBy` does **not** require controlled. Without the controller gate, the wrong Maneuver's If would attempt claim on an already-controlled site (or unclaim on an uncontrolled one). Silent `return` when the If is false; notify only when the If is true but Indomitable Will / Leshiye / non-city blocks.
+
+**WHY no ownership filter on unclaim:** printed "controlled" ≠ "you control" / "controlled by an opponent". Unclaim any current controller (yours or opponent's). Contrast A.12 lose-control cost (`$Controller == you`).
+
+**Home / non-city:** `canLocationBeClaimedBy` / `canLocationBecomeUncontrolledBy` already return false via `locationInCity` — If skips or notifies; Riposte still applies.
+
+No new `States` / `states.inc.php` / JS — resolve queues claim/unclaim events directly (unlike A.12's location chooser or `Maneuver_01110`'s wound-vs-unclaim buttons).
+
+References: `_04048` / `Maneuver_04048a`/`b`; claim emit `Maneuver_01107` / `Reaction_04043`; unclaim emit `Maneuver_01110` / `Action_04039`; dual-Duelist split `_04007`; contrast A.12 (`_04039` — Action chooser + your-control filter) and A.5 (`_03057` — claim on refuse, not on Maneuver resolve).
+
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
 When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Negative deltas are fine (`$event->thrust -= 3`, `$event->parry -= 1` — same as `Maneuver_03009`'s −1 Thrust).
