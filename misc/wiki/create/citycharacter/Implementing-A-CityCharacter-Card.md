@@ -23,6 +23,7 @@ CityCharacters are **not** faction-deck Characters and **not** Leaders.
 | The faction Leader placed at setup | `Leader` → [[Leader guide|Implementing a Leader Card]] |
 | A one-shot city event that is discarded after use | `CityEventCard` → city-event skill (different guide) |
 | A weapon / attire that starts in the city deck | `CityAttachment` → city-attachment skill (different guide) |
+| A weapon / attire from a **player's faction deck** | `FactionAttachment` → [[FactionAttachment guide|Implementing a FactionAttachment Card]] |
 
 **In plain English:** if the printed card is a *person* with Resolve / Combat / Finesse / Influence, a Wealth cost to hire them from the city, and they can fight once controlled — you are writing a CityCharacter.
 
@@ -86,3 +87,4 @@ For Reactions, also keep **Julius Caligari** (`_03cd10`) open.
 - [[Creating a Character|Implementing a Character Card]] — faction-deck people; ability patterns overlap
 - [[Creating a Leader|Implementing a Leader Card]] — setup Leaders with `CrewCap` / `Panache`
 - [[Creating a Scheme|Implementing a Scheme Card]] — scheme deck cards, not people
+- [[Creating a FactionAttachment|Implementing a FactionAttachment Card]] — faction-deck gear (not city-deck attachments)

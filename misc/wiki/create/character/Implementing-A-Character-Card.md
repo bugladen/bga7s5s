@@ -71,3 +71,4 @@ For dual City Actions and state/JS wiring, also open **Damya Kahina** (`_03038`)
 - [[Creating a Leader|Implementing a Leader Card]] — same ability patterns; Leaders add `CrewCap`, `Panache`, and the `Leader` trait.
 - [[Creating a Scheme|Implementing a Scheme Card]] — Planning resolve + `SchemeCityAction`; different lifecycle (Home until Dusk).
 - [[Creating a CityCharacter|Implementing a CityCharacter Card]] — city-deck hirelings (`extends CityCharacter`); do not use this Character guide for those.
+- [[Creating a FactionAttachment|Implementing a FactionAttachment Card]] — faction-deck weapons / attire that equip onto characters.
