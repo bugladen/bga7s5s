@@ -79,7 +79,11 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 $risk = $event->theah->getCardById($event->sourceId);
-                if ($risk instanceof Risk && $event->playerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery"))
+                // WHY: Sorcery Risks + printed "These effects cannot be cancelled." (Celerity, Unsanctioned Duel).
+                if ($risk instanceof Risk
+                    && $event->playerId != $owner->ControllerId
+                    && ! $risk->hasTrait("Sorcery")
+                    && ! $risk->effectsCannotBeCancelled())
                 {
                     //Make sure there is not another copy of this reaction queued
                     if (! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
@@ -109,6 +113,7 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
                 if ($risk instanceof Risk
                     && $event->playerId != $owner->ControllerId
                     && ! $risk->hasTrait("Sorcery")
+                    && ! $risk->effectsCannotBeCancelled()
                     && $event->theah->areRiskReactionTriggeredEventsQueuedForSource($event->riskId)
                     && ! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109"))
                 {
@@ -131,7 +136,10 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
             {
                 $maneuver = $event->theah->getManeuverById($event->maneuverId);
                 $risk = $maneuver->getOwningCard($event->theah);
-                if ($event->playerId != $owner->ControllerId && ! $risk->hasTrait("Sorcery") && !$maneuver instanceof ISorcererAbility)
+                if ($event->playerId != $owner->ControllerId
+                    && ! $risk->hasTrait("Sorcery")
+                    && ! $risk->effectsCannotBeCancelled()
+                    && ! $maneuver instanceof ISorcererAbility)
                 {
                     $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->stackEvent($reactionEvent);

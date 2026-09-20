@@ -61,6 +61,12 @@ class Reaction_02058 extends RiskReaction
             $validPerformers = array_filter($validPerformers, fn($c) => $c->hasTrait("Duelist"));
             $validPerformers = array_values($validPerformers);
         }
+        // WHY: Aja / Celerity — only Finesse ≥ 3 may intervene (same gate as ArgumentsTrait / interventionCheck).
+        else if ($challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::CELERITY_CHALLENGE_TYPE)
+        {
+            $validPerformers = array_filter($validPerformers, fn($c) => $c->ModifiedFinesse >= 3);
+            $validPerformers = array_values($validPerformers);
+        }
 
         return $validPerformers;
     }

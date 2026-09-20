@@ -151,6 +151,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.RAVEN_CHALLENGE_TYPE = 27;
             this.NO_MORE_WORDS_CHALLENGE_TYPE = 28;
             this.STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
+            this.CELERITY_CHALLENGE_TYPE = 30;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;

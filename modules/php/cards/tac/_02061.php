@@ -42,4 +42,10 @@ class _02061 extends Risk implements IHasActions, IRiskThatTargetsCharacters
             new Action_02061(),
         ];
     }
+
+    // WHY: Printed "These effects cannot be cancelled." — same gate as Celerity (_04047).
+    public function effectsCannotBeCancelled(): bool
+    {
+        return true;
+    }
 }

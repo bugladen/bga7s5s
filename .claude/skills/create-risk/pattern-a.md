@@ -97,7 +97,7 @@ References: `Action_01083` (Leader-only intervention, custom challenge type), `A
 
 `Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` when **any** of:
 
-1. **Intervention or refusal *gates* differ from normal** — "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene or refuse" (`AJA_CHALLENGE_TYPE`). The framework reads CHALLENGE_TYPE in `Theah::interventionCheck` to enforce these gates.
+1. **Intervention or refusal *gates* differ from normal** — "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene **or refuse**" (`AJA_CHALLENGE_TYPE`), "Only characters with 3[Finesse] or more can **intervene**" (`CELERITY_CHALLENGE_TYPE` in `_04047` — **intervene only**; do **not** reuse AJA). The framework reads CHALLENGE_TYPE in `Theah::interventionCheck` to enforce intervene gates; refuse gates live separately in `FrameworkActionsTrait::actHighDramaChallengeActionReject` + JS Refuse disable.
 2. **Intervention or refusal carries a side effect attached to the issuing card** — "If they refuse, engage them" + "Wound any character that intervenes" (`CORNERED_CHALLENGE_TYPE` in `_03021`). The gates themselves stay normal (anyone can refuse or intervene), but the **Risk class needs a correlator** to tell "this challenge is mine" inside its `EventChallengeRejected` / `EventCharacterIntervened` handlers.
 3. **An irreversible cost was paid in a card-specific sub-state before the shared choose-target step** — attachment Engage before target pick (`NO_MORE_WORDS_CHALLENGE_TYPE` in `_04019`). `OnUpdateActionButtons.js` shows Back on `highDramaChallengeActionChooseTarget` **only** for `NORMAL_CHALLENGE_TYPE`; a custom type hides Back after the cost. If the paid cost was **attachment** Engage (not performer), still add the type **to** `stIssueChallenge`'s auto-engage list so the performer engages on issue. Also guard `FrameworkActionsTrait::actBack`. See Pattern B.6.
 
@@ -443,6 +443,28 @@ For City Actions like **"Academic City Action: Target an opposing equipped chara
 **WHY not B.9:** B.9 steals to your character and pays equip costs; no Target character Cesca path on the Action.
 
 References: `_04040` / `Action_04040` / `Maneuver_04040` / `State_highDramaPhase04040` + `_2`; unequip+locker `_01154_RiskClone`; attachment buttons `Action_04019` / `Action_01197`; Cesca Target `Action_03072` / `Action_04038`.
+
+### Pattern A.14 — Duelist Engage + [Finesse] challenge + intervene-only Finesse ≥ 3 (± cannot be cancelled)
+
+For City Actions like **"Duelist City Action: Engage your performer • They issue a [Finesse] challenge to target opposing character. Only characters with 3[Finesse] or more can intervene. These effects cannot be cancelled."** — see `_04047` (Celerity).
+
+Composition of A.5-style engage+challenge **without** refuse→claim, plus an intervene gate that is **stricter than Aja's sibling wording**:
+
+1. **`RiskCityAction implements IAbilityThatTargetsCharacters`**, `RequiresPerformerSelected = true`. Mark the Risk with `IRiskThatTargetsCharacters`.
+2. **Performer filter:** `hasTrait("Duelist")` **and** `canChallenge()` **and** `! Engaged` (engage cost) **and** `! DashedFinesse` (Finesse challenge — mirror Raven `_04012`) **and** ≥1 opposing at location.
+3. **`announceAction`:** engage *before* `parent::announceAction()` (01109-safe cost). **`EventActionTriggered`:** mint a **fresh** `CHALLENGE_TYPE` (**off** `stIssueChallenge` auto-engage list), `CHALLENGE_STAT = STAT_FINESSE`, transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`.
+4. **Intervene gate trio** (Finesse ≥ 3 on `ModifiedFinesse`):
+   - `Theah::interventionCheck` — throw when type matches and intervener Finesse &lt; 3.
+   - `ArgumentsTrait` accept-challenge args — filter `$charactersCanIntervene`.
+   - `Reaction_02058` (Jump In) — same Finesse filter on adjacent interveners (Aja and Celerity share this branch).
+5. **Refuse is normal** unless the printed text also restricts refuse. **Do not** reuse `AJA_CHALLENGE_TYPE` — Aja's card says "intervene **or refuse**" and wires Refuse disable in `FrameworkActionsTrait` + `OnUpdateActionButtons.js` when `defenderFinesse < 3`. Celerity only says "can intervene."
+6. **"These effects cannot be cancelled."** — override `Risk::effectsCannotBeCancelled(): bool` → `true` on the Risk. `Reaction_01109` must skip offer when `$risk->effectsCannotBeCancelled()` (ActionActivated / RiskPlayed / ManeuverActivated). Same opt-in on Unsanctioned Duel `_02061`. Do **not** treat the phrase as flavor.
+
+**WHY not AJA_CHALLENGE_TYPE:** reusing Aja would wrongly grey/throw Refuse for defenders with Finesse &lt; 3. Separate constant keeps engage-off-list + intervene-only semantics without stealing Aja's refuse branch.
+
+**WHY not A.5:** A.5's custom type is a refuse→claim correlator; A.14 has no refuse side effect — the type exists for the intervene gate (and to stay off auto-engage).
+
+References: `_04047` / `Action_04047`; cancel hook `_02061` / `Risk::effectsCannotBeCancelled` / `Reaction_01109`; Aja intervene+refuse `Action_03002` / `AJA_CHALLENGE_TYPE`; engage-at-announce `Action_03057` / `Action_03021`; Finesse performer gate `Action_04012`.
 
 ### Common precondition predicates
 

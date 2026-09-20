@@ -1089,6 +1089,7 @@ $machinestates = [
                 "04040" => States::HIGH_DRAMA_PLAYER_TURN_04040,
                 "04042" => States::HIGH_DRAMA_PLAYER_TURN_04042,
                 "04045" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "04047" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "04cd01" => States::HIGH_DRAMA_PLAYER_TURN_04CD01,
                 "04cd01b" => States::HIGH_DRAMA_PLAYER_TURN_04CD01B,
                 "04cd04" => States::HIGH_DRAMA_PLAYER_TURN_04CD04,

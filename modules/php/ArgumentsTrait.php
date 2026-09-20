@@ -777,7 +777,7 @@ trait ArgumentsTrait
         }
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
-        if ($challengeType == Game::AJA_CHALLENGE_TYPE)
+        if ($challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::CELERITY_CHALLENGE_TYPE)
         {
             $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->ModifiedFinesse >= 3);
         }
