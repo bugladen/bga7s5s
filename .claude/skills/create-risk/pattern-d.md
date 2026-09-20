@@ -179,6 +179,42 @@ Mint the next binary flag after `SOLINE_PRESSURE_TYPE = 16384` (e.g. `32768`). *
 
 References: `Reaction_04020` (D.2.2 + D.1.2 composite), contrast `Reaction_03035` (self +1).
 
+### Pattern D.2.3 — End-of-adversary-round add threat (`PENDING_*_THREAT`)
+
+When the printed text says **At the end of your adversary's round of a duel • Add a threat to your [Duelist] participant** (optionally with italic *"The duel ends only if there is no threat remaining in any threat pool."*), wire Pattern D.2 against `EventDuelEndOfRound` and write **pending** threat — not `createThreatModifiedEvent`.
+
+1. **Trigger** — `EventDuelEndOfRound && isAvailable()`, hand guard `Location == Game::LOCATION_HAND`, `IN_DUEL`.
+2. **"Adversary's round"** — `$event->playerId != $owner->ControllerId` (the actor of the ending round is the opponent). Contrast "at the end of **your** round" (`Technique_04016`: `$event->actorId == your participant`).
+3. **Your participant** — `$theah->getCharacterById($theah->getDuelOpponentId($event->actorId))`. Gate ControllerId == owner; hide when discard/locker. Heading **Duelist Reaction** / printed **"Duelist participant"** → `$participant->hasTrait('Duelist')`. Stash `$participantId` on the Reaction before pay (Pattern D.2).
+4. **Pay** — standard `performReaction('use')` → `EnteringPayState` + `ReactionPayTransition` (WealthCost 0 still pays).
+5. **Effect in `EventRiskReactionTriggered`** — bump **only your participant's side**:
+
+```php
+$challengerId = $theah->getDuelChallengerId();
+if ($participant->Id == $challengerId) {
+    $pending = $game->globals->get(Game::PENDING_CHALLENGER_THREAT, 0);
+    $game->globals->set(Game::PENDING_CHALLENGER_THREAT, $pending + 1);
+} else {
+    $pending = $game->globals->get(Game::PENDING_DEFENDER_THREAT, 0);
+    $game->globals->set(Game::PENDING_DEFENDER_THREAT, $pending + 1);
+}
+```
+
+Accumulate (`get` + `set`) so multiple end-of-round producers can stack. Notify + `setUsed`. **No Cesca** (fixed participant — no printed Target chooser).
+
+**WHY `PENDING_*_THREAT`, not `createThreatModifiedEvent`:** `stDuelEndOfRound` runs Resolve Threat (actor leftover → wounds; zeros that side's `ending_*`) **before** queuing `EventDuelEndOfRound`. Mutating ending threat after that rewrites the finished round's UI chips and can bump `wounds_taken` on a round whose conversion already ran (Raise the Stakes `_02039` bug / journal `2026-04-06-04`). PENDING:
+- is checked by `stDuelNextPlayer` so empty ending pools still continue the duel (the italic reminder needs no extra card code),
+- is applied by `stDuelNewRound` onto the next round's starting threat,
+- is cleaned in `stDuelEnd`.
+
+**Mid-round adds still use ThreatModified.** "When the adversary announces their combat card • Add a threat…" (`Reaction_02039`) fires during the round — `createThreatModifiedEvent` is correct there. PENDING is specifically for **post–Resolve Threat / EndOfRound** producers.
+
+**No new states / JS.** `DUEL_END_OF_ROUND_EVENTS` already transitions `"reaction"` → `DUEL_END_OF_ROUND_REACTIONS` and `"pay"` → `DUEL_END_OF_ROUND_PAY_FOR_REACTION`.
+
+**Maneuver sibling:** `Maneuver_02039` arms on resolve and writes PENDING (+1 both sides) on `EventDuelEndOfRound` — same channel, no pay. Pattern C.2 / checklist item 20 document the consumer side (Second Wind carry-forward).
+
+References: `Reaction_04046` (Bravado — one-side PENDING after pay), `Maneuver_02039` (Raise the Stakes — both-sides PENDING, deferred from Maneuver), contrast mid-round `Reaction_02039` / `Reaction_04022` (`createThreatModifiedEvent`).
+
 ### Pattern D.3 — RiskReaction that cancels pending high-priority events in a batch
 
 When the printed text says "Cancel the movement" / "Cancel the [effect]" and the effect being canceled is delivered by **already-queued, high-priority events** (e.g. `EventRenownAddedToLocation` + `EventRenownRemovedFromLocation` with shared `batchId` — see `_01117`, `_01062`, `_01150` for the producer side), the naive Pattern D.2 shape will deadlock on event ordering. Wire it as:

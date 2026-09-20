@@ -430,7 +430,7 @@ else
 }
 ```
 
-Reference: `Maneuver_02039` (Add Threat — adds +1 to both sides on the next round's pool). `Maneuver_03023` (Second Wind — captures the suppressed conversion amount).
+Reference: `Maneuver_02039` (Add Threat — Maneuver writes +1 to both sides' PENDING on EndOfRound). `Reaction_04046` (Bravado — RiskReaction writes +1 to **your participant's** side only after pay; Pattern D.2.3). `Maneuver_03023` (Second Wind — captures the suppressed conversion amount).
 
 #### 4. Also zero `duel_round.wounds_taken`
 
@@ -470,7 +470,7 @@ There is no `PENDING_<side>_THREAT_IS_LETHAL` global. If the suppressed threat w
 
 Use a `public bool $IsActive` field on the Maneuver, set on `EventResolveManeuver`, cleared on `EventManeuverCanceled` and `EventDuelEndOfRound`. Mark `$owner->IsUpdated = true` whenever you flip it so the framework persists. The `EventDuelEndOfRound` reset is needed because the maneuver instance lives on `$theah->cards` across rounds — without resetting, the next round's conversion would also be suppressed.
 
-References: `Maneuver_03023` (Second Wind — full pattern with carry-forward), `Maneuver_02039` (Add Threat — `PENDING_*_THREAT` write-only producer side).
+References: `Maneuver_03023` (Second Wind — full pattern with carry-forward), `Maneuver_02039` (Add Threat — Maneuver `PENDING_*_THREAT` write-only producer), `Reaction_04046` (Bravado — RiskReaction one-side PENDING producer; Pattern D.2.3).
 
 ### "You control a trait X at the duel location" gate
 
