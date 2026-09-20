@@ -1,6 +1,6 @@
 # 06 — Reactions (Pattern D)
 
-← [05 — Actions](05-actions.md) · [Index](README.md) · Next: [07 — Techniques](07-techniques-maneuvers.md)
+← [[05 — Actions|Leader Guide Actions]] · [[Index|Implementing a Leader Card]] · Next: [[07 — Techniques|Leader Guide Techniques And Maneuvers]]
 
 A **Reaction** (or **City Reaction**) waits for a trigger event, then prompts the controlling player with buttons (Pass, pick a target, etc.).
 
@@ -116,4 +116,4 @@ Some Reactions cancel an automatic event (for example Dusk move-Home) and ask th
 
 ## Next
 
-Duel abilities → [07](07-techniques-maneuvers.md) · Finish → [10](10-checklist.md)
+Duel abilities → [[07|Leader Guide Techniques And Maneuvers]] · Finish → [[10|Leader Guide Finish Checklist]]

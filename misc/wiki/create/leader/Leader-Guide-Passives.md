@@ -1,6 +1,6 @@
 # 04 — Passives (Pattern A)
 
-← [03 — Classify](03-classify-text.md) · [Index](README.md) · Next: [05 — Actions](05-actions.md)
+← [[03 — Classify|Leader Guide Classify The Printed Text]] · [[Index|Implementing a Leader Card]] · Next: [[05 — Actions|Leader Guide Actions]]
 
 A **passive** has no player choice. When something happens in the game, your Leader's code reacts automatically.
 
@@ -121,11 +121,11 @@ Hooking only one silently misses the other path. Reference: Joern `_03015`.
 
 | Situation | Use instead |
 |---|---|
-| Player chooses yes/no or a target after a trigger | [Reaction](06-reactions.md) |
-| Player activates from the High Drama menu | [Action](05-actions.md) |
-| Optional duel ability the player picks | [Technique](07-techniques-maneuvers.md) |
+| Player chooses yes/no or a target after a trigger | [Reaction](Leader-Guide-Reactions) |
+| Player activates from the High Drama menu | [Action](Leader-Guide-Actions) |
+| Optional duel ability the player picks | [Technique](Leader-Guide-Techniques-And-Maneuvers) |
 
 ## Next
 
-If your Leader has an Action → [05 — Actions](05-actions.md)  
-If only a Reaction → [06 — Reactions](06-reactions.md)
+If your Leader has an Action → [[05 — Actions|Leader Guide Actions]]  
+If only a Reaction → [[06 — Reactions|Leader Guide Reactions]]

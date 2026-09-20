@@ -1,8 +1,8 @@
 # 09 — Wiring states and JavaScript
 
-← [08 — Challenges](08-challenges.md) · [Index](README.md) · Next: [10 — Checklist](10-checklist.md)
+← [[08 — Challenges|Character Guide Challenge Actions]] · [[Index|Implementing a Character Card]] · Next: [[10 — Checklist|Character Guide Finish Checklist]]
 
-You need this page when an Action or Technique asks the player to **pick something** (character, location, hand card, attachment). Pure button Reactions usually skip this entirely.
+You need this page when an Action or Technique asks the player to **pick something** (character, location, hand card, attachment). Pure button Reactions usually skip this entirely — Ise's Reactions need no wiring.
 
 ## The three backend pieces
 
@@ -14,9 +14,9 @@ For each new interactive step you typically add:
 
 ### State id convention
 
-- High Drama Action step 1: `4` + 5-digit card number → e.g. Cesca `403001`
-- Further steps: append `2`, `3`, … → `4030012`
-- Dual Actions `a`/`b`: append which-action digit → Damya `4030381` / `4030382` / `40303822`
+- High Drama Action step 1: `4` + 5-digit card number → e.g. Aldo `401007`, Damya a `4030381`
+- Further steps: append `2`, `3`, … → `40303822` for Damya b step 2
+- Dual Actions `a`/`b`: append which-action digit → Damya `4030381` / `4030382`
 
 ### Transition keys
 
@@ -24,11 +24,11 @@ For each new interactive step you typically add:
 
 Only add `"NNNNN_2"` there if something actually queues `createTransitionEvent(..., "NNNNN_2", ...)`. Some multi-step flows move step 1 → step 2 only via the state's own `nextState("...")` map.
 
-Challenge Actions are the common case that **do** need both `"NNNNN"` and `"NNNNN_2"` — see [08](08-challenges.md).
+Challenge Actions are the common case that **do** need both `"NNNNN"` and `"NNNNN_2"` — see [[08|Character Guide Challenge Actions]].
 
 ## The three frontend pieces
 
-For every new state name (example `highDramaPhase03001`):
+For every new state name (example `highDramaPhase01007`):
 
 | File | Job |
 |---|---|
@@ -37,6 +37,8 @@ For every new state name (example `highDramaPhase03001`):
 | `modules/js/OnLeavingState.<expansion>.js` | Clear highlights / selection modes |
 
 Copy an existing same-shaped state in the same expansion file and rename the key.
+
+Expansion suffix examples: `.7s5s.js`, `.faf.js`, `.bas.js`, `.tac.js`.
 
 ### Character picker (in play)
 
@@ -64,7 +66,7 @@ Exact cleanup helpers vary — mirror a neighbor state in the same file rather t
 
 ### Hand card picker
 
-Use `factionHand`, not `highlightCardsAsSelectable`. Also add an `EventHandlers.js` entry so Confirm enables when a hand card is clicked.
+Use `factionHand`, not `highlightCardsAsSelectable`. Also add an `EventHandlers.js` entry so Confirm enables when a hand card is clicked. Damya's draw-then-discard Action uses this.
 
 ### City location picker
 
@@ -72,6 +74,10 @@ Use `factionHand`, not `highlightCardsAsSelectable`. Also add an `EventHandlers.
 - JS Confirm calls `onCityLocationsSelected()`.
 - Leaving cleanup uses `resetCityLocations()` — there is no `clearCityLocationAsSelectable`.
 - Build the location list with `array_keys($theah->getCityLocations())` (player-count aware). Do not hardcode colloquial constant names like `LOCATION_BORDELLO` — they do not exist.
+
+### Attachment button picker
+
+Some Actions list attachments as **buttons** (not board highlights). Args expose an `attachments` list; `OnUpdateActionButtons` adds one button per id. Reference: Adelheide `Action_01194`, Damya `Action_03038b`.
 
 ### chooseList multi-select / reorder
 
@@ -88,7 +94,7 @@ When in doubt, `console.log` the args object of a working sibling state and matc
 
 ## Pre-commit reminders related to wiring
 
-See [10 — Checklist](10-checklist.md) for the full list. The ones that bite during wiring:
+See [[10 — Checklist|Character Guide Finish Checklist]] for the full list. The ones that bite during wiring:
 
 - CharacterAction must still end with `createActionResolvedEvent` (except challenge hand-off)
 - Reaction classes need literal `$this->setUsed(` and `$this->isAvailable(`
@@ -96,4 +102,4 @@ See [10 — Checklist](10-checklist.md) for the full list. The ones that bite du
 
 ## Next
 
-Walk the finish list → [10](10-checklist.md)
+Walk the finish list → [[10|Character Guide Finish Checklist]]

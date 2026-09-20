@@ -1,6 +1,6 @@
 # 02 — The card class
 
-← [01 — What is a Leader?](01-what-is-a-leader.md) · [Index](README.md) · Next: [03 — Classify the printed text](03-classify-text.md)
+← [[01 — What is a Leader?|Leader Guide What Is A Leader]] · [[Index|Implementing a Leader Card]] · Next: [[03 — Classify the printed text|Leader Guide Classify The Printed Text]]
 
 The card class is the Leader's identity: name, stats, traits, printed Text, and which ability objects it owns.
 
@@ -109,7 +109,7 @@ public function handleEvent(Event $event)
 }
 ```
 
-Details → [04 — Passives](04-passives.md).
+Details → [[04 — Passives|Leader Guide Passives]].
 
 ## Common mistakes
 
@@ -121,4 +121,4 @@ Details → [04 — Passives](04-passives.md).
 
 ## Next
 
-Read the printed Text and classify each clause → [03 — Classify the printed text](03-classify-text.md)
+Read the printed Text and classify each clause → [[03 — Classify the printed text|Leader Guide Classify The Printed Text]]

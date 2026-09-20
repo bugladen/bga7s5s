@@ -1,13 +1,13 @@
 # 05 — Actions (Pattern C)
 
-← [04 — Passives](04-passives.md) · [Index](README.md) · Next: [06 — Reactions](06-reactions.md)
+← [[04 — Passives|Leader Guide Passives]] · [[Index|Implementing a Leader Card]] · Next: [[06 — Reactions|Leader Guide Reactions]]
 
 An **Action** (or **City Action**) is something the player chooses from the High Drama menu while they control the Leader.
 
 File: `modules/php/cards/<expansion>/actions/Action_NNNNN.php`  
 Extends: `CharacterAction`
 
-If the Action **issues a challenge**, also read [08 — Challenges](08-challenges.md).
+If the Action **issues a challenge**, also read [[08 — Challenges|Leader Guide Challenge Actions]].
 
 ## Wire it on the card class
 
@@ -102,7 +102,7 @@ These run **centrally** when the action is confirmed:
 
 Calling them yourself duplicates work.
 
-**Do** call `EventFactory::createActionResolvedEvent(...)` once when the Action finishes (unless you handed off to the challenge machine — see [08](08-challenges.md)).
+**Do** call `EventFactory::createActionResolvedEvent(...)` once when the Action finishes (unless you handed off to the challenge machine — see [[08|Leader Guide Challenge Actions]]).
 
 ## Action id is a string
 
@@ -119,7 +119,7 @@ Calling them yourself duplicates work.
 | UI need | Custom state? |
 |---|---|
 | One-click effect with no picks | Sometimes none — rare for CharacterActions |
-| Pick a character / location / hand card | Yes — see [09 — Wiring](09-wiring.md) |
+| Pick a character / location / hand card | Yes — see [09 — Wiring](Leader-Guide-Wiring-States-And-JavaScript) |
 | Two picks in sequence (source then target) | Yes — step 1 and step 2 states |
 
 Cesca's City Action is two steps:
@@ -158,4 +158,4 @@ Without `array_values`, JSON becomes an object and `ids.forEach` throws on the c
 
 ## Next
 
-Reactions → [06](06-reactions.md) · Wiring for your states → [09](09-wiring.md)
+Reactions → [[06|Leader Guide Reactions]] · Wiring for your states → [[09|Leader Guide Wiring States And JavaScript]]

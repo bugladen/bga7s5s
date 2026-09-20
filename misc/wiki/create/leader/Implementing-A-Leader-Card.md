@@ -1,3 +1,5 @@
+> This page replaces the older short Leader stub. Work through the linked pages in order.
+
 # Creating a Leader — Beginner Guide
 
 Welcome. This guide teaches you how to implement a **Leader** card for *7th Sea: City of Five Sails* on Board Game Arena.
@@ -21,19 +23,19 @@ Not every Leader needs every piece. A passive-only Leader may be just the card c
 
 ## How to use this guide
 
-1. [01 — What is a Leader?](01-what-is-a-leader.md) — concepts and where files live
-2. [02 — The card class](02-card-class.md) — fill in `_NNNNN.php`
-3. [03 — Classify the printed text](03-classify-text.md) — decide which pattern each clause uses
+1. [[01 — What is a Leader?|Leader Guide What Is A Leader]] — concepts and where files live
+2. [[02 — The card class|Leader Guide The Card Class]] — fill in `_NNNNN.php`
+3. [[03 — Classify the printed text|Leader Guide Classify The Printed Text]] — decide which pattern each clause uses
 4. Then implement only the patterns your card needs:
-   - [04 — Passives](04-passives.md)
-   - [05 — Actions](05-actions.md)
-   - [06 — Reactions](06-reactions.md)
-   - [07 — Techniques and Maneuvers](07-techniques-maneuvers.md)
-   - [08 — Challenge Actions](08-challenges.md)
-5. [09 — Wiring states and JavaScript](09-wiring.md) — when you added custom states
-6. [10 — Finish checklist](10-checklist.md) — before you call it done
-7. [11 — Example Leaders to copy](11-examples.md) — real cards to mirror
-8. [12 — Glossary and helpers](12-glossary-helpers.md) — jargon and useful Theah methods
+   - [[04 — Passives|Leader Guide Passives]]
+   - [[05 — Actions|Leader Guide Actions]]
+   - [[06 — Reactions|Leader Guide Reactions]]
+   - [[07 — Techniques and Maneuvers|Leader Guide Techniques And Maneuvers]]
+   - [[08 — Challenge Actions|Leader Guide Challenge Actions]]
+5. [[09 — Wiring states and JavaScript|Leader Guide Wiring States And JavaScript]] — when you added custom states
+6. [[10 — Finish checklist|Leader Guide Finish Checklist]] — before you call it done
+7. [[11 — Example Leaders to copy|Leader Guide Example Leaders To Copy]] — real cards to mirror
+8. [[12 — Glossary and helpers|Leader Guide Glossary And Helpers]] — jargon and useful Theah methods
 
 ## Golden rules
 
@@ -55,5 +57,5 @@ That is one passive + one Reaction + one Action — a complete, realistic Leader
 
 ## Related guides
 
-- Regular faction Characters use the same ability patterns; only the base class and setup differ.
+- [[Creating a Character|Implementing a Character Card]] — same ability patterns; Characters require `initializeFaction` and do not use `CrewCap` / `Panache`.
 - City-deck characters (`extends CityCharacter`) are a different skill — do not use this guide for those.

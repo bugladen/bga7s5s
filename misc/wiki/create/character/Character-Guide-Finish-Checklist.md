@@ -1,29 +1,30 @@
 # 10 — Finish checklist
 
-← [09 — Wiring](09-wiring.md) · [Index](README.md) · Next: [11 — Examples](11-examples.md)
+← [[09 — Wiring|Character Guide Wiring States And JavaScript]] · [[Index|Implementing a Character Card]] · Next: [[11 — Examples|Character Guide Example Characters To Copy]]
 
-Use this before you call a Leader "done." Check only the rows that apply to what you built.
+Use this before you call a Character "done." Check only the rows that apply to what you built.
 
 ## Card class
 
-- [ ] `extends Leader`
-- [ ] `"Leader"` is in `Traits`
-- [ ] `CrewCap` and `Panache` are set (not left at 0)
+- [ ] `extends Character` (not `Leader`, not `CityCharacter`)
+- [ ] `initializeFaction(...)` is called; spelling is `Ussura` if used (not `Usurra`)
+- [ ] No `CrewCap` / `Panache` / mandatory `"Leader"` trait (those are Leader-only)
 - [ ] Stats match the card; dashed stats use `Dashed*` + `0`
 - [ ] `CardNumber` matches the filename
-- [ ] Faction spelling is `Ussura` if used (not `Usurra`)
 - [ ] `resetCard()` is called after stats
-- [ ] Actions / Reactions / Techniques arrays match the printed text
+- [ ] Actions / Reactions / Techniques / Maneuvers arrays match the printed text
+- [ ] Techniques assigned without re-declaring `IHasTechniques` / `TechniqueTrait`
 - [ ] Any `handleEvent` override calls `parent::handleEvent($event)` first
-- [ ] Phase listeners guard with `! characterIsInDiscardOrLocker($this)`
+- [ ] Phase / ongoing listeners guard with `ControllerId` and `! characterIsInDiscardOrLocker($this)`
 
 ## Classification
 
 - [ ] Every printed clause maps to exactly one pattern
-- [ ] "City" abilities gate `cardInCity` and still use `Leader` / `Character`
+- [ ] "City" abilities gate `cardInCity` and still use `Character`
 - [ ] `IAbilityThatTargetsCharacters` only if text says **target**
 - [ ] "Opposing" uses same location + different controller
 - [ ] En Garde treated as precondition (`!$Engaged`) unless Engage is a printed cost
+- [ ] Muster text hooks **both** `EventCharacterMustered` and `EventApproachCharacterPlayed`
 
 ## Actions
 
@@ -71,9 +72,9 @@ Use this before you call a Leader "done." Check only the rows that apply to what
 
 - [ ] `php -l` on every touched PHP file
 - [ ] Mentally run the pre-commit table in `CLAUDE.md`
-- [ ] Mirrored a real reference Leader instead of inventing structure
+- [ ] Mirrored a real reference Character instead of inventing structure
 - [ ] Journal entry written with the **why** of non-obvious choices (project convention)
 
 ## Next
 
-Pick a mirror card → [11 — Examples](11-examples.md)
+Pick a mirror card → [[11 — Examples|Character Guide Example Characters To Copy]]

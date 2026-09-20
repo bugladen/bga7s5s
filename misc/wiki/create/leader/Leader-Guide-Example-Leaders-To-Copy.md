@@ -1,6 +1,6 @@
 # 11 — Example Leaders to copy
 
-← [10 — Checklist](10-checklist.md) · [Index](README.md) · Next: [12 — Glossary](12-glossary-helpers.md)
+← [[10 — Checklist|Leader Guide Finish Checklist]] · [[Index|Implementing a Leader Card]] · Next: [[12 — Glossary|Leader Guide Glossary And Helpers]]
 
 **Always mirror.** Find the closest printed text below and open those files before writing yours.
 
@@ -94,4 +94,4 @@ Paths are under `modules/php/cards/` unless noted.
 
 ## Next
 
-Definitions and helper cheatsheet → [12](12-glossary-helpers.md)
+Definitions and helper cheatsheet → [[12|Leader Guide Glossary And Helpers]]

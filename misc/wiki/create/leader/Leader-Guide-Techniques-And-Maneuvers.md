@@ -1,6 +1,6 @@
 # 07 — Techniques and Maneuvers (Pattern E)
 
-← [06 — Reactions](06-reactions.md) · [Index](README.md) · Next: [08 — Challenges](08-challenges.md)
+← [[06 — Reactions|Leader Guide Reactions]] · [[Index|Implementing a Leader Card]] · Next: [[08 — Challenges|Leader Guide Challenge Actions]]
 
 **Techniques** and **Maneuvers** are abilities used during duels (and sometimes during challenge setup).
 
@@ -65,7 +65,7 @@ Examples: choose a city location, destroy an attachment, look at top cards and s
 
 1. On `EventResolveTechnique`, queue `EventFactory::createTechniqueTransitionEvent(...)` (prefer this over older `createTransitionEvent` + priority hacks).
 2. Add a duel state under `DUEL_CHOOSE_TECHNIQUE_EVENTS`.
-3. Wire JS — see [09 — Wiring](09-wiring.md).
+3. Wire JS — see [[09 — Wiring|Leader Guide Wiring States And JavaScript]].
 
 References:
 
@@ -84,4 +84,4 @@ Same general idea as Techniques: availability during the duel, effect on maneuve
 
 ## Next
 
-Challenge-issuing Actions → [08](08-challenges.md) · Wiring → [09](09-wiring.md)
+Challenge-issuing Actions → [[08|Leader Guide Challenge Actions]] · Wiring → [[09|Leader Guide Wiring States And JavaScript]]

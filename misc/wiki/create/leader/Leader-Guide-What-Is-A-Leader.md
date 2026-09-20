@@ -1,6 +1,6 @@
 # 01 — What is a Leader?
 
-← [Index](README.md) · Next: [02 — The card class](02-card-class.md)
+← [[Index|Implementing a Leader Card]] · Next: [[02 — The card class|Leader Guide The Card Class]]
 
 ## Leader vs Character vs CityCharacter
 
@@ -76,4 +76,4 @@ Because of that: **always call `parent::handleEvent($event)` first** in any Lead
 
 ## Next
 
-Fill in the card class skeleton → [02 — The card class](02-card-class.md)
+Fill in the card class skeleton → [[02 — The card class|Leader Guide The Card Class]]

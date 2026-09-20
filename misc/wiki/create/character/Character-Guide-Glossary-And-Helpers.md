@@ -1,6 +1,6 @@
 # 12 — Glossary and helpers
 
-← [11 — Examples](11-examples.md) · [Index](README.md)
+← [[11 — Examples|Character Guide Example Characters To Copy]] · [[Index|Implementing a Character Card]]
 
 ## Glossary
 
@@ -13,13 +13,15 @@
 | **Active player state** | Game waits for one player to act. |
 | **Transition** | Named exit from a state (`"targetChosen"`, `"zombie"`, …). |
 | **ControllerId** | Player id who currently controls the card. `0` = uncontrolled. |
-| **Owner (of an ability)** | The Character/Leader card that owns the Action/Reaction (`getOwningCharacter`). |
+| **Owner (of an ability)** | The Character card that owns the Action/Reaction (`getOwningCharacter`). |
 | **Performer** | Character actually doing a challenge or ability — sometimes different from the Action owner. |
 | **Opposing** | Different controller **and** same location. |
 | **City location** | Docks / Forum / Bazaar / Ole's Inn / Governor's Garden (subset active by player count). |
-| **Home** | Player's home area. Shared location string across players — never count "characters at Home" with `getCharactersAtLocation(HOME)`. |
+| **Home** | Player's home area. Shared location string across players — never count "characters at Home" with `getCharactersAtLocation(HOME)`. Use `getCharactersAtHomeByPlayerId`. |
 | **Engage / Engaged** | Tired / committed state. Engaged characters often cannot pay Engage costs again. |
 | **En Garde** | Usually means currently **unengaged** (ready). |
+| **Muster** | Putting a Character into play (recruit). Approach play emits a separate event. |
+| **Approach** | Cards committed during the Approach phase before High Drama. |
 | **Renown** | Victory resource on locations / players. |
 | **Locker / Discard** | Out-of-play zones. Destroyed characters often go to locker. |
 | **Inject code** | Log markup from `getInjectCode()` so names appear styled and hoverable. |
@@ -56,6 +58,7 @@ $game->getPlayerNameById(int $id): string                     // not getActivePl
 
 $this->hasTrait(string $trait): bool
 $this->getInjectCode(): string
+$this->initializeFaction(string $faction): void               // Characters — required
 ```
 
 ### Duel helpers
@@ -89,11 +92,15 @@ EventFactory::createCardMovingEvent($playerId, $cardId, $from, $to, $engage, $so
 EventFactory::createCardEngagedEvent($playerId, $cardId, $sourceId, $abilityId)
 EventFactory::createCharacterBeingWoundedEvent(...)
 EventFactory::createCharacterBeingHealedEvent(...)
+EventFactory::createCharacterCombatModifiedEvent(...)
+EventFactory::createCharacterInfluenceModifiedEvent(...)
+EventFactory::createCharacterFinesseModifedEvent(...)   // note: Modifed typo
 EventFactory::createTransitionEvent($playerId, $sourceId, $transitionName, $internalId)
 EventFactory::createReactionTransitionEvent($playerId, $ownerId, $reactionId)
 EventFactory::createTechniqueTransitionEvent(...)
 EventFactory::createActionResolvedEvent(...)
 EventFactory::createGainLethalEvent($actorId, $theah)
+EventFactory::createCharacterMusteredEvent(...)
 ```
 
 Exact parameter lists change — open a mirror Action/Reaction and copy a working call.
@@ -116,6 +123,11 @@ Exact parameter lists change — open a mirror Action/Reaction and copy a workin
 
 Full table: project `CLAUDE.md` and `.githooks/pre-commit`.
 
+## Related guides
+
+- [[Creating a Leader|Implementing a Leader Card]] — same patterns; different card skeleton
+- Agent skill (deeper / denser): `.claude/skills/create-character/` — use when you need an edge-case recipe the wiki does not cover yet
+
 ## Back to the start
 
-Return to the [index](README.md) when you begin a new Leader.
+Return to the [[index|Implementing a Character Card]] when you begin a new Character.

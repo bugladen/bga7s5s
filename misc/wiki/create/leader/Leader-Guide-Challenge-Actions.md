@@ -1,6 +1,6 @@
 # 08 — Challenge Actions (Pattern F)
 
-← [07 — Techniques](07-techniques-maneuvers.md) · [Index](README.md) · Next: [09 — Wiring](09-wiring.md)
+← [[07 — Techniques|Leader Guide Techniques And Maneuvers]] · [[Index|Implementing a Leader Card]] · Next: [[09 — Wiring|Leader Guide Wiring States And JavaScript]]
 
 Some City Actions say **Issue a Combat / Finesse / Influence challenge**. You do **not** reimplement dueling. You set a few globals, then hand control to the existing challenge state machine.
 
@@ -91,4 +91,4 @@ Set `CHOSEN_PERFORMER` to the Thug's id, not the Leader's. Reference: `Action_03
 
 ## Next
 
-Wire picker states → [09](09-wiring.md) · Checklist → [10](10-checklist.md)
+Wire picker states → [[09|Leader Guide Wiring States And JavaScript]] · Checklist → [[10|Leader Guide Finish Checklist]]
