@@ -19,13 +19,15 @@ class _01116 extends Leader implements IHasReactions
         parent::__construct();
 
         $this->Name = clienttranslate("Yevgeni");
+        $this->Title = clienttranslate("The Boar");
         $this->Image = "01116.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 116;
 
         $this->initializeFaction("Ussura");
-        $this->Title = clienttranslate("The Boar");
+        $this->InPlayXImageOffset = 20;
+        
         $this->Resolve = 12;
         $this->Combat = 4;
         $this->Finesse = 2;
