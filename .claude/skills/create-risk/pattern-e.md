@@ -193,6 +193,19 @@ elseif ($destroyedId == $challengerId
 
 References: `_03033` (Glorious — heal on adversary destroyed), `_03073` (Victorious — draw on adversary destroyed), `_01102` (Unfortunate — equip from dueling line), `_02052` (scheme Forced for "any player's adversary destroyed" — same challenger/defender lookup, different scope).
 
+**"After the adversary performs a Technique, if this card is in your dueling line • they suffer a wound"** (Severing Arc `_04050` — may omit the Forced: keyword; still E.1 when no chooser):
+
+Gate chain:
+1. `EventResolveTechnique` with `$event->inDuel`
+2. `$this->Location == Game::LOCATION_DUELING_LINE`
+3. `$game->globals->get(Game::IN_DUEL)` is truthy
+4. `$event->actorId` is this controller's duel adversary (challenger/defender lookup → `getDuelOpponentId`)
+5. Adversary not in discard/locker
+
+**WHY ResolveTechnique, not Activated / Used:** "after … performs" means the Technique completed. Cancel reactions (`Reaction_01047`) fire on `EventTechniqueActivated` and delete technique events before Resolve — cancelled Techniques must not wound. `EventTechniqueUsed` is only the `setUsed` notify path.
+
+Notify + `createCharacterBeingWoundedEvent` with `eventCheck` before queue. Source/ability = this Risk's id.
+
 **Not E.1:** Forced that only applies **while this Risk is equipped as a RiskAttachment** (e.g. "At the end of High Drama, if this card is equipped • Destroy it") lives on the FakeAttachment — Pattern B.2. The Risk is in `LOCATION_PERMANENTLY_HIDDEN` and will not see `EventHighDramaPhaseEnd` usefully for that clause.
 
 ### Pattern E.3 — "Treats their text box as blank" / cannot use abilities

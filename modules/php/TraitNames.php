@@ -66,6 +66,7 @@ class TraitNames
             "Demoralize",
             "Dignitary",
             "Diplomat",
+            "Dismemberment",
             "Discovery",
             "Dockmaster",
             "Dog",
