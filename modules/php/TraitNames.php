@@ -150,6 +150,7 @@ class TraitNames
             "Poluchatel",
             "Porté",
             "Prepared",
+            "Pride",
             "Protégé",
             "Provocation",
             "Punctual",
