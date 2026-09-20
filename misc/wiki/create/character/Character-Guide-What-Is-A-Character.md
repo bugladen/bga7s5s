@@ -12,7 +12,7 @@ The game has three "people in play" base types. Pick the right one from the stub
 | `Leader extends Character` | In play from game start | Setup places it — never recruited | Same as Character **+ `CrewCap` + `Panache`** |
 | `CityCharacter extends Character` | City deck | Mustered from the city (WealthCost) | WealthCost, Negotiable, CityCardNumber |
 
-**If your stub says `extends CityCharacter`, stop.** That is a different guide.
+**If your stub says `extends CityCharacter`, stop.** Use the [[CityCharacter guide|Implementing a CityCharacter Card]] instead.
 
 **If your stub says `extends Leader`, use the [[Leader guide|Implementing a Leader Card]]** instead. Ability code (Actions / Reactions / Techniques) is the same family — only the card-class skeleton differs.
 

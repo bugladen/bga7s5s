@@ -59,4 +59,4 @@ That is one passive + one Reaction + one Action — a complete, realistic Leader
 
 - [[Creating a Character|Implementing a Character Card]] — same ability patterns; Characters require `initializeFaction` and do not use `CrewCap` / `Panache`.
 - [[Creating a Scheme|Implementing a Scheme Card]] — Planning resolve + `SchemeCityAction`; different lifecycle (Home until Dusk).
-- City-deck characters (`extends CityCharacter`) are a different skill — do not use this guide for those.
+- [[Creating a CityCharacter|Implementing a CityCharacter Card]] — city-deck hirelings (`extends CityCharacter`); do not use this Leader guide for those.
