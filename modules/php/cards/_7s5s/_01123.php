@@ -20,13 +20,15 @@ class _01123 extends Character implements IHasActions, IHasTechniques
         parent::__construct();
 
         $this->Name = clienttranslate("Valeri Mikhailov");
+        $this->Title = clienttranslate("Champion Narcissist");
         $this->Image = "01123.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 123;
 
         $this->initializeFaction("Ussura");
-        $this->Title = clienttranslate("Champion Narcissist");
+        $this->InPlayXImageOffset = -20;
+        
         $this->Resolve = 4;
         $this->Combat = 2;
         $this->Finesse = 3;
