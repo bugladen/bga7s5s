@@ -75,4 +75,4 @@ That is two-location resolve + a City Action that needs **no** High Drama GameSt
 
 - [[Creating a Character|Implementing a Character Card]] / [[Creating a Leader|Implementing a Leader Card]] — Action / Reaction / Challenge shapes overlap a lot; Schemes use `SchemeCityAction` instead of `CharacterAction`.
 - [[Creating a FactionAttachment|Implementing a FactionAttachment Card]] — faction-deck gear; different lifecycle (equip from hand).
-- City-deck cards and Risks are different skills — do not use this guide for those.
+- City-deck cards → their guides. Combat Risks → [[Creating a Risk|Implementing a Risk Card]].

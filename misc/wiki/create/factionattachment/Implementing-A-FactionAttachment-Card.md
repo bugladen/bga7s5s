@@ -19,10 +19,10 @@ Faction Attachments are **not** city-deck attachments and **not** Characters.
 | You want… | Correct base class |
 |---|---|
 | A Weapon / Attire / Hat / Talisman / Trinket that lives in a **player's faction deck**, equips from hand onto a character, and modifies that character | **`FactionAttachment`** ← this guide |
-| A weapon / attire that starts in the **city deck** and is equipped from the city | `CityAttachment` → city-attachment skill (different guide) |
+| A weapon / attire that starts in the **city deck** and is equipped from the city | `CityAttachment` → [[CityAttachment guide|Implementing a CityAttachment Card]] |
 | A person with Resolve / Combat who fights | `Character` / `Leader` / `CityCharacter` → their guides |
 | A Planning card with Initiative / Panache | `Scheme` → [[Scheme guide|Implementing a Scheme Card]] |
-| A combat Risk played from hand during a duel | `Risk` → risk skill (different guide) |
+| A combat Risk played from hand during a duel | `Risk` → [[Risk guide|Implementing a Risk Card]] |
 
 **In plain English:** if the printed card is *equipment* that belongs to a faction deck (or Neutral cards that still use faction-deck numbering), equips onto a character for a Wealth cost, and buffs that character or grants them abilities — you are writing a FactionAttachment.
 
@@ -99,4 +99,4 @@ For Reactions, also keep **Torres Cloak** (`_03044`) or **Matushka's Shears** (`
 - [[Creating a Character|Implementing a Character Card]] — people who wear these attachments; Action / Reaction shapes overlap
 - [[Creating a CityCharacter|Implementing a CityCharacter Card]] — city-deck hirelings (not gear)
 - [[Creating a Scheme|Implementing a Scheme Card]] — scheme deck cards
-- City attachments use a different skill — do not use this guide for `extends CityAttachment`
+- [[Creating a CityAttachment|Implementing a CityAttachment Card]] — city-deck gear (not faction-deck attachments)

@@ -16,7 +16,7 @@ If your card is a *person*, a *scheme*, a *risk*, or gear that starts in the **c
 | `CityAttachment` | City deck | Equipped from the city | `CityCardNumber`, city-deck lifecycle |
 | `Character` / `Leader` | Faction deck / setup | Recruited / setup | Resolve, Combat, Finesse, Influence (people, not gear) |
 
-**If your stub says `extends CityAttachment`, stop.** Use the city-attachment skill instead.
+**If your stub says `extends CityAttachment`, stop.** Use [[CityAttachment guide|Implementing a CityAttachment Card]].
 
 **If your stub says `extends FactionAttachment`, you are in the right place.**
 

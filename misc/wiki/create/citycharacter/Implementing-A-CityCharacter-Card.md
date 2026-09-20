@@ -22,7 +22,7 @@ CityCharacters are **not** faction-deck Characters and **not** Leaders.
 | A Character that lives in a player's faction deck / hand | `Character` → [[Character guide|Implementing a Character Card]] |
 | The faction Leader placed at setup | `Leader` → [[Leader guide|Implementing a Leader Card]] |
 | A one-shot city event that is discarded after use | `CityEventCard` → city-event skill (different guide) |
-| A weapon / attire that starts in the city deck | `CityAttachment` → city-attachment skill (different guide) |
+| A weapon / attire that starts in the city deck | `CityAttachment` → [[CityAttachment guide|Implementing a CityAttachment Card]] |
 | A weapon / attire from a **player's faction deck** | `FactionAttachment` → [[FactionAttachment guide|Implementing a FactionAttachment Card]] |
 
 **In plain English:** if the printed card is a *person* with Resolve / Combat / Finesse / Influence, a Wealth cost to hire them from the city, and they can fight once controlled — you are writing a CityCharacter.

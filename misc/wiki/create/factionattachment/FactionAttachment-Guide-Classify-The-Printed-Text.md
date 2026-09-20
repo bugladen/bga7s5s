@@ -48,7 +48,7 @@ Before writing code, split the card Text into clauses and assign each clause a *
 | Stub | Guide |
 |---|---|
 | `extends FactionAttachment` | This guide |
-| `extends CityAttachment` | City-attachment skill (different guide) |
+| `extends CityAttachment` | [[CityAttachment guide|Implementing a CityAttachment Card]] |
 
 ### "City Action" does not change the base class
 
