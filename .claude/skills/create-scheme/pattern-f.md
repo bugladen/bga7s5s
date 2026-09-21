@@ -39,3 +39,17 @@ Do **not** register these under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` — that
 6. JS: multi `factionHand` select; Confirm calls `onCardsDiscarded()` → `actFromCardWithIds`. Store count in `clientStateArgs.cardsToDiscard` on enter; in `EventHandlers.js` enable Confirm only when `getSelection().length === needed`.
 
 Reference: `_03041` + `State_planningPhaseEnd_03041`. Opponent-pick Forced without draws: `_01098` + `State_planningPhaseEnd_01098`.
+
+### Dual claim — you, then the chosen player (`_04051`)
+
+When the Forced is **"claim a City location. Then, the chosen player claims a different City location"**:
+
+1. **"The chosen player"** must already be on the scheme from resolve (`$chosenOpponentId`). Gate Forced: `$this->Location == LOCATION_PLAYER_HOME` **and** `$chosenOpponentId > 0`. If no claimable city for the controller (`canLocationBeClaimedBy`), notify, clear picks, and return — do not open an empty pick.
+2. **Null-performer claim:** `createLocationClaimedEvent($playerId, null, $location)` (same as `Reaction_03005`). Offer only claimable city locs via `locationIds`.
+3. **Two Planning-End states** under `PLANNING_PHASE_END_EVENTS` (`"NNNNN"` / `"NNNNN_2"`). Same card-number key may also exist on the resolve map — intentional (`_04051` resolve `"04051"` vs end `"04051"`).
+4. After controller claims, stash `$claimedLocation` and queue `createTransitionEvent($chosenOpponentId, $this->Id, "NNNNN_2")` at `MEDIUM_PRIORITY` (claim event queued first so it processes before the opponent's pick opens).
+5. **Contingent Then:** if the chosen player has no other claimable City location (`exclude` the just-claimed name), notify and skip state 2 — opening an empty pick soft-locks Planning End.
+6. Clear `$chosenOpponentId` / `$claimedLocation` after Forced completes and on `EventCardSentToLocker`.
+7. JS: both end states are filtered city-location choosers (`locationIds` from args) — same shape as resolve location picks.
+
+Reference: `_04051` / `State_planningPhaseEnd_04051{,_2}`.

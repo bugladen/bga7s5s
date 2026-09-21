@@ -202,6 +202,23 @@ Cleanup:
 
 Reference: `_01071`, `_01072`, `_02046`.
 
+### Opponent button pick (resolve or Planning End)
+
+No OnEntering chooser — buttons only. Args expose `opponents: [{id, name}, …]`.
+
+```js
+// OnUpdateActionButtons — note args.args (not args.args.args)
+'planningPhaseResolveSchemes_<NNNNN>': () => {
+    args.args.opponents.forEach((opponent) => {
+        this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+    });
+},
+```
+
+Server: `actFromCardWithId` validates ≠ self, persists if needed, queues `createTransitionEvent($opponentId, $this->Id, "NNNNN_2")` when the opponent must act next.
+
+Reference: `_02025_2` / `_04051` resolve; Planning-End sibling `_01098`.
+
 ### Character-then-City-location resolve (planning)
 
 Two states. State 1 highlights in-play characters (`ids` from args); Confirm → `onChooseInPlayCardConfirmed` → `actFromCardWithId`. State 2 is a filtered city-location chooser (`locationIds`) with Back.

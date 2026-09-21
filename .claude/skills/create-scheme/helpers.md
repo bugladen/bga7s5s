@@ -20,6 +20,9 @@
 - **"Strega" / "Mercenary" / "Merchant" / "Diplomat" / "Duelist" / "Hero" / "Villain" / "Scoundrel" / "Red Hand" / "Leader" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait(...)` on the chosen performer (or, for no-pick Reactions, a controlled traited character at the trigger location / in play for "each Merchant you control" counts). They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack ("Sorcerer Strega Reaction" is both). **"When your performer issues a challenge"** → gate the challenger (`EventChallengeIssued.challengerId`).
 - **`<b>… Reaction:</b> At the end of Planning` is not Pattern F Forced.** Offer via `createReactionTransitionEvent` (Look/Pass); follow-on chooseList states still use `PLANNING_PHASE_END_*` under `PLANNING_PHASE_END_EVENTS`. "Look at" is private (`argsForStatePrivate`); sink looked cards with `createCardAddedToFactionDeckEvent(..., false)`. Reference: `_04025`.
 - **Action field persistence:** mutating `$MoveMode` / `$pendingMusterId` / similar on an Action requires `$game->updateCardObjectInDb($owner)`. `$owner->IsUpdated = true` alone is not flushed before `stRunEvents` rebuilds from DB.
+- **Scheme fields needed after resolve (Forced / later phase):** same flush discipline — `$chosenOpponentId` / `$EmbargoedCardId` / similar on the **scheme** need `$game->updateCardObjectInDb($this)` when Forced or another phase will read them. `Game::CHOSEN_OPPONENT` is only safe for the **next** resolve state (`_02025`); cross-phase "the chosen player" must live on the card (`_04051`). Clear on Forced complete + `EventCardSentToLocker`.
+- **Null-performer claims:** scheme Forced / Reactions that claim without a character use `createLocationClaimedEvent($playerId, null, $location)`. Still gate offers with `canLocationBeClaimedBy`. Reference: `_04051`, `Reaction_03005`.
+- **One chosen opponent vs each opponent:** single opponent button pick + one `createTransitionEvent($opponentId, …)` (`_02025` / `_04051`) — not Pattern C's turn-order loop.
 - **`getEquipDiscount` cost increase:** return `$discount -= 1` (negative discount). On schemes, also gate `Location == LOCATION_PLAYER_HOME` and **`cardInCity($performer)`** — Home shares one location string across players.
 - **Renown-vs-attachment pick sentinel:** use `actFromCardWithId` id `0` for "Move Renown". Card ids are never 0, so no collision with attachment picks.
 - **"Available attachment"** at a location = `$theah->getAvailableAttachmentsAtLocation($location)` (unattached `Attachment` at that location).
@@ -80,7 +83,7 @@
 - `$theah->canLocationBeClaimedBy(int $playerId, string $location): bool` — central claimability gate (flags, controllers, etc.). Use in **availability / performer filters** when Claim is the payoff so the action is never offered when unclaimable; recheck at resolve before `createLocationClaimedEvent`.
 - `$theah->canLocationBecomeUncontrolledBy(int $playerId, string $location): bool` — central un-control gate (`CanBecomeUncontrolled`; Indomitable Will). Use before offering / resolving "lose control" / "becomes uncontrolled". Reference: `Action_04034`, `Action_01112a`, `Maneuver_01110`.
 - `$game->getPlayerReknown(int $playerId): int` — player score Renown (for "Spend a Renown" costs **and** "fewest Renown" comparisons).
-- `$game->updateCardObjectInDb($card)` — **required** after mutating public fields on nested Actions (`$MoveMode`, `$pendingMusterId`, …) so `stRunEvents` rebuild sees them.
+- `$game->updateCardObjectInDb($card)` — **required** after mutating public fields on nested Actions (`$MoveMode`, `$pendingMusterId`, …) **and** on scheme fields that Forced / a later phase must read (`$chosenOpponentId`, `$EmbargoedCardId`, …) so `stRunEvents` rebuild sees them.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${scheme_inject_code}` placeholder).
 - `$card->getEquipDiscount($theah, $performer, $attachment, &$explanations): int` — override on scheme/character; `$discount -= 1` raises equip cost.
 
@@ -95,7 +98,7 @@ Event factories you'll likely need:
 - `createRenownMovingBetweenLocationsEvent($playerId, $from, $to, $amount, $description)` — pair with remove + add(`isMove`) under one `batchId` for UI/animation.
 - `createCardRemovedFromPlayerDiscardPileEvent($playerId, $cardId)` (notification-only)
 - `createCardAddedToHandEvent($playerId, $cardId)` (does the actual move)
-- `createLocationClaimedEvent($playerId, ?int $performerId, $location)`
+- `createLocationClaimedEvent($playerId, ?int $performerId, $location)` — performer may be **`null`** for scheme Forced / Reaction claims without a character (`_04051`, `Reaction_03005`)
 - `createLocationBecomesUncontrolledEvent($playerId, $location)` — "lose control" / "becomes uncontrolled"; gate with `canLocationBecomeUncontrolledBy` first
 - `createCharacterDestroyedEvent($playerId, $characterId, $reason)` — always unequip attachments on the target first when calling this directly
 - `createPressureOccuringEvent($playerId, $performerId, $location, $pressureTypes)` — then transition `"pressureLocation"`; listen for `EventLocationPressureResult` with matching `$abilityId`

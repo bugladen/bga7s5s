@@ -116,3 +116,15 @@
 | `modules/php/cards/_7s5s/actions/Action_01071.php` | Epee unrefusable + during-duel `IN_DUEL`/`CHALLENGE_TYPE` correlator sibling. |
 | `modules/php/cards/_7s5s/_01143.php` (Contempt and Hatred) | Scheme-at-Home aura sibling (`isSchemeInPlay` + clear on `EventCardSentToLocker` + condition tooltip). |
 | `modules/php/cards/_7s5s/_01120.php` (Pavel) | Character sibling: location-control → ±1 Influence (Claim / Uncontrolled / CardMoved listeners). |
+| `modules/php/cards/tac/_02025.php` (Tea and Cakes) | **You Renown → pick opponent → opponent Renown** (any city; not required different). `Game::CHOSEN_OPPONENT` for next resolve state only. Plus Diplomat City Action. |
+| `modules/php/States/tac/State_planningPhaseResolveSchemes02025.php` | Resolve state 1: your city Renown pick. |
+| `modules/php/States/tac/State_planningPhaseResolveSchemes02025_2.php` | Resolve state 2: opponent buttons (`actFromCardWithId`). |
+| `modules/php/States/tac/State_planningPhaseResolveSchemes02025_3.php` | Resolve state 3: opponent city Renown pick. |
+| `modules/php/cards/bas/_04051.php` (A Shared Interest) | **Choose opponent → they Renown → you different Renown** + **Pattern F dual claim** (you then chosen player, different City locs). `$chosenOpponentId` / `$firstRenownLocation` / `$claimedLocation` on scheme + `updateCardObjectInDb`. Null-performer claims. Init 31 / Panache -1 / Bargain+Savvy / Neutral. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04051.php` | Resolve state 1: opponent buttons. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04051_2.php` | Resolve state 2: opponent Renown pick. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04051_3.php` | Resolve state 3: controller different-location Renown. |
+| `modules/php/States/bas/State_planningPhaseEnd_04051.php` | Forced claim pick for controller (`locationIds` claimable). |
+| `modules/php/States/bas/State_planningPhaseEnd_04051_2.php` | Forced claim pick for chosen opponent (exclude `$claimedLocation`). |
+| `modules/php/cards/faf/reactions/Reaction_03005.php` | Null-performer `createLocationClaimedEvent` sibling (Reaction, not Forced). |
+

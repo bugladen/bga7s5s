@@ -234,3 +234,17 @@ When the scheme says **"Then, move your Duelist to a City location"** (or anothe
 Same card-number key `"NNNNN"` may also appear under `HIGH_DRAMA_PLAYER_TURN_EVENTS` for a City Action on the same scheme — distinct maps, intentional (see `_03030`, `_04004`).
 
 Reference: `_04004` / `State_planningPhaseResolveSchemes04004{,_2}`.
+
+### Choose opponent → they Renown → you Renown (different)
+
+When the scheme says **"Choose an opponent to add a Renown to any location. Then, add a Renown to a different location"** (A Shared Interest):
+
+1. **Three resolve states.** (1) Controller picks opponent — `args["opponents"]` button list (`actFromCardWithId`). (2) Transition to the **opponent** as active player (`createTransitionEvent($opponentId, $this->Id, "NNNNN_2")`) — they pick any city location for Renown. (3) Controller picks a **different** city location (`locationIds` exclude the opponent's pick).
+2. **"Any location" for Renown tokens** = city locations from `getCityLocations()` (same as `_01071` / `_02025` — notifies say "City Location" even when the card prints "any location").
+3. **Persist on the scheme** when later text needs "the chosen player": `public int $chosenOpponentId` + `$game->updateCardObjectInDb($this)`. Also stash `$firstRenownLocation` for the "different" gate. **Do not** use `Game::CHOSEN_OPPONENT` if Forced / another phase must read the pick — that global is only safe for the next resolve state.
+4. Clear temporary Renown-location stash after resolve state 3; keep `$chosenOpponentId` until Forced finishes (or clear on locker).
+5. JS: state 1 = opponent buttons only (no enter chooser); states 2–3 = `locationIds` + Confirm Location (`actFromCardWithLocations`).
+
+**Sibling — Tea and Cakes `_02025`:** you place first → pick opponent → opponent places (any city; **not** required different). Uses `Game::CHOSEN_OPPONENT` because nothing after resolve needs the pick. Inverse order of Shared Interest.
+
+Reference: `_04051` / `State_planningPhaseResolveSchemes04051{,_2,_3}`; sibling `_02025`.

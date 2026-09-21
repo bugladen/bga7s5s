@@ -34,3 +34,13 @@ Reference: `_01151` — first state is the owner's pick, second state (`"01151_2
 | Turn-order queue with `HIGH_PRIORITY` | `setPlayersMultiactive` of everyone with a hand card |
 
 Do not stretch Pattern C into concurrent each-player discard — see **Pattern L** in [actions.md](actions.md).
+
+### Contrast: one chosen opponent (not each)
+
+| "Then, each opponent does X" (this pattern) | "Choose an opponent …" / "Target opponent …" (`_04051` / `_02025`) |
+|---|---|
+| Loop every other player in turn order | Single opponent pick (buttons) |
+| Queue N transitions with `HIGH_PRIORITY` | One `createTransitionEvent($opponentId, …)` |
+| No persisted "chosen" player | May need `$chosenOpponentId` on the scheme if Forced / later text refers to them |
+
+Reference: Pattern A "Choose opponent → they Renown → you Renown" in [pattern-a.md](pattern-a.md).
