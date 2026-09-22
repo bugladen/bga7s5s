@@ -28,12 +28,13 @@ SFTP Upload the entire project directory up into the BGA server.
 ## State of the Project 
 
 - The complete game is implemented.
-- Expansions are being implemented.
+- All expansions are implemented.
 
 ## Sets Implemented 
 - Core
 - Tooth and Claw
-- Fate and Fortune (in progress)
+- Fate and Fortune
+- Blood and Salt
 
 ## Going Forward 
 Cards from the expansions will need to be implemented. 
