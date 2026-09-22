@@ -52,7 +52,7 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 - **Pressure fails instead (≤1 difference):** `EventLocationPressured` → `deletePressureResultEvents` + failed Result. Attachment = engage in `performReaction`; Risk Objection = wealth pay via `ICancelReaction` — do not mix. `"at this location"` = host location match. Own-pressure gate mirrors Objection. `HIGH_PRIORITY` offer. See Pattern D / `_04026`.
 - **Ignore wound (opponent's ability):** cancel-first `EventCharacterBeingWounded` + engage. Adapt Cascade `02059` gates; do not copy Risk pay. Equipped host only. No `HIGH_PRIORITY`. See Pattern D / `_04053`.
 - **Stat-threshold equip** ("N[Finesse] or more"): `Modified* >= N` dual-gate — not printed base, not Shackles ally-compare. See Pattern A / `_04053`.
-- **Engage + +N Parry** = same shape as engage + Thrust (`04017`); Calculate `parry += N` (`04026`). No GameState when no picker.
+- **Engage + +N Parry / Riposte** = same shape as engage + Thrust (`04017`); Calculate `parry += N` (`04026`) or `riposte += N` (`04054b`). No GameState when no picker.
 - Namespaces:
   - Attachment class: `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>`
   - Action:           `...\cards\<expansion>\actions`
