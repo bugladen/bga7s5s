@@ -13,7 +13,7 @@ Both need:
 
 **Pre-commit hook on Technique:** same — must handle `EventTechniqueCanceled` or add the equivalent comment.
 
-References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat), `Technique_04017` (Jägerarmbrust — engage + +1 Thrust + Resolve-time Academic/Hunter adversary discard; **not** Gambling), `Technique_04026` (Pompon — engage + +1 Parry; simplest engage-stat Technique).
+References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat), `Technique_04017` (Jägerarmbrust — engage + +1 Thrust + Resolve-time Academic/Hunter adversary discard; **not** Gambling), `Technique_04026` / `Technique_04055a` (Pompon / Sturdy Shield — engage +1 Parry; simplest engage-stat Technique), `Technique_04054b` (Sabre — engage +1 Riposte), `Technique_04055b` (Sturdy Shield — Gambling +1 Parry; simplest free Gambling +stat).
 
 ### Engage this card + +N Thrust / Parry / Riposte (normal Technique)
 
@@ -21,9 +21,11 @@ When printed cost is **"Engage this card • +N [Thrust]"**, **"+N [Parry]"**, o
 
 1. Availability: `IN_DUEL` + `! $attachment->Engaged` + duel actor == owning character. **No** `DUEL_GAMBLED`.
 2. Resolve: `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)`.
-3. Calculate: `EventDuelCalculateTechniqueValues` → `$event->thrust += N` **or** `$event->parry += N` **or** `$event->riposte += N` + explanation. Mirror `Technique_04017` (Thrust) / `Technique_04026` (Parry) / `Technique_04054b` (Riposte) / `Technique_03018` / `Technique_02023` — do **not** require `EventGenerateChallengeThreat` when the Technique is duel-only (`IN_DUEL` gate). No GameState when there is no picker.
+3. Calculate: `EventDuelCalculateTechniqueValues` → `$event->thrust += N` **or** `$event->parry += N` **or** `$event->riposte += N` + explanation. Mirror `Technique_04017` (Thrust) / `Technique_04026` / `Technique_04055a` (Parry) / `Technique_04054b` (Riposte) / `Technique_03018` / `Technique_02023` — do **not** require `EventGenerateChallengeThreat` when the Technique is duel-only (`IN_DUEL` gate). No GameState when there is no picker.
 
 **Passive gamble reveal on the same card is unrelated.** "When the equipped character gambles, reveal an additional card" is Pattern B''' on the attachment class (`_01101` / `_04017`). It does **not** turn the Technique into a Gambling Technique.
+
+**Co-printed Gambling Technique is also unrelated.** `_04055` prints both engage +1 Parry and Gambling +1 Parry — keep `DUEL_GAMBLED` only on the Gambling class (`04055b`); the engage half (`04055a`) stays Pompon-shaped.
 
 ### Resolve-time "If your participant is a Trait…" effect gate
 
@@ -80,6 +82,20 @@ WHY `IN_DUEL` is mandatory here: gambling only exists inside a duel round — do
 When the cost is **"Engage this card"** (the attachment), also gate `! $attachment->Engaged` and queue `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)` on `EventResolveTechnique` — mirror `Technique_01049` / `Technique_03064`.
 
 `Technique` base sets `Used` on `EventTechniqueActivated` and resets on `EventDuelEnd` when `ResetOnDuelEnd` (default true) — do not double-`setUsed` unless a multi-step resolve needs it (`Technique_01096`).
+
+### Gambling Technique: free +N Parry / Thrust / Riposte
+
+When printed text is simply **`<b>Gambling Technique:</b> +1[Parry]`** (or Thrust / Riposte) with **no** engage cost and **no** deferred EndOfRound effect:
+
+1. Own `Technique_NNNNN` class — availability = Gambling gate block above (`IN_DUEL` + `DUEL_GAMBLED` + actor == owning character).
+2. Calculate: `$event->parry += 1` (or thrust / riposte) + explanation on `EventDuelCalculateTechniqueValues`.
+3. Add the `// EventTechniqueCanceled handler not needed` comment (pre-commit).
+
+**Do not** instantiate `Technique_PlusOneParry` / `Technique_PlusOneThrust` / `Technique_PlusOneRiposte` and `setId` for a Gambling Technique. WHY: those generics only gate `IN_DUEL` (and actor identity via parent) — they would offer every duel round without requiring a gamble. `setId` on PlusOne* is correct only for **plain** free Techniques (`_04054` Sabre Thrust, Pavel `_01120` Parry).
+
+**Do not** reuse another card's engage-Parry class via `setId` either (`Technique_04026`) — ClassId would stay wrong for debugging / uniqueness. Copy the engage shape into `Technique_NNNNNa` when the engage half is card-specific (`Technique_04055a`).
+
+Reference: `Technique_04055b` (Sturdy Shield). Engage sibling on the same card: `Technique_04055a` (Pompon copy — no `DUEL_GAMBLED`).
 
 ### Deferred EndOfRound ("At the end of your round, …")
 

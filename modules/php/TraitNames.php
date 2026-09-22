@@ -186,6 +186,7 @@ class TraitNames
             "Scoundrel",
             "Seaborn",
             "Shenzhou",
+            "Shield",
             "Solitary",
             "Sorcerer",
             "Sorcery",

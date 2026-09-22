@@ -51,8 +51,10 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 - **Cancel Maneuver/Technique:** Activated (not Resolve); `HIGH_PRIORITY` transitions; cancel-first when multi-stage "unless discard"; correct character/player id gates — do not copy `Reaction_01047`'s compare. See Pattern D / `_03044`.
 - **Pressure fails instead (≤1 difference):** `EventLocationPressured` → `deletePressureResultEvents` + failed Result. Attachment = engage in `performReaction`; Risk Objection = wealth pay via `ICancelReaction` — do not mix. `"at this location"` = host location match. Own-pressure gate mirrors Objection. `HIGH_PRIORITY` offer. See Pattern D / `_04026`.
 - **Ignore wound (opponent's ability):** cancel-first `EventCharacterBeingWounded` + engage. Adapt Cascade `02059` gates; do not copy Risk pay. Equipped host only. No `HIGH_PRIORITY`. See Pattern D / `_04053`.
-- **Stat-threshold equip** ("N[Finesse] or more"): `Modified* >= N` dual-gate — not printed base, not Shackles ally-compare. See Pattern A / `_04053`.
-- **Engage + +N Parry / Riposte** = same shape as engage + Thrust (`04017`); Calculate `parry += N` (`04026`) or `riposte += N` (`04054b`). No GameState when no picker.
+- **Stat-threshold equip** ("N[Finesse]/[Combat]/[Influence] or more"): `Modified* >= N` dual-gate — not printed base, not Shackles ally-compare. See Pattern A / `_04053` (Finesse) / `_04055` (Combat).
+- **Engage + +N Parry / Riposte** = same shape as engage + Thrust (`04017`); Calculate `parry += N` (`04026` / `04055a`) or `riposte += N` (`04054b`). No GameState when no picker.
+- **Gambling free +N Parry / Thrust / Riposte:** own class with `DUEL_GAMBLED` — **never** `Technique_PlusOne*` + `setId` (those only gate `IN_DUEL`). Co-printed engage half stays ungambled. See Pattern E / `_04055`.
+- **`setId` on PlusOne*:** only for plain non-Gambling free Techniques (`_04054` Thrust, Pavel `_01120` Parry). Do not `setId` another card's engage Technique (`04026`) onto a new card — ClassId stays wrong; copy into `Technique_NNNNNa`.
 - Namespaces:
   - Attachment class: `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>`
   - Action:           `...\cards\<expansion>\actions`
