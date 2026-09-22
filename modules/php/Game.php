@@ -171,6 +171,8 @@ class Game extends \Bga\GameFramework\Table
     final const NORMAL_RECRUIT_TYPE = 0;
     final const KASPAR_RECRUIT_TYPE = 1;
     final const CIRILO_RECRUIT_TYPE = 2;
+    // WHY: Silver Tongue (_04059) — Parley Yes/No like NORMAL, but do not Engage on Parley.
+    final const SILVER_TONGUE_RECRUIT_TYPE = 3;
 
     //Pressure global variables
     final const PRESSURING_PLAYER = "pressuringPlayer";

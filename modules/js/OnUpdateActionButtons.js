@@ -123,7 +123,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaRecruitActionParley': () => {
-            this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+            // WHY: Silver Tongue Risk already paid — Back would land on basic Recruit performer choose.
+            if (args.recruitType != this.SILVER_TONGUE_RECRUIT_TYPE)
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             this.addActionButton(`actChooseYes`, _('Yes'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyYes', {}));
             this.addActionButton(`actChooseNo`, _('No'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyNo', {}));
         },

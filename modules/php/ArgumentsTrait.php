@@ -180,6 +180,8 @@ trait ArgumentsTrait
 
         return [
             "performerId" => $performerId,
+            // WHY: Silver Tongue hides Back (Risk already paid; Back would hit basic Recruit performer choose).
+            "recruitType" => $this->globals->get(Game::RECRUIT_TYPE),
         ];
     }    
 
@@ -198,7 +200,10 @@ trait ArgumentsTrait
         $characters = array_values(array_filter($characters, fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary")));
 
         $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
-        if ($performerParleyed && $args["recruitType"] == Game::NORMAL_RECRUIT_TYPE)
+        // WHY: SILVER_TONGUE uses the same Parley-before-target order as NORMAL.
+        if ($performerParleyed
+            && ($args["recruitType"] == Game::NORMAL_RECRUIT_TYPE
+                || $args["recruitType"] == Game::SILVER_TONGUE_RECRUIT_TYPE))
         {
             $characters = array_values(array_filter(
                 $characters,

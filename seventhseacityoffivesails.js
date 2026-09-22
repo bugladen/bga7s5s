@@ -115,16 +115,13 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             //Recruit types
             this.NORMAL_RECRUIT_TYPE = 0;
             this.KASPAR_RECRUIT_TYPE = 1;
+            this.CIRILO_RECRUIT_TYPE = 2;
+            this.SILVER_TONGUE_RECRUIT_TYPE = 3;
 
             //Equip types
             this.NORMAL_EQUIP_TYPE = 0;
             this.SMUGGLED_ITEM_EQUIP_TYPE = 1;
             this.LETS_HAGGLE_EQUIP_TYPE = 2;
-
-            //Recruit types
-            this.NORMAL_RECRUIT_TYPE = 0;
-            this.KASPAR_RECRUIT_TYPE = 1;
-            this.CIRILO_RECRUIT_TYPE = 2;
 
             //Challenge types
             this.NORMAL_CHALLENGE_TYPE = 0;

@@ -466,7 +466,9 @@ trait FrameworkActionsTrait
         $recruitType = $this->globals->get(Game::RECRUIT_TYPE);
         // WHY: Parley is chosen before the target. A Yes must not stick to a
         // Negotiable=false mercenary (no discount, and the performer would still engage).
-        if ($recruitType == Game::NORMAL_RECRUIT_TYPE && $performerParleyed
+        // SILVER_TONGUE shares the same Negotiable gate (may Parley without engaging).
+        if (($recruitType == Game::NORMAL_RECRUIT_TYPE || $recruitType == Game::SILVER_TONGUE_RECRUIT_TYPE)
+            && $performerParleyed
             && ( ! $recruit instanceof CityCharacter || ! $recruit->Negotiable))
         {
             throw new \BgaUserException(clienttranslate("You cannot Parley when recruiting this character."));
@@ -477,7 +479,9 @@ trait FrameworkActionsTrait
         $event = EventFactory::createEnteringPayStateEvent($playerId, $recruitId, Game::PAY_STATE_RECRUIT_MERCENARY);
         $this->theah->queueEvent($event);
 
-        if ($performerParleyed && !$performer->Engaged)
+        // WHY: NORMAL Parley engages; SILVER_TONGUE explicitly "parley without engaging".
+        // Kaspar never sets PERFORMER_PARLEYED (own parley state). Cirilo skips Parley.
+        if ($performerParleyed && ! $performer->Engaged && $recruitType == Game::NORMAL_RECRUIT_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId);
             $this->theah->eventCheck($engageEvent);

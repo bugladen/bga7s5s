@@ -415,3 +415,24 @@ Composition of Leader-trait performer + En Garde precondition + character-count 
 
 References: `_04057` / `Action_04057` / `State_highDramaPhase04057`; multi-Leader performer `Action_01072` / `Action_02014`; choose-stat UI `_03067`; off-auto-engage custom type `_04009` / `_04047`; character-count If shape A.8 / `Action_03067`.
 
+### Pattern B.12 — En Garde Action: recruit target available Mercenary • may parley without engaging
+
+Printed (Silver Tongue `_04059`): **`<b>En Garde Action:</b> If your performer is a non-<b>Hero</b> • They recruit target available <b>Mercenary</b> at their location, paying all costs. They may parley without engaging.`**
+
+Often composes with Pattern **E.2** (`"While your performer is a Merchant or Scoundrel, this card has -1 cost"` — Action-only discount; no invented Maneuver).
+
+Reuse the **shared Recruit Action pipeline** (Cirilo / Kaspar), do **not** invent a card-specific mercenary chooser + pay GameState trio:
+
+1. **`RiskAction`** + **`IAbilityThatTargetsCharacters`** / Risk **`IRiskThatTargetsCharacters`** (printed **"target"** Mercenary character). Cirilo historically used `IAbilityThatTargetsCards` — prefer Characters for Mercenary targets. **`RequiresPerformerSelected = true`**.
+2. **Performer filters:** En Garde (`!$Engaged` — precondition, not Engage cost) + **non-Hero** bullet-If (availability filter) + `cardInCity` + ≥1 **available Mercenary** at location (`!isControlled() && hasTrait("Mercenary")` — `$includeUncontrolled = true`).
+3. **`EventActionTriggered`:** `RECRUIT_TYPE = SILVER_TONGUE_RECRUIT_TYPE` (new global next to Cirilo/Kaspar) + `createTransitionEvent(..., "04059")` → **`HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE`** (not straight to choose-merc). **WHY PARLEYABLE:** Cirilo skips Parley because he already Engaged as Action cost; Silver Tongue needs Yes/No for the Influence discount.
+4. **Do not Engage on Parley:** in `actHighDramaRecruitActionMercenaryChosen`, engage only when `RECRUIT_TYPE == NORMAL` (Kaspar never sets `PERFORMER_PARLEYED`; Cirilo skips Parley). SILVER_TONGUE sets `PERFORMER_PARLEYED` via shared ParleyYes but must skip the engage branch — that is the printed **"without engaging"**.
+5. **Negotiable gate:** same as NORMAL — Parley Yes must not stick to `Negotiable=false` (chooser filter + act throw). Paying all costs = printed WealthCost (not Cirilo's forced 1).
+6. **Back UX:** Risk is already paid when ActionTriggered fires. Hide Back on Parley / choose-merc / pay for SILVER_TONGUE (Cirilo shape). Expose `recruitType` from `argsHighDramaRecruitActionParley`.
+7. **ActionResolved:** comes from `actHighDramaRecruitActionPayForMercenary` — Action file keeps Cirilo-style comment so RiskAction pre-commit is satisfied without double-resolve.
+8. **Wire** `"04059" => HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. JS: `SILVER_TONGUE_RECRUIT_TYPE = 3` in `seventhseacityoffivesails.js`.
+
+**Contrast:** Cirilo `_01009` = engage cost + skip Parley + cost 1 / lose Negotiable. Kaspar `_01035` = own parley state + "parley even while engaged" (lifts Engaged gate, still no engage-on-parley because already engaged). Basic Recruit = Parley engages.
+
+References: `_04059` / `Action_04059`; Cirilo `Action_01009` + `"01009"` → choose-merc; Kaspar `Action_01035` Parley-without-engage-consequence; E.2 discount `Action_04018` / `Action_04030`.
+
