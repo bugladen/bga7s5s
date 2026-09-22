@@ -1744,7 +1744,12 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     margin: 0;
 }
 
-/* WHY: Influence sprite is wider/optical-center differs from Combat/Finesse in the circle. */
+/* WHY: Influence/Finesse sprites optical-center differ from Combat in the circle. */
+._7sfs-challenge-stat-chip > ._7sfs-card-finesse-image {
+    position: relative;
+    left: -1px;
+}
+
 ._7sfs-challenge-stat-chip > ._7sfs-card-influence-image {
     position: relative;
     left: -2px;

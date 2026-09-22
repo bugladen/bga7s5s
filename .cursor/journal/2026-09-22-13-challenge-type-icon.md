@@ -21,3 +21,4 @@ User: place challenge stat left of conditions + white circle behind. Done via ne
 Then nudged 5px closer to conditions → left:55px.
 Background → light grey (#d3d3d3) + 2px #888 border.
 Influence icon: left -3px inside circle (wider sprite optical center).
+Finesse icon: left -1px inside circle.
