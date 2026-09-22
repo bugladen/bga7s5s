@@ -88,7 +88,7 @@ class Reaction_NNNNN extends AttachmentReaction
 
 `CardReaction::setUsed` resets at dusk automatically (via `EventDuskEndOfDay`).
 
-References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047` (hard cancel Technique), `Reaction_01146b` (hard cancel Maneuver or Technique on a Scheme), `Reaction_01181` (cancel + re-queue pattern), `Reaction_03044` (cancel unless discard).
+References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047` (hard cancel Technique), `Reaction_01146b` (hard cancel Maneuver or Technique on a Scheme), `Reaction_01181` (cancel + re-queue pattern), `Reaction_03044` (cancel unless discard), `Reaction_04053` (ignore opponent-ability wound).
 
 ### Engage as a cost — gate the trigger on `! $owner->Engaged`
 
@@ -191,6 +191,61 @@ No GameState / JS — standard `playerReaction` buttons (Fail Pressure / Pass).
 **Risk vs Attachment footgun:** copying Objection wholesale into an AttachmentReaction leaves a dead pay-state path and never engages the card. Copy the *pressure math* (Pressured + delete + failed Result); replace the *cost plumbing* with engage.
 
 References: `Reaction_04026` (attachment), `Reaction_01027` (Risk sibling — pressure math only).
+
+### Ignore wound from an opponent's ability — Leather Spaulders `_04053` / Cascade `_02059`
+
+Printed (attachment): "When an opponent's ability would wound the equipped character, engage this card • Ignore that wound. *(The wound is not taken.)*"
+
+Printed (Risk sibling Cascade): "When an opponent's ability wounds your character • Ignore that wound."
+
+**Do not route attachment versions through Cascade's wealth-pay path.** Cascade is a `RiskReaction`: `performReaction` → entering-pay / `EventRiskReactionTriggered` applies the ignore after payment. Attachment cost is **engage this card** — engage + drop the saved wound in `performReaction` directly. No pay state, no `EventRiskReactionTriggered`.
+
+**Cancel-first on `EventCharacterBeingWounded`** (same bones as Cascade / Sorte Deck `Reaction_01181`):
+
+```php
+if (! ($event instanceof EventCharacterBeingWounded) || $event->canceled) return;
+if (! $this->isAvailable()) return;
+if (! $this->ownerIsAttached($event->theah)) return;
+if ($this->savedWoundEvent !== null) return;  // one pending offer
+
+$owner = $this->getOwningAttachment($event->theah);
+if ($owner === null || $owner->Engaged) return;  // engage cost
+
+if ($this->skipNextEvent) { /* clear flag; return */ }
+
+$owningCharacter = $this->getOwningCharacter($event->theah);
+// Attachment: only the equipped host. Cascade (Risk) allows any controlled character.
+if ($owningCharacter === null || $event->characterId != $owningCharacter->Id) return;
+
+// Opponent's ability — empty abilityId = non-ability wound (e.g. duel threat resolve)
+if ($event->abilityId === '') return;
+$source = $event->theah->getCardById($event->sourceId);
+if ($source === null) return;
+$ability = $source->getAbilityById($event->abilityId);
+if ($ability === null) return;
+$abilityOwner = $ability->getOwningCard($event->theah);
+if ($abilityOwner === null || $abilityOwner->ControllerId == $owner->ControllerId) return;
+
+$this->savedWoundEvent = clone $event;
+unset($this->savedWoundEvent->theah);
+$event->canceled = true;
+$owner->IsUpdated = true;
+
+$transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+$event->theah->queueEvent($transition);
+```
+
+**On Ignore in `performReaction`:** `createCardEngagedEvent` → notify → `$this->savedWoundEvent = null` (do **not** re-queue) → `setUsed`.
+
+**On Pass:** re-queue `$this->savedWoundEvent`, set `$this->skipNextEvent = true` so the re-queued BeingWounded does not re-offer, clear the saved field.
+
+**No `HIGH_PRIORITY`:** the wound is canceled immediately on the BeingWounded event (unlike Technique cancel / pressure-fail, where Resolve / Result events are still queued). Default reaction priority matches Cascade.
+
+**Risk vs Attachment footgun:** copying Cascade wholesale into an AttachmentReaction leaves a dead pay-state path and never engages the card. Copy the *cancel / clone / opponent-ability gates*; replace the *cost plumbing* with engage. Sorte Deck `Reaction_01181` is the Attachment cancel+re-queue sibling (heal, not ignore) — reuse its `skipNextEvent` / clone shape, not its heal effect.
+
+**Known limit (do not invent a queue):** while `$savedWoundEvent !== null`, a second BeingWounded for the same host slips through uncanceled — same as Cascade. Rare; leave unless Rules ask for a queue.
+
+References: `Reaction_04053` (attachment), `Reaction_02059` (Risk sibling — opponent-ability + cancel/clone only), `Reaction_01181` (Attachment cancel+re-queue bones).
 
 ### Self-equip Reaction ("After a Hunter or Berserker equips this card • …")
 

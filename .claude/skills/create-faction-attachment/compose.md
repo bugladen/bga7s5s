@@ -37,3 +37,5 @@ The framework hydrates each ability separately. No cross-talk needed between the
 **Diplomat equip + pressure-fail Reaction + engage +1 Parry Technique:** `_04026` (Pompon) hosts Pattern A Diplomat dual-gate, `Reaction_04026` (Objection pressure math + engage cost + "at this location"), and `Technique_04026` (engage + Parry — same availability as `04017` engage half, no picker). No cross-talk; no GameState.
 
 **Academic equip + two City Actions:** `_04036` (Ciphered Tome) hosts Pattern A Academic dual-gate, `Action_04036a` (renown relocate from host location — dest picker, `_04034` batch), and `Action_04036b` (move performer to a slot with strictly more Renown). No cross-talk. Separate GameStates because dest filters and resolve differ. Both "Engage this card" — `$attachment->Engaged` is the only shared gate. Home omitted on b: no Renown track, filter cannot match.
+
+**Finesse-threshold equip + ignore-wound Reaction:** `_04053` (Leather Spaulders) hosts Pattern A `ModifiedFinesse >= 2` dual-gate and `Reaction_04053` (Cascade ignore-wound gates + engage cost). No Technique/Action; no GameState. Same Risk→Attachment cost swap shape as Pompon vs Objection.

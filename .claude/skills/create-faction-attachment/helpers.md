@@ -31,6 +31,8 @@
 - **"If your participant is a \<Trait\>…"** inside Technique/Action text ≠ availability / Pattern A. Resolve-time effect gate only (`Technique_04017`). Unconditional halves still fire for other hosts.
 - **Passive "when … gambles, reveal an additional card"** ≠ **Gambling Technique** keyword. Former = B''' override; latter = `DUEL_GAMBLED` availability (`_04017` has both shapes on one card — do not conflate).
 - **"Pressure fails instead" (difference ≤1)** ≠ Risk Objection pay path. Attachment versions engage in `performReaction` and rebuild a failed Result — do not `ICancelReaction` / `EventRiskReactionTriggered` (`Reaction_04026` vs `Reaction_01027`).
+- **"Ignore that wound" from an opponent's ability** ≠ Cascade pay path. Attachment versions cancel-first `EventCharacterBeingWounded`, engage in `performReaction`, and drop the saved clone — do not copy `Reaction_02059`'s entering-pay / `EventRiskReactionTriggered` (`Reaction_04053` vs Cascade). Target is the **equipped** character only (Cascade allows any controlled character).
+- **Stat-threshold equip** ("N[Finesse] or more") ≠ trait equip and ≠ Shackles ally-compare. Dual-gate `Modified* >= N` (`_04053`).
 
 **`EventAttachmentUnequipped` + `AttachedToId`:** EventHub clears `$attachment->AttachedToId = 0` **before** card `handleEvent` (event does not set `runEventHubAfterCards`). Any unequip cleanup that needs the former host must use `$event->characterId` (Pattern B trait remove, B'' condition clear, B''' bonus undo — `_04006`).
 
