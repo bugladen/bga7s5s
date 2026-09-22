@@ -36,7 +36,8 @@ WHY compare to `$action->getOwningCard()->ControllerId` instead of performer: th
 
 - Action_01154 / 01106 / 01124: pass `$card->Id` into createEnteringPayStateEvent; WHY comments left in place
 - Reaction_01116b + Reaction_03013: controller check via action owner
+- **bas branch:** Action_04cd01b (Improvising-style city attachment) had the same `$riskCard->Id` bug — fixed to `$card->Id`. No bas discount reaction twin of 01116b/03013 to update. `_04cd01_RiskClone` already uses RiskClonePropertyTrait.
 
 ## Not finished / watch
 
-If someone “fixes” the clone pay events back to `$riskCard->Id` thinking “we’re recovering that card,” they’ll re-break every DiscountedCardId matcher. The clone is what lives in hand and owns the action.
+If someone “fixes” the clone pay events back to `$riskCard->Id` thinking “we’re recovering that card,” they’ll re-break every DiscountedCardId matcher. The clone is what lives in hand and owns the action. Any new RiskClone action (05*, etc.) must pass the hand clone id into `createEnteringPayStateEvent`.

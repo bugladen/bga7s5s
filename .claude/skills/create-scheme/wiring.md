@@ -92,14 +92,16 @@ For additional steps, append `2`, `3`, etc. (`26030302`, `28030412`, `4030292`).
 | When the pick happens | Transition map |
 |---|---|
 | During scheme resolve | `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions` |
-| During Forced at Planning End | `PLANNING_PHASE_END_EVENTS.transitions` |
+| During Forced **or Reaction follow-on** at Planning End | `PLANNING_PHASE_END_EVENTS.transitions` |
 | During High Drama action | `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions` |
 
 ```php
-"NNNNN" => States::PLANNING_PHASE_END_<NNNNN>,   // example: Forced end pick
+"NNNNN" => States::PLANNING_PHASE_END_<NNNNN>,   // Forced end pick OR Reaction look/draw pick
 ```
 
 The transition key (`"NNNNN"`) is the string you pass as the third arg of `EventFactory::createTransitionEvent(...)`. It's looked up against the map for the events state that is currently running.
+
+**Reaction follow-on picks:** pass the **reaction Id as the 4th arg** (`createTransitionEvent($playerId, $owner->Id, "NNNNN", $this->Id)`) so `actFromCardWithIds` / `argsFromCard` route to `actFromReactionWithIds` / `getArgsFromReaction`. Resolve picks on the scheme omit the 4th arg (or pass `""`). Same `"NNNNN"` key may appear on both resolve and Planning-End maps — intentional (`_01098`, `_04025`).
 
 ## JS Wiring
 
@@ -111,10 +113,10 @@ For every new player-choice sub-state, wire all three of:
 
 State name prefixes:
 - Resolve picks → `planningPhaseResolveSchemes_<NNNNN>`
-- Planning-End Forced picks → `planningPhaseEnd_<NNNNN>`
+- Planning-End Forced **or Reaction** picks → `planningPhaseEnd_<NNNNN>`
 - High Drama action picks → `highDramaPhase<NNNNN>`
 
-Hand multi-discard also needs an `EventHandlers.js` entry so the Confirm button enables/disables on selection change.
+Hand multi-discard also needs an `EventHandlers.js` entry so the Confirm button enables/disables on selection change. Private look multi-select (draw N of looked cards) likewise needs `EventHandlers.js` exact-count enable on `chooseList` + Confirm → `onMultipleChooseListCardsConfirmed`.
 
 ### Discard-pile chooser (trait-filtered)
 
@@ -199,6 +201,83 @@ Cleanup:
 ```
 
 Reference: `_01071`, `_01072`, `_02046`.
+
+### Opponent button pick (resolve or Planning End)
+
+No OnEntering chooser — buttons only. Args expose `opponents: [{id, name}, …]`.
+
+```js
+// OnUpdateActionButtons — note args.args (not args.args.args)
+'planningPhaseResolveSchemes_<NNNNN>': () => {
+    args.args.opponents.forEach((opponent) => {
+        this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
+    });
+},
+```
+
+Server: `actFromCardWithId` validates ≠ self, persists if needed, queues `createTransitionEvent($opponentId, $this->Id, "NNNNN_2")` when the opponent must act next.
+
+Reference: `_02025_2` / `_04051` resolve; Planning-End sibling `_01098`.
+
+### Character-then-City-location resolve (planning)
+
+Two states. State 1 highlights in-play characters (`ids` from args); Confirm → `onChooseInPlayCardConfirmed` → `actFromCardWithId`. State 2 is a filtered city-location chooser (`locationIds`) with Back.
+
+```js
+'planningPhaseResolveSchemes_<NNNNN>': () => {
+    if (this.isCurrentPlayerActive()) {
+        this.numberOfCardsSelectable = 1;
+        this.clientStateArgs.ids = args.args.args.ids;
+        this.highlightCardsAsSelectable(args.args.args.ids);
+    }
+},
+
+'planningPhaseResolveSchemes_<NNNNN>_2': () => {
+    if (this.isCurrentPlayerActive()) {
+        this.numberOfCityLocationsSelectable = 1;
+        (args.args.args.locationIds || []).forEach((locationId) => {
+            this.makeCityLocationSelectable(this.getCityLocationElement(locationId));
+        });
+        if (args.args.args.characterId) {
+            this.highlightCharacterChosen(args.args.args.characterId);
+            this.clientStateArgs.characterId = args.args.args.characterId;
+        }
+    }
+},
+```
+
+Buttons: state 1 Confirm only; state 2 Back + Confirm Location (`onCityLocationsSelected` → default `actFromCardWithLocations`). Leave: unhighlight cards / `resetCityLocations` + unhighlight character.
+
+**Server:** state 2 success transition must be named (`"locationChosen"`) when `"back"` / `"zombie"` exist — see helpers.md / `_04004`.
+
+Reference: `_04004` bas JS triple.
+
+### Add Renown / optional Move Instead (fewest-gated)
+
+Same city-location chooser as above for state 1. Conditional move button + Pass map:
+
+```js
+// OnUpdateActionButtons — note args.args (not args.args.args)
+'planningPhaseResolveSchemes_<NNNNN>': () => {
+    this.addActionButton(`actCityLocationsSelected`, _('Confirm Location'), () => this.onCityLocationsSelected());
+    if (args.args && args.args.canMoveRenown) {
+        this.statusBar.addActionButton(_('Move a Renown Instead'), () => this.onPass(), { id: 'actPass', color: 'alert' });
+    }
+    dojo.addClass('actCityLocationsSelected', 'disabled');
+},
+```
+
+**Also** add to `PlayerActions.js` `onPass` / `actionArray`:
+
+```js
+'planningPhaseResolveSchemes_<NNNNN>': 'actFromCardPass',
+```
+
+States 2–3: `locationIds` from args + Back + Confirm. Leave: `resetCityLocations`.
+
+**Args nest reminder:** OnEnteringState uses `args.args.args.canMoveRenown` / `locationIds`; OnUpdateActionButtons uses `args.args.canMoveRenown`. See helpers.md.
+
+Reference: `_04034` bas JS; `_01152` for the always-offer-move sibling.
 
 ### Multi-card hand discard (Planning End Forced / draw-then-discard)
 

@@ -133,7 +133,7 @@ Full implementation: `modules/php/cards/faf/_03054.php`, `modules/php/cards/faf/
 
 Card text:
 
-> Add a Renown to [City Forum] and [City Docks].
+> Add a Renown to [City Forum] and [The City Docks].
 > **Villain City Action:** Wound your performer • Muster one of your non-**Undead**, non-**Mercenary** characters from **The Locker** at this location. They gain **Monster** and **Undead**. At the end of Dusk, send them to **The Locker**.
 
 1. **Constructor.** Neutral faction. Verify Traits against art (scaffold had Virtue — art is Villainous–Pact). Register `IHasActions` + `Action_03062`.
@@ -149,7 +149,7 @@ Full implementation: `modules/php/cards/faf/_03062.php`, `modules/php/cards/faf/
 
 Card text:
 
-> Add a Renown to [The Grand Bazaar] and [City Docks].
+> Add a Renown to [The Grand Bazaar] and [The City Docks].
 > When an opponent equips a card to a character opposing your **Scoundrel**, it gains +1 cost.
 > **Scoundrel City Action:** Move a Renown or an available attachment from your performer's location to a different **City** location.
 
@@ -162,3 +162,108 @@ Card text:
 7. **Pre-commit.** `createActionResolvedEvent()`; no `ISorcererAbility`. After Write tool, verify single CRLF (`doubleCR=0`).
 
 Full implementation: `modules/php/cards/faf/_03063.php`, `modules/php/cards/faf/actions/Action_03063.php`, `modules/php/States/faf/State_highDramaPhase03063{,_2}.php`.
+
+## Walkthrough: implementing `_04004` (Blood Money)
+
+Card text:
+
+> Add a Renown to [The City Docks] and [The Grand Bazaar].
+> Then, move your **Duelist** to a **City** location.
+> **Duelist City Action:** Move your performer to a location with a wounded enemy.
+> **Duelist Reaction:** When an opposing character is destroyed • Draw a card.
+
+1. **Constructor.** `initializeFaction('Vodacce')`. **Verify Initiative against art** (scaffold had 64 — sun icon is 8). Panache 0. Traits Assassination + Fortune — add `Assassination` to `TraitNames` if missing. Register `IHasActions` + `IHasReactions` + `Action_04004` + `Reaction_04004`.
+2. **Resolve.** Queue Renown to Docks + Bazaar. Collect eligible Duelists (in play, has ≥1 other City dest). If none: notify and stop. Else `createTransitionEvent(..., "04004")` at `MEDIUM_PRIORITY`.
+3. **Planning states.** `PLANNING_PHASE_RESOLVE_SCHEMES_04004 = 2604004` (pick Duelist → `CHOSEN_CARD` → `"duelistChosen"`); `_2 = 26040042` (pick City → move `engage=false` → `"locationChosen"`). State 2 must **not** use `""` alongside `"back"`/`"zombie"`.
+4. **City Action.** Duelist performers with ≥1 destination City that has an opposing wounded character. One HD state (`404004`); same transition key `"04004"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` (distinct from planning map). Named `"locationChosen"`.
+5. **Reaction.** `EventCharacterDestroyed`: enemy + controlled Duelist at `$destroyed->Location` (opposing = same location). Draw + Pass; `setUsed` only on draw.
+6. **JS (bas).** Planning: character highlight / city locations + Back. HD: city locations from `locationIds` + performer highlight.
+7. **Studio bug hit:** `nextState("")` on state 2 → "More than one possible transition". Fix: `"locationChosen"`.
+
+Full implementation: `modules/php/cards/bas/_04004.php`, `actions/Action_04004.php`, `reactions/Reaction_04004.php`, `States/bas/State_planningPhaseResolveSchemes04004{,_2}.php`, `State_highDramaPhase04004.php`.
+
+## Walkthrough: implementing `_04005` (Denounced, Disgraced)
+
+Card text:
+
+> Add a Renown to [The City Docks].
+> **Red Hand City Action:** Destroy another character you control at your performer's location • Claim this location. Each player discards a card.
+
+1. **Constructor.** Vodacce, Init 35 / Panache 0 (match art). Traits Villainous + Purge — add `Purge` to `TraitNames` if missing. Register `IHasActions` + `Action_04005`.
+2. **Resolve.** Trivial Docks Renown. No planning sub-state.
+3. **Action (Pattern L).** `SchemeCityAction` + `IAbilityThatTargetsCharacters`. Red Hand trait gate (not Sorcerer). `getPerformersForAction`: Red Hand + ≥1 other controlled character at location + claimable location.
+4. **HD state 1 (`404005`).** Destroy-target pick. Unequip + `createCharacterDestroyedEvent` on **target** (not performer — contrast `Action_01015`). Claim (recheck; notify if blocked). Queue `createActionResolvedEvent` then Transition `"04005_2"` only if someone has a hand card.
+5. **Back on state 1.** `"back" => HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH` (re-queues Triggered). Do **not** use bare `CHOOSE_PERFORMER` — second performer pick would silently end the action.
+6. **HD state 2 (`4040052`, MULTIPLE_ACTIVE_PLAYER).** Each player with a hand card discards one. Custom `onEnteringState` with `getGameDeckObject` hand filter — include acting player; not sans-initiating. `getCurrentPlayerId` on discard. JS: hand single-select + EventHandlers Confirm enable (mirror `01095`).
+7. **Pre-commit.** `createActionResolvedEvent()` literal; no `ISorcererAbility`. Named transitions (`characterChosen` / `back` / `zombie` / `multipleOk`).
+
+Full implementation: `modules/php/cards/bas/_04005.php`, `actions/Action_04005.php`, `States/bas/State_highDramaPhase04005{,_2}.php`.
+
+## Walkthrough: implementing `_04014` (Forged for Battle)
+
+Card text:
+
+> Add a Renown to [City Docks] and another location.
+> When your character issues a challenge or intervenes, you may engage a **Weapon** or **Armor** equipped to them. If you do, they gain +1[Finesse] for the duration of the action.
+> *(Can be used any number of times per day, and once per challenge or intervention.)*
+
+1. **Constructor.** Eisen, Init 45 / Panache 0 (match art). Traits Zeal + Prepared (already in `TraitNames`). Register `IHasReactions` + `Reaction_04014`.
+2. **Resolve.** Queue Renown to Docks. `createTransitionEvent(..., "04014")` at `MEDIUM_PRIORITY` into one pick state. `locationIds` = city names **except** Docks. Do **not** use `actCityLocationsForReknownSelected`.
+3. **Planning state.** `PLANNING_PHASE_RESOLVE_SCHEMES_04014 = 2604014`. `actFromCardWithLocations` → scheme `actFromCardWithIds`. Single `""` transition back to EVENTS.
+4. **Reaction (Continuous).** Listen on `EventChallengeIssued` (your challenger) and `EventCharacterIntervened` (your intervener). Offer only if ≥1 unengaged non-Fake Weapon/Armor. Buttons per attachment + Pass. Engage + Finesse +1 + stamp `FORGED_FOR_BATTLE_CONDITION` (Soline Started/Ended notifs + JS constant). Track `$buffedCharacterId`.
+5. **Clear buff.** `EventActionResolved` when `!IN_DUEL` (WHY: mid-duel ActionResolved must not wipe gambling Finesse — `Action_04009`). Dusk safety. Destroy of buffed id drops tracker only.
+6. **Continuous discipline.** No runtime `setUsed(true)`; comment has `$this->setUsed(` for pre-commit. Once-per-challenge = one transition per event.
+7. **JS (bas).** Planning: `locationIds` selectable + Confirm Location; leave `resetCityLocations`. No `PlayerActions.js` map entry.
+
+Full implementation: `modules/php/cards/bas/_04014.php`, `reactions/Reaction_04014.php`, `States/bas/State_planningPhaseResolveSchemes04014.php`.
+
+## Walkthrough: implementing `_04015` (Through Thick and Thin)
+
+Card text:
+
+> Add a Renown to two different locations.
+> **Action:** Target an uncontrolled **City** location • Move your Kaspar Dietrich and your Daniella Dietrich there and they each heal a wound. Then you may discard an available City Card from that location.
+> *(You must complete as much of an effect as possible.)*
+
+1. **Constructor.** Eisen, Init 4 / Panache +1 (match art). Traits Camaraderie + Duty (already in `TraitNames`). Register `IHasActions` + `Action_04015`.
+2. **Resolve.** Two-different-locations pick — `actCityLocationsForReknownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap** entry. Planning state `2604015`.
+3. **Action base.** Printed keyword is **Action:** not City Action → `SchemeAction`, `RequiresPerformerSelected = false`. Do **not** extend `SchemeCityAction` (city-character availability gate).
+4. **Availability.** ≥1 controlled character whose `Name` is Kaspar or Daniella Dietrich **and** ≥1 city location with `Controller == 0`.
+5. **Name matching.** Kaspar exists as `_01035` and `_03014`; Daniella as `_01036` and `_03013`. Match `Name === clienttranslate('…')`, not CardNumber.
+6. **HD state 1 (`404015`).** Uncontrolled location pick. Stash `CHOSEN_LOCATION`. For each found Dietrich (Kaspar first, then Daniella): move if elsewhere (`engage=false`); heal 1 if `Wounds > 0`. Skip missing names (complete-as-much-as-possible).
+7. **HD state 2 (`4040152`) — optional.** If ≥1 available City Card at the location (`ICityDeckCard` + uncontrolled + `canBeDiscardedFromCity`), Transition `"04015_2"` with Confirm + Pass. Else `createActionResolvedEvent` immediately. On discard/pass, then ActionResolved. Named transitions (`locationChosen` / `cardDiscarded` / `pass` / `zombie`).
+8. **JS (bas).** Planning: two-location + actionMap. HD1: `locationIds` selectable. HD2: highlight `ids` + Confirm + Pass.
+
+Full implementation: `modules/php/cards/bas/_04015.php`, `actions/Action_04015.php`, `States/bas/State_planningPhaseResolveSchemes04015.php`, `State_highDramaPhase04015{,_2}.php`.
+
+## Walkthrough: implementing `_04044` (Adrift in the Wind)
+
+Card text:
+
+> Add a Renown to two different locations.
+> While your **Leader** is at an uncontrolled location, they gain +1[Finesse].
+> **Leader Reaction:** When your performer issues a challenge • Their location becomes uncontrolled.
+
+1. **Constructor.** Ussura, Init 65 / Panache 0 (match art). Traits Brawl + Relentless. **Fix Name from art** — scaffold said "Shallow Harbor"; title band is Adrift in the Wind. Register `IHasReactions` + `Reaction_04044`.
+2. **Resolve.** Same as `_04015`: notify + `createTransitionEvent(..., "04044")` + `actCityLocationsForReknownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap**. Constant `2604044`.
+3. **Passive (on the scheme).** `isSchemeInPlay` = `LOCATION_PLAYER_HOME`. Uncontrolled = `locationInCity` + `Controller == 0` (Home never). Recompute on ResolveScheme (scheme already Home from Approach), Leader `EventCardMoved` (**`$event->toLocation`** — Location still old), Claim/Uncontrolled at Leader's location (hub-first — Controller already updated). Clear on scheme `EventCardSentToLocker`. `createCharacterFinesseModifedEvent` ±1 + `ADRIFT_IN_THE_WIND_CONDITION` + Started/Ended notifs (`hasCondition` idempotent). Wire `Game.php` / `seventhseacityoffivesails.js` / `Notifications.js`.
+4. **Reaction.** `EventChallengeIssued` + challenger owned + `hasTrait("Leader")` + `Controller != 0` + `canLocationBecomeUncontrolledBy`. Capture location; Use/Pass; Pass without `setUsed`. Resolve → `createLocationBecomesUncontrolledEvent`. Synergy with the passive is intentional.
+
+Full implementation: `modules/php/cards/bas/_04044.php`, `reactions/Reaction_04044.php`, `States/bas/State_planningPhaseResolveSchemes04044.php`.
+
+## Walkthrough: implementing `_04045` (Stand Your Ground)
+
+Card text:
+
+> Add a Renown to [The City Docks] or [The Grand Bazaar].
+> **En Garde Duelist Action:** Your performer issues an unrefusable [Combat] challenge to target opposing character. When accepted, your participant gains a threat. If your adversary is destroyed during the duel, gain a Renown. *(Intervening accepts the challenge)*
+
+1. **Constructor.** Ussura, Init 81 / Panache -1 (match art). Traits Challenge + Relentless. Register `IHasActions` + `Action_04045`.
+2. **Resolve.** One planning pick: `locationIds` = Docks and Bazaar from `getCityLocations()`. `actFromCardWithLocations`. Constant `2604045`. JS like `_04014` (`locationIds`, not two-different actionMap).
+3. **Action.** `SchemeCityAction` + `IAbilityThatTargetsCharacters`. En Garde = `!$Engaged` (no Engage). Duelist trait. Full legality includes opposing at location.
+4. **Challenge type `STAND_YOUR_GROUND_CHALLENGE_TYPE = 29`.** Off `stIssueChallenge` auto-engage **and** Unsanctioned `stSetupChallenge` engage. `"04045"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. Matching JS int.
+5. **Unrefusable.** `actHighDramaChallengeActionReject` throw; JS disable Refuse; ZombieTrait Accept (not default Reject). Intervene stays legal.
+6. **Accept-time threat.** `EventGenerateChallengeThreat` → `actorThreat += 1` only if this scheme's owner controls the challenger (`$event->actorId`). Do not persist `$IssuedThisChallenge`.
+7. **Destroy during duel.** `EventCharacterDestroyed` only if **this** scheme's owner is the duel challenger and the **defender** died. Mirror match: the opponent's Stand Your Ground does not pay. `createPlayerGainsReknownEvent` (score).
+
+Full implementation: `modules/php/cards/bas/_04045.php`, `actions/Action_04045.php`, `States/bas/State_planningPhaseResolveSchemes04045.php`.

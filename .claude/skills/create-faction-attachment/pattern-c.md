@@ -119,6 +119,51 @@ if (locationId == this.LOCATION_PLAYER_HOME) {
 
 Do **not** copy bare `03032` / `03045` enter handlers for Home-capable actions — those PHP lists can include Home while their JS only calls `makeCityLocationSelectable` (Home never becomes selectable).
 
+**Home has no Renown track.** `getCityLocation(LOCATION_PLAYER_HOME)` throws. Treat Home Renown as 0. A "more Renown than current" filter can never match Home (city slots are `>= 0`). Omit Home from that dest list even when the printed text says "a location" rather than "City location". JS then stays city-only (`highDramaPhase04cd01`), not the Home-capable `03055` handler. See `Action_04036b`.
+
+### Two printed Actions on one attachment
+
+Name them `Action_NNNNNa` / `Action_NNNNNb` (mirror `_03038`, `_04cd01` / `04cd01b`). Host both on `$this->Actions`. Give each its own HD GameState + `"NNNNNa"` / `"NNNNNb"` transition when dest filters or resolve effects differ — a shared picker hides which effect is resolving.
+
+State ids follow `03038`: `HIGH_DRAMA_PLAYER_TURN_04036a = 4040361`, `…04036b = 4040362`. Register only on `HIGH_DRAMA_PLAYER_TURN_EVENTS` in `states.inc.php` plus the `States/<expansion>/State_highDramaPhaseNNNNN*.php` class. Do **not** add a parallel block in `states.7s5s.php` — that file is the old 7s5s array; GameState-class cards (`03055`, `04cd01`, `04034`, `_04036`) are not listed there.
+
+Both "Engage this card" Actions share `$attachment->Engaged`. Using one disables the other until dusk. Gate each on `!$attachment->Engaged` independently; do not invent extra cross-talk.
+
+### "Move a Renown from this location to another City location"
+
+Same choose-location wiring as `_03055`, but the picker is the **destination** and the **source is fixed** (`$owner->Location`). Availability: `cardInCity` + `!$attachment->Engaged` + current City slot `Renown > 0` + at least one other City dest.
+
+Do **not** copy `Action_01007` (Aldo Bussotti): that action picks the *from*-location (a location you control) and dumps Renown onto the performer. "From this location" has no source picker.
+
+Resolve on location confirm (engage with the effect, not on `EventActionTriggered`):
+
+```php
+$batchId = $game->getNextEventBatchId();
+
+$movingEvent = EventFactory::createRenownMovingBetweenLocationsEvent(
+    $attachment->ControllerId, $fromLocation, $toLocation, 1, $attachment->getInjectCode()
+);
+$movingEvent->batchId = $batchId;
+
+$removeEvent = EventFactory::createRenownRemovedFromLocationEvent(
+    $attachment->ControllerId, $fromLocation, 1, $attachment->getInjectCode()
+);
+$removeEvent->batchId = $batchId;
+
+$addEvent = EventFactory::createRenownAddedToLocationEvent(
+    $attachment->ControllerId, $toLocation, 1, $attachment->getInjectCode(), $isMove = true
+);
+$addEvent->batchId = $batchId;
+```
+
+WHY the three-event batch: Moving is the animation/intent; Removed + Added mutate the slots; `isMove=true` on Added keeps the UI from treating it as a fresh place. Shared `batchId` plays them as one relocate (`_04034`, `Action_01007`, `Action_04036a`). Literal "City location" → no Home dest.
+
+### "Move your performer to another location with more Renown"
+
+`_03055` choose-location + dest filter `$location->Renown > $currentRenown` (strictly greater; ties are invalid). Exclude `$performer->Location`. Pay engage on resolve; `createCardMovingEvent(..., engage=false)`.
+
+Home omitted — see "Home has no Renown track" above. City Action still requires the performer start in the city.
+
 ### Available vs equipped attachments at a location
 
 Parenthetical "(The Artifact may be available or equipped.)" means check **both**:
@@ -156,4 +201,4 @@ Same hazard for any "move to a location with Trait X" where the host card grants
 
 `Action_NNNNN extends AttachmentAction → CardAction` — the hook requires `createActionResolvedEvent()` somewhere in the class. Make sure it's queued at the end of effect resolution (after any state loops complete).
 
-References: `_01073` / `_01075` (City Action templates), `_03055` (engage-this-card + choose-location move), `_03065` (immediate-resolve sink + move Home), `_02047` (City Action + available attachments at location).
+References: `_01073` / `_01075` (City Action templates), `_03055` (engage-this-card + choose-location move), `_03065` (immediate-resolve sink + move Home), `_02047` (City Action + available attachments at location), `_04036` / `Action_04036a` / `Action_04036b` (Academic equip + two City Actions: renown relocate + move-to-more-Renown).

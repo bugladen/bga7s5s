@@ -120,6 +120,19 @@ public function actFromCardPass(Game $game, int $state, string $stateName, strin
 
 Reference: `_01044` (filter by `Attachment` instanceof), `_03005` (filter by trait list). Both throw if a card is available; both `nextState("")` on success.
 
+### Discard or Locker pick (contingent on controlling a Trait)
+
+When the scheme says **"If you control an Academic, put your non-Revelry risk from your discard or The Locker into your hand"**:
+
+1. Queue fixed Renown as usual.
+2. Gate the pick: `getCharactersInPlayByPlayerId` + `hasTrait(...)` **and** ≥1 eligible Risk in discard or locker (`instanceof Risk` + `!$card->hasTrait("Revelry")`).
+3. Only queue `createTransitionEvent` when both true — otherwise notify and stop (contingent If, same as contingent Then).
+4. `argsFromCard` exposes `ids` from both piles. JS: populate chooseList from `player.discard` **and** `player.locker` filtered by `ids` (coerce `Number` — locker muster `_03062`).
+5. On pick: branch remove event on `$card->Location` (`createCardRemovedFromPlayerDiscardPileEvent` vs `createCardRemovedFromLockerEvent`) then `createCardAddedToHandEvent`. Mirror `Reaction_04003a` discard-or-locker move.
+6. Pass throws while any eligible remain.
+
+Reference: `_04035`.
+
 ### Location-pick state
 
 When the player picks a city location, use `actFromCardWithIds` (plural — the framework hands locations in as a string array).
@@ -153,3 +166,97 @@ public function actFromCardWithIds(Game $game, int $state, string $stateName, st
 ```
 
 Reference: `_01071`, `_02014`, `_02046`, `_02052`.
+
+### ≤1 Renown location, then Renown elsewhere + claim lock
+
+When the scheme says **"Choose a location with one or less Renown. Add a Renown to a different location"** and below the rule **"The chosen location cannot be controlled"** (Motion to Delay):
+
+1. **State 1:** `locationIds` = city locs with `Renown <= 1`. Pass when none (`_01072` Pass-throw-if-eligible).
+2. On pick: persist `$ChosenLocation` on the scheme + `updateCardObjectInDb`; `theah->setLocationCanBeClaimed($loc, false)`; `eventCheck` on `EventLocationClaimed` for that name. Queue `"NNNNN_2"` at MEDIUM_PRIORITY → EVENTS (same multi-step as `_04051`).
+3. **State 2:** `locationIds` exclude `$ChosenLocation` → Renown add.
+4. On scheme `EventCardSentToLocker`: restore `setLocationCanBeClaimed(true)` and clear `$ChosenLocation` (Leshiye idiom). Scheme stays at **Home** — do **not** move it onto the city.
+5. Do **not** auto-unclaim if the location is already controlled.
+
+Reference: `_04052`; claim-lock sibling `_01126` (Leshiye moves onto the city).
+
+### Docks or Bazaar (two named locations)
+
+When the scheme says **"Add a Renown to [The City Docks] or [The Grand Bazaar]"**:
+
+1. `argsFromCard` / `locationIds` = those two names that exist in `getCityLocations()` (both are always in play, including 2p).
+2. `actFromCardWithLocations` / `actFromCardWithIds`. Re-validate membership.
+3. Do **not** use `actCityLocationsForReknownSelected` (that helper is N free city picks).
+4. JS: same as `_04014` (`locationIds` + Confirm Location).
+
+Reference: `_04045`.
+
+### Fixed location + pick another
+
+When the scheme says **"Add a Renown to [City Docks] and another location"** (one destination printed, one chosen):
+
+1. Queue `createRenownAddedToLocationEvent` for the **fixed** location first.
+2. Queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` into a single planning resolve state.
+3. `argsFromCard` / `locationIds` = city location names **excluding** the fixed one. Re-validate on `actFromCardWithIds`.
+4. Do **not** use `actCityLocationsForReknownSelected` / `numberOfCityLocationsSelectable = 2` — that helper assumes both picks are free and has no fixed destination. Confirm still goes through `onCityLocationsSelected` → default `actFromCardWithLocations` (no `PlayerActions.js` `actionMap` entry needed).
+5. JS: enter with `locationIds` from args + Confirm Location; leave `resetCityLocations`.
+
+Contrast Winter's Wind `_02046` (two sequential free picks, second optional Pass) and Blood Money `_04004` (two *fixed* Renown adds, no location pick for Renown).
+
+Reference: `_04014` / `State_planningPhaseResolveSchemes04014`.
+
+### City Card to fixed location + Renown to a different location
+
+When the scheme says **"Add a City Card to [The Grand Bazaar]. Then add a Renown to a different location"** (Midnight Shipment–style city card, then `_04014`-style Renown pick):
+
+1. `$cityCards = $game->getCardsOnTopOfCityDeck(1)`. If non-empty, queue `createCityCardAddedToLocationEvent((int)$cityCards[0]['id'], $fixed)`. **Cast id** — `getCardsOnTopOfCityDeck` returns raw deck rows (Penya / `_01149`).
+2. **Guard empty city deck+discard:** do not index `[0]` when count is 0 — notify and still offer the Then Renown pick. WHY: `_01149` indexes unsafely; empty-city edge should not soft-lock resolve.
+3. Queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` so the city-card event resolves before the pick state.
+4. Renown pick: `locationIds` **exclude** the fixed City Card destination. "Different" means ≠ that location even when no City Card was added.
+5. Same JS as fixed-Renown-and-another (`actFromCardWithLocations`, no `actionMap` entry).
+
+Reference: `_04025` (Bazaar + Renown elsewhere). City-card-only sibling: `_01149` (Renown + City Card to Docks, no pick).
+
+### Add Renown, or (if unique fewest) move adjacent instead
+
+When the scheme says **"Add a Renown to any location. If you have the fewest Renown, you may move a Renown to an adjacent location instead"** (Explosive Ultimatum):
+
+1. **Default path is always Add** — one planning resolve state with all city locations selectable; Confirm → `createRenownAddedToLocationEvent` → named `"renownPlaced"` → EVENTS.
+2. **Move-instead is optional and gated.** Offer "Move a Renown Instead" only when **both**:
+   - Player has **unique** fewest score Renown (`getPlayerReknown`; count of players at that score == 1). **Ties do not qualify** — Eddie / `_04034` (same discipline as Filling the Ranks `_01144` even when the card omits "(Fewest cannot tie.)").
+   - At least one city location has `Renown > 0` (nothing to move → no button; must add).
+3. Expose `canMoveRenown` from `argsFromCard`. Button calls `onPass()` → `actFromCardPass` — **add** `planningPhaseResolveSchemes_<NNNNN>` to `PlayerActions.js` `onPass` / `actionArray` map → `'actFromCardPass'` (same as `_01152`).
+4. **Three states** (GameState classes): (1) add-or-pass-to-move; (2) source location with Renown (`locationIds`); (3) adjacent dest via `getAdjacentCityLocations($from, false)`. Batch move events under one `batchId` (`createRenownMovingBetweenLocationsEvent` + remove + add(`isMove=true`)).
+5. Named transitions when `"pass"` / `"back"` / `"zombie"` siblings exist (`"renownPlaced"`, `"locationChosen"`, `"pass"`). Back from 2→1 and 3→2.
+6. Contrast `_01152` (Until Morale Improves): always offers move as the Pass alternative with no fewest gate. Contrast `_01144`: fewest unlocks a **second Add** to a different location, not a move.
+
+Reference: `_04034` / `State_planningPhaseResolveSchemes04034{,_2,_3}`.
+
+### Character-then-City-location resolve (move your \<Trait\>)
+
+When the scheme says **"Then, move your Duelist to a City location"** (or another trait) after automatic Renown:
+
+1. Queue fixed Renown events as usual.
+2. Collect eligible characters: `getCharactersInPlayByPlayerId` + `hasTrait(...)` + ≥1 City destination ≠ current location (Home Duelists qualify — any City is valid).
+3. **Only** queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` when the list is non-empty. Otherwise notify that there is no traited character to move and stop (contingent "Then").
+4. **State 1** (`PLANNING_PHASE_RESOLVE_SCHEMES_NNNNN`): highlight `ids` via `argsFromCard` / `actFromCardWithId`. Stash pick in `Game::CHOSEN_CARD`. Transition `"duelistChosen"` (or `"characterChosen"`) → state 2. Do **not** use `CHOSEN_PERFORMER` here — that global belongs to HD City Actions.
+5. **State 2** (`…_NNNNN_2`): `locationIds` from city locations excluding the chosen character's current location. `actFromCardWithLocations` → `actFromCardWithIds` on the scheme. `createCardMovingEvent(..., engage=false)` unless Engage is printed.
+6. **Named success** on state 2 (`"locationChosen"`) whenever `"back"` / `"zombie"` also exist — `nextState("")` throws "More than one possible transition" (same as Pattern G / `_03042`).
+7. JS: state 1 = `highlightCardsAsSelectable` + Confirm; state 2 = city locations + Back + Confirm; leave cleans highlights / `resetCityLocations`.
+
+Same card-number key `"NNNNN"` may also appear under `HIGH_DRAMA_PLAYER_TURN_EVENTS` for a City Action on the same scheme — distinct maps, intentional (see `_03030`, `_04004`).
+
+Reference: `_04004` / `State_planningPhaseResolveSchemes04004{,_2}`.
+
+### Choose opponent → they Renown → you Renown (different)
+
+When the scheme says **"Choose an opponent to add a Renown to any location. Then, add a Renown to a different location"** (A Shared Interest):
+
+1. **Three resolve states.** (1) Controller picks opponent — `args["opponents"]` button list (`actFromCardWithId`). (2) Transition to the **opponent** as active player (`createTransitionEvent($opponentId, $this->Id, "NNNNN_2")`) — they pick any city location for Renown. (3) Controller picks a **different** city location (`locationIds` exclude the opponent's pick).
+2. **"Any location" for Renown tokens** = city locations from `getCityLocations()` (same as `_01071` / `_02025` — notifies say "City Location" even when the card prints "any location").
+3. **Persist on the scheme** when later text needs "the chosen player": `public int $chosenOpponentId` + `$game->updateCardObjectInDb($this)`. Also stash `$firstRenownLocation` for the "different" gate. **Do not** use `Game::CHOSEN_OPPONENT` if Forced / another phase must read the pick — that global is only safe for the next resolve state.
+4. Clear temporary Renown-location stash after resolve state 3; keep `$chosenOpponentId` until Forced finishes (or clear on locker).
+5. JS: state 1 = opponent buttons only (no enter chooser); states 2–3 = `locationIds` + Confirm Location (`actFromCardWithLocations`).
+
+**Sibling — Tea and Cakes `_02025`:** you place first → pick opponent → opponent places (any city; **not** required different). Uses `Game::CHOSEN_OPPONENT` because nothing after resolve needs the pick. Inverse order of Shared Interest.
+
+Reference: `_04051` / `State_planningPhaseResolveSchemes04051{,_2,_3}`; sibling `_02025`.

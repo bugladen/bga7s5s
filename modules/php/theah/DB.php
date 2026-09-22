@@ -6,6 +6,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 
 /** @disregard */
 class DB
@@ -84,6 +86,90 @@ class DB
                 WHERE event_serialized LIKE '%EventRenownRemovedFromLocation%'
                   AND event_serialized LIKE '%batchId\";i:{$batchId};%'";
         $this->executeSql($sql);
+    }
+
+    // WHY: Greed `_04056` En Garde Reaction must reduce Collect amounts after pay, while
+    // Gains/Removed are already serialized in the queue (Plunder Take→Gains→Removed, or
+    // ability Collect's Gains after Removed). Mutating the queued row avoids "gains N then
+    // loses 1" notify noise and keeps Remaining Renown on the location without a put-back
+    // when Removed has not yet applied.
+    public function decrementFirstQueuedPlayerGainsReknown(int $playerId, int $delta = 1): bool
+    {
+        if ($playerId <= 0 || $delta <= 0)
+        {
+            return false;
+        }
+
+        $sql = "SELECT event_id, event_serialized FROM events
+                WHERE event_serialized LIKE '%EventPlayerGainsReknown%'
+                ORDER BY event_priority, event_id";
+        foreach ($this->getCollection($sql) as $row)
+        {
+            $event = $this->game->safeUnserialize($row['event_serialized']);
+            if ($event instanceof EventPlayerGainsReknown
+                && $event->playerId === $playerId
+                && $event->amount >= $delta)
+            {
+                $event->amount -= $delta;
+                $serialized = addslashes(serialize($event));
+                $this->executeSql("UPDATE events SET event_serialized = '{$serialized}' WHERE event_id = {$row['event_id']}");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function decrementFirstQueuedRenownRemovedFromLocation(string $location, int $delta = 1): bool
+    {
+        if ($location === '' || $delta <= 0)
+        {
+            return false;
+        }
+
+        $locationNeedle = addslashes($location);
+        $sql = "SELECT event_id, event_serialized FROM events
+                WHERE event_serialized LIKE '%EventRenownRemovedFromLocation%'
+                  AND event_serialized LIKE '%{$locationNeedle}%'
+                ORDER BY event_priority, event_id";
+        foreach ($this->getCollection($sql) as $row)
+        {
+            $event = $this->game->safeUnserialize($row['event_serialized']);
+            if ($event instanceof EventRenownRemovedFromLocation
+                && $event->location === $location
+                && $event->amount >= $delta)
+            {
+                $event->amount -= $delta;
+                $serialized = addslashes(serialize($event));
+                $this->executeSql("UPDATE events SET event_serialized = '{$serialized}' WHERE event_id = {$row['event_id']}");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasQueuedPlayerGainsReknownForPlayer(int $playerId): bool
+    {
+        if ($playerId <= 0)
+        {
+            return false;
+        }
+
+        $sql = "SELECT event_serialized FROM events
+                WHERE event_serialized LIKE '%EventPlayerGainsReknown%'";
+        foreach ($this->getCollection($sql) as $row)
+        {
+            $event = $this->game->safeUnserialize($row['event_serialized']);
+            if ($event instanceof EventPlayerGainsReknown
+                && $event->playerId === $playerId
+                && $event->amount > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function deleteManeuverEvents(string $maneuverId)

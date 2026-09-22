@@ -246,6 +246,62 @@ Destination may be **Home** when the Leader is Home — City Action only require
 
 Reference: `Action_03051`, skip sibling `Action_02007` / `Action_02040`, attachment-button sibling `Action_03038b_2` / `Action_01194`.
 
+### Move target Mercenary Home ("in play and not available")
+
+Printed: **City Action: Move target Mercenary at this location Home. *(The Mercenary must be in play and not available)***
+
+One-step Pattern C character picker (Makepeace `_01092` UX).
+
+| Printed phrase | Implementation |
+|---|---|
+| **target** | `implements IAbilityThatTargetsCharacters` + `isValidTargetForAbility` |
+| **Mercenary at this location** | `hasTrait("Mercenary")` + same `Location` as owner |
+| **in play and not available** | **`isControlled()`** — recruited/controlled. Uncontrolled city Mercenaries are "available" recruit fodder and are **not** legal targets. |
+| No "opposing" | Own Mercenaries at the location are legal — do not invent an enemy-controller gate |
+| Move Home, Engage not printed | `createCardMovingEvent(..., Game::LOCATION_PLAYER_HOME, $engage = false, …)` |
+
+```php
+private function getEligibleMercenaries(Theah $theah, Character $owner): array
+{
+    $characters = $theah->getCharactersAtLocation($owner->Location);
+    return array_values(array_filter(
+        $characters,
+        fn(Character $c) => $c->hasTrait("Mercenary") && $c->isControlled()
+    ));
+}
+```
+
+Availability: `cardInCity($owner)` + `count(getEligibleMercenaries) > 0`. Transition `"NNNNN"` → highlight `ids` + Confirm. Always `createActionResolvedEvent` after the move.
+
+Sibling: Makepeace `Action_01092` moves an **opposing engaged** character with ≤ Influence — same move-Home / Confirm shape, different eligibility filters.
+
+Reference: `Action_04011` Hans, `Action_01092` Makepeace.
+
+### En Garde Action: Artifact + move opposing engaged to uncontrolled
+
+Printed (Kaj `_04042` Relic Raider): **En Garde Action: If you control an Artifact at this location • Move target opposing engaged character to a City location you do not control.**
+
+**Do not confuse with city Kaj `_01180` (The Thorn)** — different card (City Action: reveal top 4 / equip Artifact). Faction Relic Raider has no printed Artifact equip discount unless the text says so.
+
+| Gate | Implementation |
+|---|---|
+| **En Garde** | `!$owner->Engaged` in `isAvailableToPlayer` — trichotomy (c); **no** `createCardEngagedEvent` |
+| **Control an Artifact at this location** | Your non-`FakeAttachment` Artifact on your characters at Owner's location (`ControllerId` match), **or** an available City Artifact you already control there. Uncontrolled available Artifacts do **not** count. Smuggled Item `_01187` is a valid Artifact. |
+| **Target opposing engaged** | `getOpposingCharactersAtLocation` + `$character->Engaged` (same as Makepeace) |
+| **City location you do not control** | `getControllerForLocation($name) != $playerId` (includes uncontrolled `0` and opponent). Exclude the target's current location (move no-op). Gate availability on `count(destinations) > 0` so the Action never opens with nowhere to send them. |
+| **Home / not in City** | Short-circuit: opposing-at-location is broken on shared `LOCATION_PLAYER_HOME` (Benci / Axelle). Require `cardInCity($owner)` for targets. |
+
+**Two-step UX:**
+
+1. Step 1 (`HIGH_DRAMA_PLAYER_TURN_NNNNN`): Makepeace-style highlight of valid engaged opposing ids + Confirm (`IAbilityThatTargetsCharacters`).
+2. Step 2 (`…_2`): city location highlight via `actFromCardWithLocations` → `actFromActionWithIds`. Move `engage=false` (En Garde was precondition only).
+
+**EVENTS wiring:** only `"NNNNN"` on `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Step 1 → step 2 via the state class's named `nextState("characterChosen")` — do **not** add `"NNNNN_2"` to the EVENTS lookup unless you `createTransitionEvent("NNNNN_2")`.
+
+**Playtest trap:** "I have an Artifact and an opposing character" is not enough — the opposing character must be **Engaged** (turned), and there must be another City location you do not control. Upright opponents correctly hide the Action.
+
+Reference: `Action_04042`; target sibling `Action_01092`; location-picker sibling Depose / Pattern C city-location picker; city-Kaj contrast `Action_01180`.
+
 ### City-location picker for CharacterActions — override `actFromActionWithIds`
 
 For step-N states where the player picks a city location (the JS submits via `onCityLocationsSelected → bgaPerformAction('actFromCardWithLocations', ...)`):
@@ -371,6 +427,45 @@ transitions: [
 
 When the zombie path is the only escape hatch besides the success path (typical for picker states), give both a name. Wilhelm's `State_highDramaPhase02013_2` gets away with the single-`""` form because it doesn't declare a separate zombie transition — its `zombie()` method calls `nextState()` (empty), which lands on `""`. If you want a distinct zombie path, you must name both.
 
+**Giacinto lesson (`04032_2`):** a choice state that both Passes and Reveals must **not** declare both `""` and `"pass"` to the same EVENTS destination — BGA throws "More than one possible transition" when `nextState("")` runs. Use a **single** `"" => EVENTS` (Crimson Roger `02036_2` shape) and queue the next step with `createTransitionEvent` before `nextState("")`. Do **not** add a sibling named transition on that state that also goes to EVENTS.
+
+### Reveal hand or Pass → Owner chooseList → discard or move both
+
+For **"En Garde City Action: Target an opposing character • Move <Owner> and that character to the same adjacent City unless their controller reveals their hand and discards a card."** (`Action_04032` Giacinto):
+
+Compose Crimson Roger `Action_02036a` (Reveal/Pass prevent move) + Depose `Action_04028` (move both to adjacent city).
+
+| Step | Who | What |
+|---|---|---|
+| `_` | Owner | Pick opposing character at Owner's location (`IAbilityThatTargetsCharacters`) |
+| `_2` | Target's controller | **Reveal Hand** or **Pass** (buttons only — do **not** pick the discard card yet) |
+| Pass path `_3` | Owner | Pick adjacent city via `getAdjacentCityLocations`; move both with `engage=false`, shared `batchId` |
+| Reveal path `_4` | **Owner** | Read-only `chooseList` of the revealed hand + Ok (ACTIVE_PLAYER) |
+| Bridge `_6` | game | `changeActivePlayer` → hand owner (01192_2 shape — not inside activeplayer `onEnteringState`) |
+| `_5` | Hand owner | Discard **one** of the revealed card ids (`REVEALED_CARDS` global + `factionHand` restricted select) |
+
+**En Garde** = `!$owner->Engaged` in `isAvailableToPlayer` only — not an Engage cost on the moves. Availability also needs ≥1 opposing target **and** ≥1 adjacent city (otherwise the action cannot complete).
+
+**Reveal implementation:**
+1. For each hand card: `addCardToWorld` + `notify->all` with inject codes (public log).
+2. Stash ids in `Game::REVEALED_CARDS` (JSON) so args survive state hops — action-object fields alone are fragile across rebuilds.
+3. Queue `createTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN_4", $this->Id)` then `nextState("")` through EVENTS.
+
+**chooseList for Owner is ACTIVE_PLAYER, not multiplayer.**
+
+WHY: the UX goal is "Owner sees the revealed hand in chooseList, not only the log." Multiplayer acknowledge (`stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer`) is the wrong tool — Auto-Acknowledge Card Reveals (pref 110) and zombies clear the only remaining seats and the state leaves immediately. Technique `_03043` multi-ack is for duel "everyone must Ok a public reveal"; High Drama "show Giacinto the hand" is a single Ok on an activeplayer state.
+
+JS for `_4`:
+- `OnEnteringState`: show `choose_container` / `chooseList`, `addCardToDeck` each card from `args.args.args.cards`, `setSelectionMode(0)`.
+- `OnUpdateActionButtons`: Ok → `bgaPerformAction('actPass', {})` (state `actPass` just `nextState("ok")` — do **not** call `Game::actPass`, which logs "passes").
+- `OnLeavingState`: hide/clear chooseList.
+
+JS for `_5`: restricted `factionHand` + Confirm (`onChooseHandCardConfirmed` / EventHandlers enable) — validate pick ∈ `REVEALED_CARDS`.
+
+**Transition wiring:** register every `createTransitionEvent` name (`"04032"`, `"04032_2"`, `"04032_3"`, `"04032_4"`) on `HIGH_DRAMA_PLAYER_TURN_EVENTS`. The game bridge `_6` is reached by a **named** transition from `_4` (`"ok"`), not via EVENTS.
+
+Reference: `Action_04032`; Pass/prevent sibling `Action_02036a`; move-both sibling `Action_04028`; chooseList private-look contrast `Technique_03052`; public multi-ack contrast `Technique_03043` (duel only).
+
 ### Action examples
 
 | File | Demonstrates |
@@ -383,6 +478,8 @@ When the zombie path is the only escape hatch besides the success path (typical 
 | `Action_03038a` | Draw-then-discard City Action — draw queued on `EventActionTriggered`, then `factionHand` discard picker. |
 | `Action_03038b` | Move equipped character (`engage=false`) → attachment button destroy → draw `WealthCost + 1`. Dual-action `a`/`b` sibling of `Action_03038a`. |
 | `Action_03040` | Engage + Finesse pressure (win ties via dedicated `SOLINE_PRESSURE_TYPE`) → mandatory claim-or-engage choice state. |
+| `Action_04032` | En Garde City Action: target → Reveal Hand/Pass → Owner chooseList ack → hand-owner discard **or** adjacent move-both. ACTIVE_PLAYER chooseList (not multi-ack). |
+| `Action_04042` | En Garde Action: control Artifact at location → move opposing **engaged** to City location you do not control. Two-step Makepeace + location picker; not city Kaj `_01180`. |
 
 ### Pressure (win ties) — Engage + Pressure with [Stat]
 

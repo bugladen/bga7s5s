@@ -169,6 +169,21 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase04010_2': () => {
+                if (item_id === undefined) return;
+
+                if (this.chooseList.getSelectedItems().length > 2) {
+                    this.chooseList.unselectItem(item_id);
+                }
+
+                const selected = this.chooseList.getSelectedItems().length;
+                if (selected >= 1 && selected <= 2) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
             'highDramaPhase01134_2': () => {
                 const performerId = this.clientStateArgs.performerId;                
                 const performer = this.cardProperties[performerId];
@@ -291,6 +306,15 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'planningPhaseEnd_04025': () => {
+                const needed = this.clientStateArgs.cardsToDraw || 2;
+                if (this.chooseList.getSelectedItems().length === needed) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
             'duelResolveManeuver_03059_3': () => {
                 if (this.chooseList.getSelectedItems().length > 0) {
                     dojo.removeClass('actChooseCardSelected', 'disabled');
@@ -300,6 +324,44 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelResolveManeuver_03059_4': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase04cd15': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            'highDramaPhase04cd15_2': () => {
+                this.addSortTagToCard(item_id);
+
+                if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            // WHY: Multi-select sink — default else branch only enables Confirm when exactly 1 selected.
+            'duelChooseTechnique_04001': () => {
+                if (this.chooseList.getSelectedItems().length > 0) {
+                    dojo.removeClass('actChooseCardSelected', 'disabled');
+                } else {
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                }
+            },
+
+            // WHY: Reorder numbers come from addSortTagToCard — must be wired like 04cd15_2 / 03052_2.
+            'duelChooseTechnique_04001_2': () => {
                 this.addSortTagToCard(item_id);
 
                 if (this.chooseList.getSelectedItems().length === this.chooseList.getAllItems().length) {
@@ -524,6 +586,22 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase04cd09_2': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
+            'highDramaPhase04cd15_3': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCards', 'disabled');
+                }
+            },
+
             'planningPhaseEnd_03041': () => {
                 const needed = this.clientStateArgs.cardsToDiscard || 0;
                 if (this.factionHand.getSelection().length === needed) {
@@ -549,6 +627,22 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            'highDramaPhase04005_2': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'highDramaPhase04018_2': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
             'highDramaPhase01102': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
@@ -558,6 +652,10 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase01113_3': () => {
+                this.payForCard(item_id);
+            },
+
+            'highDramaPhase04029_2': () => {
                 this.payForCard(item_id);
             },
 
@@ -618,6 +716,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'highDramaPhase02036_2': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'highDramaPhase04032_5': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
@@ -694,6 +800,22 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
             },
 
             'duelChooseTechnique_03043_3': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'duelChooseTechnique_04017': () => {
+                if (this.factionHand.getSelection().length > 0) {
+                    dojo.removeClass('actChooseDiscardCard', 'disabled');
+                } else {
+                    dojo.addClass('actChooseDiscardCard', 'disabled');
+                }
+            },
+
+            'highDramaChallengeActionResolveTechnique_04017': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');
                 } else {
@@ -951,8 +1073,13 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         var items = this.factionHand.getSelection();
         let wealth = 0;
         items.forEach((item) => {
-            // With bga-cards, getSelection() returns card objects directly
-            wealth += item.traits.includes('Wealth') ? 2 : 1;
+            // WHY cardProperties first: notif_traitAdded updates cardProperties[id].traits.
+            // HandStock getSelection() can be a different object than that cache (cloned
+            // on addCard), so item.traits would still miss a just-granted Wealth
+            // (Panacea _04038, Anghos Reaction_02021).
+            const props = this.cardProperties[item.id];
+            const traits = (props && props.traits) ? props.traits : (item.traits || []);
+            wealth += traits.includes('Wealth') ? 2 : 1;
         });
         var translated = dojo.string.substitute(
             _("(${wealth} Wealth worth of cards selected)"),

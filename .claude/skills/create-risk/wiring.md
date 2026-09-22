@@ -16,6 +16,10 @@ For Pattern C Maneuvers that transition to a sub-state (e.g., `Maneuver_01115`),
 
 For Pattern C.5 "you choose their combat card" hijacks, wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** (after reveal), not resolve-maneuver. State id convention near the choose family: `5270NNNNN` (see `States::DUEL_CHOOSE_GAMBLE_CARD_03047`).
 
+**Shared challenge target chooser Back button:** `highDramaChallengeActionChooseTarget` in `OnUpdateActionButtons.js` shows Back **only** when `args.challengeType == NORMAL_CHALLENGE_TYPE` (plus special back transitions for Triskelion/Epee/Cavalier Hat). If your Action pays an irreversible cost in a card-specific sub-state **before** wiring `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`, do **not** use `NORMAL` — mint a card-specific type and guard `FrameworkActionsTrait::actBack` (Pattern B.6 / `_04019`).
+
+For Pattern D.5 deck-reveal Reactions that must show chooseList **before** Use/Pass, also wire under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`** with a distinct key (`"04010"`). State id: `52730NNNNN` (see `States::DUEL_GAMBLE_REVEALED_04010 = 527304010`). Use `createTransitionEvent` (priority 8), **not** `createReactionTransitionEvent` (priority 6 → early `playerReaction` before chooseList). Both Use and Pass must return to `DUEL_GAMBLE_REVEALED_EVENTS` so leftover transitions (C.5 `"03047"`) and `endOfEvents` → choose still run. Public `cards` via `getArgsFromReaction` + `argsForState`. JS: display-only chooseList + Use/Pass (mirror `duelChooseGambleCard_03047` enter/leave). On the Risk class, `addCardToWorld($this)` before `actFromCard*` so deck-card `setUsed` persists.
+
 ### GameState class vs legacy array state
 
 Two formats coexist for sub-state definitions:
@@ -66,6 +70,16 @@ When you add a card-specific sub-state, you usually need three matching JS handl
 
 Pattern reference for the trio: `highDramaPhase03cd01_2` (Penya — location chooser with both performer and target highlight) and `highDramaPhase03009` (single-performer + location-chooser).
 
+**Multi-player hand discard** (Pattern B.5 / Denounced `_04005_2` / Patricia `_01095`): GameState is `MULTIPLE_ACTIVE_PLAYER`. Entering: `setPlayersMultiactive($playerIds, "multipleOk")` — **all** discarders are active concurrently (BGA does **not** pass a single turn around). Leaving each player: `setPlayerNonMultiactive($playerId, 'multipleOk')`. JS: `factionHand.setSelectionMode('single')` + `actChooseDiscardCard` / `onCardDiscarded` + `EventHandlers.js` enable when selection length &gt; 0. Mirror `highDramaPhase04005_2` / `highDramaPhase04018_2`.
+
+**Engage / Decline buttons when decline has a concrete stake (Pattern B.7 / Yield `_02020_3` / Pattern A.15):** prefer labeled `Engage` + `Decline and Claim` / `Decline and Wound` / **`Decline and Move`** over a generic Pass when the alternate effect is claim/wound/forced move — opponent must see the stake. Wrath `_01034` Pass is fine when the alternate is soft (en garde your performer). bas/faf/tac `OnUpdateActionButtons`: `actFromCardWithId` `{id: 1}` / `{id: 2}`. Highlight both performer and target on enter (Yield `02020_3` shape). **A.15** adds a third location-chooser state after Decline (`_2`→`_3` **direct** when same active player; already-Engaged path uses EVENTS `"NNNNN_3"`).
+
+**Character chooser → Engage/Decline → location chooser (Pattern A.15 / `_04049`):** step 1 → EVENTS (player swap to target controller). Step 2 Engage → EVENTS; Decline → `_3` direct. Step 3: `actFromCardWithLocations` + location-chooser JS (highlight performer + target). Wire **all three** keys under `HIGH_DRAMA_PLAYER_TURN_EVENTS` (already-Engaged needs `"NNNNN_3"` without visiting `_2`). No Back on `_3` once they declined / were forced to move.
+
+**Character chooser → location chooser with Back (Pattern B.8 / `_04028`, also `_02025`):** step 1 GameState transitions `characterChosen` **directly** to `_2` (not through EVENTS). Only `"NNNNN"` needs an entry under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`. Step 2: `actBack` + `actFromCardWithLocations`; highlight performer + target as chosen on enter; mirror `highDramaPhase02025_2` JS.
+
+**Attachment chooser → wealth pay (Pattern B.9 / `_04029`, steal side mirrors `Maneuver_01113`; pay side mirrors `01113_3`):** step 1 GameState: attachment **name buttons** from `args.attachments[]` (`OnUpdateActionButtons` `forEach` → `actFromCardWithId` — same as `highDramaPhase04019`, not in-play card highlight). `nextState("attachmentChosen")` → `"NNNNN_2"`. Step 2: `actPayForCards` + `onPaymentConfirmedFromCard` + `EventHandlers.js` `payForCard` on `highDramaPhaseNNNNN_2`. 0-cost equip confirms with empty selection. Wire both `"NNNNN"` and `"NNNNN_2"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`.
+
 **Skip the JS trio** when the chooser lives entirely in `playerReaction` button properties (Pattern D.1 / D.1.1 — e.g. Confusion `_03068` character then city-location buttons). Those need no GameState and no On*.js handlers; inventing Action-style board-highlight scaffolding is a regression trap.
 
 ## Pre-Commit Hook Compliance
@@ -78,6 +92,7 @@ The `.githooks/pre-commit` hook checks staged PHP files. Risk-related rules:
 | `extends RiskAction` | Same as RiskCityAction. |
 | `extends Maneuver` | An `EventManeuverCanceled` handler OR the comment `// EventManeuverCanceled handler not needed`. |
 | `extends RiskReaction` | `Location == Game::LOCATION_HAND` check, plus `$this->setUsed(` and `$this->isAvailable(` literal calls. |
+| `extends CardReaction` / `AttachmentReaction` | `$this->setUsed(` and `$this->isAvailable(` — **no** hand guard (Pattern D.5 deck-reveal uses this). |
 | `implements ISorcererAbility` | `createSorcererAbilityStartEvent()` AND `createSorcererAbilityPlayedEvent()` literal calls. |
 | Mixing `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` on the **same** class | **Forbidden** — split into separate ability classes if the card text demands both. |
 
@@ -96,8 +111,8 @@ A Risk card that both extends `Risk` AND has Actions/Maneuvers/Reactions in sepa
 - **State ID convention:** `4<NNNNN>` for High-Drama player-turn states owned by a card. (Memory feedback.)
 - **"Opposing"** means BOTH different controller AND same location.
 - **Modified stats** (`ModifiedInfluence`, `ModifiedFinesse`, …) — use these for live comparisons, not the printed base values.
-- **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order.
+- **Traits in `TraitNames::$TraitsJson`** — add missing ones in alphabetical order. Stub hygiene: `Bureaucracy` not `Beauracracy`; Montaigne faction stubs sometimes typo `Montagne` — fix to `Montaigne`.
 - **Typed PHP parameters required.** Every function/method signature must declare a type for every parameter — no bare `$foo`. Use concrete types (`Card $owner`, `Character $performer`, `Game $game`, `Theah $theah`, `Event $event`, `int $cardId`, `string $reactionId`). Add the `use` import.
 - **"Strega" / "Mercenary" / "Diplomat" / "Duelist" / etc.** are **mechanical performer-trait gates**, not flavor. Enforce via `hasTrait("Strega")` on the performer / `getDuelRoundActor()`. They are NOT Sorcerer abilities — do NOT `implement ISorcererAbility` for them. Only the literal "Sorcerer" keyword triggers `ISorcererAbility`. They can stack.
-- **`IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters`** — mark when printed text says **"Target"/"target"** (Rules Team + Cesca `Reaction_01008`). The interface is not merely "has a character chooser UI" — `_03060` heals "another character" without "target", `_03069` swaps with "your other character" without "target", and both must **not** implement either (and must not be on Cesca's copy whitelist). Compare `_01083`, `_01115`, `_03008`, `_03011`, `_03034`. Skip for location-only / hand-discard / fixed-trigger choosers.
+- **`IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters`** — mark when printed text says **"Target"/"target"** and the chooser is a **character** (Rules Team + Cesca `Reaction_01008`). **Attachment** choosers → `IAbilityThatTargetsCards` on the ability only (B.9 `_04029`, Robbery `Action_01113`) — do **not** mark the Risk for Cesca. The interface is not merely "has a character chooser UI" — `_03060` heals "another character" without "target", `_03069` swaps with "your other character" without "target", and both must **not** implement either (and must not be on Cesca's copy whitelist). Compare `_01083`, `_01115`, `_03008`, `_03011`, `_03034`. Skip for location-only / hand-discard / fixed-trigger choosers.
 

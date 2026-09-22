@@ -30,9 +30,26 @@ public function canAttachTo(Character $character): bool
 }
 ```
 
-References: `_01073` (Duelist), `_01075` (non-Diplomat — note the inversion), `_03007` (Strega).
+References: `_01073` (Duelist), `_01075` (non-Diplomat — note the inversion), `_03007` (Strega), `_04006` (Duelist **or** Spy **or** Assassin), `_04053` (Finesse ≥ 2 threshold), `_04055` (Combat ≥ 2 threshold).
+
+**Not Pattern A:** **"After a \<Trait\> equips this card • …"** (Reaction on self-equip) does **not** restrict who may equip — it only gates the Reaction offer. Use Pattern D (`Reaction_04016`). Do not add `canAttachTo` / `eventCheck(Equipping)` for that wording alone.
 
 **Use `\Bga\GameFramework\UserException`, not `\BgaUserException`.** Older code uses `BgaUserException`; new code should use the framework path. (Memory feedback.) Older files (`_01050`, `_01073`, `_01075`, `_02006`, …) still throw `\BgaUserException` for historical reasons — don't follow that example, follow memory.
+
+### Multi-trait OR ("Duelist, Spy, or Assassin")
+
+When printed text lists several allowed traits with **or**, any one matching trait is enough. Share one helper between `eventCheck` and `canAttachTo` so the lists cannot drift:
+
+```php
+private function characterHasEquipTrait(Character $character): bool
+{
+    return $character->hasTrait("Duelist")
+        || $character->hasTrait("Spy")
+        || $character->hasTrait("Assassin");
+}
+```
+
+Reference: `_04006` (Assassin's Garb).
 
 ### Compound restriction ("must have a Weapon")
 
@@ -46,6 +63,39 @@ if (! $character->hasWeaponEquipped($event->theah))
 ```
 
 Grep for the helper before writing one — `hasWeaponEquipped`, `hasOffHand`, etc. are already there.
+
+### Stat-threshold equip ("May only equip to your character with 2[Finesse] or more" / "2[Combat] or more")
+
+When the restriction is a **minimum modified stat** (not a trait), dual-gate on `Modified*` — printed `[Finesse]` / `[Combat]` / `[Influence]` means the character's current modified value (including other attachments already equipped), same as Maneuver/Technique availability gates (`Maneuver_02059`, `Technique_01128`):
+
+```php
+if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
+{
+    $character = $event->theah->getCharacterById($event->characterId);
+    if ($character->ModifiedFinesse < 2)
+    {
+        throw new UserException($event->theah->game->translate("Leather Spaulders can only be equipped to a character with 2 or more Finesse."));
+    }
+}
+
+public function canAttachTo(Character $character): bool
+{
+    if (! parent::canAttachTo($character))
+    {
+        return false;
+    }
+
+    return $character->ModifiedFinesse >= 2;
+}
+```
+
+**WHY `ModifiedFinesse`, not printed `$character->Finesse`:** other attachments and lasting conditions already change the value players see on the table; equip UI/`canAttachTo` only has the Character object — `ModifiedFinesse` is already hydrated. The new attachment is not attached yet, so it does not inflate the check.
+
+**Combat / Influence siblings:** swap the property — `_04055` (Sturdy Shield) uses `ModifiedCombat >= 2` with the same dual-gate shape. Influence thresholds use `ModifiedInfluence`.
+
+**Distinct from Shackles** (`_03066`): that compares target Finesse to a same-location ally under `CanEquipToOpponents`. A plain "N or more" threshold needs no Theah / ally scan — both gates share the same `Modified* >= N` predicate.
+
+References: `_04053` (Leather Spaulders — Finesse), `_04055` (Sturdy Shield — Combat).
 
 ### Auto-destroy when prerequisite is lost
 

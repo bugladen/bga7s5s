@@ -41,20 +41,20 @@ class Reaction_02039 extends RiskReaction
         if ($event instanceof EventCombatCardAnnounced && $this->isAvailable())
         {
             $owner = $this->getOwningCard($event->theah);
-            if ($owner->Location != Game::LOCATION_HAND)
-                return;
+            if ($owner->Location == Game::LOCATION_HAND)
+            {
+                $game = $event->theah->game;
+                $inDuel = $game->globals->get(Game::IN_DUEL, false);
+                if (! $inDuel)
+                    return;
 
-            $game = $event->theah->game;
-            $inDuel = $game->globals->get(Game::IN_DUEL, false);
-            if (! $inDuel)
-                return;
+                if ($event->playerId == $owner->ControllerId)
+                    return;
 
-            if ($event->playerId == $owner->ControllerId)
-                return;
-
-            $owner->IsUpdated = true;
-            $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $event->theah->queueEvent($transition);
+                $owner->IsUpdated = true;
+                $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($transition);
+            }
         }
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)

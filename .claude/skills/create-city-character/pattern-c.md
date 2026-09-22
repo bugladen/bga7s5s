@@ -34,7 +34,9 @@ class Action_03cdNN extends CharacterAction
 
         $owner = $this->getOwningCharacter($theah);
 
-        // City Actions: gate on being in the city deck
+        // City Actions (unmustered / city-deck scope): often gate cardInCity
+        // In-play Actions (printed Action, not City Action): MUST gate isControlled()
+        //   — CardAction parent allows uncontrolled city cards through for every player.
         if (!$theah->cardInCity($owner))
         {
             return false;
@@ -148,6 +150,10 @@ Expansion 3 (`faf`) uses `403XXXX` to avoid collisions with expansion 1 (`401XXX
 - Penya step 1: `HIGH_DRAMA_PLAYER_TURN_03CD01 = 4030001`
 - Penya step 2: `HIGH_DRAMA_PLAYER_TURN_03CD01_2 = 40300012`
 
+Expansion 4 (`bas`) uses `404XXXX` the same way:
+- `HIGH_DRAMA_PLAYER_TURN_04CD01 = 4040001`
+- `HIGH_DRAMA_PLAYER_TURN_04CD04 = 4040004`
+
 Add the constants in `modules/php/States.php` under the per-card section.
 
 ### Register state transitions
@@ -192,6 +198,60 @@ $moveEvent = EventFactory::createCardMovingEvent(
 );
 $game->theah->queueEvent($moveEvent);
 ```
+
+### City Action vs in-play Action (`isControlled`)
+
+| Printed label | Availability gate |
+|---|---|
+| **City Action** | Typically `$theah->cardInCity($owner)` (and often `!$owner->Engaged`). Works while the card is still an unmustered city mercenary. |
+| **Action** (no City) | **`$owner->isControlled()`** + usually `!$owner->Engaged` + effect-specific eligibility. |
+
+WHY `isControlled()` is mandatory for printed Action: `CardAction::isAvailableToPlayer` only rejects when the owner *is* controlled by someone else. Uncontrolled city-deck characters pass the parent check for **every** player — without an explicit `isControlled()` gate, Astrid's Action would show up for opponents while she sits unmustered. Reference: `Action_04cd04`.
+
+`cardInCity` alone is wrong for "once mustered" Actions: after muster she is still at a city location, so `cardInCity` stays true — but the critical missing piece for unmustered cards is controller, not location.
+
+### Engage • adjacent location becomes uncontrolled • move there
+
+Printed: **"Engage \<Name\> • An adjacent location becomes uncontrolled. Move \<Name\> there."**
+
+1. Availability: `isControlled()`, `!$owner->Engaged`, and ≥1 eligible adjacent location.
+2. Eligible locations = `getAdjacentCityLocations($from, $includeHome = false)` filtered to:
+   - `$location->Controller != 0` (already-uncontrolled is a no-op for "becomes")
+   - `$theah->canLocationBecomeUncontrolledBy($playerId, $name)` (Leshiye-style locks)
+3. One-step location picker state (mirror `Action_04cd01` / `State_highDramaPhase04cd01` JS).
+4. Resolve order: `createCardEngagedEvent` (cost) → `createLocationBecomesUncontrolledEvent` → `createCardMovingEvent(..., $engage = false)` → `createActionResolvedEvent`.
+5. Re-check `canLocationBecomeUncontrolledBy` at resolve time; if false, notify and still move (or follow the card — Astrid notifies then moves). Mirror `Action_01086` / `Action_01112a` notify wording.
+
+Reference: `Action_04cd04`, `State_highDramaPhase04cd04`.
+
+### En Garde City Action / En Garde Action (precondition, not Engage cost)
+
+Printed: **`<b>En Garde City Action:</b> …`** or **`<b>En Garde Action:</b> …`**, often with italic clarification *(En Garde abilities require an en garde performer.)*.
+
+| Printed cue | Meaning in code |
+|---|---|
+| **En Garde** in the ability label / italic note | Availability: `!$owner->Engaged`. Performer must already be ready. |
+| **Engage \<Name\>** before the `•` | Cost: queue `createCardEngagedEvent` on resolve (Penya, Astrid). |
+
+**Do not** treat "En Garde City Action" as an implicit Engage. Only engage when the card prints Engage as a cost. Elina `_01118` similarly moves with `engage=false` when Engage is not printed.
+
+Contrast Pattern G italic *En Garde* — that is a **passive** pressure gate (`getInfluencePressureValue` + `!$Engaged`), not an Action shape.
+
+### Target engaged at adjacent City • If lower [Stat], wound
+
+Printed (Tijani `_04cd29`): **"Target an engaged character at an adjacent City location • If they have lower [Finesse] than \<Name\>, wound them."**
+
+1. Availability / City Action gates: `cardInCity($owner)`, `!$owner->Engaged` (En Garde label).
+2. Eligible targets = characters at `getAdjacentCityLocations($owner->Location, $includeHome = false)` with:
+   - `$character->Engaged == true`
+   - **Do not invent "opposing"** — printed text without "opposing" means any engaged character (friend or foe).
+   - Stat "If" comparison (`ModifiedFinesse < $owner->ModifiedFinesse`, etc.)
+3. **Gate the "If \<stat\>" into eligibility** (availability + picker ids), not only at resolve. WHY: Actions are once-per-day (`Used`); offering a target that cannot be wounded burns the action for a no-op. Same Used-economy as Technique_03002 / Technique_03043 gating "If" into `isAvailableToPlayer`. Re-check the comparison at resolve anyway (board can change).
+4. One-step character picker: `IAbilityThatTargetsCharacters` + `actFromCardWithId`; JS `highlightCardsAsSelectable` + Confirm Character (same as Millstone picker UI, but Pass is fine to omit for voluntary Actions too — action already announced).
+5. Resolve: `createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id)` → `createActionResolvedEvent` → `nextState("targetChosen")`.
+6. For unmustered city mercenaries, `$owner->ControllerId` may be `0` — use `$owner->ControllerId ?: (int)$game->getActivePlayerId()` for `createActionResolvedEvent`. Transition active player: `$event->playerId` from `EventActionTriggered`.
+
+Reference: `Action_04cd29`, `State_highDramaPhase04cd29`, `Technique_04cd29` (duel sibling for the Finesse "If").
 
 ### Finishing the action
 

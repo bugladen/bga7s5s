@@ -88,6 +88,60 @@ On `EventResolveTechnique`, queue `createTransitionEvent($owner->ControllerId, $
 
 Reference: `Technique_03052`; public-reveal contrast `Technique_03043`.
 
+### Look / sink / reorder own Faction Deck (Technique)
+
+For Benci `_04001`: **"Technique: Look at the top two cards of your deck. You may sink one or both and return the others in any order."**
+
+Sibling shapes:
+- **Action_04cd15** (Syrneth Puzzle Box) — High Drama City Action, same Faction Deck sink+reorder, public args.
+- **Reaction_03052** — City Deck look/sink/reorder, private args.
+- **Technique_01010** — look adversary deck, sink any, **no** reorder ("same order" / leave remainder in place).
+
+**Availability:** `IN_DUEL` + actor-is-owner + `count(getCardsOnTopOfPlayerFactionDeck(controller, N)) > 0`. Empty deck → hide.
+
+**On `EventResolveTechnique`:**
+1. Snapshot top N property arrays into `Game::CHOSEN_CARD`.
+2. Public notify that a look occurred (do **not** name the cards — Look ≠ Reveal).
+3. `createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)` — HIGHEST_PRIORITY before other resolve noise.
+4. `$this->setUsed($theah, true)`. Skip the transition if the snapshot is empty (deck emptied between availability and resolve).
+
+**Sink step (`DUEL_CHOOSE_TECHNIQUE_NNNNN`):**
+- State `getArgs()` → `argsForStatePrivate()`.
+- `#[PossibleAction]` `actFromCardWithIds` + `actFromCardPass` (Pass = sink none → finishReplaceOrReorder). Do **not** use bare `actPass` — that skips reorder.
+- Validate ids ⊆ snapshot; **immediately** `$deck->insertCardOnExtremePosition($id, $deckName, false)` per sink. WHY immediate: queued `createCardAddedToFactionDeckEvent` races `finishReplaceOrReorder`'s top inserts before EVENTS drains (04cd15 comment).
+- Update `CHOSEN_CARD` to remaining; call finish helper.
+
+**finishReplaceOrReorder:**
+- 0 remaining → `nextState("done")` back to `DUEL_CHOOSE_TECHNIQUE_EVENTS`.
+- 1 remaining → top-insert that card; `nextState("done")` (order forced).
+- 2+ remaining → `nextState("reorder")` → `DUEL_CHOOSE_TECHNIQUE_NNNNN_2`.
+
+**Reorder step:** validate complete permutation of remaining ids; top-insert in JS sort order (`onCardsSorted` — last selected ends on top); `nextState("cardsSorted")`.
+
+**states.inc.php:** only `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS` — step 2 is reached via the sink state's own `"reorder"` transition, not `createTransitionEvent("NNNNN_2")`.
+
+**JS (`OnEntering` / `OnUpdate` / `OnLeaving`.<expansion>):**
+- Sink: chooseList `setSelectionMode(2)`, Sink Selected → `onMultipleChooseListCardsConfirmed`, Pass → `actFromCardPass`. Private path: `args.args._private.args.cards`.
+- Reorder: same chooseList, Confirm → `onCardsSorted()`.
+
+**CRITICAL — `EventHandlers.js` `onChooseCardClicked`:** without an entry, the default branch only enables Confirm when **exactly one** card is selected, and **never** calls `addSortTagToCard` — so multi-sink Confirm stays broken and reorder number chips never appear. Wire:
+
+```js
+'duelChooseTechnique_NNNNN': () => {
+    // multi-select sink — enable when length > 0
+},
+'duelChooseTechnique_NNNNN_2': () => {
+    this.addSortTagToCard(item_id);
+    // enable Confirm when all items selected (ordered)
+},
+```
+
+Mirror `highDramaPhase04cd15` / `highDramaPhase04cd15_2` / `duskPhaseBegin03052_2`.
+
+**"same order" vs "any order":** if the text says return others in the **same** order, omit the reorder state and only sink (01010). If **any** order, include the reorder step (04001 / 04cd15).
+
+Reference: `Technique_04001`, `Action_04cd15`, `Reaction_03052`, sink-only `Technique_01010`.
+
 ### −N Thrust / Riposte cost ("combat card must have at least N")
 
 Parenthetical "(Your combat card must have at least N [Thrust].)" is the printed clarification of a −N technique cost. Gate `isAvailableToPlayer` with `$theah->getCurrentRoundThrust() < N` (or `getCurrentRoundRiposte()` for Riposte costs). Apply the reduction on `EventDuelCalculateTechniqueValues`: `$event->thrust -= N` plus an explanation string.
@@ -321,6 +375,33 @@ if ($event instanceof EventGenerateChallengeThreat
 
 WHY split the work this way (vs. mirroring Bastien's all-in-events approach in `Technique_01063Swap`): Bastien defers the condition swap into `EventGenerateChallengeThreat` (with a `CHALLENGE_ACCEPTED` guard) so the swap doesn't fire if the challenge is rejected. That's a stricter, more conservative shape. The in-`actFromTechniqueWithId` shape is cleaner to read and matches the user's preference (see project history), but if your card text says the swap is *conditional on the challenge being accepted*, prefer Bastien's pattern instead so a rejection doesn't leave a stuck DUEL_CHALLENGER condition on a character that never enters a duel.
 
+### Destroy Owner's attachment for +N Thrust
+
+Printed shape (Tomas `_04013`): **"Technique: Destroy an attachment equipped to Tomas • +2[Thrust]."**
+
+Sibling shapes:
+- **`Technique_DestroyPlusOneThrust`** (Improvised Weapon `_01155`) — destroy **self** (the attachment that owns the Technique) on Calculate; no picker.
+- **`Technique_02026b`** — destroy **adversary's** engaged attachment via picker; no thrust bonus.
+- **`Technique_02011`** — engage own attachment via the same button-list picker UX.
+
+**Availability:** `IN_DUEL` + `getDuelRoundActor()->Id == owner.Id` + ≥1 non-`FakeAttachment` in `$owner->Attachments`.
+
+**Resolve → picker → Calculate:**
+
+1. On `EventResolveTechnique`: `createTechniqueTransitionEvent(..., "NNNNN", ...)` (HIGHEST_PRIORITY so the picker runs before Calculate).
+2. State `DUEL_CHOOSE_TECHNIQUE_NNNNN` (`521` + cardId): args list `{id, name}` for destroyable attachments; JS one button per attachment (`actFromCardWithId`) — mirror `duelChooseTechnique_02011` / `02026b`. No OnEntering highlight needed.
+3. In `actFromTechniqueWithId`: validate id ∈ `$owner->Attachments` and not Fake; then destroy recipe:
+   - `createAttachmentUnequippedEvent` → `eventCheck` → queue
+   - CityAttachment → `createCardAddedToCityDiscardPileEvent(..., $asEffect = true)`
+   - else → `createCardDiscardedFromPlayEvent(..., $asEffect = true)`
+4. On `EventDuelCalculateTechniqueValues`: `$event->thrust += N` + explanation. Also handle `EventGenerateChallengeThreat` (`adversaryThreat += N`) like `Technique_PlusTwoThrust` for challenge-time activation.
+
+**Card class wiring:** `Character` already `implements IHasTechniques` + `use TechniqueTrait`. Set `$this->Techniques = [new Technique_NNNNN()]` only — do **not** re-declare the interface/trait on the Character subclass (contrast `IHasReactions` / `ReactionTrait`, which Characters do **not** inherit).
+
+**Interaction note:** if the Owner also has a "would be discarded → salvage" City Reaction (Tomas), the Technique's discard can immediately offer that Reaction the same day if unused — intentional when both are printed; do not special-case suppress.
+
+Reference: `Technique_04013`; picker UX `Technique_02011` / `Technique_02026b`; self-destroy `Technique_DestroyPlusOneThrust`; thrust helper `Technique_PlusTwoThrust`.
+
 ### Optional engage Artifact for upgraded Parry ("+1 Parry. You may engage an Artifact … for +2 instead.")
 
 For text like Ekaterina's Technique (`Technique_03049`): a base stat bonus that can be upgraded by engaging an equipped Artifact. Sibling: Katain `Technique_02011` is **mandatory** engage of a Ranged Weapon for +1 Parry (availability requires the attachment; no base option).
@@ -411,6 +492,110 @@ $game->gamestate->nextState("cardChosen");
 WHY Engage before clone: printed cost is Engage the attachment; the copy then resolves as the actor. Temporary copies are cleaned on `EventDuelNewRound` / `EventDuelEnd` by base `Technique::handleEvent`.
 
 Reference: `Technique_03051`, `Technique_02055` (copy pipeline), `Technique_02011` (engage-attachment cost without copy).
+
+### Copy a Technique on your other Trait (not attachments)
+
+For Aimée `_04021`: **"Technique: Copy the effects of a Technique on your other Musketeer at this location. (Not one of their attachments.)"**
+
+Same Dame **clone / activate / resolve / calc** half as `Technique_03051` / `Technique_02055`, with three differences:
+
+| Axis | Yepikhodov `03051` | Aimée `04021a` |
+|---|---|---|
+| Who owns the Technique | Ally granted the Technique (aura) | Owner herself (`actor == owner`) |
+| Source techniques | On named character's **attachments** | On other controlled **Trait characters** at location via `$character->getTechniques()` |
+| Engage cost | Engage the attachment (printed) | **None** unless Engage is printed |
+
+**Availability:** `IN_DUEL` + actor-is-owner + `count(getAvailableTechniques) > 0`.
+
+**Listing — do NOT use `isAvailableToPlayer`:** source techniques gate on actor == that Musketeer; Aimée is the actor. Skip `ClassId === 'Technique_NNNNNa'` self and `IsTemporaryCopy`. ControllerId filter handles shared `LOCATION_PLAYER_HOME`.
+
+**Parenthetical "Not one of their attachments":** never walk `$character->Attachments`. On pick, belt-and-suspenders reject `getOwningAttachment($theah) !== null`.
+
+**Resolve → picker → clone (no Engage):**
+
+```php
+// EventResolveTechnique → createTechniqueTransitionEvent(..., "NNNNN", $this->Id)
+// actFromTechniqueWithIds: validate ⊆ getAvailableTechniques, then Dame clone recipe
+// WITHOUT createCardEngagedEvent unless Engage is printed
+$game->gamestate->nextState("cardChosen");
+```
+
+**Wiring:** `DUEL_CHOOSE_TECHNIQUE_NNNNN` (id `521` + cardId); `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS`; JS `OnUpdateActionButtons.<expansion>.js` technique buttons via `actFromCardWithIds` + `JSON.stringify([technique.id])` — no OnEntering needed (button-only like `03051` / `04013`).
+
+Reference: `Technique_04021a`; attachment-copy sibling `Technique_03051`; copy pipeline `Technique_02055`.
+
+### En Garde Technique +N Thrust (or Riposte / Parry)
+
+Printed: **`<b>En Garde Technique:</b> +1[Thrust]`** (Aimée `_04021`).
+
+- Prefer **subclassing** the matching generic (`Technique_PlusOneThrust` / `Technique_PlusOneRiposte` / …) so duel Calculate **and** challenge `EventGenerateChallengeThreat` stay shared.
+- **En Garde = `!$owner->Engaged` precondition** — same as En Garde City Action / Reaction. Do **not** queue `createCardEngagedEvent` unless Engage is a printed cost.
+- During `IN_DUEL`, also require `getDuelRoundActor()->Id === owner.Id` (03025a shape). Outside duel, leave the generic's challenge path available when En Garde.
+- Pre-commit trap: the hook regex `extends\s+Technique` also matches `extends Technique_PlusOneThrust`. Keep `// EventTechniqueCanceled handler not needed` (override `handleEvent` → `parent::handleEvent` + comment if the parent generic has none).
+
+Contrast plain **`<b>Technique:</b> +1[Thrust]`** with no En Garde keyword → use the generic directly (`_01042` Terrell) without the Engaged gate.
+
+Reference: `Technique_04021b`; generic `Technique_PlusOneThrust`; En Garde precondition siblings Tijani `_04cd29` / Desideria `Reaction_04003a`.
+
+### +N stat with Lethal if Owner engaged (ready)
+
+Printed: **`<b>Technique:</b> +1[Riposte]. If Andare is engaged, gain Lethal.`** (`_04031` Andare).
+
+**Engaged vs En Garde — load-bearing:** printed "If \<Owner\> is **engaged**" means `$owner->Engaged === true` (character is ready / sideways). That is the **opposite** of En Garde (`!$Engaged`). Do not copy the En Garde Technique gate from `Technique_04021b`.
+
+- Subclass the matching generic (`Technique_PlusOneRiposte`, `Technique_PlusOneThrust`, …) so the +N stat stays shared.
+- Override `isAvailableToPlayer` for **actor-is-owner** when `IN_DUEL` — the `Technique_PlusOne*` generics only gate `IN_DUEL`, not actor identity.
+- On `EventDuelCalculateTechniqueValues` when `$event->techniqueId == $this->Id`: if `$owner->Engaged`, queue `createGainLethalEvent($event->actorId, $theah)`. Duel-only → **no** `EventGenerateChallengeThreat` handler unless the technique is also meant to fire outside duels.
+- Do **not** gate `isAvailableToPlayer` on `$owner->Engaged` — the base +N Riposte is always legal; Lethal is a resolve-time rider (like Axelle's en-garde adversary threat on `Reaction_04022`).
+- Pre-commit: `extends Technique_PlusOneRiposte` matches `extends Technique` — keep `// EventTechniqueCanceled handler not needed`.
+
+Contrast: En Garde Technique requires `!$Engaged` at pick time (`Technique_04021b`). Engaged Lethal rider requires `Engaged` at calculate time (`Technique_04031`).
+
+Reference: `Technique_04031`; En Garde opposite `Technique_04021b`; Lethal pipeline `Technique_03002` / `Technique_GainLethal`.
+
+### +1 Thrust or +1 Parry choice
+
+For **"Technique: +1[Thrust] or +1[Parry]"** (Iago `_04033`, Vissenta `_01013`):
+
+1. On `EventResolveTechnique`: stash defaults (`$UseThrust = false`) and queue **`createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)`** — HIGHEST_PRIORITY so the picker runs **before** `EventDuelCalculateTechniqueValues` (Framework queues Resolve then Calculate).
+2. State `DUEL_CHOOSE_TECHNIQUE_NNNNN` (id `521` + cardId): two buttons — `id: 0` = Parry, `id: 1` = Thrust (01013 convention).
+3. `actFromTechniqueWithId`: set `$UseThrust = ($id == 1)`; `$owner->IsUpdated = true`; `nextState()`.
+4. On Calculate when `$event->techniqueId == $this->Id`: `$event->thrust += 1` or `$event->parry += 1` + explanation.
+5. Clear `$UseThrust` on `EventTechniqueCanceled` / `EventDuelEnd`.
+
+**WHY not copy Vissenta's `createTransitionEvent` + `HIGH_PRIORITY`:** modern techniques that need a choice before Calculate use `createTechniqueTransitionEvent` (Ekaterina `03049`). Relying on HIGH_PRIORITY alone is fragile if other HIGHEST_PRIORITY events are queued.
+
+**JS:** `OnUpdateActionButtons.<expansion>.js` only — button-only, no OnEntering/OnLeaving (same as `duelChooseTechnique_01013`). Zombie: `nextState()` leaves `$UseThrust` false → Parry default.
+
+Wire `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions`.
+
+Reference: `Technique_04033` (canonical modern); older sibling `Technique_01013`; HIGHEST_PRIORITY sibling `Technique_03049`.
+
+### Deferred optional effect on adversary's next round
+
+For **"At the start of the adversary's next round, you may add a threat to <Owner>"** (Iago `_04033` — often paired with the Thrust/Parry choice above):
+
+1. On Resolve: set public `$PendingThreatChoice = true` (persist via `$owner->IsUpdated`).
+2. On `EventDuelNewRound` when `$PendingThreatChoice` **and** `$event->actorId != $owner->Id` (adversary is the actor):
+   - Skip/clear if `characterIsInDiscardOrLocker($owner)`.
+   - **Clear the flag before queueing** so a re-fired NewRound does not double-prompt.
+   - `createTechniqueTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)` — **same transition key** as the Thrust/Parry picker.
+3. State `DUEL_NEW_ROUND_NNNNN` (id `510` + cardId; constant under `DUEL_NEW_ROUND_*`): Add Threat / Pass buttons.
+4. `actFromTechniqueWithId` for that state: Add Threat → map Owner's Id to `[challengerThreat, defenderThreat]` deltas → `createThreatModifiedEvent` (Axelle `Reaction_04022` shape — text says "to Iago", not "your participant"). Pass → notify decline.
+5. Clear `$PendingThreatChoice` on `EventTechniqueCanceled` / `EventDuelEnd`.
+
+**Dispatcher-scoped transition key (Lorenzo `01090`):**
+
+| Dispatcher | `"NNNNN"` routes to |
+|---|---|
+| `DUEL_CHOOSE_TECHNIQUE_EVENTS` | `DUEL_CHOOSE_TECHNIQUE_NNNNN` (Thrust/Parry) |
+| `DUEL_NEW_ROUND_EVENTS` | `DUEL_NEW_ROUND_NNNNN` (optional threat) |
+
+Both need entries in `states.inc.php`. Do **not** invent a second transition key (`"NNNNN_2"`) unless the NewRound step is reached from Technique EVENTS.
+
+**JS:** `OnUpdateActionButtons` only for both states. Zombie on NewRound: `nextState()` = decline (flag already cleared on enter).
+
+Reference: `Technique_04033`; NewRound deferred sibling `Technique_01090`; threat mapping `Reaction_04022`.
 
 ### Technique usable in BOTH challenge and duel contexts — two states, two routings, two state classes
 

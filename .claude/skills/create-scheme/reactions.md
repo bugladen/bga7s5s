@@ -41,6 +41,37 @@ public function handleEvent(Event $event)
 
 Reference: `Reaction_03005` (claim a location after Red Hand's challenge refused), `Reaction_02004` (move adjacent performer when opponent initiates pressure at scheme controller's location).
 
+### Leader Reaction — challenge issued → location becomes uncontrolled
+
+Scheme text like Adrift in the Wind (`_04044`):
+
+> **Leader Reaction:** When your performer issues a challenge • Their location becomes uncontrolled.
+
+1. **Trigger:** `EventChallengeIssued` + `isAvailable()` + `!$event->canceled`.
+2. **Identity:** challenger controlled by scheme owner **and** `hasTrait("Leader")` — Leader is a trait gate (same family as Duelist/Merchant), not a Sorcerer ability. The challenger *is* the performer of the challenge.
+3. **Payoff gates before offering:** location is a city location that is **currently controlled** (`Controller != 0`) **and** `$theah->canLocationBecomeUncontrolledBy(...)` (Indomitable Will). Do not offer when already uncontrolled — "becomes" would be a no-op.
+4. Capture `$this->location = $challenger->Location` + `$owner->IsUpdated = true`. Surface the location name in `getReactionDescription`.
+5. Buttons: Make Uncontrolled + Pass. Pass clears capture without `setUsed`.
+6. On confirm: recheck both gates; queue `createLocationBecomesUncontrolledEvent($owner->ControllerId, $location)`; `setUsed(true)` only on success. Notify if blocked mid-window.
+7. **Synergy with a co-printed Leader-at-uncontrolled Finesse passive is intentional** — resolving this Reaction can immediately unlock the passive if the Leader stays at that location (scheme `handleEvent` on `EventLocationBecomesUncontrolled` recomputes).
+
+Reference: `Reaction_04044`; uncontrol action siblings `Action_01112a` / `Action_04034`.
+
+### Pressure total bonus (+1 per Trait at location)
+
+Scheme text like Meeting of the Minds (`_04035`):
+
+> When a pressure occurs at your performer's location • Add +1 to your total for each of your Academics there.
+
+1. **Trigger:** `EventPressureOccuring` + `isAvailable()` + `$event->playerId == $owner->ControllerId` (you are pressuring — "your performer") + ≥1 controlled traited character at `$event->location`.
+2. Capture `$location` for description; Use / Pass buttons.
+3. On Use: `setGlobalFlag(PRESSURE_TYPE, MEETING_OF_THE_MINDS_PRESSURE_TYPE)` + store player id global; `setUsed(true)`. Pass clears capture without `setUsed`.
+4. **Apply in `pressureLocation()`:** count traited chars via a **fresh** `getCharactersAtLocation($location)` — do not reuse the Claude / Reputation Meritée filtered `$charactersAtLocation` list (printed bonus is for Academics *there*).
+5. Clear the player-id global in HD turn cleanup alongside `LOYAL_PLAYER_ID` / `VANTAGE_POINT_PLAYER_ID`.
+6. Sibling Risk reaction Loyal (`Reaction_03035`) adds fixed +1 via the same flag timing (after reactions, before `pressureLocation()`).
+
+Reference: `Reaction_04035`.
+
 ### Capturing context onto the reaction
 
 The triggering event has only a snapshot of args (`$event->challengerId`, etc.). If the reaction needs context that isn't on the event (the location of the challenge, the destroyed character's name, etc.), capture it into a `private` property on the reaction at trigger time, **then clear it** in `performReaction` (or `resetStage` for multi-stage reactions). `$owner->IsUpdated = true` persists the property to DB. See `Reaction_02004::$location` and `Reaction_03005::$location` for the pattern.
@@ -71,6 +102,43 @@ When the bullet text has multiple sentences but no internal "may", the decision 
 
 `CardReaction` subclasses must include the literal strings `$this->setUsed(` and `$this->isAvailable(` somewhere in the file. The `handleEvent` `isAvailable` check + the `setUsed(true)` in `performReaction`'s success branch satisfy both. Decline/Pass branches deliberately skip `setUsed` — the reaction stays available for the next trigger that day. Mirror `Reaction_03005` / `Reaction_02004` / `Reaction_03017` for this discipline.
 
+### Continuous Reaction — never set to Used
+
+Default scheme reactions are once-per-day (`setUsed(true)` on success; `EventDuskEndOfDay` resets). Some printed abilities are **Continuous**:
+
+- Unlabelled **"When …, you may …"** (no `<b>Reaction:</b>` keyword)
+- Parenthetical **"Can be used any number of times per day"** / **"once per challenge or intervention"**
+
+Treat these as Continuous `CardReaction`s: do **not** call `$this->setUsed(true)` on success. Once-per-trigger is natural — queue one `createReactionTransitionEvent` per firing event (`EventChallengeIssued`, `EventCharacterIntervened`, …). Pass also skips `setUsed`.
+
+**Pre-commit gotcha.** The hook greps for the literal `$this->setUsed(` and fails if absent. Continuous reactions have no runtime call, so put the literal in a comment (same dodge as character `Reaction_03025` / `Reaction_01040`):
+
+```php
+// Continuous Reaction: intentionally do NOT call $this->setUsed(true).
+// Can fire any number of times per day; once per challenge/intervention is
+// enforced by a single transition per EventChallengeIssued / EventCharacterIntervened.
+```
+
+Still call `$this->isAvailable()` in `handleEvent` for consistency (and the second pre-commit literal). Name the reaction with a `(Continuous)` prefix when helpful.
+
+Reference: `Reaction_04014` (Forged for Battle), character siblings `Reaction_03025` (Angeline), `Reaction_01040` (Rena engage-weapon-instead).
+
+### Challenge / intervene → engage Weapon or Armor → temporary +1 Finesse
+
+Scheme text like Forged for Battle (`_04014`):
+
+> When your character issues a challenge or intervenes, you may engage a **Weapon** or **Armor** equipped to them. If you do, they gain +1[Finesse] for the duration of the action.
+
+1. **Triggers:** `EventChallengeIssued` — challenger controlled by scheme owner, `!$event->canceled`. `EventCharacterIntervened` — `$event->playerId == owner->ControllerId` and `newTargetId` is your intervener (Henri/Passionate intervene idiom).
+2. **Eligibility gate before offering:** ≥1 attachment on that character with `hasTrait("Weapon")` or `"Armor"`, `!$Engaged`, `!$FakeAttachment`. Skip the reaction entirely when none.
+3. **Buttons:** one `engage-{attachmentId}` per eligible attachment + Pass. Capture `$characterId` / `$characterName` at trigger for description + resolve.
+4. **On engage:** `createCardEngagedEvent($controllerId, $attachmentId, $owner->Id, $this->Id)` then `createCharacterFinesseModifedEvent` (+1).
+5. **Condition for tooltip source (required when Eddie wants attribution):** stamp a `Game::…_CONDITION` on the character (`addCondition` + `updateCardObjectInDb` + `…ConditionStarted` notif). Clear with `removeCondition` + `…ConditionEnded`. Mirror Soline `_01089` / Harpoon `Technique_03064`. Wire matching string constant in `seventhseacityoffivesails.js` + `Notifications.js` Started/Ended handlers that push/filter `card.conditions` and `refreshTooltipForCard`. WHY not Finesse chip alone: the chip shows ±1 but not *why*.
+6. **Duration clear:** listen on `EventActionResolved` with `$buffedCharacterId != 0` **and** `!$globals->get(Game::IN_DUEL, false)`. WHY the `!IN_DUEL` gate: mid-duel `ActionResolved` (if any) must not wipe Finesse needed for gambling — same WHY as `Action_04009`. At true challenge/duel end `IN_DUEL` is already false. Safety clear on `EventDuskEndOfDay`; on `EventCharacterDestroyed` of the buffed id just drop the tracker (recreate drops the condition).
+7. **Continuous** — see above; do not `setUsed(true)`.
+
+Reference: `Reaction_04014`, `Game::FORGED_FOR_BATTLE_CONDITION`.
+
 ### `EventCharacterDestroyed` — destroy-time location is readable
 
 `EventCharacterDestroyed` is declared with `runEventHubAfterCards = true`. Card `handleEvent` calls run **before** the hub moves the character to the locker, so `$destroyed->Location` still reports the destroy-time city slot inside your reaction's handler. Capture it into a `private string $location` field (with `$owner->IsUpdated = true`) for use in `performReaction`, because by the time the player clicks the button, the character has been moved out and `$destroyed->Location` no longer matches the city. Also capture any trait/name snapshots the resolve branch needs (`$destroyedWasZealot`, `$destroyedName`) — same reason.
@@ -92,6 +160,21 @@ City Reaction on `EventLocationClaimed`:
 7. Bake the claimed location name into `getReactionDescription` (defensive fallback if empty).
 
 Reference: `Reaction_03041`. Button-from-location move-Renown idiom: `Reaction_01118` (Elina — sources with Renown; Proper Study flips it: fixed source, destinations).
+
+### Merchant / trait Reaction at Planning End (look → draw two → sink rest)
+
+Printed **`<b>Merchant Reaction:</b> At the end of Planning • Look at the top three … additional for each Merchant … Draw two … sink the rest.`** — this is a **Reaction**, not Pattern F Forced.
+
+1. **Trigger:** `EventPhasePlanningEnd` + `$this->isAvailable()` + scheme `Location == LOCATION_PLAYER_HOME` + ≥1 controlled Merchant (`getCharactersInPlayByPlayerId` + `hasTrait("Merchant")`) + `getCardsOnTopOfPlayerFactionDeck(..., 1)` non-empty. Skip offer when no Merchant or empty deck.
+2. **Offer:** `createReactionTransitionEvent` → Look / Pass buttons. Pass does **not** `setUsed` (event will not re-fire today). Look calls `setUsed(true)`.
+3. **Look count:** `3 + merchantCount`. Snapshot property arrays into `Game::CHOSEN_CARD` via `getCardsOnTopOfPlayerFactionDeck` (reshuffles discard when short).
+4. **Clamp:** if looked ≤2, auto-draw all looked cards and **skip** the pick state (cannot "draw two" of one). If >2, queue follow-on state.
+5. **Follow-on state:** `PLANNING_PHASE_END_<NNNNN>` under **`PLANNING_PHASE_END_EVENTS`** (same map as Forced picks — phase-scoped). Queue `createTransitionEvent($controllerId, $owner->Id, "NNNNN", $this->Id)` — **4th arg = reaction Id** so `actFromCardWithIds` → `actFromReactionWithIds` (Yevgeni `Reaction_03052` shape). Same `"NNNNN"` key may also exist on the resolve-schemes map.
+6. **Private UI:** state's `getArgs()` returns `argsForStatePrivate()`. JS reads `args.args._private.args.cards` / `cardsToDraw`. `"Look at"` ≠ Reveal — do not announce card names to all players (contrast Otto `_01038`).
+7. **Draw / sink:** for each looked id — if chosen, `createCardRemovedFromPlayerFactionDeckEvent` + `createCardAddedToHandEvent` (Otto — physical move is in hand-add handler); else `createCardAddedToFactionDeckEvent($playerId, $id, false)` (bottom of faction deck, not discard / not city discard).
+8. **JS:** `chooseList` `setSelectionMode(2)`; Confirm → `onMultipleChooseListCardsConfirmed`; `EventHandlers.js` enable when `getSelectedItems().length === clientStateArgs.cardsToDraw`. Zombie: auto-pick first `cardsToDraw` ids from `CHOSEN_CARD`.
+
+Reference: `Reaction_04025` + `State_planningPhaseEnd_04025`. Look/reorder City Deck sibling: `Reaction_03052`. Sink-from-look opponent deck: `_02005`.
 
 ### Multi-stage reactions (button-driven, no sub-state)
 
@@ -190,6 +273,22 @@ private function sourceAbilityTargetsCharacters(Theah $theah, int $sourceId, str
 Both the `getCardById->getAbilityById` AND `getInPlayActionById` lookups are needed — the basic challenge action fires with `sourceId = 0`, so the card lookup returns null and you need the action-by-id fallback. See `Reaction_01014` (Vittoria), `Reaction_01032` (Unyielding Loyalty), `Reaction_03006` for the full pattern.
 
 Wrap the whole `handleEvent` body with an `if (! $this->isAvailable()) return;` near the top. The once-per-day reset handles "one ability fires multiple effect events" — the reaction only triggers on the first event; after the player resolves, `setUsed` blocks further events from the same ability.
+
+### "When an opposing character is destroyed • …"
+
+**"Opposing" is not "any enemy."** Helpers.md: different controller **and same location**. A gate of only `$destroyed->ControllerId != $owner->ControllerId` is wrong — it fires for destroys across the board.
+
+For a **trait-prefixed** scheme Reaction with no named performer in the trigger (e.g. **"Duelist Reaction: When an opposing character is destroyed • Draw a card"**):
+
+1. On `EventCharacterDestroyed` + `isAvailable()`.
+2. Reject if `$destroyed->ControllerId == $owner->ControllerId`.
+3. Require a controlled traited character **at `$destroyed->Location`** (`getCharactersAtLocation` + `hasTrait("Duelist")`). That is both the trait gate and the opposing-location rule.
+4. Destroy-time Location is still readable during `handleEvent` (`runEventHubAfterCards = true`) — no need to capture location unless the resolve branch needs it later.
+5. Buttons: Resolve/Draw + Pass. `setUsed` only on success. Surface destroyed name in `getReactionDescription` if useful.
+
+**Regression:** First Blood Money draft gated "any Duelist in play anywhere" + any enemy destroy. Eddie corrected: opposing = same location as your Duelist.
+
+Reference: `Reaction_04004`. Contrast friendly-destroy-at-city: `Reaction_03017`. Contrast "any opposing sent to Locker" with no same-location requirement when the printed text does not say opposing-at-location (re-read the card — `_03007` uses Locker, not "opposing" in the same sense).
 
 ### "Your performer's location" on a scheme
 

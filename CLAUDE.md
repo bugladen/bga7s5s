@@ -61,7 +61,7 @@ The `.githooks/pre-commit` hook enforces these on staged PHP files:
 | `extends CardReaction/AttachmentReaction` | `$this->setUsed()` AND `$this->isAvailable()` |
 | `extends RiskReaction` | Check `Location == Game::LOCATION_HAND` |
 | Calls `createAttachmentEquippedEvent()` | Must also call `getRequiredAttachTargetId()` |
-| `extends FactionAttachment/CityAttachment` | Must set `$this->Riposte =` |
+| `extends FactionAttachment` | Must set `$this->Riposte =` |
 | **Forbidden**: implementing both `IAbilityThatTargetsCharacters` and `IAbilityThatTargetsCards` on the same class |
 | **Forbidden**: raw `$deck->moveCard()` / `$this->cards->moveCard()` outside `DeckTrait.php` — use `Game::moveCard()` (syncs Location), `moveCardInDeck()` (deck only), or `parkCard()` (Purgatory) |
 

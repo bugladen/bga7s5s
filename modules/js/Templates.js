@@ -16,7 +16,11 @@
             <div class="_7sfs-deck-picker-modal">
 
                 <div class="_7sfs-deck-picker-tab-content _7sfs-deck-picker-active" id="startingTab">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-banner-image"></div>
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-banner-image">
+                    <div class="_7sfs-deck-picker-banner-badge _7sfs-deck-picker-banner-tac"></div>
+                    <div class="_7sfs-deck-picker-banner-badge _7sfs-deck-picker-banner-faf"></div>
+                    <div class="_7sfs-deck-picker-banner-badge _7sfs-deck-picker-banner-bas"></div>
+                </div>
                 <div class="_7sfs-deck-picker-tab-text">\${banner_description}</div>
                 </div>
 
@@ -265,6 +269,10 @@
         
         window.jstpl_forum_parley_gone_wrong_intervene_list = `
         <div id="forum-parley-intervene-list" class="_7sfs-forum-intervene-list"></div>
+        `;
+
+        window.jstpl_motion_to_delay_label = `
+        <div id="motion-to-delay-label" class="_7sfs-forum-intervene-list"></div>
         `;
 
         window.jstpl_sirens_scream_used_list = `

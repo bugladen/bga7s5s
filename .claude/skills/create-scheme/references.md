@@ -59,3 +59,77 @@
 | `modules/php/States/faf/State_highDramaPhase03063_2.php` | HD state 2: destination location (`locationChosen` + `back`). |
 | `modules/php/cards/_7s5s/_01092.php` (Makepeace) | Character parallel for `getEquipDiscount` -= 1 when opposing character equips. |
 | `modules/php/cards/_7s5s/actions/Action_01105.php` | Resolve-pressure success → engage pick (no wound cost). Useful parallel; **do not** copy its missing ActionResolved-on-failure. |
+| `modules/php/cards/bas/_04004.php` (Blood Money) | **Fixed dual Renown (Docks + Bazaar) + Then move your Duelist (two planning states) + Duelist City Action + Duelist Reaction.** Initiative/Traits verified against art (`Assassination` added to TraitNames). |
+| `modules/php/cards/bas/actions/Action_04004.php` | Duelist gate; move to other City location with wounded enemy; `engage=false`; named `"locationChosen"`. |
+| `modules/php/cards/bas/reactions/Reaction_04004.php` | Opposing destroyed → draw. Opposing = enemy **at same location as your Duelist** (not any enemy). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04004.php` | Planning state 1: Duelist pick (`duelistChosen`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04004_2.php` | Planning state 2: City dest (`locationChosen` + `back` — no `""`). |
+| `modules/php/States/bas/State_highDramaPhase04004.php` | HD location pick for City Action. |
+| `modules/php/cards/bas/_04005.php` (Denounced, Disgraced) | **Trivial Docks Renown + Pattern L Red Hand City Action** (destroy controlled → claim → each player discards). Traits Villainous+Purge (`Purge` added to TraitNames). |
+| `modules/php/cards/bas/actions/Action_04005.php` | Red Hand gate; destroy **target** (not performer); unequip before destroy; claimability filter; ActionResolved before multi-discard Transition. |
+| `modules/php/States/bas/State_highDramaPhase04005.php` | HD destroy pick; `"back" => DISPATCH` (not bare CHOOSE_PERFORMER); named `"characterChosen"`. |
+| `modules/php/States/bas/State_highDramaPhase04005_2.php` | Concurrent multi-discard for **each player** (incl. acting); hand-filter via `getGameDeckObject`; not sans-initiating. |
+| `modules/php/cards/_7s5s/actions/Action_01095b.php` | Opponents-only multi-discard contrast (`MULTI_STATE_INITIATING_PLAYER` + sans-initiating). ActionResolved-before-Transition priority ordering. |
+| `modules/php/cards/_7s5s/actions/Action_01015.php` | Scheme destroy parallel — destroys the **performer** as cost (opposite of `_04005` target destroy). |
+| `modules/php/cards/bas/_04014.php` (Forged for Battle) | **Fixed Docks Renown + pick-another-location resolve + Continuous challenge/intervene Reaction.** Initiative 45 / Panache 0 / Zeal+Prepared verified against art. |
+| `modules/php/cards/bas/reactions/Reaction_04014.php` | Continuous: `EventChallengeIssued` + `EventCharacterIntervened` → engage Weapon/Armor → +1 Finesse + `FORGED_FOR_BATTLE_CONDITION`. Clear on `EventActionResolved` `!IN_DUEL`. No `setUsed(true)` (comment literal). Skip `FakeAttachment`. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04014.php` | Planning resolve: city location pick excluding Docks (`actFromCardWithLocations`). |
+| `modules/php/cards/_7s5s/_01089.php` (Soline) | Finesse condition Started/Ended tooltip pattern mirrored by Forged for Battle. |
+| `modules/php/cards/_7s5s/reactions/Reaction_01040.php` (Rena) | Character Continuous engage-Weapon-instead on intervene — sibling of `_04014` Continuous discipline. |
+| `modules/php/cards/bas/_04015.php` (Through Thick and Thin) | **Two-different-locations Renown resolve + Pattern M Scheme Action** (no performer): uncontrolled city → name-matched Kaspar/Daniella move+heal → optional available City Card discard. Initiative 4 / Panache +1 / Camaraderie+Duty verified against art. |
+| `modules/php/cards/bas/actions/Action_04015.php` | `SchemeAction`; Name match not CardNumber; `Controller == 0`; optional discard Pass; ActionResolved after discard/pass. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04015.php` | Two-location planning resolve (`actCityLocationsForReknownSelected` — needs `PlayerActions.js` actionMap). |
+| `modules/php/States/bas/State_highDramaPhase04015.php` | HD uncontrolled location pick (`locationChosen` + `zombie`). |
+| `modules/php/States/bas/State_highDramaPhase04015_2.php` | Optional discard + Pass (`cardDiscarded` / `pass` / `zombie`). |
+| `modules/php/cards/_7s5s/actions/Action_01112b.php` | Available City Card discard filter sibling (`ICityDeckCard` + uncontrolled + `canBeDiscardedFromCity`). |
+| `modules/php/cards/bas/_04024.php` (Diplomatic Envoy) | **Fixed Forum Renown + Then move your Diplomat there (one pick) + En Garde Combat sanctuary at Forum.** Scaffold was `_40024` / `Welsome` — art is `_04024` / Welcome. Initiative 16 / Panache -1 verified. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04024.php` | Planning Diplomat pick (`diplomatChosen` + `zombie`). |
+| `modules/php/cards/_7s5s/_01095.php` (Patricia) | Character sibling: en garde + location → cannot be issued challenges (`eventCheck`). |
+| `modules/php/cards/faf/_03028.php` (Térence) | Character sibling: cannot issue Combat challenges (`CHALLENGE_STAT == STAT_COMBAT`). |
+| `modules/php/cards/bas/_04025.php` (No Rest for the Wicked) | **City Card to Bazaar + Renown to different location + Merchant Reaction at Planning End** (private look N / draw two / sink rest). Initiative 96 / Panache -2 / Trade+Fortune verified against art. |
+| `modules/php/cards/bas/reactions/Reaction_04025.php` | Planning-End Reaction (not Forced): Merchant gate; Look/Pass; `CHOSEN_CARD` snapshot; clamp ≤2 auto-draw; `createTransitionEvent(..., "04025", $this->Id)` for pick; Otto draw + faction-deck sink. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04025.php` | Resolve Renown pick excluding Bazaar (`actFromCardWithLocations`). |
+| `modules/php/States/bas/State_planningPhaseEnd_04025.php` | Private look multi-select (`argsForStatePrivate`); zombie auto-draws first `cardsToDraw`. |
+| `modules/php/cards/_7s5s/_01149.php` (Midnight Shipment) | City Card add to fixed location sibling (no Renown pick after). |
+| `modules/php/cards/faf/reactions/Reaction_03052.php` | Private City Deck look → sink/reorder sibling (Dusk Continuous). |
+| `modules/php/cards/tac/_02005.php` (Decipher the Strands) | Look top N (+Strega) of opponent deck → sink/reorder (resolve-time, not Planning End). |
+| `modules/php/cards/_7s5s/actions/Action_01038.php` (Otto) | Reveal-to-all + draw attachment + sink rest — draw/sink event pair sibling (**Reveal**, not Look). |
+| `modules/php/cards/bas/_04034.php` (Explosive Ultimatum) | **Add Renown, or unique-fewest move-adjacent instead + Pattern N City Action** (opponent lose control / decline → wound opposing). Initiative 28 / Panache 0 / Cunning+Sabotage. Fewest = no ties (Eddie). |
+| `modules/php/cards/bas/actions/Action_04034.php` | Pattern N: opponent-controlled performer filter; Transition to location Controller; Lose Control / Decline; `createLocationBecomesUncontrolledEvent`. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04034.php` | Planning add-or-pass-to-move (`renownPlaced` / `pass` / `zombie`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04034_2.php` | Renown source pick (`locationChosen` + `back`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04034_3.php` | Adjacent dest (`locationChosen` + `back`). |
+| `modules/php/States/bas/State_highDramaPhase04034.php` | Opponent choice; flatten `location` for description; zombie prefers lose control. |
+| `modules/php/cards/bas/_04035.php` (Meeting of the Minds) | **Fixed dual Renown (Bazaar + Forum) + contingent Academic discard/Locker Risk pick + pressure Reaction.** Skip pick when no Academic or no eligible Risk. Initiative 83 / Panache -1 / Discovery. |
+| `modules/php/cards/bas/reactions/Reaction_04035.php` | Pressure at your performer's location → +1 per Academic. `MEETING_OF_THE_MINDS_PRESSURE_TYPE`; count Academics fresh at calc time (not Claude-filtered list). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04035.php` | Combined discard+Locker chooseList (`ids` args). |
+| `modules/php/cards/_7s5s/_01152.php` | Always-offer add-or-move-adjacent sibling (no fewest gate); Pass → move path. |
+| `modules/php/cards/_7s5s/_01144.php` | Fewest-then-second-Add sibling (unique fewest / no ties). |
+| `modules/php/cards/_7s5s/maneuvers/Maneuver_01110.php` | Wound vs location-uncontrolled button choice sibling. |
+| `modules/php/cards/bas/_04044.php` (Adrift in the Wind) | **Two-different-locations Renown + Leader-at-uncontrolled +1 Finesse passive + Leader Reaction (challenge → uncontrolled).** Scaffold name was "Shallow Harbor" — art is Adrift. Initiative 65 / Panache 0 / Brawl+Relentless. |
+| `modules/php/cards/bas/reactions/Reaction_04044.php` | Leader trait gate on `EventChallengeIssued`; `Controller != 0` + `canLocationBecomeUncontrolledBy`; Pass without `setUsed`. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04044.php` | Two-location planning resolve (`actCityLocationsForReknownSelected` — needs `PlayerActions.js` actionMap). |
+| `modules/php/cards/bas/_04045.php` (Stand Your Ground) | **Docks-or-Bazaar Renown pick + En Garde Duelist unrefusable Combat challenge.** Init 81 / Panache -1 / Challenge+Relentless. Performer stays En Garde. |
+| `modules/php/cards/bas/actions/Action_04045.php` | `STAND_YOUR_GROUND_CHALLENGE_TYPE`; no engage; reject throw + JS disable; issuer = owner controls challenger (mirror match); `EventGenerateChallengeThreat` actorThreat; destroy-during-duel score Renown (issuer's defender only). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04045.php` | Planning Docks/Bazaar pick (`actFromCardWithLocations`). |
+| `modules/php/cards/tac/actions/Action_02061.php` | Unrefusable Combat challenge sibling (Risk; **does** engage in `stSetupChallenge`). |
+| `modules/php/cards/_7s5s/actions/Action_01071.php` | Epee unrefusable + during-duel `IN_DUEL`/`CHALLENGE_TYPE` correlator sibling. |
+| `modules/php/cards/_7s5s/_01143.php` (Contempt and Hatred) | Scheme-at-Home aura sibling (`isSchemeInPlay` + clear on `EventCardSentToLocker` + condition tooltip). |
+| `modules/php/cards/_7s5s/_01120.php` (Pavel) | Character sibling: location-control → ±1 Influence (Claim / Uncontrolled / CardMoved listeners). |
+| `modules/php/cards/tac/_02025.php` (Tea and Cakes) | **You Renown → pick opponent → opponent Renown** (any city; not required different). `Game::CHOSEN_OPPONENT` for next resolve state only. Plus Diplomat City Action. |
+| `modules/php/States/tac/State_planningPhaseResolveSchemes02025.php` | Resolve state 1: your city Renown pick. |
+| `modules/php/States/tac/State_planningPhaseResolveSchemes02025_2.php` | Resolve state 2: opponent buttons (`actFromCardWithId`). |
+| `modules/php/States/tac/State_planningPhaseResolveSchemes02025_3.php` | Resolve state 3: opponent city Renown pick. |
+| `modules/php/cards/bas/_04051.php` (A Shared Interest) | **Choose opponent → they Renown → you different Renown** + **Pattern F dual claim** (you then chosen player, different City locs). `$chosenOpponentId` / `$firstRenownLocation` / `$claimedLocation` on scheme + `updateCardObjectInDb`. Null-performer claims. Init 31 / Panache -1 / Bargain+Savvy / Neutral. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04051.php` | Resolve state 1: opponent buttons. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04051_2.php` | Resolve state 2: opponent Renown pick. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04051_3.php` | Resolve state 3: controller different-location Renown. |
+| `modules/php/States/bas/State_planningPhaseEnd_04051.php` | Forced claim pick for controller (`locationIds` claimable). |
+| `modules/php/States/bas/State_planningPhaseEnd_04051_2.php` | Forced claim pick for chosen opponent (exclude `$claimedLocation`). |
+| `modules/php/cards/faf/reactions/Reaction_03005.php` | Null-performer `createLocationClaimedEvent` sibling (Reaction, not Forced). |
+| `modules/php/cards/bas/_04052.php` (Motion to Delay) | **≤1 Renown location pick → Renown elsewhere** + **chosen location cannot be controlled** (`$ChosenLocation` + `setLocationCanBeClaimed` + `eventCheck` LocationClaimed; restore on locker — Leshiye idiom, scheme stays at Home) + **Forced HD End draw** when any opponent controls more city locs. Init 90 / Panache -1 / Bureaucracy+Authority / Neutral. Pass when no ≤1-Renown locs (`_01072`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04052.php` | Resolve state 1: low-Renown location pick + Pass. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04052_2.php` | Resolve state 2: different-location Renown. |
+| `modules/php/cards/_7s5s/_01126.php` (Leshiye) | Claim-lock sibling (`setLocationCanBeClaimed` + `eventCheck`); Leshiye moves onto the city — Motion to Delay does not. |
+| `modules/php/cards/_7s5s/_01072.php` (Réputation Méritée) | Pass-when-no-eligible-location sibling (0 Renown filter). |
+

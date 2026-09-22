@@ -13,7 +13,45 @@ Both need:
 
 **Pre-commit hook on Technique:** same — must handle `EventTechniqueCanceled` or add the equivalent comment.
 
-References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition).
+References: `Technique_01050` (Unsavory Salve — -1 Thrust + wound), `Maneuver_01133` (Matushka's Efficiency), `Technique_03043` (El Gato's Mask — Gambling + reveal/discard), `Technique_03064` (Harpoon — Gambling + remainder-of-duel condition), `Technique_04016` (Drachenblut — Gambling + EndOfRound +1/+1 threat), `Technique_04017` (Jägerarmbrust — engage + +1 Thrust + Resolve-time Academic/Hunter adversary discard; **not** Gambling), `Technique_04026` / `Technique_04055a` (Pompon / Sturdy Shield — engage +1 Parry; simplest engage-stat Technique), `Technique_04054b` (Sabre — engage +1 Riposte), `Technique_04055b` (Sturdy Shield — Gambling +1 Parry; simplest free Gambling +stat).
+
+### Engage this card + +N Thrust / Parry / Riposte (normal Technique)
+
+When printed cost is **"Engage this card • +N [Thrust]"**, **"+N [Parry]"**, or **"+N [Riposte]"** and the keyword is plain `<b>Technique:</b>` (not Gambling):
+
+1. Availability: `IN_DUEL` + `! $attachment->Engaged` + duel actor == owning character. **No** `DUEL_GAMBLED`.
+2. Resolve: `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)`.
+3. Calculate: `EventDuelCalculateTechniqueValues` → `$event->thrust += N` **or** `$event->parry += N` **or** `$event->riposte += N` + explanation. Mirror `Technique_04017` (Thrust) / `Technique_04026` / `Technique_04055a` (Parry) / `Technique_04054b` (Riposte) / `Technique_03018` / `Technique_02023` — do **not** require `EventGenerateChallengeThreat` when the Technique is duel-only (`IN_DUEL` gate). No GameState when there is no picker.
+
+**Passive gamble reveal on the same card is unrelated.** "When the equipped character gambles, reveal an additional card" is Pattern B''' on the attachment class (`_01101` / `_04017`). It does **not** turn the Technique into a Gambling Technique.
+
+**Co-printed Gambling Technique is also unrelated.** `_04055` prints both engage +1 Parry and Gambling +1 Parry — keep `DUEL_GAMBLED` only on the Gambling class (`04055b`); the engage half (`04055a`) stays Pompon-shaped.
+
+### Resolve-time "If your participant is a Trait…" effect gate
+
+Printed **"If your participant is an Academic or Hunter, the adversary discards a card"** (or similar) is a **conditional consequent**, not a cost and not an availability gate.
+
+- Availability stays open for any host that can pay engage (etc.).
+- On `EventResolveTechnique`, after paying costs, check `$owner->hasTrait("Academic") || $owner->hasTrait("Hunter")` (OR of listed traits).
+- Only then queue the conditional effect (discard picker, wound, …).
+- Non-matching hosts still get engage + Thrust (the unconditional halves).
+
+**Do not** put the trait check in `isAvailableToPlayer` unless the printed text is a performer restriction for the whole ability ("Academic Technique:", "May only…"). **"If …"** ≠ **"May only equip"** ≠ trait-prefixed keyword.
+
+Reference: `Technique_04017`.
+
+### Adversary discards a card (hand picker)
+
+When the Technique forces the **adversary** to discard from hand (they choose which card):
+
+1. On Resolve (after engage / trait gate): `$hand = getCardObjectsAtLocation(LOCATION_HAND, $adversary->ControllerId)`.
+2. **Empty hand:** notify why + skip transition (checklist 9). Do not dead-end the duel.
+3. **Non-empty:** `createTechniqueTransitionEvent($adversary->ControllerId, $attachment->Id, "NNNNN", $this->Id)` — HIGHEST_PRIORITY so the picker interrupts before CalculateValues. Character-hosted Maya (`Technique_01093`) may use `createTransitionEvent`; attachment-hosted prefer `createTechniqueTransitionEvent` like `Technique_04013`.
+4. **`sourceId` = attachment** (`getOwningCard()->Id`) — FrameworkActionsTrait hydrates source and `getTechniqueById`; character `sourceId` hides attachment-hosted techniques.
+5. GameState: `State_duelChooseTechnique_NNNNN` (activeplayer, hand select) → `"" => DUEL_CHOOSE_TECHNIQUE_EVENTS`. Constant + `states.inc.php` EVENTS key `"NNNNN"`. Expansion `OnEnteringState` / `OnLeavingState` / `OnUpdateActionButtons` + `EventHandlers.js` (Confirm Selection → `onCardDiscarded`, enable when `factionHand` selection non-empty).
+6. `actFromTechniqueWithId`: validate controller + `LOCATION_HAND` → `createCardDiscardedFromHandEvent(..., $asEffect = true)`.
+
+Siblings: Maya `Technique_01093`, Íñigo `Technique_03039`, Jägerarmbrust `Technique_04017`. Distinct from **reveal-then-discard** (`_03043`) and **cancel-unless-discard** (`_03044`).
 
 ### Gambling Technique / Gambling Maneuver
 
@@ -42,6 +80,48 @@ WHY `IN_DUEL` is mandatory here: gambling only exists inside a duel round — do
 **"Adversary" cost vs effect:** gate `IN_DUEL` when "adversary" appears in the **cost / condition before the •** (availability must read duel-opponent state — e.g. "If the adversary is wounded • …"). Do **not** add `IN_DUEL` solely because the **effect after the •** names the adversary ("Wound the adversary", "−1 Thrust to Adversary"). Gambling Techniques still always need `IN_DUEL` regardless. See create-character Pattern E "In-duel availability gate" for the full table. References: cost-side `Technique_03002` / `Technique_02023`; effect-only `Technique_01193` / `Technique_01204`.
 
 When the cost is **"Engage this card"** (the attachment), also gate `! $attachment->Engaged` and queue `createCardEngagedEvent($playerId, $attachment->Id, $attachment->Id, $this->Id)` on `EventResolveTechnique` — mirror `Technique_01049` / `Technique_03064`.
+
+`Technique` base sets `Used` on `EventTechniqueActivated` and resets on `EventDuelEnd` when `ResetOnDuelEnd` (default true) — do not double-`setUsed` unless a multi-step resolve needs it (`Technique_01096`).
+
+### Gambling Technique: free +N Parry / Thrust / Riposte
+
+When printed text is simply **`<b>Gambling Technique:</b> +1[Parry]`** (or Thrust / Riposte) with **no** engage cost and **no** deferred EndOfRound effect:
+
+1. Own `Technique_NNNNN` class — availability = Gambling gate block above (`IN_DUEL` + `DUEL_GAMBLED` + actor == owning character).
+2. Calculate: `$event->parry += 1` (or thrust / riposte) + explanation on `EventDuelCalculateTechniqueValues`.
+3. Add the `// EventTechniqueCanceled handler not needed` comment (pre-commit).
+
+**Do not** instantiate `Technique_PlusOneParry` / `Technique_PlusOneThrust` / `Technique_PlusOneRiposte` and `setId` for a Gambling Technique. WHY: those generics only gate `IN_DUEL` (and actor identity via parent) — they would offer every duel round without requiring a gamble. `setId` on PlusOne* is correct only for **plain** free Techniques (`_04054` Sabre Thrust, Pavel `_01120` Parry).
+
+**Do not** reuse another card's engage-Parry class via `setId` either (`Technique_04026`) — ClassId would stay wrong for debugging / uniqueness. Copy the engage shape into `Technique_NNNNNa` when the engage half is card-specific (`Technique_04055a`).
+
+Reference: `Technique_04055b` (Sturdy Shield). Engage sibling on the same card: `Technique_04055a` (Pompon copy — no `DUEL_GAMBLED`).
+
+### Deferred EndOfRound ("At the end of your round, …")
+
+When the Technique effect fires **after the round ends** (not during CalculateValues / Resolve), use a public `$IsActive` flag — **not** a `Game::*_CONDITION` (that is for remainder-of-duel restrictions like Harpoon).
+
+```php
+// EventResolveTechnique → arm
+$this->IsActive = true;
+$attachment->IsUpdated = true;
+
+// EventDuelEndOfRound → fire only on "your" round
+if ($this->IsActive && $owner !== null && $event->actorId == $owner->Id)
+{
+    // effect…
+    $this->IsActive = false;
+    $attachment->IsUpdated = true;
+}
+
+// EventTechniqueCanceled / EventDuelEnd → clear stranded IsActive
+```
+
+**WHY `actorId == owningCharacter->Id`:** "your round" means the equipped character's round as duel actor. Do **not** clear `IsActive` on every EndOfRound — a stray non-owner EndOfRound would eat the pending effect. Clear on fire, cancel, and duel end.
+
+**"Each participant gains a threat":** `EventFactory::createThreatModifiedEvent(1, 1)` — challenger delta + defender delta. Sibling: `Reaction_02039`. No GameState when there is no picker.
+
+Reference: `Technique_04016` (Drachenblut). EndOfRound siblings: `Technique_03039` (MoveHome flag), `Technique_01096` / `Maneuver_01031` (IsActive + picker).
 
 ### Remainder-of-duel lasting effects (condition)
 

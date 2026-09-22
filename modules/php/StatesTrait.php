@@ -14,6 +14,8 @@
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04003a;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04043;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -815,9 +817,7 @@ trait StatesTrait
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE 
-        || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE 
-        || $challengeType == Game::AJA_CHALLENGE_TYPE)
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE || $challengeType == Game::NO_MORE_WORDS_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);
@@ -1681,6 +1681,8 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_CARD);
         $this->globals->delete(GAME::CHOSEN_CARD_COST);
         $this->globals->delete(GAME::NEXT_COMBAT_CARD);
+        // WHY: Unravel the Thread Sorceries +1 Parry is "this round" only.
+        $this->globals->delete(Game::UNRAVEL_THE_THREAD_CONTROLLER_ID);
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
         $this->globals->delete(Game::DUEL_GAMBLED);
@@ -1779,6 +1781,17 @@ trait StatesTrait
     {
         $duelId = $this->globals->get(Game::DUEL_ID);
         $this->globals->set(GAME::IN_DUEL, false);
+
+        // WHY: Desideria _04003a defers Thug→hand until duel end so stDuelNextPlayer
+        // still sees Locker/Discard (death). If Desideria died from her wound cost,
+        // her reaction instance was reinstantiated and EventDuelEnd may miss her —
+        // flush any leftover per-player globals here.
+        Reaction_04003a::flushPendingRecovers($this);
+
+        // WHY: Tomoe Sango _04043 — primary clear is immediate on Destroy/Locker. This is a
+        // safety-net flush if that path missed after destroy recreate (AffectedCharacterId
+        // wiped; locker cards not in buildCity so EventDuelEnd never hits her).
+        _04043::clearPendingDebuff($this);
 
         $this->globals->delete(Game::CHALLENGE_CANCELLED);
         $this->clearChallengeLastKnownParticipants();
@@ -1889,6 +1902,8 @@ trait StatesTrait
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(Game::PRESSURE_BONUS);
         $this->globals->delete(Game::LOYAL_PLAYER_ID);
+        $this->globals->delete(Game::VANTAGE_POINT_PLAYER_ID);
+        $this->globals->delete(Game::MEETING_OF_THE_MINDS_PLAYER_ID);
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->delete(Game::PRESSURE_STAT);
         $this->globals->set(Game::RECRUIT_TYPE, Game::NORMAL_RECRUIT_TYPE);

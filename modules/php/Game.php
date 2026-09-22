@@ -128,12 +128,33 @@ class Game extends \Bga\GameFramework\Table
     final const SILVER_SPINE_ABILITY_USED = "Silver Spine Ability Used";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const UNDER_COVER_OF_THE_NIGHT = "Under Cover of the Night";
+    final const LET_BYGONES_BE_BYGONES = "Let Bygones Be Bygones";
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
+    final const GIACINTO_INFLUENCE_REDUCTION_CONDITION = "Influence Reduced by Giacinto";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
+    // WHY: Tomoe Sango (_04043) -1 Finesse on her duel adversary. Tooltip source like Soline.
+    final const TOMOE_SANGO_CONDITION = "Finesse Modified by Tomoe Sango";
+    // WHY: Destroy recreates Sango (wipes AffectedCharacterId). Primary clear is immediate
+    // on Destroy/Locker; this global + stDuelEnd clearPendingDebuff is a safety-net flush.
+    final const TOMOE_SANGO_PENDING_DEBUFF_CHARACTER_ID = "tomoeSangoPendingDebuffCharacterId";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
+    // WHY: Forged for Battle (_04014) +1 Finesse for the duration of a challenge/intervention.
+    // Condition surfaces the source on the character tooltip (Soline / Harpoon pattern).
+    final const FORGED_FOR_BATTLE_CONDITION = "Finesse Modified by Forged for Battle";
+    // WHY: Adrift in the Wind (_04044) +1 Finesse while Leader at uncontrolled location.
+    // Condition surfaces the source on the Leader tooltip (Contempt / Forged pattern).
+    final const ADRIFT_IN_THE_WIND_CONDITION = "Finesse Modified by Adrift in the Wind";
     final const HARPOON_CONDITION = "Harpooned (-1 Finesse; cannot swap or move)";
     final const LODESTONE_CONDITION = "Lodestone (opponents cannot move Home)";
     final const SHACKLES_CONDITION = "Shackled (cannot move)";
+    // WHY: Fate's Silence (_04008) blanks the equipped character's text box while attached.
+    // Condition is the source of truth (Harpoon/Shackles pattern) so ability gates survive
+    // if the FakeAttachment leaves $theah->cards mid-resolve; tooltip shows the blanking.
+    final const FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
+    // WHY: Unravel the Thread (_04010) Sorceries +1 Parry this round. Source Risk often
+    // returns to the faction deck after gamble choose and leaves $theah->cards — sticky
+    // on the Reaction would miss EventDuelCalculateCombatCardStats. Cleared end of round.
+    final const UNRAVEL_THE_THREAD_CONTROLLER_ID = "unravelTheThreadControllerId";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
     final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 
@@ -150,6 +171,8 @@ class Game extends \Bga\GameFramework\Table
     final const NORMAL_RECRUIT_TYPE = 0;
     final const KASPAR_RECRUIT_TYPE = 1;
     final const CIRILO_RECRUIT_TYPE = 2;
+    // WHY: Silver Tongue (_04059) — Parley Yes/No like NORMAL, but do not Engage on Parley.
+    final const SILVER_TONGUE_RECRUIT_TYPE = 3;
 
     //Pressure global variables
     final const PRESSURING_PLAYER = "pressuringPlayer";
@@ -176,8 +199,12 @@ class Game extends \Bga\GameFramework\Table
     final const USSURAN_INTRIGUE_PRESSURE_TYPE = 4096;
     final const LOYAL_PRESSURE_TYPE = 8192;
     final const SOLINE_PRESSURE_TYPE = 16384;
+    final const VANTAGE_POINT_PRESSURE_TYPE = 32768;
+    final const MEETING_OF_THE_MINDS_PRESSURE_TYPE = 65536;
     final const SOLOMONIA_ID = "solomoniaId";
     final const LOYAL_PLAYER_ID = "loyalPlayerId";
+    final const VANTAGE_POINT_PLAYER_ID = "vantagePointPlayerId";
+    final const MEETING_OF_THE_MINDS_PLAYER_ID = "meetingOfTheMindsPlayerId";
 
     //Player action global variables
     //Delete these in stNextPlayer
@@ -241,6 +268,13 @@ class Game extends \Bga\GameFramework\Table
     final const SANJAY_CHALLENGE_TYPE = 22;
     final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
     final const CENSURE_CHALLENGE_TYPE = 24;
+    final const DANILO_CHALLENGE_TYPE = 25;
+    final const RATTLE_THE_RIGGING_CHALLENGE_TYPE = 26;
+    final const RAVEN_CHALLENGE_TYPE = 27;
+    final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;
+    final const STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
+    final const CELERITY_CHALLENGE_TYPE = 30;
+    final const HONORABLE_CHALLENGE_TYPE = 31;
 
     //Duel global variables
     //Duel Names
@@ -315,15 +349,6 @@ class Game extends \Bga\GameFramework\Table
         $this->cards = $this->deckFactory->createDeck('card');
         $this->theah = new Theah($this);
     }
-       
-    /**
-     * Player action, example content.
-     *
-     * In this scenario, each time a player plays a card, this method will be called. This method is called directly
-     * by the action trigger on the front side with `bgaPerformAction`.
-     *
-     * @throws BgaUserException
-     */
 
     /**
      * Compute and return the current game progression.
@@ -432,10 +457,13 @@ class Game extends \Bga\GameFramework\Table
         $result["locationControllers"] = $this->theah->getCityLocationControllers();
 
         $result["forumInterveneList"] = [];
+        $result["motionToDelayLocation"] = null;
         foreach ($this->theah->getCardsInPlay() as $card) {
             if ($card instanceof cards\_7s5s\_01150) {
                 $result["forumInterveneList"] = $card->getInterveneListData($this);
-                break;
+            }
+            if ($card instanceof cards\bas\_04052 && $card->ChosenLocation !== '') {
+                $result["motionToDelayLocation"] = $card->ChosenLocation;
             }
         }
 
@@ -505,6 +533,7 @@ class Game extends \Bga\GameFramework\Table
         $gameinfos = $this->getGameinfos();
         $default_colors = $gameinfos['player_colors'];
 
+        $query_values = [];
         foreach ($players as $player_id => $player) {
             $query_values[] = vsprintf("('%s', '%s', '%s')", [
                 $player_id,

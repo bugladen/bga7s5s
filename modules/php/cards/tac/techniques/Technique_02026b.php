@@ -96,6 +96,8 @@ class Technique_02026b extends Technique
     {
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+        
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             // WHY: Challenge Resolve runs before Accept/Refuse. Destroy must not fire on

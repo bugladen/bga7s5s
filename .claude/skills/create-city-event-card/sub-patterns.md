@@ -72,6 +72,43 @@ These helpers (`highlightCharacterChosen` / `unhighlightCharacterChosen`) are th
 
 `03cd03` adds `_7sfs-chosen` to the city card image on enter but **has no leave handler** — that's only fine because the card is discarded immediately after the action resolves, so the DOM element vanishes. For a multi-use City Action where the card stays in play (e.g. `03cd13`), you MUST add a leave handler that removes `_7sfs-chosen`, otherwise the highlight persists into subsequent High Drama turns. Stash the cardId on `clientStateArgs` during enter so leave can find the element after `gamedatas` has moved on.
 
+### "When this card is revealed" Forced
+
+City events use **`EventCityCardAddedToLocation`**, not a generic reveal event:
+
+```php
+if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id)
+{
+    // ...
+}
+```
+
+WHY: the city deck places the card onto a location; that placement *is* the reveal. `_03cd13` (conditional draws), `bas/_04cd07` (unconditional each-player draw), and `bas/_04cd19` (add Renown to this location) all use this gate. Do not invent `EventCardRevealed` / scheme-style reveal listeners for city events.
+
+When the effect needs the placement site ("this location"), use **`$event->location`**. WHY: even though `EventCityCardAddedToLocation` has `runEventHubAfterCards = false` (so Hub sets `$this->Location` before cards), the event field is the durable source of truth for mid-placement Forced and matches the skill's "do not rely on cardInCity" guidance.
+
+### "Add a Renown to this location" (reveal / in-play Forced)
+
+Queue — do not mutate location Renown directly:
+
+```php
+$renownEvent = EventFactory::createRenownAddedToLocationEvent(
+    $this->ControllerId, // 0 for uncontrolled city events; Hub does not use playerId for the add
+    $event->location,     // reveal Forced: use event location
+    1,
+    $this->getInjectCode()
+);
+$event->theah->queueEvent($renownEvent);
+```
+
+EventHub already notifies `"${amount} Renown ADDED to ${location} from …"`. An extra Forced announce (like `_04cd07` / `_04cd19`) is optional spectator clarity and slightly redundant — fine to keep for parity with other Forced cards. Leshiye (`_01126`) and similar `eventCheck` blockers still apply via `queueEvent`'s check path.
+
+Canonical: `bas/_04cd19` (reveal → Renown). Scheme "when revealed" peers use the same factory with `$this->ControllerId` and a fixed / chosen location string.
+
+### Queueing draws for "each player draws a card"
+
+Always `EventFactory::createCardDrawnEvent($playerId, $this->getInjectCode())` + `$theah->queueEvent(...)`. Do not call deck-draw helpers directly from the card — the draw event owns the notify / hand update path. Emit one `${card_inject_code}: ...` message before the loop (or once the first eligible player is found — see `bas/_04cd07`'s `$drewAny` so you stay silent when nobody qualifies).
+
 ### "At the end of High Drama" Forced trigger
 
 `EventHighDramaPhaseEnd` exists and is dispatched centrally by `StatesTrait` at high drama end. Listen for it directly in `handleEvent`:
@@ -83,9 +120,94 @@ if ($event instanceof EventHighDramaPhaseEnd && $event->theah->cardInCity($this)
 }
 ```
 
-Reference cards: `_03cd12` (Equal Claim, makes location uncontrolled), `_7s5s/_01025_Burden` (removes itself at end of high drama). Note `_01025_Burden` is an Attachment, not a CityEventCard, but the trigger plumbing is identical.
+Reference cards: `_03cd12` (Equal Claim, makes location uncontrolled), `bas/_04cd07` (non-controller presence draws), `_7s5s/_01025_Burden` (removes itself at end of high drama). Note `_01025_Burden` is an Attachment, not a CityEventCard, but the trigger plumbing is identical.
 
 Do **not** invent a custom "end of high drama" hook or piggyback on `EventDuskEndOfDay` / `EventPhaseHighDrama` — they fire at the wrong granularity.
+
+### "At the beginning of Dusk" Forced trigger
+
+`EventDuskPhaseBegin` is queued by `stDuskPhaseBegin` and processed in `DUSK_PHASE_BEGIN_EVENTS` **before** `stDuskPhaseCleanup` moves characters Home. Gate with `cardInCity($this)` for in-play city events:
+
+```php
+if ($event instanceof EventDuskPhaseBegin && $event->theah->cardInCity($this))
+{
+    // queue transitions / apply effects
+}
+```
+
+Reference: `bas/_04cd11` (interactive Forced choose + stay Home), `_01177` (Reaction-style Penya, same event), `tac/_02053` (City Reaction stay Home). Do **not** use `EventDuskPhaseEnd` / `EventDuskEndOfDay` for "beginning of Dusk" text — those fire after cleanup.
+
+Interactive dusk Forced: register transition keys under `DUSK_PHASE_BEGIN_EVENTS` in `states.inc.php`. State IDs follow `800` + card digits (e.g. `_04cd11` → `8000411`). Modern cards use a `States/<exp>/State_duskPhaseBegin04cdNN.php` class (no `states.7s5s.php` entry); older `_01177` still lives in `states.7s5s.php`.
+
+### "Does not move Home during Dusk"
+
+Characters normally move Home in `stDuskPhaseCleanup` via `createCardMovingEvent(..., LOCATION_PLAYER_HOME, sourceId=0)`. To keep a chosen character in the city:
+
+1. Add a **card-specific** condition on the character when chosen (`Game::LET_BYGONES_BE_BYGONES`, `HELPED_BY_PENYA`, `UNDER_COVER_OF_THE_NIGHT`, …). WHY a new const per card: the condition string is shown on the character UI — do not reuse another card's flavor string.
+2. On the **event card** (or owning scheme), override `eventCheck` to throw `UserException` when `$event instanceof EventCardMoved && $event->toLocation == LOCATION_PLAYER_HOME` and the character has that condition. Remove the condition and set `IsUpdated = true` before throwing.
+3. WHY **`EventCardMoved`**, not canceling `EventCardMoving`: Penya audit — `queueEvent` catches the throw so cleanup continues; Hub never applies the physical move. Stubborn-style `$event->canceled = true` on `EventCardMoving` is a different (reaction) path.
+
+Cleanup queues move-home events **before** discarding uncontrolled city cards, so the event card is still present for `eventCheck` when stays are resolved.
+
+Exemplars: `bas/_04cd11`, `_7s5s/_01177`, `tac/_02053`.
+
+### "Heal a wound" (Forced / action follow-up)
+
+Queue `EventFactory::createCharacterBeingHealedEvent($characterId, $sourceId, 1, $reason, $abilityId)`. Do not mutate `$character->Wounds` directly. If the text does not say "if wounded," still queue the heal — `Character` clamps at 0 wounds (`actualHealed` may be 0). Only filter unwounded characters when availability text requires a wound (e.g. `_01136`).
+
+### "Wound them" (Forced follow-up)
+
+Queue `EventFactory::createCharacterBeingWoundedEvent($characterId, $sourceId, 1, $reason, $abilityId)`. Do not mutate `$character->Wounds` directly. Same factory as equip Forced on Devil Jonah's Bones (`_03cd05`) and Legion's Caress en garde Forced (`_01021`).
+
+### "After a character at this location becomes engaged" Forced
+
+Listen for **`EventCardEngaged`** while the event card is in the city. Pure Forced — no State/JS.
+
+```php
+if ($event instanceof EventCardEngaged
+    && ! $event->canceled
+    && $event->theah->cardInCity($this))
+{
+    $character = $event->theah->getCharacterById($event->cardId);
+    if ($character === null || $character->Location != $this->Location)
+    {
+        return;
+    }
+    // notify + queue createCharacterBeingWoundedEvent(...)
+}
+```
+
+WHY details that are easy to get wrong:
+
+- **`getCharacterById` is required.** `EventCardEngaged` fires for attachments too (e.g. Syrneth Puzzle Box engages itself). Text that says "a character" must not wound attachments — null from `getCharacterById` means skip.
+- **`!$event->canceled`.** `EventCardEngaged` sets `runEventHubAfterCards = true`, so cards handle before Hub applies `Engaged = true`. Impervious cancelers (Maryam) set `canceled` in that pass; EventHub then no-ops. "After becomes engaged" should not fire on a canceled engage. Legion's Caress (`_01021`) omits this check — prefer the canceled gate for city-event "After" wording.
+- **Location match on the character**, not on `$event` (engage events have no location field): `$character->Location == $this->Location`.
+- There is **no** separate post-hub "engage done" event — peers all listen on `EventCardEngaged` itself.
+
+Canonical: `bas/_04cd19` (Blood in the Water). Cousin: `_01021` (wound on equipped character en gardes via `EventCardEngarded`).
+
+### "Player with a character at this location that does not control this location"
+
+Two independent checks per player from `loadPlayersBasicInfos()`:
+
+1. **Presence:** `count($theah->getCharactersAtLocationByPlayerId($this->Location, $playerId)) > 0`
+2. **Non-controller:** `$playerId != $theah->getCityLocation($this->Location)->Controller`
+
+WHY details that are easy to get wrong:
+
+- **Do not** early-return on `!$location->isControlled()`. Equal Claim (`_03cd12`) does that because its effect is "become uncontrolled" — a no-op when already uncontrolled. For non-controller draws (`bas/_04cd07`), an uncontrolled location (`Controller == 0`) means *every* present player qualifies, because nobody controls it. Skipping when uncontrolled would incorrectly suppress the Forced.
+- The controlling player never qualifies even if they have characters at the location.
+- A non-controller with zero characters there never qualifies.
+
+```php
+$location = $theah->getCityLocation($this->Location);
+foreach ($theah->game->loadPlayersBasicInfos() as $playerId => $_)
+{
+    if ($playerId == $location->Controller) continue;
+    if (count($theah->getCharactersAtLocationByPlayerId($this->Location, $playerId)) === 0) continue;
+    // qualify — e.g. queue createCardDrawnEvent
+}
+```
 
 ### "Each player has equal X" check
 
@@ -203,3 +325,70 @@ Key points:
 - Pressure engages the performer as part of resolution — that's why `getPerformersForAction` filters out engaged characters. Don't manually queue `createCardEngagedEvent`.
 
 For the "If successful, add a city card to this location" follow-up, queue `createCityCardAddedToLocationEvent((int)$topCard['id'], $location)` using `getCardsOnTopOfCityDeck(1)` (see Penya `_03cd01::triggerForcedAbility` for the exact shape).
+
+### Unlimited City Action (card stays; freely reusable)
+
+Printed `Unlimited.` on a City Action (Knives Out `bas/_04cd09`) is **not** the same as once-per-Day multi-use (`_01179` / `_03cd13`):
+
+| | Unlimited | Once-per-Day multi-use |
+|---|---|---|
+| `$playersUsed` | **No** | Yes + dusk reset + used-list UI |
+| `$this->setUsed($theah, false)` after resolve | **Yes** (required) | Yes (required) |
+| Discard the event card | No | No |
+
+WHY `setUsed(false)` even though Eddie says "Unlimited means the action does not call setUsed": `actHighDramaInPlayActionConfirm` sets `Used=true` for every `CardAction` before your handler runs. Without clearing it, `CardAction::isAvailableToPlayer` (`!$this->Used`) greys the action out for everyone. "Does not call setUsed" means do not *consume* the action — clear the central mark.
+
+Do **not** invent a used-list notify / `getAllDatas` branch for Unlimited cards.
+
+### Location-scoped "cannot refuse challenges"
+
+Text like "Characters at this location cannot refuse challenges" is a **continuous location rule**, not Forced and not a challenge issued by this card. Mirror Mōri Daichi (`_03050`), not a new `CHALLENGE_TYPE`:
+
+1. **Card class** — `public static function challengeRefusalBlocked(Theah $theah, Character $defender): bool` that returns true when Knives Out (or your card) sits at `$defender->Location` via `getCardObjectsAtLocation` + `instanceof self`. Gate with `cardInCity($defender)` so Home / locker characters are unaffected.
+2. **`ArgumentsTrait::argsHighDramaChallengeActionAcceptChallenge`** — add a bool arg (e.g. `cannotRefuseDueToKnivesOut`) so the client can disable Refuse.
+3. **`FrameworkActionsTrait::actHighDramaChallengeActionReject`** — throw `UserException` when the helper returns true (server authority).
+4. **`OnUpdateActionButtons.js`** `highDramaChallengeActionAcceptChallenge` — `dojo.addClass('btnRefuse', 'disabled')` when the arg is true.
+
+WHY not a `CHALLENGE_TYPE`: the lock applies to **any** challenge whose defender is at that location (normal claim challenges, card-issued challenges, etc.). A type only correlates challenges *this card* issues.
+
+### Engage-or-discard cost choice
+
+When the cost is "Engage your performer **or** discard a card":
+
+1. `RequiresPerformerSelected = false` — discard path needs no framework performer pick.
+2. Availability: `(has unengaged performer at location) || (hand nonempty)`, plus whatever the effect needs (e.g. another city location to move to).
+3. **State 1** — buttons via `actFromCardWithId` with **numeric** ids (`1` = engage, `2` = discard). WHY numeric: `Game::actFromCardWithId(int $id)` — string labels will not type-check cleanly.
+4. Store the choice in an Action-owned global const (e.g. `Action_04cd09::COST_MODE`).
+5. **State 2** — branch UI on `args.costMode`: highlight unengaged performers **or** `factionHand.setSelectionMode('single')` + `onCardDiscarded` (mirror `highDramaPhase03042`). Enable Confirm in `EventHandlers.js` for the discard branch.
+6. Pay the cost (queue engage or `createCardDiscardedFromHandEvent`), then see **EVENTS hop** below before the effect state.
+
+### EVENTS hop after mid-action payment
+
+If step N queues real game events (engage, discard, move) and step N+1 is another interactive picker, **do not** `nextState` straight to the next custom state. Queued events stay unprocessed until `HIGH_DRAMA_PLAYER_TURN_EVENTS` runs.
+
+```php
+$game->theah->queueEvent($engageOrDiscardEvent);
+$transition = EventFactory::createTransitionEvent($playerId, $owner->Id, "04cdNN_3", $this->Id);
+$game->theah->queueEvent($transition);
+$game->gamestate->nextState("costPaid"); // transitions to HIGH_DRAMA_PLAYER_TURN_EVENTS
+```
+
+Register **both** `"04cdNN"` (first step) and `"04cdNN_3"` (post-EVENTS step) under `HIGH_DRAMA_PLAYER_TURN_EVENTS` in `states.inc.php`. Contrast Penya `_03cd01`: intermediate steps only stash globals and queue **all** events on the final commit — no EVENTS hop needed mid-flow.
+
+### Move this event card to another City location
+
+Printed "another **City** location" (Knives Out) means any other city site in play — **not** adjacency-gated. Build destinations from `$theah->getCityLocations()` excluding `$owner->Location`. Use `createCardMovingEvent(..., $engage = false, ...)` when the cost was already paid. Do **not** discard the event unless the text says so — Unlimited move actions leave the card in play at the new site.
+
+Contrast: "adjacent City location" → `getAdjacentCityLocations($from, $includeHome = false)` (see Penya / `_04cd01`).
+
+### Multi-player sequential Forced pickers (initiative order)
+
+When Forced says each eligible player must choose something (Let Bygones, Chance Meeting musters):
+
+1. Build the player list with `SELECT player_id FROM player ORDER BY turn_order` (today's initiative).
+2. Filter to players who have a legal target (e.g. ≥1 of their characters at `$this->Location` via `getCharactersAtLocation` + `ControllerId == $playerId`).
+3. Queue one `createTransitionEvent($playerId, $owner->Id, "04cdNN")` per eligible player — the EVENTS runner activates each in order.
+4. On resolve of each pick: queue effect events, `nextState()` back to EVENTS (so heals/conditions process before the next picker).
+
+Same queue shape as `Action_03cd03`'s per-player muster loop; difference is the trigger is Forced `handleEvent`, not a City Action. Skip the whole Forced silently (or with no notify) when zero players qualify.
+

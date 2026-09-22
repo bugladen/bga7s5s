@@ -88,7 +88,7 @@ class Reaction_NNNNN extends AttachmentReaction
 
 `CardReaction::setUsed` resets at dusk automatically (via `EventDuskEndOfDay`).
 
-References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047` (hard cancel Technique), `Reaction_01146b` (hard cancel Maneuver or Technique on a Scheme), `Reaction_01181` (cancel + re-queue pattern), `Reaction_03044` (cancel unless discard).
+References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047` (hard cancel Technique), `Reaction_01146b` (hard cancel Maneuver or Technique on a Scheme), `Reaction_01181` (cancel + re-queue pattern), `Reaction_03044` (cancel unless discard), `Reaction_04053` (ignore opponent-ability wound).
 
 ### Engage as a cost — gate the trigger on `! $owner->Engaged`
 
@@ -146,6 +146,136 @@ Cancel-later (delete only on Accept Cancel) races: Resolve can still fire if `Te
 **Rules check when playtesting:** discard-to-keep *should* let the technique resolve (e.g. cloak player may still enter `duelChooseTechnique_01093`). Accept Cancel must *not*.
 
 **Persistence:** keep `$stage`, `$TechniqueId`, `$ManeuverId`, and restore context as **public** properties on the reaction (mirror `01047`). `$owner->IsUpdated = true` after every mutation.
+
+### Pressure fails instead (difference ≤1) — Pompon `_04026` / Objection `_01027`
+
+Printed (attachment): "When a pressure at this location would succeed by one or fewer, engage this card • It fails instead."
+
+Printed (Risk sibling Objection): "When a pressure succeeds with a difference of 1 or less • The pressure fails instead."
+
+**Do not route attachment versions through Objection's wealth-pay path.** Objection is a `RiskReaction` + `ICancelReaction`: `performReaction` stacks pay → `EventRiskReactionTriggered` applies the fail after payment. Attachment cost is **engage this card** — apply engage + fail in `performReaction` directly. No `ICancelReaction`, no `EventRiskReactionTriggered`.
+
+Trigger and gates:
+
+```php
+if (! ($event instanceof EventLocationPressured)) return;
+if (! $event->success || $event->difference > 1) return;
+if (! $this->isAvailable()) return;
+if (! $this->ownerIsAttached($event->theah)) return;
+
+$owner = $this->getOwningAttachment($event->theah);
+if ($owner === null || $owner->Engaged) return;  // engage cost
+
+$owningCharacter = $this->getOwningCharacter($event->theah);
+// "at this location" — omit this gate when printed text has no location clause (Objection)
+if ($owningCharacter === null || $event->location != $owningCharacter->Location) return;
+
+// WHY: Mirror Objection — only interrupt another player's pressure.
+// Printed text often omits "opponent"; failing your own success is not the intent.
+if ($event->playerId == $owner->ControllerId) return;
+```
+
+**Capture pressured context** onto the reaction at trigger time (flat fields: `playerId`, `performerId`, `location`, `pressureType`, `totalsExplanation`, `highDramaBasicAction`, `abilityId`) + `$owner->IsUpdated = true`. Needed to rebuild the failed Result after the original event is gone. Clear after Fail.
+
+**Offer transition:** `createReactionTransitionEvent` with `priority = Event::HIGH_PRIORITY` so the choice interrupts before `EventLocationPressureResult` resolves (same as Objection / cancel Techniques).
+
+**On Fail in `performReaction`:**
+1. `createCardEngagedEvent($owner->ControllerId, $owner->Id, $owner->Id, $this->Id)`
+2. Notify
+3. `$game->theah->deletePressureResultEvents()`
+4. `createLocationPressureResultEvent(..., success: false, ...)` with stored context → `queueEvent`
+5. `setUsed` + clear stored context
+
+No GameState / JS — standard `playerReaction` buttons (Fail Pressure / Pass).
+
+**Risk vs Attachment footgun:** copying Objection wholesale into an AttachmentReaction leaves a dead pay-state path and never engages the card. Copy the *pressure math* (Pressured + delete + failed Result); replace the *cost plumbing* with engage.
+
+References: `Reaction_04026` (attachment), `Reaction_01027` (Risk sibling — pressure math only).
+
+### Ignore wound from an opponent's ability — Leather Spaulders `_04053` / Cascade `_02059`
+
+Printed (attachment): "When an opponent's ability would wound the equipped character, engage this card • Ignore that wound. *(The wound is not taken.)*"
+
+Printed (Risk sibling Cascade): "When an opponent's ability wounds your character • Ignore that wound."
+
+**Do not route attachment versions through Cascade's wealth-pay path.** Cascade is a `RiskReaction`: `performReaction` → entering-pay / `EventRiskReactionTriggered` applies the ignore after payment. Attachment cost is **engage this card** — engage + drop the saved wound in `performReaction` directly. No pay state, no `EventRiskReactionTriggered`.
+
+**Cancel-first on `EventCharacterBeingWounded`** (same bones as Cascade / Sorte Deck `Reaction_01181`):
+
+```php
+if (! ($event instanceof EventCharacterBeingWounded) || $event->canceled) return;
+if (! $this->isAvailable()) return;
+if (! $this->ownerIsAttached($event->theah)) return;
+if ($this->savedWoundEvent !== null) return;  // one pending offer
+
+$owner = $this->getOwningAttachment($event->theah);
+if ($owner === null || $owner->Engaged) return;  // engage cost
+
+if ($this->skipNextEvent) { /* clear flag; return */ }
+
+$owningCharacter = $this->getOwningCharacter($event->theah);
+// Attachment: only the equipped host. Cascade (Risk) allows any controlled character.
+if ($owningCharacter === null || $event->characterId != $owningCharacter->Id) return;
+
+// Opponent's ability — empty abilityId = non-ability wound (e.g. duel threat resolve)
+if ($event->abilityId === '') return;
+$source = $event->theah->getCardById($event->sourceId);
+if ($source === null) return;
+$ability = $source->getAbilityById($event->abilityId);
+if ($ability === null) return;
+$abilityOwner = $ability->getOwningCard($event->theah);
+if ($abilityOwner === null || $abilityOwner->ControllerId == $owner->ControllerId) return;
+
+$this->savedWoundEvent = clone $event;
+unset($this->savedWoundEvent->theah);
+$event->canceled = true;
+$owner->IsUpdated = true;
+
+$transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+$event->theah->queueEvent($transition);
+```
+
+**On Ignore in `performReaction`:** `createCardEngagedEvent` → notify → `$this->savedWoundEvent = null` (do **not** re-queue) → `setUsed`.
+
+**On Pass:** re-queue `$this->savedWoundEvent`, set `$this->skipNextEvent = true` so the re-queued BeingWounded does not re-offer, clear the saved field.
+
+**No `HIGH_PRIORITY`:** the wound is canceled immediately on the BeingWounded event (unlike Technique cancel / pressure-fail, where Resolve / Result events are still queued). Default reaction priority matches Cascade.
+
+**Risk vs Attachment footgun:** copying Cascade wholesale into an AttachmentReaction leaves a dead pay-state path and never engages the card. Copy the *cancel / clone / opponent-ability gates*; replace the *cost plumbing* with engage. Sorte Deck `Reaction_01181` is the Attachment cancel+re-queue sibling (heal, not ignore) — reuse its `skipNextEvent` / clone shape, not its heal effect.
+
+**Known limit (do not invent a queue):** while `$savedWoundEvent !== null`, a second BeingWounded for the same host slips through uncanceled — same as Cascade. Rare; leave unless Rules ask for a queue.
+
+References: `Reaction_04053` (attachment), `Reaction_02059` (Risk sibling — opponent-ability + cancel/clone only), `Reaction_01181` (Attachment cancel+re-queue bones).
+
+### Self-equip Reaction ("After a Hunter or Berserker equips this card • …")
+
+When the Reaction lives **on this attachment** and triggers when **this card** is equipped:
+
+```php
+if (! ($event instanceof EventAttachmentEquipped)) return;
+if (! $this->isAvailable()) return;
+if (! $this->ownerIsAttached($event->theah)) return;
+
+$owner = $this->getOwningAttachment($event->theah);
+if ($owner === null || $event->attachmentId != $owner->Id) return;
+
+$character = $event->theah->getCharacterById($event->characterId);
+if (! ($character instanceof Character)) return;
+
+// Trait OR gate on the *host* — not an equip restriction (Pattern A).
+if (! $character->hasTrait('Hunter') && ! $character->hasTrait('Berserker')) return;
+
+if ($character->Wounds <= 0) return;  // skip offer when heal would be a noop
+
+$transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+$event->theah->queueEvent($transition);
+```
+
+**WHY not Pattern A:** "After a \<Trait\> equips this card" gates the *Reaction offer*, not who may equip. Characters without the trait still equip; they simply never see the Reaction. Only add `canAttachTo` / `eventCheck(EventAttachmentEquipping)` when text also says **"May only equip…"**.
+
+**Heal effect:** `createCharacterBeingHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id)` + notify. Re-check trait + `Wounds > 0` in `performReaction` before healing. SourceId for the reaction transition = **attachment** id (same as `Reaction_01022`).
+
+Reference: `Reaction_04016` (Drachenblut). Heal siblings: `Reaction_03027a`, `Reaction_01181`. Character-side equip Reactions (not self): `Reaction_01039`, `Reaction_01146a`.
 
 ### "After an opposing character moves to an adjacent location" triggers
 

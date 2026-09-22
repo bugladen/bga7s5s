@@ -18,6 +18,8 @@ class Technique_PlusTwoThrust extends Technique
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+        
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id) 
         {
             // WHY: techniqueId already identifies the activated challenge technique.

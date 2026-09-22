@@ -112,9 +112,13 @@ trait ZombieTrait
                     break;
 
                 case "highDramaChallengeActionAcceptChallenge":
-                    // Default: Reject, unless refusal is blocked (e.g. Mōri Daichi Combat gate).
+                    // Default: Reject, unless refusal is blocked (unrefusable challenge types, Mōri Daichi).
                     $args = $this->argsHighDramaChallengeActionAcceptChallenge();
-                    if (! empty($args['cannotRefuseDueToDaichi']))
+                    $challengeType = $args['challengeType'] ?? $this->globals->get(Game::CHALLENGE_TYPE);
+                    if (! empty($args['cannotRefuseDueToDaichi'])
+                        || $challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE
+                        || $challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE
+                        || $challengeType == Game::STAND_YOUR_GROUND_CHALLENGE_TYPE)
                     {
                         $this->actHighDramaChallengeActionAccept();
                     }

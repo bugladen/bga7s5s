@@ -95,10 +95,11 @@ References: `Action_01083` (Leader-only intervention, custom challenge type), `A
 
 ### Custom challenge type when intervention/refusal differ OR carry side effects
 
-`Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` when **either**:
+`Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` when **any** of:
 
-1. **Intervention or refusal *gates* differ from normal** — "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene or refuse" (`AJA_CHALLENGE_TYPE`). The framework reads CHALLENGE_TYPE in `Theah::interventionCheck` to enforce these gates.
+1. **Intervention or refusal *gates* differ from normal** — "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene **or refuse**" (`AJA_CHALLENGE_TYPE`), "Only characters with 3[Finesse] or more can **intervene**" (`CELERITY_CHALLENGE_TYPE` in `_04047` — **intervene only**; do **not** reuse AJA). The framework reads CHALLENGE_TYPE in `Theah::interventionCheck` to enforce intervene gates; refuse gates live separately in `FrameworkActionsTrait::actHighDramaChallengeActionReject` + JS Refuse disable.
 2. **Intervention or refusal carries a side effect attached to the issuing card** — "If they refuse, engage them" + "Wound any character that intervenes" (`CORNERED_CHALLENGE_TYPE` in `_03021`). The gates themselves stay normal (anyone can refuse or intervene), but the **Risk class needs a correlator** to tell "this challenge is mine" inside its `EventChallengeRejected` / `EventCharacterIntervened` handlers.
+3. **An irreversible cost was paid in a card-specific sub-state before the shared choose-target step** — attachment Engage before target pick (`NO_MORE_WORDS_CHALLENGE_TYPE` in `_04019`). `OnUpdateActionButtons.js` shows Back on `highDramaChallengeActionChooseTarget` **only** for `NORMAL_CHALLENGE_TYPE`; a custom type hides Back after the cost. If the paid cost was **attachment** Engage (not performer), still add the type **to** `stIssueChallenge`'s auto-engage list so the performer engages on issue. Also guard `FrameworkActionsTrait::actBack`. See Pattern B.6.
 
 See the existing list in `modules/php/Game.php` for the catalog.
 
@@ -381,6 +382,145 @@ For City Actions like **"City Action: Destroy all engaged attachments equipped t
 4. No challenge / `CHALLENGE_TYPE`. Maneuver half on the same card (destroy all engaged on adversary, pure resolve) mirrors the destroy loop without a chooser — see `Maneuver_03072`.
 
 References: `_03072` / `Action_03072` / `State_highDramaPhase03072` / `Maneuver_03072`, `Technique_02026b` (choose-one engaged destroy), `Action_03038b` (unequip+discard destroy), contrast A.9 (engage *character*, no Target / no Cesca).
+
+### Pattern A.11 — Move performer to adjacent City with more Renown
+
+For City Actions like **"City Action: Move your performer to an adjacent City location with more Renown."** — see `_04030` (Tip the Scales). Contrast `_01059` (any adjacent City — no Renown filter) and `Action_02023` (move *opposing* to adjacent with **less** Renown — inverse compare on a character target, not a performer self-move).
+
+1. **`RiskCityAction`**, `RequiresPerformerSelected = true`. **No** `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters` — location chooser only (same JS trio as `03009` / `04004`).
+2. **Performer filter:** city performers (`RiskCityAction` base) with ≥1 valid destination from `getValidDestinations`.
+3. **Destination filter:**
+   ```php
+   $performerLocation = $theah->getCityLocation($performer->Location);
+   foreach ($theah->getAdjacentCityLocations($performer->Location, false) as $name) {
+       $adj = $theah->getCityLocation($name);
+       if ($adj !== null && $adj->Renown > $performerLocation->Renown) { /* valid */ }
+   }
+   ```
+   Strict `>` — "more Renown", not equal. `$includeHome = false` (adjacent **City** location).
+4. **`EventActionTriggered`:** `createTransitionEvent(..., "NNNNN")` → location GameState (`actFromCardWithLocations`, `"locationChosen"`). **`actFromActionWithIds`:** validate destination still valid → `createCardMovingEvent` on performer (`engage=false`) → `createActionResolvedEvent`.
+5. **Grey Action** when performer is at a local Renown peak among adjacent city locations (zero valid destinations).
+
+**WHY not B.1:** B.1 filters on **claim control** (`getControllerForLocation`). This text filters on **Renown comparison** only — a location can qualify while uncontrolled or opponent-controlled.
+
+**WHY not B.5:** B.5 is character Target + move performer to target's spot. A.11 is self-move with no Target wording.
+
+References: `_04030` / `Action_04030` / `State_highDramaPhase04030`, `_01059` (adjacent move baseline), `Action_02023` (inverse less-Renown on opposing move).
+
+### Pattern A.12 — Engage + lose control of a City location you control • Claim performer location
+
+For City Actions like **"City Action: Engage your performer and lose control of a City location • Claim your performer's location."** — see `_04039` (Rapsodia). Both engage and lose-control are **costs** before the bullet; the sole payoff is Claim.
+
+1. **`RiskCityAction`**, `RequiresPerformerSelected = true`. **No** Cesca interfaces — location chooser only (text never says Target). Same JS location-chooser trio as A.11 / `04030`.
+2. **Availability / performer filter:**
+   - Grey when `getLocationsPlayerCanLoseControl` is empty: `$location->Controller == $playerId` **and** `canLocationBecomeUncontrolledBy` over `getCityLocations()` (Indomitable Will / empty board).
+   - Performers: `! Engaged` (engage cost) **and** `canLocationBeClaimedBy($playerId, $performer->Location)` — sole payoff is Claim (same discipline as `Action_03053` / `Action_01103a`).
+3. **`EventActionTriggered`:** only `createTransitionEvent(..., "NNNNN")` → location GameState. **Do not** engage at announce.
+4. **`actFromActionWithIds` on confirm (atomic):** validate chosen location still in lose-control pool → `createCardEngagedEvent` on performer → `createLocationBecomesUncontrolledEvent($controllerId, $location)` (pass the **current controller** / acting player — mirror `Action_01112a` / `Action_04034`) → if `canLocationBeClaimedBy`, `createLocationClaimedEvent` on performer's location → `createActionResolvedEvent` → `nextState("locationChosen")`. Notify-and-skip when unclaim/claim becomes illegal at emit (same as other claim Actions).
+5. **Text says "a City location" not "another" / not "this location":** allow any controlled City location, including the performer's current location (re-claim after self-unclaim is legal but pointless). Do **not** auto-unclaim the performer's location without a chooser — that is `Action_01112a` ("Make Location Uncontrolled"), not this wording.
+6. Often composes with Pattern E.2 (Action-only performer-trait discount; `_04039` Zealot/Academic/Bard).
+
+**WHY not engage-at-announce (A.3 / Cornered):** the chooser is itself selecting *which cost location to pay*, not a post-cost target. Deferring engage until confirm keeps zombie turns from leaving the performer engaged with no lose/claim.
+
+**WHY not B.1 / A.11:** those choosers pick a **destination** (opponent-controlled adjacent / more-Renown adjacent). A.12's chooser picks a **controlled location to unclaim** — filter is claim-control ownership of the *cost* location, not destination content/Renown.
+
+**WHY not B.7:** B.7 is opponent may-engage-or-you-claim with no self-unclaim cost and no engage-performer cost.
+
+References: `_04039` / `Action_04039` / `State_highDramaPhase04039`; unclaim emit `Action_01112a` / `Action_04034` / `Action_04cd04`; claim availability `Action_03053` / `Action_01103a`; location JS trio `04030`.
+
+### Pattern A.13 — Target opposing equipped • send one attachment to The Locker • wound
+
+For City Actions like **"Academic City Action: Target an opposing equipped character • Send an attachment equipped to them to The Locker. Wound that character."** — see `_04040` (Solvente Universal). Contrast A.10 (destroy **all engaged**, then engage remaining — no locker, no wound, no choose-one) and B.9 (steal equipped attachment to your character).
+
+1. **`RiskCityAction`**, Academic (or other heading-trait) performer gate, `RequiresPerformerSelected = true`, **`IAbilityThatTargetsCharacters`** + Risk **`IRiskThatTargetsCharacters`** — printed **"Target"**.
+2. **Target filter:** opposing at performer location with ≥1 non-`FakeAttachment` attachment ("equipped character").
+3. **Two GameStates (B.8 wiring):** step 1 character chooser → `characterChosen` **directly** to `_2` (only `"NNNNN"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`). Step 2: attachment **name buttons** from `args.attachments[]` (`04019` / `01197_2` shape) + Back. **Do not** put `IAbilityThatTargetsCards` on the same Action — pre-commit forbids mixing with Characters; button chooser is enough.
+4. **On attachment confirm:** `createAttachmentUnequippedEvent` (`eventCheck`) → `createCardSentToLockerEvent` → `createCharacterBeingWoundedEvent` on the target (`eventCheck`) → `createActionResolvedEvent`. WHY unequip first: `EventCardSentToLocker` only moves the card — it does not detach (mirror `_01154_RiskClone` / A.10 destroy). Skip FakeAttachment always.
+5. Often pairs with an Academic pure-resolve Maneuver ("Wound the adversary") — `Maneuver_03033` resolve + Academic `isAvailable` gate; hide when adversary in discard/locker; `EventManeuverCanceled handler not needed`.
+
+**WHY not A.10:** A.10 is destroy-all-engaged + engage remaining (discard-from-play), not choose-one locker + wound.
+
+**WHY not B.9:** B.9 steals to your character and pays equip costs; no Target character Cesca path on the Action.
+
+References: `_04040` / `Action_04040` / `Maneuver_04040` / `State_highDramaPhase04040` + `_2`; unequip+locker `_01154_RiskClone`; attachment buttons `Action_04019` / `Action_01197`; Cesca Target `Action_03072` / `Action_04038`.
+
+### Pattern A.14 — Duelist Engage + [Finesse] challenge + intervene-only Finesse ≥ 3 (± cannot be cancelled)
+
+For City Actions like **"Duelist City Action: Engage your performer • They issue a [Finesse] challenge to target opposing character. Only characters with 3[Finesse] or more can intervene. These effects cannot be cancelled."** — see `_04047` (Celerity).
+
+Composition of A.5-style engage+challenge **without** refuse→claim, plus an intervene gate that is **stricter than Aja's sibling wording**:
+
+1. **`RiskCityAction implements IAbilityThatTargetsCharacters`**, `RequiresPerformerSelected = true`. Mark the Risk with `IRiskThatTargetsCharacters`.
+2. **Performer filter:** `hasTrait("Duelist")` **and** `canChallenge()` **and** `! Engaged` (engage cost) **and** `! DashedFinesse` (Finesse challenge — mirror Raven `_04012`) **and** ≥1 opposing at location.
+3. **`announceAction`:** engage *before* `parent::announceAction()` (01109-safe cost). **`EventActionTriggered`:** mint a **fresh** `CHALLENGE_TYPE` (**off** `stIssueChallenge` auto-engage list), `CHALLENGE_STAT = STAT_FINESSE`, transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`.
+4. **Intervene gate trio** (Finesse ≥ 3 on `ModifiedFinesse`):
+   - `Theah::interventionCheck` — throw when type matches and intervener Finesse &lt; 3.
+   - `ArgumentsTrait` accept-challenge args — filter `$charactersCanIntervene`.
+   - `Reaction_02058` (Jump In) — same Finesse filter on adjacent interveners (Aja and Celerity share this branch).
+5. **Refuse is normal** unless the printed text also restricts refuse. **Do not** reuse `AJA_CHALLENGE_TYPE` — Aja's card says "intervene **or refuse**" and wires Refuse disable in `FrameworkActionsTrait` + `OnUpdateActionButtons.js` when `defenderFinesse < 3`. Celerity only says "can intervene."
+6. **"These effects cannot be cancelled."** — override `Risk::effectsCannotBeCancelled(): bool` → `true` on the Risk. `Reaction_01109` must skip offer when `$risk->effectsCannotBeCancelled()` (ActionActivated / RiskPlayed / ManeuverActivated). Same opt-in on Unsanctioned Duel `_02061`. Do **not** treat the phrase as flavor.
+
+**WHY not AJA_CHALLENGE_TYPE:** reusing Aja would wrongly grey/throw Refuse for defenders with Finesse &lt; 3. Separate constant keeps engage-off-list + intervene-only semantics without stealing Aja's refuse branch.
+
+**WHY not A.5:** A.5's custom type is a refuse→claim correlator; A.14 has no refuse side effect — the type exists for the intervene gate (and to stay off auto-engage).
+
+References: `_04047` / `Action_04047`; cancel hook `_02061` / `Risk::effectsCannotBeCancelled` / `Reaction_01109`; Aja intervene+refuse `Action_03002` / `AJA_CHALLENGE_TYPE`; engage-at-announce `Action_03057` / `Action_03021`; Finesse performer gate `Action_04012`.
+
+### Pattern A.15 — Target opposing lower Influence • they may engage or must move adjacent
+
+For City Actions like **"City Action: Target an opposing character with lower [Influence] than your performer • They may engage. If they do not, they must move to an adjacent City location."** — see `_04049` (Point of Order).
+
+Same "they may engage / if they do not …" family as B.7 / Yield / Duckfoot, but:
+
+- Heading is plain **City Action** (`RiskCityAction`) — **not** En Garde Diplomat / `RiskAction`.
+- Decline stake is **mandatory adjacent City move** (target chooses destination) — **not** you claim.
+- Target filter is Influence **strict `<`** via `ModifiedInfluence` — **not** Arrogant `_03008` equal-or-lower `<=`, and **not** B.7's en garde + non-Leader.
+
+**Recipe:**
+
+1. **`RiskCityAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"Target"**).
+2. **Targets:** opposing at performer location with `$character->ModifiedInfluence < $performer->ModifiedInfluence`. No Leader / en garde filter unless printed.
+3. **Three GameStates:**
+   - `"NNNNN"` — owner character chooser (bas Cesca trio).
+   - `"NNNNN_2"` — **target controller** Engage / **Decline and Move** buttons (Yield/B.7 labeled shape — not Pass).
+   - `"NNNNN_3"` — target controller adjacent City location chooser (`getAdjacentCityLocations($target->Location, false)`; `actFromCardWithLocations`).
+4. **Player swap from step 1:** `createTransitionEvent($target->ControllerId, …, "NNNNN_2"|"NNNNN_3")` then `characterChosen` → EVENTS (same as B.7 `_04027`). **Decline `_2`→`_3` is direct** (`"declined"` named transition) — same active player, no EVENTS hop (Depose `characterChosen`→`_2` discipline).
+5. **Already Engaged → skip `_2`:** print has **no** "en garde" target filter (unlike B.7). Mirror Duckfoot `_01049` / D.1.2 — auto-resolve the "if they do not" half → EVENTS `"NNNNN_3"`. En garde targets always get the Engage choice.
+6. **Engage (`id == 1`):** `createCardEngagedEvent` (target's ControllerId as engage playerId) → `createActionResolvedEvent` → `"done"`.
+7. **Decline → move:** validate adjacent → `createCardMovingEvent` with `engage=false`; initiating player = **ability owner** (Confusion `_03068`) even though target's controller picks the destination; `eventCheck` then queue → ActionResolved → `"locationChosen"`.
+8. **WHY ActionResolved after opponent finishes:** effect *is* engage-or-move (B.7 discipline). Do **not** resolve after target pick.
+9. **WHY three states, not location-as-decline:** Engage must stay an explicit button; picking a location is only the decline branch.
+10. **Wire all three** under `HIGH_DRAMA_PLAYER_TURN_EVENTS` — `"NNNNN_3"` is required for the already-Engaged path even when decline goes direct. bas JS: character trio + Engage/Decline buttons + location-chooser trio (highlight performer + target on `_2`/`_3`).
+11. **Stub hygiene:** `Bureaucracy` not `Beauracracy`; add missing Traits (`Authority`, etc.) to `TraitNames`.
+
+**Contrast:**
+
+| | B.7 `_04027` | Yield `_02020` | A.15 `_04049` | B.8 `_04028` |
+|---|---|---|---|---|
+| Base | `RiskAction` En Garde Diplomat | `RiskCityAction` | `RiskCityAction` | `RiskAction` En Garde Musketeer |
+| Target filter | non-Leader en garde | attachment Engage cost first | Influence `<` (any engage state) | opposing (same location) |
+| Decline stake | you claim | wound target | target moves adjacent | N/A (you pick dest for both) |
+| Who picks move dest | N/A | N/A | **target controller** | **you** |
+| Already Engaged | illegal target | auto-wound | skip to move chooser | legal target |
+
+References: `_04049` / `Action_04049` / `State_highDramaPhase04049` + `_2` + `_3`; B.7 buttons `_04027`; Duckfoot already-Engaged `Action_01049`; adjacent move emit `Action_02023` / Confusion `Reaction_03068`; Influence compare wording `Action_03008` (`<=` contrast).
+
+### Pattern A.16 — Choose controlled City location (no Renown or no characters) • becomes uncontrolled
+
+For City Actions like **"City Action: Choose a controlled City location with no Renown or no characters • It becomes uncontrolled."** — see `_04060` (Worldly). Sibling plain-Action shape: Status Matters `_01086` ("no characters or only Mercenaries").
+
+1. **`RiskCityAction`** — city-character availability gate only. **No** `RequiresPerformerSelected` (text never names a performer). **No** Cesca — location chooser; printed **"Choose"** not character **"Target"**.
+2. **Eligible locations:** `getCityLocations()` where `Controller != 0` **and** `canLocationBecomeUncontrolledBy` **and** (`Renown == 0` **or** `count(getCharactersAtLocation) == 0`). Any controller — not yours-only (contrast A.12).
+3. **`EventActionTriggered`:** `createTransitionEvent(..., "NNNNN")` → location GameState. Confirm: re-validate eligible → `createLocationBecomesUncontrolledEvent($owner->ControllerId, $location)` (emit-only Indomitable Will notify) → `createActionResolvedEvent` → `"locationChosen"`.
+4. **JS:** `01086` location-only trio (no performer highlight) — not A.12/`04039` performer+location.
+
+**WHY not A.12:** A.12 is engage + lose-control **cost** on a location **you** control → claim payoff. A.16's whole effect is unclaim; filter is emptiness (Renown/characters), not ownership.
+
+**WHY not C.10:** C.10 unclaims the **duel** location as a Maneuver If with no chooser. A.16 is a High Drama location picker.
+
+Often pairs with pure-calc **" +N Thrust. If this location is uncontrolled, +N Riposte instead"** (`Maneuver_04060`) — exclusive calc branch on `getControllerForLocation($actor->Location) == 0`; not C.10 (always Riposte + claim/unclaim).
+
+References: `_04060` / `Action_04060` / `State_highDramaPhase04060`; filter sibling `Action_01086`; unclaim emit `Action_04039` / `Maneuver_04048b`.
 
 ### Common precondition predicates
 

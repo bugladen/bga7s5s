@@ -20,6 +20,7 @@ class _03cd12 extends CityEventCard
         $this->CardNumber = 0;
 
         $this->CityCardNumber = 12;
+        $this->InPlayXImageOffset = 5;
 
         $this->Traits = [
             clienttranslate('Bureaucracy'),

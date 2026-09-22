@@ -16,6 +16,7 @@ use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -179,6 +180,8 @@ trait ArgumentsTrait
 
         return [
             "performerId" => $performerId,
+            // WHY: Silver Tongue hides Back (Risk already paid; Back would hit basic Recruit performer choose).
+            "recruitType" => $this->globals->get(Game::RECRUIT_TYPE),
         ];
     }    
 
@@ -197,7 +200,10 @@ trait ArgumentsTrait
         $characters = array_values(array_filter($characters, fn($character) => ! $character->isControlled() && $character->hasTrait("Mercenary")));
 
         $performerParleyed = $this->globals->get(GAME::PERFORMER_PARLEYED, false);
-        if ($performerParleyed && $args["recruitType"] == Game::NORMAL_RECRUIT_TYPE)
+        // WHY: SILVER_TONGUE uses the same Parley-before-target order as NORMAL.
+        if ($performerParleyed
+            && ($args["recruitType"] == Game::NORMAL_RECRUIT_TYPE
+                || $args["recruitType"] == Game::SILVER_TONGUE_RECRUIT_TYPE))
         {
             $characters = array_values(array_filter(
                 $characters,
@@ -776,13 +782,20 @@ trait ArgumentsTrait
         }
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
-        if ($challengeType == Game::AJA_CHALLENGE_TYPE)
+        if ($challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::CELERITY_CHALLENGE_TYPE)
         {
             $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->ModifiedFinesse >= 3);
         }
         else if ($challengeType == Game::SWORN_SWORDS_CHALLENGE_TYPE)
         {
             $charactersCanIntervene = array_filter($charactersCanIntervene, fn($character) => $character->hasTrait("Duelist"));
+        }
+        // WHY: Raven/Valeri/Torvo — no intervene. Empty the picker (UX); interventionCheck enforces.
+        else if ($challengeType == Game::RAVEN_CHALLENGE_TYPE
+            || $challengeType == Game::VALERI_MIKHAILOV_CHALLENGE_TYPE
+            || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE)
+        {
+            $charactersCanIntervene = [];
         }
 
         $mustDiscardToRefuse = $challengeType == Game::WHEN_LEAST_EXPECTED_CHALLENGE_TYPE
@@ -828,7 +841,11 @@ trait ArgumentsTrait
             "mustDiscardToRefuse" => $mustDiscardToRefuse,
             "defenderHandCount" => count($defenderHand),
             // WHY: Mōri Daichi Combat-gate — client disables Refuse; not a CHALLENGE_TYPE flag.
+            // Use last-known challenger/defender when a participant is already destroyed.
             "cannotRefuseDueToDaichi" => $cannotRefuseDueToDaichi,
+            // WHY: Knives Out location gate — same Daichi-style client disable path.
+            // Pass live $target (not last-known): destroyed defenders are out of city → gate off.
+            "cannotRefuseDueToKnivesOut" => $target !== null && _04cd09::challengeRefusalBlocked($this->theah, $target),
         ];
 
     }

@@ -15,7 +15,7 @@ class _NNNNN extends FactionAttachment implements IHasActions, IHasReactions, IH
     {
         parent::__construct();
         // ...
-        $this->Actions    = [new Action_NNNNN()];
+        $this->Actions    = [new Action_NNNNN()]; // or Action_NNNNNa + Action_NNNNNb
         $this->Reactions  = [new Reaction_NNNNN()];
         $this->Techniques = [new Technique_NNNNN()];
     }
@@ -27,3 +27,19 @@ The framework hydrates each ability separately. No cross-talk needed between the
 **Condition + Action on the same card:** `_03065` (Lodestone) stamps a while-equipped condition in the attachment's `handleEvent` (B'') and hosts `Action_03065` for the City Action (C). The Action does not re-implement the restriction — `Character::eventCheck` does. When the City Action sinks self, unequip clears the condition before the (own-ability) move Home fires; that ordering is intentional.
 
 **Opponent-equip + condition + Forced destroy:** `_03066` (Shackles) combines Pattern A (`CanEquipToOpponents` + Finesse-vs-ally gate), Pattern B'' (`SHACKLES_CONDITION` cannot-move), and Forced `EventHighDramaPhaseEnd` destroy. No Action/Reaction class — all on the attachment `handleEvent` / `eventCheck`. Forced unequip clears the condition.
+
+**Multi-trait equip + duel-scoped conditional (no keyword class):** `_04006` (Assassin's Garb) combines Pattern A (Duelist **or** Spy **or** Assassin) with Pattern B''' (+1 Finesse flag + `getNumberOfGambleCardsToReveal` under the same wounded-adversary gate). Both B''' halves live on the attachment `handleEvent` / override — do not split into a Technique just because the effect is duel-related.
+
+**Self-equip Reaction + Gambling EndOfRound Technique (no equip restriction):** `_04016` (Drachenblut) hosts `Reaction_04016` (Hunter/Berserker trigger on `EventAttachmentEquipped` for self — trait gate is *not* Pattern A) and `Technique_04016` (Gambling + deferred `createThreatModifiedEvent(1, 1)`). No cross-talk between the two ability classes.
+
+**Always-on gamble + normal Technique (Resolve-time trait clause):** `_04017` (Jägerarmbrust) overrides `getNumberOfGambleCardsToReveal` on the attachment (B''') and hosts `Technique_04017` (engage + +1 Thrust + Academic/Hunter adversary discard). The Technique is **not** Gambling — do not conflate the passive gamble paragraph with the Technique keyword. The Academic/Hunter check is Resolve-only so non-matching hosts still get engage/Thrust.
+
+**Diplomat equip + pressure-fail Reaction + engage +1 Parry Technique:** `_04026` (Pompon) hosts Pattern A Diplomat dual-gate, `Reaction_04026` (Objection pressure math + engage cost + "at this location"), and `Technique_04026` (engage + Parry — same availability as `04017` engage half, no picker). No cross-talk; no GameState.
+
+**Academic equip + two City Actions:** `_04036` (Ciphered Tome) hosts Pattern A Academic dual-gate, `Action_04036a` (renown relocate from host location — dest picker, `_04034` batch), and `Action_04036b` (move performer to a slot with strictly more Renown). No cross-talk. Separate GameStates because dest filters and resolve differ. Both "Engage this card" — `$attachment->Engaged` is the only shared gate. Home omitted on b: no Renown track, filter cannot match.
+
+**Finesse-threshold equip + ignore-wound Reaction:** `_04053` (Leather Spaulders) hosts Pattern A `ModifiedFinesse >= 2` dual-gate and `Reaction_04053` (Cascade ignore-wound gates + engage cost). No Technique/Action; no GameState. Same Risk→Attachment cost swap shape as Pompon vs Objection.
+
+**Two Techniques (free PlusOne* + engage +stat):** `_04054` (Sabre) hosts `Technique_PlusOneThrust` with `setId('Technique_04054a')` and `Technique_04054b` (engage +1 Riposte, Pompon availability/Resolve, Calculate `riposte += 1`). No equip restriction. `setId` only works because PlusOneThrust already has the right (non-Gambling) gates.
+
+**Offhand + Combat-threshold + engage Parry + Gambling Parry:** `_04055` (Sturdy Shield) sets `OffHand = true`, Pattern A `ModifiedCombat >= 2`, `Technique_04055a` (Pompon engage +1 Parry), and `Technique_04055b` (Gambling +1 Parry). No cross-talk beyond both being Techniques on the same attachment. **Footgun:** do not reuse `Technique_PlusOneParry` for b — missing `DUEL_GAMBLED`. Do not put the gamble gate on a. Added `Shield` to TraitNames.

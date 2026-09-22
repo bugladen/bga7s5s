@@ -29,3 +29,4 @@ WHY not copy onto object properties at creation: Name/Image already copied for i
 
 - `modules/php/cards/RiskClonePropertyTrait.php` (new)
 - `_01106_RiskClone.php`, `_01124_RiskClone.php`, `_01154_RiskClone.php`
+- `_04cd01_RiskClone.php` (bas feature branch — same trait wired after branch switch)

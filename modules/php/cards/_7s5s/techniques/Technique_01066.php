@@ -45,6 +45,8 @@ class Technique_01066 extends Technique
     {
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCharacter($event->theah);

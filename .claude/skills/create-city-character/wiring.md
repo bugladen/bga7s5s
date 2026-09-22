@@ -66,7 +66,11 @@ Reusable client-side handlers:
 
 If your state uses an existing client action like `onMusterCardSelected`, extend the action map in `modules/js/PlayerActions.js` to include the new state name. Forgetting this is a common cause of "the button does nothing in my new state."
 
-The expansion JS files (`*.faf.js`) are already chained from the master JS files — no extra include wiring needed for `faf`. For a new expansion, ensure the chain is in place.
+Location confirm via `onCityLocationsSelected` defaults to `actFromCardWithLocations` when the state is not in the special `actionMap` — Astrid / Penya-style location pickers need **no** `PlayerActions.js` edit.
+
+Character Confirm via `onChooseInPlayCardConfirmed` likewise defaults to `actFromCardWithId` when the state name is absent from that map — Forced opposing pickers (`highDramaPhase04cd14`) need **no** `PlayerActions.js` edit. Do **not** add a Pass button for interactive Forced.
+
+The expansion JS files (`*.faf.js`, `*.bas.js`) are already chained from the master JS files — no extra include wiring needed for `faf` / `bas`. For a new expansion, ensure the chain is in place (`seventhseacityoffivesails.js` loads `OnEnteringState.<exp>.js`, `OnUpdateActionButtons.<exp>.js`, `OnLeavingState.<exp>.js`).
 
 ## Pre-Commit Hook (relevant subset)
 
@@ -87,8 +91,10 @@ The Card class itself (the `_03cdNN extends CityCharacter` file) has no hook-man
 - `getActivePlayerName()` is deprecated — use `$game->getPlayerNameById($id)`.
 - `BgaUserException` is deprecated — throw `\Bga\GameFramework\UserException`.
 - PHP: PSR-12, 4-space indent, braces on their own line.
+- **Preserve line endings.** Leave CRLF files as CRLF. Do not introduce `\r\r\n` (editor shows a blank line between every real line — seen when writing Astrid files on Windows). Prefer editing in place with search/replace over rewriting whole files when possible.
 - Namespaces:
   - Card class: `Bga\Games\SeventhSeaCityOfFiveSails\cards\<expansion>`
   - Action:     `...\cards\<expansion>\actions`
   - Reaction:   `...\cards\<expansion>\reactions`
+  - Technique:  `...\cards\<expansion>\techniques` (custom only; generics stay in `cards/techniques/`)
   - State:      `Bga\Games\SeventhSeaCityOfFiveSails\States\<expansion>`

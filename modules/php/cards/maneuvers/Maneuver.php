@@ -49,6 +49,13 @@ abstract class Maneuver implements ICardAbility
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
     {
+        // WHY: Fate's Silence — Maneuvers on a blanked Character cannot be used.
+        $owner = $this->getOwningCard($theah);
+        if ($owner instanceof Character && $owner->abilitiesAreBlanked())
+        {
+            return false;
+        }
+
         return true;
     }
 

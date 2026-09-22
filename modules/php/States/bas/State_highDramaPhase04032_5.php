@@ -1,0 +1,54 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\bas;
+
+use Bga\GameFramework\StateType;
+use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
+
+class State_highDramaPhase04032_5 extends GameState
+{
+    function __construct(
+        protected Game $game,
+    ) {
+        parent::__construct($game,
+            id: States::HIGH_DRAMA_PLAYER_TURN_04032_5,
+            type: StateType::ACTIVE_PLAYER,
+            name: "highDramaPhase04032_5",
+
+            description: clienttranslate('${actplayer} is choosing a card to discard.'),
+            descriptionMyTurn: clienttranslate('Giacinto') . clienttranslate(': ${you} must discard one revealed card to prevent the move:'),
+            transitions: [
+                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            ],
+            updateGameProgression: false,
+            initialPrivate: null,
+        );
+    }
+
+    public function getArgs(): array
+    {
+        return $this->game->argsForState();
+    }
+
+    #[PossibleAction]
+    public function actFromCardWithId(string $id): void
+    {
+        $this->game->actFromCardWithId($id);
+    }
+
+    public function zombie(int $playerId): void
+    {
+        $revealedIds = json_decode($this->game->globals->get(Game::REVEALED_CARDS, '[]'), true);
+        if (is_array($revealedIds) && count($revealedIds) > 0)
+        {
+            $this->game->actFromCardWithId((int)$revealedIds[0]);
+        }
+        else
+        {
+            $this->game->gamestate->nextState("");
+        }
+    }
+}

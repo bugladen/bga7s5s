@@ -1,12 +1,14 @@
 > Part of **create-city-character**. Open from [SKILL.md](SKILL.md) only when the shape table routes here - keep WHYs intact; do not summarize away regression traps.
 
-## Pattern B — City Forced via `handleEvent`
+## Pattern B — Forced via `handleEvent`
 
-City Forced abilities trigger automatically while the character sits in the city deck (i.e., `cardInCity($this)`). No player choice. Override `handleEvent` and gate the body on:
+**City Forced** triggers automatically while the character sits in the city (i.e., `cardInCity($this)`). **Forced** (no "City" prefix) triggers while in play under whatever scope the text states (recruit, engage, location, etc.). Pure Forced = no player choice = card class only. Interactive Forced ("must choose" / "target") still needs State + JS — see below.
 
-1. **Event type** — `instanceof EventCharacterBeingWounded`, `EventDuelStarted`, etc.
+For pure City Forced, override `handleEvent` and gate the body on:
+
+1. **Event type** — `instanceof EventCharacterBeingWounded`, `EventDuelStarted`, `EventCharacterRecruited`, etc.
 2. **This card is the relevant target** — `$event->characterId == $this->Id`, or for duels both `challengerId` and `defenderId`.
-3. **In city** — `$event->theah->cardInCity($this)`.
+3. **In city** (City Forced only) — `$event->theah->cardInCity($this)`.
 
 Penya's combined "participates in a duel OR would be wounded" trigger:
 
@@ -106,3 +108,48 @@ private function triggerForcedAbility(Event $event): void
 ```
 
 **Gotcha:** `getCardsOnTopOfCityDeck($n)` returns raw card_info rows, not card objects. Cast `$topCard['id']` to `int` before passing to `createCityCardAddedToLocationEvent`. The EventHub handler for that event loads the card object on its end.
+
+### Pure Forced — "After X musters / is recruited • Wound him"
+
+No picker. Gate on `EventCharacterRecruited` (city mercenary recruit) and/or `EventCharacterMustered` / `EventApproachCharacterPlayed` (faction muster / approach play — Joern `_03015` uses the latter pair). Queue `createCharacterBeingWoundedEvent($this->Id, $this->Id, 1, $this->getInjectCode(), …)`. No State/JS.
+
+### Interactive Forced ("must choose" / "target" / "wound him and an opposing character")
+
+Printed **Forced** that still requires a player to pick a target is **not** a City Action and **not** a Reaction. Do not invent `IHasActions` / Pass / Decline just because there is a picker.
+
+WHY not treat as Reaction: Reaction is optional ("you may"). Forced-with-choice is mandatory when a legal target exists; declining is illegal.
+
+Canonical CityCharacter exemplar: **`bas/_04cd14` Millstone Rhud** — "After you recruit Millstone • Wound him and an opposing character." Older multi-player cousin on a City *Event*: `bas/_04cd11`. Pure self-wound cousin: Joern `_03015`.
+
+Recipe (post-recruit, Millstone shape):
+
+1. **`handleEvent`** on `EventCharacterRecruited && $event->characterId == $this->Id`.
+   - WHY `EventCharacterRecruited`: hub sets `ControllerId` before card `handleEvent` (`runEventHubAfterCards` defaults false), so `$this->ControllerId` and location are safe for opposing filters and the transition's active player.
+   - Queue the **automatic** half first (wound Millstone).
+   - If `count(getOpposingCharactersAtLocation($this->Location, $this->ControllerId)) > 0`, queue `createTransitionEvent($this->ControllerId, $this->Id, "04cdNN")`. If none, skip the picker — Forced cannot require an illegal choose; the self-wound still applies.
+2. **Opposing scope** — default to **same location** via `$theah->getOpposingCharactersAtLocation` whenever the text says "an opposing character" / "target opposing character" without a broader range. WHY: matches Sibella / Adelheide wound-opposing; board-wide would overpower a Forced. "Target" means *choose*, not *any in play*.
+3. **State class** under `States/<exp>/` — thin wrapper; card owns `argsFromCard` / `actFromCardWithId` (and helpers like `getEligibleOpposingCharacters`). Register the transition key on the EVENTS state that will process the queued transition:
+   - Recruit payment already transitions to **`HIGH_DRAMA_PLAYER_TURN_EVENTS`** — register `"04cdNN"` there (Millstone). Do **not** invent a recruit-events transition for post-recruit Forced.
+   - Dusk-begin Forced → `DUSK_PHASE_BEGIN_EVENTS` (see city-event `_04cd11`).
+4. **No Pass.** Zombie handler auto-picks the first eligible target (call `actFromCardWithId` — do not `nextState` without applying the Forced).
+5. **JS** in expansion `OnEntering` / `OnUpdateActionButtons` / `OnLeaving` — `highlightCardsAsSelectable(ids)` + Confirm Character only (`onChooseInPlayCardConfirmed` defaults to `actFromCardWithId` when the state is not in `PlayerActions.js`'s map — no map edit needed).
+6. After choice: queue the remaining effect (wound target), then `nextState()` back to the EVENTS runner so wounds process before later transitions.
+
+Queue order on recruit: **self-wound event, then transition** — so the wound runs before the picker UI opens.
+
+```php
+if ($event instanceof EventCharacterRecruited && $event->characterId == $this->Id)
+{
+    // … notify …
+    $event->theah->queueEvent(EventFactory::createCharacterBeingWoundedEvent(
+        $this->Id, $this->Id, 1, $this->getInjectCode(), (string)$this->Id
+    ));
+
+    if (count($this->getEligibleOpposingCharacters($event->theah->game)) > 0)
+    {
+        $event->theah->queueEvent(EventFactory::createTransitionEvent(
+            $this->ControllerId, $this->Id, "04cd14"
+        ));
+    }
+}
+```

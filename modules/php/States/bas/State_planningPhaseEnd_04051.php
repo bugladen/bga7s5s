@@ -1,0 +1,47 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\States\bas;
+
+use Bga\GameFramework\StateType;
+use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
+
+class State_planningPhaseEnd_04051 extends GameState
+{
+    function __construct(
+        protected Game $game,
+    )
+    {
+        parent::__construct($game,
+            id: States::PLANNING_PHASE_END_04051,
+            type: StateType::ACTIVE_PLAYER,
+            name: "planningPhaseEnd_04051",
+
+            description: clienttranslate('A Shared Interest') . clienttranslate(': ${actplayer} must claim a City location.'),
+            descriptionMyTurn: clienttranslate('A Shared Interest') . clienttranslate(': ${you} must claim a City location:'),
+            transitions: [
+                "" => States::PLANNING_PHASE_END_EVENTS,
+            ],
+            updateGameProgression: false,
+            initialPrivate: null,
+        );
+    }
+
+    public function getArgs(): array
+    {
+        return $this->game->argsForState();
+    }
+
+    #[PossibleAction]
+    public function actFromCardWithLocations(string $locations): void
+    {
+        $this->game->actFromCardWithLocations($locations);
+    }
+
+    public function zombie(int $playerId): void
+    {
+        $this->game->gamestate->nextState();
+    }
+}

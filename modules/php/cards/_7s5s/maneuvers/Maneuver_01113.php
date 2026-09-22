@@ -51,7 +51,7 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
                 {
                     [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($actor, $attachment);
 
-                    if ($hasRestrictions || ! $attachment->canAttachTo($actor))
+                    if ($hasRestrictions || ! $attachment->canAttachTo($actor) || ! $attachment->canBeMoved())
                     {
                         continue;
                     }
@@ -101,7 +101,7 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
                     if ($handWealth >= $cost)
                     {
                         [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
-                        if ($hasRestrictions || ! $attachment->canAttachTo($actor))
+                        if ($hasRestrictions || ! $attachment->canAttachTo($actor) || ! $attachment->canBeMoved())
                         {
                             continue;
                         }
@@ -142,14 +142,14 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
             $attachment = $game->theah->getAttachmentById($id);
             if ($attachment == null)
             {
-                throw new \BgaUserException($game->translate("Card not found"));
+                throw new UserException($game->translate("Card not found"));
             }
 
             $actor = $game->theah->getDuelRoundActor();
 
             if (! $actor->hasTrait("Pirate"))
             {
-                throw new \BgaUserException($game->translate("Actor is not a Pirate"));
+                throw new UserException($game->translate("Actor is not a Pirate"));
             }
 
             $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
@@ -158,24 +158,29 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
 
             if ($attachment->ControllerId != $adversary->ControllerId)
             {
-                throw new \BgaUserException($game->translate("Card is not controlled by the Adversary."));
+                throw new UserException($game->translate("Card is not controlled by the Adversary."));
             }
 
             $discardPileName = $game->getPlayerDiscardDeckName($adversary->ControllerId);
             if ($attachment->Location != $discardPileName && $attachment->Location != $adversary->Location)
             {
-                throw new \BgaUserException($game->translate("Card is not in the Adversary's Discard Pile or Attached to Adversary"));
+                throw new UserException($game->translate("Card is not in the Adversary's Discard Pile or Attached to Adversary"));
             }
 
             [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
             if ($hasRestrictions)
             {
-                throw new \BgaUserException($restrictionExplanation);
+                throw new UserException($restrictionExplanation);
             }
 
             if (! $attachment->canAttachTo($actor))
             {
-                throw new \BgaUserException($game->translate("Attachment cannot be attached to the Actor."));
+                throw new UserException($game->translate("Attachment cannot be attached to the Actor."));
+            }
+
+            if ($attachment->Location == $adversary->Location && ! $attachment->canBeMoved())
+            {
+                throw new UserException(sprintf($game->translate('%s cannot be moved.'), $attachment->Name));
             }
 
             [$discount, $explanations] = $game->theah->getEquipDiscount($actor, $attachment);
@@ -183,13 +188,13 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
             $handWealth = $game->handWealthCount($actor->ControllerId);
             if ($handWealth < $cost)
             {
-                throw new \BgaUserException(sprintf($game->translate("You do not have enough Wealth (%d) to pay for the Attachment (%d with a discount of %d)."), $handWealth, $cost, $discount));
+                throw new UserException(sprintf($game->translate("You do not have enough Wealth (%d) to pay for the Attachment (%d with a discount of %d)."), $handWealth, $cost, $discount));
             }
 
             [$hasRestrictions, $restrictionExplanation] = $game->hasEquipRestrictions($actor, $attachment);
             if ($hasRestrictions)
             {
-                throw new \BgaUserException($restrictionExplanation);
+                throw new UserException($restrictionExplanation);
             }
 
             $attachment->ControllerId = $actor->ControllerId;

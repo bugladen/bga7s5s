@@ -228,6 +228,10 @@ return declare('seventhseacityoffivesails.setup', null, {
         if (gamedatas.forumInterveneList && gamedatas.forumInterveneList.length > 0) {
             this.displayForumInterveneList(gamedatas.forumInterveneList);
         }
+
+        if (gamedatas.motionToDelayLocation) {
+            this.displayMotionToDelayLabel(gamedatas.motionToDelayLocation);
+        }
             
         // Set up cards in the bazaar
         gamedatas.bazaarCards = this.moveAttachmentsToCharacters(gamedatas.bazaarCards);

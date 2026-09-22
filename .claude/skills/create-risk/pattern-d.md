@@ -45,7 +45,7 @@ Pre-commit hook requirements on RiskReaction:
 - Literal `Location == Game::LOCATION_HAND` somewhere in the file (substring `grep` — `!=` does **not** satisfy it; structure your in-hand guard with the `==` form, e.g. `if (! ($owner->Location == Game::LOCATION_HAND)) return;`).
 - Literal `$this->setUsed(` and `$this->isAvailable(` somewhere in the file.
 
-References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1), `Reaction_03068` (pass-trigger + mandatory opponent Home→City move via buttons — see Pattern D.1.1), `Reaction_03031` (effect-event redirect after pay — see Pattern D.4; structural cousin of `Reaction_02016` on attachments).
+References: `Reaction_01080` (Iron Reply-style — adds Parry during opposing maneuver), `Reaction_01140`, `Reaction_01088`, `Reaction_02048` (Pressure-to-cancel — multi-event family, saved-event re-emit on decline), `Reaction_03010` (cross-player choice flow after pay — see Pattern D.1), `Reaction_03068` (pass-trigger + mandatory opponent Home→City move via buttons — see Pattern D.1.1), `Reaction_03031` (effect-event redirect after pay — see Pattern D.4; structural cousin of `Reaction_02016` on attachments), `Reaction_04020` (adjacent pressure + D.2.2 + D.1.2 engage-or-wound — see Pattern D.1.2 / D.2.2).
 
 ### Pattern D.1 — Multi-stage cross-player RiskReaction with pay
 
@@ -66,6 +66,23 @@ Key gotchas:
 - `isAvailable()` returns `!Used`. Don't `setUsed(true)` until `finalize()`, or the mid-flow `playerReaction` state won't be able to render its `$stage`-dependent buttons cleanly.
 - Cross-stage notifications: emit the "you used the Reaction" message from your `EventRiskReactionTriggered` handler (after pay) rather than from the offer-stage `performReaction`, so the announce-order matches the actual cost being paid.
 - **Prefer reaction buttons over GameStates** when both choosers are small fixed pools (character name buttons, city location buttons). `Reaction_03010` muster pick and `Reaction_01039` / `Reaction_03040` location pick already prove the UI. GameStates + On*.js are for board-highlight choosers that need `ids` args / click-to-select — don't invent them for D.1 when buttons suffice.
+- **Player-target buttons** — when the owner must pick an opponent player (not a character), use `opponent-{playerId}` reaction ids with `getPlayerNameById` labels. Same discipline as **"Target opponent"** on Actions (`_04009`) — no `IRiskThatTargetsCharacters` / no Cesca. See `_04020` stage `chooseOpponent`.
+
+### Pattern D.1.2 — RiskReaction: wound target character unless they engage
+
+When the printed text says **Then, wound target character … unless they engage** (or **They may engage. If they do not, wound them**) on a **RiskReaction**, wire the engage-or-wound branch with **reaction buttons only** — mirror `Action_01049` / `Action_01156`, not a GameState.
+
+1. **Owner stage** — after any preceding effects (e.g. pressure penalty), `$stage = 'chooseCharacter'`; buttons `character-{id}` for valid targets at the printed location (usually opposing controlled characters). **`IAbilityThatTargetsCharacters`** on the Reaction + **`IRiskThatTargetsCharacters`** on the Risk (printed **"target character"**).
+2. **On character pick** — notify; if `$target->Engaged`, auto-wound + `finalize()` (no choice — already committed).
+3. **Else** — `$stage = 'engageOrWound'`; `createReactionTransitionEvent($target->ControllerId, …)` with **Engage** / **Take the Wound** buttons (no Pass — the alternate is the wound).
+4. **Engage** → `createCardEngagedEvent` on the target character (the **engage** verb, not engarde). **Wound** → `createCharacterBeingWoundedEvent` + `eventCheck`.
+5. **`finalize()`** → `setUsed` + reset stage / saved ids. Do not `setUsed` until the full chain completes (D.1 discipline).
+
+**Optional:** when the Reaction gate was **equipped with a Ranged Weapon**, queue `createRangedAbilityPlayedEvent` on wound resolution (performer id captured at trigger time). Not required for every ranged-gated Reaction — only when the wound is the ranged shot.
+
+**WHY buttons not GameState:** D.1 preference; two fixed choices fit `playerReaction`. `_03061`-style board highlight is for City Actions.
+
+References: `Reaction_04020`, `Action_01049`, `Action_01156`.
 
 ### Pattern D.1.1 — Pass-trigger City Reaction: opponent must move Home → City
 
@@ -129,6 +146,75 @@ if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::<NEW>_PRESSURE_TYPE))
 
 References: `Reaction_03035` (Loyal), `_02044` (Solomonia — passive auto-flag on `EventPressureOccuring`, no pay), `Reaction_02019` (Trial of Faith — RiskReaction that sets `TRIAL_OF_FAITH_PRESSURE_TYPE`).
 
+### Pattern D.2.2 — Opponent pressure penalty ("Target opponent applies -1 to their total")
+
+When the printed text says **Target opponent applies -1 to their total** (or similar — a **chosen opponent's** pressure total decreases during the current pressure), wire the inverse of D.2.1:
+
+1. **Trigger** — same as your Reaction's pressure clause (`EventPressureOccuring` ± location/adjacency gates).
+2. **Pay** — standard D.1/D.2 pay flow.
+3. **Opponent choice** — if multiple opponents have presence at the pressure location (`getCharactersAtLocation($event->location)` → distinct `ControllerId` ≠ owner), `$stage = 'chooseOpponent'` with `opponent-{playerId}` buttons. Single opponent → auto-pick. **"Target opponent"** → player chooser — **no** Cesca (same as `_04009`).
+4. **Effect in post-pay flow (before or as first step after notify)** — `setGlobalFlag(PRESSURE_TYPE, <NEW>_PRESSURE_TYPE)` and `globals->set(<NEW>_PLAYER_ID, $chosenOpponentId)`. Do **not** `setUsed` here if D.1 follow-up stages remain.
+5. **`pressureLocation()` branch** — outside the per-stat loop:
+
+```php
+if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::<NEW>_PRESSURE_TYPE))
+{
+    $playerId = $this->globals->get(Game::<NEW>_PLAYER_ID, 0);
+    if ($playerId && isset($playerInfluences[$playerId]))
+    {
+        $playerInfluences[$playerId]['influence'] -= 1;
+    }
+}
+```
+
+6. **Cleanup** — delete the player-id global in `StatesTrait` post-pressure cleanup alongside `LOYAL_PLAYER_ID`.
+
+Mint the next binary flag after `SOLINE_PRESSURE_TYPE = 16384` (e.g. `32768`). **WHY defer flag to post-pay:** same as D.2.1 — cancel-during-pay must not leave a dangling penalty.
+
+**Adjacent-location pressure trigger (Vantage Point shape):** `$event->location` is where pressure resolves; the performer's **En Garde + Ranged Weapon** gate scans `getAdjacentCityLocations($event->location, false)` for owner characters with `!$Engaged` and a `Weapon`+`Ranged` attachment (`Maneuver_01055` attachment loop). Contrast Loyal (`_03035`) which counts non-Mercs **at** `$event->location`, and `_02044` (Solomonia) which reacts when pressure is **adjacent to** Forum while Solomonia ** sits at** Forum.
+
+**Hide when meaningless:** do not offer if no opponent has controlled characters at the pressure location (nothing to penalize) or if the "Then wound target character" clause has zero legal opposing targets at that location.
+
+**Timing:** all Reaction stages (opponent pick, pressure flag, character pick, engage/wound) must complete inside the events loop **before** `stHighDramaPressureLocation` — the penalty flag is read there. Claim-action path: `EventPressureOccuring` → reactions/pay → `endOfEvents` → `HIGH_DRAMA_PRESSURE_LOCATION`.
+
+References: `Reaction_04020` (D.2.2 + D.1.2 composite), contrast `Reaction_03035` (self +1).
+
+### Pattern D.2.3 — End-of-adversary-round add threat (`PENDING_*_THREAT`)
+
+When the printed text says **At the end of your adversary's round of a duel • Add a threat to your [Duelist] participant** (optionally with italic *"The duel ends only if there is no threat remaining in any threat pool."*), wire Pattern D.2 against `EventDuelEndOfRound` and write **pending** threat — not `createThreatModifiedEvent`.
+
+1. **Trigger** — `EventDuelEndOfRound && isAvailable()`, hand guard `Location == Game::LOCATION_HAND`, `IN_DUEL`.
+2. **"Adversary's round"** — `$event->playerId != $owner->ControllerId` (the actor of the ending round is the opponent). Contrast "at the end of **your** round" (`Technique_04016`: `$event->actorId == your participant`).
+3. **Your participant** — `$theah->getCharacterById($theah->getDuelOpponentId($event->actorId))`. Gate ControllerId == owner; hide when discard/locker. Heading **Duelist Reaction** / printed **"Duelist participant"** → `$participant->hasTrait('Duelist')`. Stash `$participantId` on the Reaction before pay (Pattern D.2).
+4. **Pay** — standard `performReaction('use')` → `EnteringPayState` + `ReactionPayTransition` (WealthCost 0 still pays).
+5. **Effect in `EventRiskReactionTriggered`** — bump **only your participant's side**:
+
+```php
+$challengerId = $theah->getDuelChallengerId();
+if ($participant->Id == $challengerId) {
+    $pending = $game->globals->get(Game::PENDING_CHALLENGER_THREAT, 0);
+    $game->globals->set(Game::PENDING_CHALLENGER_THREAT, $pending + 1);
+} else {
+    $pending = $game->globals->get(Game::PENDING_DEFENDER_THREAT, 0);
+    $game->globals->set(Game::PENDING_DEFENDER_THREAT, $pending + 1);
+}
+```
+
+Accumulate (`get` + `set`) so multiple end-of-round producers can stack. Notify + `setUsed`. **No Cesca** (fixed participant — no printed Target chooser).
+
+**WHY `PENDING_*_THREAT`, not `createThreatModifiedEvent`:** `stDuelEndOfRound` runs Resolve Threat (actor leftover → wounds; zeros that side's `ending_*`) **before** queuing `EventDuelEndOfRound`. Mutating ending threat after that rewrites the finished round's UI chips and can bump `wounds_taken` on a round whose conversion already ran (Raise the Stakes `_02039` bug / journal `2026-04-06-04`). PENDING:
+- is checked by `stDuelNextPlayer` so empty ending pools still continue the duel (the italic reminder needs no extra card code),
+- is applied by `stDuelNewRound` onto the next round's starting threat,
+- is cleaned in `stDuelEnd`.
+
+**Mid-round adds still use ThreatModified.** "When the adversary announces their combat card • Add a threat…" (`Reaction_02039`) fires during the round — `createThreatModifiedEvent` is correct there. PENDING is specifically for **post–Resolve Threat / EndOfRound** producers.
+
+**No new states / JS.** `DUEL_END_OF_ROUND_EVENTS` already transitions `"reaction"` → `DUEL_END_OF_ROUND_REACTIONS` and `"pay"` → `DUEL_END_OF_ROUND_PAY_FOR_REACTION`.
+
+**Maneuver sibling:** `Maneuver_02039` arms on resolve and writes PENDING (+1 both sides) on `EventDuelEndOfRound` — same channel, no pay. Pattern C.2 / checklist item 20 document the consumer side (Second Wind carry-forward).
+
+References: `Reaction_04046` (Bravado — one-side PENDING after pay), `Maneuver_02039` (Raise the Stakes — both-sides PENDING, deferred from Maneuver), contrast mid-round `Reaction_02039` / `Reaction_04022` (`createThreatModifiedEvent`).
+
 ### Pattern D.3 — RiskReaction that cancels pending high-priority events in a batch
 
 When the printed text says "Cancel the movement" / "Cancel the [effect]" and the effect being canceled is delivered by **already-queued, high-priority events** (e.g. `EventRenownAddedToLocation` + `EventRenownRemovedFromLocation` with shared `batchId` — see `_01117`, `_01062`, `_01150` for the producer side), the naive Pattern D.2 shape will deadlock on event ordering. Wire it as:
@@ -146,7 +232,48 @@ When the printed text says "Cancel the movement" / "Cancel the [effect]" and the
 
 **`EventRenownMovingBetweenLocations` is informational only** — it has no `EventHub` handler, so canceling/deleting it does nothing on its own. The actual Renown state change is in the `Added`/`Removed` pair queued alongside it with shared `batchId`. To cancel a Renown movement, delete those two; ignore the Moving event itself (it's already been dequeued and processed by the time you reach `EventRiskReactionTriggered`, anyway).
 
-References: `Reaction_03020` (Commanding — Leader Reaction canceling Renown movement from Leader's location); the related but simpler `Reaction_01140` (Stubborn — `ICancelReaction` that cancels an `EventCardMoving` in-place via `$event->canceled = true` + saved-event re-emit on decline, no post-pay batch deletion needed).
+**Location gate variants (parse print literally):**
+| Print | Gate |
+|---|---|
+| **"from [role]'s location"** (Commanding — Leader) | `$leader->Location == $event->fromLocation` only |
+| **"to or from your performer's location"** (Greed) | controlled character at `$event->fromLocation` **or** `$event->toLocation` (Home has no Renown — skip `LOCATION_PLAYER_HOME`) |
+
+Public saved fields (`$batchId`, locations, `$amount`) survive pay serialize (same discipline as D.2). No Cesca / no states / no JS.
+
+References: `Reaction_03020` (Commanding — Leader from-only); `Reaction_04056a` (Greed — to-or-from any performer); the related but simpler `Reaction_01140` (Stubborn — `ICancelReaction` that cancels an `EventCardMoving` in-place via `$event->canceled = true` + saved-event re-emit on decline, no post-pay batch deletion needed).
+
+### Pattern D.6 — En Garde RiskReaction: collect one fewer Renown
+
+When the printed text says **When a player would collect Renown from your performer's location • They collect one fewer** (± **`<b>En Garde Reaction:</b>`**; ± italic *"Even during Plunder."* / *"Remaining Renown stays."*), wire a **hand-paid RiskReaction** — **do not** copy Ekaterina `_03049`'s automatic `eventCheck` passive.
+
+| | Ekaterina `_03049` (Leader passive) | Greed `_04056b` (RiskReaction) |
+|---|---|---|
+| Shape | `eventCheck` on the card class — always on | Offer → pay → effect (`ICancelReaction` + `stackEvent`) |
+| Who | Opponent only | Parse print: **"a player"** = any collector (incl. self); **"an opponent"** = exclude owner |
+| Gate | She is in city at that location | ± En Garde `!$Engaged` performer of yours at collect location + Risk in hand |
+| Timing | Mutates amounts at **queue** time | Offer/pay must pre-empt already-queued Gains/Removed |
+
+**Two Collect pipelines** (same event-order facts as create-character Pattern A / `_03049` — reuse the analysis, not the passive code):
+
+| Pipeline | Order | Offer trigger |
+|---|---|---|
+| **Plunder** (`stPlunderGainRenown`) | Take → Gains → Removed | `EventPlayerTakeReknownForControlledLocation` (`reknown > 0`); `PLUNDER_GAIN_RENOWN_EVENTS` already has reaction/pay |
+| **Ability Collect** (Sanjay / pressure Collect) | Removed → Gains | `EventRenownRemovedFromLocation` with `playerId != 0` **and** `$theah->hasQueuedPlayerGainsReknownForPlayer($event->playerId)` — distinguishes Collect from **Move** (Removed → Added) |
+
+1. **`implements ICancelReaction`** + **`stackEvent`** the reaction transition and pay events (same priority math as D.3 — Gains/Removed are already queued at MEDIUM when Take/Removed is current).
+2. **Effect in `EventRiskReactionTriggered`:**
+   - Plunder (`$needsPutBack = false`): `$theah->decrementFirstQueuedPlayerGainsReknown($collectorId)` **and** `decrementFirstQueuedRenownRemovedFromLocation($location)` so Remaining stays without a put-back.
+   - Ability Collect (`$needsPutBack = true`): Removed's hub already applied full remove before the offer — decrement queued Gains, then `queueEvent(createRenownAddedToLocationEvent(…, 1, …))` put-back.
+3. **Hide when meaningless:** amount ≤ 0; no legal En Garde performer at location; ability path without a queued Gains for that player.
+4. **No Cesca** (no printed Target character chooser). Split dual Reactions into `a`/`b` when the card also has a cancel-move clause (`_04056`).
+
+**WHY not Ekaterina's `eventCheck` mutate:** a Reaction must let the controller Decline and leave Collect intact. Mutating at queue time before the offer would deny even on Pass.
+
+**WHY decrement queued rows (not "gains N then loses 1"):** cleaner notify; remaining Renown stays without compensating after hub apply when Removed is still pending.
+
+**Cosmetic:** Plunder Take hub may still notify "will receive X" with the pre-reduce amount — acceptable.
+
+References: `Reaction_04056b` (Greed); contrast passive `_03049` Ekaterina; Collect emitters `Action_02035` / `Reaction_03037`; Move producers that must **not** offer (`Action_01189b`, `Action_02025`).
 
 ### Pattern D.4 — RiskReaction that redirects wound/move/engage effects to another character
 
@@ -217,27 +344,113 @@ Same mechanical meaning as Hexenjagd (`Reaction_01053`): `getCharactersAtLocatio
    - If `loadAbility()` returns `IAbilityThatTargetsCharacters` → `isValidTargetForAbility` enforces "(If they are able)"; invalid → cancel + message.
    - **Else** → `releaseEvent($characterId)` directly (non-targeting abilities).
    - `setUsed` here (Risk is already in discard from pay).
-4. **`performReaction('decline')`** — mirror 02016: only re-`releaseEvent` to the original target for `EventCharacterIntervened` (with `$skipNextEvent = true`); other saved events stay canceled.
+4. **`performReaction('decline')`** — **always** re-`releaseEvent` onto the **original** target with `$skipNextEvent = true` (mirror fixed Cross `Reaction_02016`). Leaving the canceled wound/move/engage permanently canceled makes Decline a free cancel of the opponent's ability — a rules exploit. **Do not** copy Altruistic `Reaction_03031`'s Decline path (it only re-releases intervenes and leaves other events canceled — latent bug). Intervene Decline still re-queues the intervene notify without clobbering `oldTargetId` (02016 intervene branch).
 
 `releaseEvent()` mutates the cloned event's target field (`characterId` / `cardId`) and re-queues it. For intervention, also swap `DUEL_DEFENDER` and set `CHOSEN_TARGET` — copy verbatim from `Reaction_02016`.
 
 **WHY defer `releaseEvent` to `EventRiskReactionTriggered`:** same discipline as Pattern D.2 — the Risk must be paid before the redirect lands; framework cancel-reactions during pay should not re-emit a redirected event if the Risk is declined mid-pay.
 
-**Do not copy 02016's wound-on-redirect** unless the card text says so — Cross of the Martyrs wounds the redirect target 1; Altruistic does not.
+**Do not copy 02016's wound-on-redirect** unless the card text says so — Cross of the Martyrs wounds the redirect target 1; Altruistic / Shield Rite do not.
 
-#### 02016 (AttachmentReaction) vs 03031 (RiskReaction) — when to use which pattern
+### Pattern D.4.1 — Redirect wound to **target opposing** character instead
 
-| | `Reaction_02016` (attachment) | `Reaction_03031` (Risk) |
+Printed (Shield Rite `_04058`): **`<b>En Garde Sorcerer Reaction:</b> When an opponent's ability would wound your performer • Wound target opposing character instead.`**
+
+Same clone-cancel-reemit + Risk pay split as D.4, with these deltas:
+
+| | D.4 Altruistic `_03031` | D.4.1 Shield Rite `_04058` |
 |---|---|---|
-| Base | `AttachmentReaction` — equipped character is the protected target | `RiskReaction` — any of your characters; Risk in hand is the cost |
+| Verbs | wound / move / engage (+ intervene) | **wound only** (unless print names more) |
+| Protected character | any of yours | **your performer** with En Garde + heading gates |
+| Destination pool | other **friendly** at same location | **opposing** at same location (`getOpposingCharactersAtLocation`) |
+| Printed "target" | no → **no** Cesca | yes → `IAbilityThatTargetsCharacters` + `IRiskThatTargetsCharacters` |
+| "(If they are able)" | yes → re-check source ability when it implements Cesca | **absent** → redirect unconditionally (do not `loadAbility` / `isValidTargetForAbility` on the source) |
+| Sorcerer / En Garde | none | `ISorcererAbility` + `hasTrait("Sorcerer")` + `!$Engaged` on the wounded performer; emit start/played after pay around `releaseEvent` |
+| Decline | **follow 02016** (re-release original) — do not ship Altruistic free-cancel | same — re-release original + `skipNextEvent` |
+
+**WHY not a fresh 1-wound:** "instead" substitutes the destination of the pending wound (same wounds/source/abilityId). Clone-cancel-reemit, not cancel + `createCharacterBeingWoundedEvent` from this Reaction.
+
+Hide the offer when no opposing character is at the performer's location (same "must be possible" discipline as D.1.1).
+
+References: `Reaction_04058` (Shield Rite), `Reaction_03031` (friendly D.4), `Reaction_02016` (Decline re-release + structural template).
+
+#### 02016 (AttachmentReaction) vs 03031 / 04058 (RiskReaction) — when to use which pattern
+
+| | `Reaction_02016` (attachment) | `Reaction_03031` / `Reaction_04058` (Risk) |
+|---|---|---|
+| Base | `AttachmentReaction` — equipped character is the protected target | `RiskReaction` — Risk in hand is the cost |
 | Trigger gate | Requires `IAbilityThatTargetsCharacters` | Opponent source only (`isOpponentAbility`) |
 | Event breadth | wound/move/engage/heal/targeted/challenge/intervene | Narrow to printed verbs (+ intervene if needed) |
 | Resolution | `performReaction` resolves inline (no pay) | Pay in `performReaction`; redirect in `EventRiskReactionTriggered` |
 | Owner lookup | `getOwningCharacter` / `getOwningAttachment` | `getOwningCard` (the Risk) |
+| Decline | re-release original (fixed) | **must** re-release original (same as 02016) |
 
-Reach for `Reaction_01014` (Vittoria — Thug-only redirect) or `Reaction_02016` when adapting attachment reactions; reach for `Reaction_03031` when porting that shape to a hand-paid Risk with effect-based wording.
+Reach for `Reaction_01014` (Vittoria — Thug-only redirect) or `Reaction_02016` when adapting attachment reactions; reach for `Reaction_03031` for friendly hand-paid redirect; reach for `Reaction_04058` when print says **target opposing** instead.
 
-References: `Reaction_03031` (Altruistic), `Reaction_02016` (structural template on attachments), `Reaction_01053` (Hexenjagd — "performer at that location" chooser semantics on a Risk).
+References: `Reaction_03031` (Altruistic), `Reaction_04058` (Shield Rite), `Reaction_02016` (structural template on attachments + Decline), `Reaction_01053` (Hexenjagd — "performer at that location" chooser semantics on a Risk).
+
+### Pattern D.5 — Deck-reveal Sorcerer Reaction (`CardReaction`, not `RiskReaction`)
+
+Printed (Unravel the Thread `_04010`): **`<b>Sorcerer Reaction:</b> When your performer reveals this card while gambling • Reveal additional cards equal to their [Influence]. Their <b>Sorceries</b> gain +1[Parry] this round.`**
+
+This is **not** a hand-paid RiskReaction. The Risk is peeked from the **faction deck** during gamble; there is no hand pay and no `LOCATION_HAND` guard.
+
+| | Pattern D / `RiskReaction` | Pattern D.5 / `CardReaction` |
+|---|---|---|
+| Base class | `RiskReaction` | `CardReaction` (+ usually `ISorcererAbility`) |
+| Card location at trigger | Hand (cost) | Still in faction deck (revealed peek) |
+| Pre-commit | `Location == LOCATION_HAND` + `setUsed` + `isAvailable` | `setUsed` + `isAvailable` only — **no** hand guard |
+| Offer UI | `createReactionTransitionEvent` → `playerReaction` | `createTransitionEvent` → dedicated GameState under `DUEL_GAMBLE_REVEALED_EVENTS` |
+| When the player chooses | Often **before** combat-card chooseList | **After** revealed cards are visible in chooseList |
+
+#### Hub prerequisite (load-bearing)
+
+`buildCity()` does **not** load faction-deck cards. Without EventHub `addCardToWorld` on each id in `EventDuelGambleCardsRevealed` (hub runs **before** cards — `runEventHubAfterCards=false`), a Reaction on the gambled card never receives the event. This is already in `EventHub` for Unravel; keep it if you add sibling deck-reveal Reactions.
+
+#### Timing — after chooseList, not early `playerReaction`
+
+Ivy-style "before choosing" Reactions use `createReactionTransitionEvent` (priority **6**) → `DUEL_GAMBLE_REVEALED_REACTIONS`. That window is **before** `duelChooseGambleCard` shows chooseList.
+
+Unravel must let the player **see** the revealed cards (including this card) before Use/Pass:
+
+1. On `EventDuelGambleCardsRevealed` when **this** card's id is in `$event->revealedCardIds`, actor is controller's Sorcerer, `isAvailable()` → queue `createTransitionEvent($owner->ControllerId, $owner->Id, "NNNNN", $this->Id)`.
+2. `EventTransition` sets priority **8** (`TRANSITION_PRIORITY`) — runs **after** reaction transitions (6). Proper Drama C.5 choose-hijack uses the same priority band.
+3. Wire `"NNNNN" => States::DUEL_GAMBLE_REVEALED_NNNNN` under **`DUEL_GAMBLE_REVEALED_EVENTS.transitions`**. State id near the gamble family: `52730NNNNN` (see `DUEL_GAMBLE_REVEALED_04010 = 527304010`). Contrast C.5 choose seat `5270NNNNN`.
+4. **Public** `cards` via `getArgsFromReaction` + State `argsForState` (client `args.args.args.cards`) — peek with current `GAMBLE_REVEAL_COUNT` / `GAMBLE_REVEAL_FROM_BOTTOM` from the **duel-round actor's** deck (same edge as choose).
+5. JS: show chooseList (`selectionMode` 0 — display only) + Use / Pass. Mirror `duelChooseGambleCard_03047` enter/leave; buttons call `actFromCardWithId({id:1})` / `actFromCardPass`.
+6. **Both Use and Pass → `DUEL_GAMBLE_REVEALED_EVENTS`**, not straight to `DUEL_CHOOSE_GAMBLE_CARD`. WHY: leftover transitions (e.g. Proper Drama `"03047"`) and then `endOfEvents` → choose must still run; Use also needs the events path for additional-card reveal + Ivy.
+
+**Do not** fire D.5 in the early `playerReaction` window — that is the regression Eddie hit on `_04010`.
+
+#### On Use
+
+1. `createSorcererAbilityStartEvent` (performer = duel actor).
+2. Bump `GAMBLE_REVEAL_COUNT` by `max(0, actor->ModifiedInfluence)`; peek the new cards; `addCardToWorld` each.
+3. Re-queue `createDuelGambleCardsRevealedEvent(actor, controller, $additionalIdsOnly)` — **only new ids** so this Reaction does not re-offer; Ivy can still react to newly revealed Sorceries.
+4. Round-lasting "Sorceries gain +N Parry": set a **Game global** (controller id), apply in EventHub on `EventDuelCalculateCombatCardStats` for that controller's Sorcery combat cards, clear in `stDuelEndOfRound`. WHY not sticky on the Reaction: after resolve the card often sinks back into the deck and leaves `$theah->cards`.
+5. `createSorcererAbilityPlayedEvent` + `setUsed(true)`.
+
+#### Deck-card `setUsed` pitfall
+
+Faction-deck cards are not in `buildCity()`. `FrameworkActionsTrait::actFromCardWithId` loads a fresh instance; `setUsed` → `getCardById` would load a **second** copy and persist `Used=false`. On the Risk class, override `actFromCardWithId` / `actFromCardPass` to `$game->theah->addCardToWorld($this)` before `parent::…` (mirror `_02045` / `_04010`).
+
+#### Cesca
+
+Deck-reveal Sorcerer Reactions are not Cesca-copyable as hand Risks. The **Action** half of the same card may still be (`Reaction_01008` allow-list + `copyCard`) when Cesca is the performer — see `_04010` Action / journal `2026-08-03-04`.
+
+References: `Reaction_04010`, `State_duelGambleRevealed_04010`, EventHub `EventDuelGambleCardsRevealed`, contrast C.5 `Maneuver_03047a` / Ivy `Reaction_02042`.
+
+### Adjacent-location pressure + Ranged Weapon equipped (trigger gates)
+
+When text says **When a pressure occurs at an adjacent location, if your performer is equipped with a Ranged Weapon**:
+
+- **Pressure location** = `$event->location` on `EventPressureOccuring` (where totals will be computed).
+- **Performer location** = one of `getAdjacentCityLocations($event->location, false)` — scan each adjacent spot for owner's `!$Engaged` characters with a `Weapon`+`Ranged` attachment (`Maneuver_01055` / `Action_01055` attachment loop).
+- **Not** the same as Loyal (`_03035`), which counts non-Mercs **at** `$event->location`, nor `_02044` (Solomonia buffs Influence when pressure is at a location **adjacent to** Forum while Solomonia ** sits at** Forum).
+
+**`<b>En Garde Reaction:</b>`** uses the same `!$Engaged` precondition as En Garde Action — the label only changes ability type (Pattern D vs B), not the mechanical gate. Applies to pressure (`_04020`) and collect-one-fewer (`_04056b`) alike.
+
+See composite wiring: `Reaction_04020` (D.2.2 + D.1.2); `Reaction_04056b` (D.6).
 
 ### `EventHighDramaPhasePlayerPassed` trigger semantics
 
@@ -281,6 +494,7 @@ Compare:
 - `Reaction_03046a` (Passionate Duelist) — same intervene role as Subtle; gate `hasTrait("Duelist")` on `$event->newTargetId`, then engarde that character after pay.
 - `Reaction_03046b` (Passionate Pirate) — "your performer" is the **challenger** (`CHOSEN_PERFORMER`), not the intervener. Gate `hasTrait("Pirate")` on the challenger; engarde the challenger after pay. Mutually exclusive with the Duelist clause on the same intervene event (you cannot be both intervening player and the challenger's controller for one challenge).
 - `Reaction_03031` (Altruistic) — "Your **performer at that location** suffers those effects instead." Here "performer" means **another of your characters at the affected character's location** (`getCharactersAtLocationByPlayerId`, excluding the character being wounded/moved/engaged). The player picks which one via redirect buttons — same pool semantics as Hexenjagd's wound-performer chooser (`Reaction_01053`), not a search for a trait-bearing role elsewhere on the board.
+- `Reaction_04058` (Shield Rite) — "Wound **target opposing** character instead." Destination pool flips to `getOpposingCharactersAtLocation`; printed "target" → Cesca; En Garde Sorcerer gates on the wounded performer; Decline re-releases like fixed `02016`.
 
 This matters for `ISorcererAbility`'s `createSorcererAbilityStartEvent($performerId)` arg — pass the trigger-named character's id, not a generic "any Strega I control."
 

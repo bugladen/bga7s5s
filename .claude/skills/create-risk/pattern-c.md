@@ -72,6 +72,20 @@ if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false)) return false;
 
 `Game::DUEL_GAMBLED` is set true in `FrameworkActionsTrait::actChooseGambleCard` when the gambled combat card is locked in, and cleared in `stDoneRound`. See `Technique_03002` (Aja) for the same gate on the Technique side.
 
+### "If the adversary is engaged • …" — Maneuver **cost** vs effect If vs Pattern E discount
+
+Parse the bullet carefully. Three different shapes use similar wording:
+
+| Printed shape | Meaning | Wire |
+|---|---|---|
+| **`Sorcerer Maneuver: If the adversary is engaged • +1[Riposte]`** (± trailing **"If your participant is en garde, draw"**) | Engaged is a **Maneuver cost / availability requirement**. Once the Maneuver is offered and used, Riposte **always** applies. Trailing "If … en garde, draw" is a separate resolve bonus. | `isAvailableToPlayer`: live adversary `Engaged` (see below) + Sorcerer actor. Calc always `+= 1` Riposte. Draw only in `EventResolveManeuver` when `!$actor->Engaged`. See `_04058`. |
+| **"If the adversary is a Sorcerer or Monster • +2 Parry or +2 Thrust"** (C.3) | Adversary-trait **gate on availability** for a choice Maneuver — both branches are payoffs of the Maneuver, not a cost paid on the board. | `isAvailable` trait check; choice at activate. See `_03024`. |
+| **"While the adversary is engaged, this card has -1 cost"** (Pattern E) | Combat-card **Wealth** discount only — does **not** grey the Maneuver or gate Riposte. | `getManeuverFromCombatCardDiscount` with live Engaged check. See `_01084`. |
+
+**Live adversary Engaged check (not `getDuelRoundOpponent()` alone):** last-known opponent objects can restore `Engaged` from when the adversary was still in play. Use `getCharacterById(getDuelOpponentId($actor->Id))` and reject discard/locker — same WHY as `Maneuver_01084`'s discount.
+
+**Do not** treat "If the adversary is engaged • +1 Riposte" as "always offer the Maneuver and only add Riposte when Engaged" — that misreads the cost bullet (user correction on `_04058`).
+
 ### "If your participant has more / equal or greater <Stat> than the adversary" gate
 
 Parse the printed comparison literally — the operator is part of the card text:
@@ -108,7 +122,7 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat), `Maneuver_03070` (Pattern C.6 — Parry += excess over adversary `CHALLENGE_STAT`), `Maneuver_03058` (Pattern C.7 — +N Parry and Thrust per opposing at duel location).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_04058` (Sorcerer Maneuver — adversary Engaged as **cost** + always Riposte + en garde draw), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat), `Maneuver_03070` (Pattern C.6 — Parry += excess over adversary `CHALLENGE_STAT`), `Maneuver_03058` (Pattern C.7 — +N Parry and Thrust per opposing at duel location).
 
 ### "Wound your participant" vs "Wound the adversary"
 
@@ -345,9 +359,45 @@ No printed **"Target"/"target"** → no `IRiskThatTargetsCharacters` / `IAbility
 
 References: `_03069` / `Maneuver_03069a`/`b`, `Technique_03013` (duel swap in act), `Technique_01063Swap` (Harpoon activate WHY), `Theah::swapParticipantsInDuel`, contrast move-only attachments `_03065` / `_03066`.
 
+### Pattern C.10 — Dual Duelist Maneuver: +stat + claim-if-uncontrolled / unclaim-if-controlled
+
+For Risks like **"Duelist Maneuver: +1[Riposte]. If this location is uncontrolled, claim it."** paired with **"Duelist Maneuver: +1[Riposte]. If this location is controlled, it becomes uncontrolled."** — see `_04048` (Iaijutsu Strike). Calc Riposte (or other printed stat) **plus** resolve-time location claim/unclaim. No chooser, no states, no JS.
+
+#### Shape
+
+1. Split `Maneuver_NNNNNa` / `Maneuver_NNNNNb` (same dual-Duelist discipline as `_04007` — do **not** merge into one mode class).
+2. Each: Duelist gate on `getDuelRoundActor()`; `EventDuelCalculateManeuverValues` for the shared `+N` Riposte; `EventResolveManeuver` for the location If; `// EventManeuverCanceled handler not needed`.
+3. **"This location"** = `$actor->Location` (duel site). **Do not** use `$adversary->Location` — after mid-round destruction that can be `Locker-*` (same WHY as `Maneuver_01110`).
+4. **No Cesca** — no printed Target / no character chooser.
+
+#### Availability vs emit (printed If)
+
+Both Maneuvers always grant the Riposte; the location clause is a printed **If**. **Do not** grey `a` when the location is already controlled, or `b` when it is uncontrolled — that would hide a still-useful Riposte pick. Same emit-only discipline as A.5 refuse-claim / B.7 decline-claim for Indomitable Will:
+
+| Resolve branch | Controller check | Then |
+|---|---|---|
+| Claim if uncontrolled | `getControllerForLocation($location) == 0` | if `canLocationBeClaimedBy` → `createLocationClaimedEvent(actorController, actorId, location)`; else notify cannot be claimed |
+| Unclaim if controlled | `getControllerForLocation($location) != 0` | if `canLocationBecomeUncontrolledBy` → `createLocationBecomesUncontrolledEvent(ownerController, location)`; else notify cannot become uncontrolled |
+
+**WHY explicit controller before `can*`:** `canLocationBeClaimedBy` does **not** require uncontrolled; `canLocationBecomeUncontrolledBy` does **not** require controlled. Without the controller gate, the wrong Maneuver's If would attempt claim on an already-controlled site (or unclaim on an uncontrolled one). Silent `return` when the If is false; notify only when the If is true but Indomitable Will / Leshiye / non-city blocks.
+
+**WHY no ownership filter on unclaim:** printed "controlled" ≠ "you control" / "controlled by an opponent". Unclaim any current controller (yours or opponent's). Contrast A.12 lose-control cost (`$Controller == you`).
+
+**Home / non-city:** `canLocationBeClaimedBy` / `canLocationBecomeUncontrolledBy` already return false via `locationInCity` — If skips or notifies; Riposte still applies.
+
+No new `States` / `states.inc.php` / JS — resolve queues claim/unclaim events directly (unlike A.12's location chooser or `Maneuver_01110`'s wound-vs-unclaim buttons).
+
+References: `_04048` / `Maneuver_04048a`/`b`; claim emit `Maneuver_01107` / `Reaction_04043`; unclaim emit `Maneuver_01110` / `Action_04039`; dual-Duelist split `_04007`; contrast A.12 (`_04039` — Action chooser + your-control filter) and A.5 (`_03057` — claim on refuse, not on Maneuver resolve).
+
 ### Pure-calc maneuvers (no `EventResolveManeuver` needed)
 
-When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling). **Exception:** Comforting (`Maneuver_03070`) is C.6 excess but **not** pure-calc — it uses Resolve `ThreatModified` on `starting_*` + zero-delta Calculate rebuild.
+When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Negative deltas are fine (`$event->thrust -= 3`, `$event->parry -= 1` — same as `Maneuver_03009`'s −1 Thrust).
+
+**Exclusive "instead" branch on location control** (e.g. **"+1[Thrust]. If this location is uncontrolled, +1[Riposte] instead"** — `_04060`): check `getControllerForLocation($actor->Location) == 0` in calc and apply **one** stat, not both. **"This location"** = `$actor->Location` (C.10 / `Maneuver_01110`). **Not** C.10 (always Riposte + resolve claim/unclaim). No states / no JS / `EventManeuverCanceled handler not needed`.
+
+**Two distinct pure-calc Maneuvers on one Risk** (even with the **same** trait prefix, e.g. two Duelist Maneuvers): still split `Maneuver_NNNNNa` / `Maneuver_NNNNNb` — do not merge into one class with a mode. Each gets its own Duelist/`DUEL_GAMBLED` gate + calc branch + `EventManeuverCanceled handler not needed` comment. If the card also prints a shared "-1 cost while …" clause, hang `getManeuverFromCombatCardDiscount` on **exactly one** of them (Pattern E dual-Maneuver footgun — `Card` sums).
+
+Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling), `Maneuver_04007a`/`b` (dual Duelist pure-calc ± Riposte/Parry/Thrust + wounds discount on `a` only), `Maneuver_04060` (Thrust **or** Riposte-if-uncontrolled). **Exception:** Comforting (`Maneuver_03070`) is C.6 excess but **not** pure-calc — it uses Resolve `ThreatModified` on `starting_*` + zero-delta Calculate rebuild.
 
 ### Pure-resolve maneuvers (no calc branch)
 
@@ -426,7 +476,7 @@ else
 }
 ```
 
-Reference: `Maneuver_02039` (Add Threat — adds +1 to both sides on the next round's pool). `Maneuver_03023` (Second Wind — captures the suppressed conversion amount).
+Reference: `Maneuver_02039` (Add Threat — Maneuver writes +1 to both sides' PENDING on EndOfRound). `Reaction_04046` (Bravado — RiskReaction writes +1 to **your participant's** side only after pay; Pattern D.2.3). `Maneuver_03023` (Second Wind — captures the suppressed conversion amount).
 
 #### 4. Also zero `duel_round.wounds_taken`
 
@@ -466,7 +516,7 @@ There is no `PENDING_<side>_THREAT_IS_LETHAL` global. If the suppressed threat w
 
 Use a `public bool $IsActive` field on the Maneuver, set on `EventResolveManeuver`, cleared on `EventManeuverCanceled` and `EventDuelEndOfRound`. Mark `$owner->IsUpdated = true` whenever you flip it so the framework persists. The `EventDuelEndOfRound` reset is needed because the maneuver instance lives on `$theah->cards` across rounds — without resetting, the next round's conversion would also be suppressed.
 
-References: `Maneuver_03023` (Second Wind — full pattern with carry-forward), `Maneuver_02039` (Add Threat — `PENDING_*_THREAT` write-only producer side).
+References: `Maneuver_03023` (Second Wind — full pattern with carry-forward), `Maneuver_02039` (Add Threat — Maneuver `PENDING_*_THREAT` write-only producer), `Reaction_04046` (Bravado — RiskReaction one-side PENDING producer; Pattern D.2.3).
 
 ### "You control a trait X at the duel location" gate
 
@@ -587,7 +637,7 @@ Do **not** "fix" this by re-emitting `EventDuelCalculateManeuverValues` after th
 
 #### Pure-calc variant: no `EventResolveManeuver` handler needed
 
-When both branches are pure stat mutations (no wound / draw / transition), skip `EventResolveManeuver` entirely. The calc-event branch on the stored choice is the entire effect. Reference: `Maneuver_03024` (both branches are +2 stat).
+When both branches are pure stat mutations (no wound / draw / transition), skip `EventResolveManeuver` entirely. The calc-event branch on the stored choice is the entire effect. Reference: `Maneuver_03024` (+2/+2, Sorcerer/Monster gate), `Maneuver_04030` (+1/+1, no gate).
 
 #### Choice-with-side-effect variant: queue side effects in `actFromManeuverWithId`
 
@@ -609,7 +659,7 @@ Reference: `Maneuver_03035` (Loyal).
 
 If the maneuver has any cross-round state beyond the choice (a `next-round` modifier, an `IsActive` flag), reset it in both `EventManeuverCanceled` AND `EventDuelEnd` (and `EventDuelEndOfRound` for "next round only" effects). The choice field itself only needs `EventManeuverCanceled` reset — the next activation will overwrite it. Multi-step: also clear `$WoundTargetId` (etc.) on cancel.
 
-References: `Maneuver_01135` (template; choice gates a side-effect branch with cross-round Thrust reduction), `Maneuver_03024` (Superstitious — pure-calc Sorcerer/Monster gate variant), `Maneuver_03035` (Loyal — multi-step wound cost + Riposte/Thrust choice).
+References: `Maneuver_01135` (template; choice gates a side-effect branch with cross-round Thrust reduction), `Maneuver_03024` (Superstitious — pure-calc +2/+2, Sorcerer/Monster gate), `Maneuver_04030` (Tip the Scales — pure-calc +1/+1, no gate), `Maneuver_03035` (Loyal — multi-step wound cost + Riposte/Thrust choice).
 
 ### Pattern C.1 — Final Strike maneuver (post-death effect; optionally with player choice)
 

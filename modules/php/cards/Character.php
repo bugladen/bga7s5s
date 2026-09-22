@@ -90,6 +90,14 @@ abstract class Character extends Card implements IHasTechniques
         return $this->isControlled();
     }
 
+    // WHY: Fate's Silence (_04008) stamps FATES_SILENCE_CONDITION while equipped.
+    // Central predicate so ability availability, Card ability loops, and Theah's
+    // blanked-character dispatch all share one source of truth.
+    public function abilitiesAreBlanked(): bool
+    {
+        return $this->hasCondition(Game::FATES_SILENCE_CONDITION);
+    }
+
     // WHY: Targeting-time gate for passives like Kaspar (_03014) "Opponents' abilities
     // cannot wound or move wounds to …". eventCheck zeroing on EventCharacterBeingWounded
     // still blocks the wound half, but move-wound abilities heal first — without this
@@ -113,10 +121,18 @@ abstract class Character extends Card implements IHasTechniques
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);
+        $this->eventCheckCore($event);
+    }
 
+    // WHY: Extracted so Theah can run Harpoon/Shackles/Lodestone condition gates when
+    // the character is text-box-blanked without also running subclass Forced eventChecks
+    // (Maryam cancel, Sigurd must-be-target, etc. — those are text-box abilities).
+    public function eventCheckCore(Event $event): void
+    {
         // WHY: Printed dashed Combat means the character cannot use Combat in challenges
         // (pressures already gated via canPressure). Catch ability-issued Combat challenges
         // that bypass the basic-Challenge performer filters — same belt as Térence (_03028).
+        // Lives in eventCheckCore so Fate's Silence still enforces the printed stat rule.
         if ($event instanceof EventChallengeIssued
             && $event->challengerId == $this->Id
             && $this->DashedCombat
@@ -400,8 +416,17 @@ abstract class Character extends Card implements IHasTechniques
 
     public function handleEvent(Event $event)
     {
+        // WHY: When blanked, Card::handleEvent early-returns (no ability objects).
+        // Core systems (wounds/heals/destroy/threat) must still run.
         parent::handleEvent($event);
+        $this->handleCoreCharacterEvent($event);
+    }
 
+    // WHY: Extracted so Theah can run wound/heal/destroy/threat when the character is
+    // text-box-blanked without also running subclass Forced/passives that live in
+    // overridden handleEvent after parent::handleEvent.
+    public function handleCoreCharacterEvent(Event $event): void
+    {
         if ($event instanceof EventGenerateChallengeThreat && $event->actorId == $this->Id)
         {
             // WHY: Destroy recreates printed Modified*; use ChallengeIssued snapshot when

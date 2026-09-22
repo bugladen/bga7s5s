@@ -27,14 +27,17 @@ define([
    g_gamethemeurl + 'modules/js/OnEnteringState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.tac.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.faf.js',
+   g_gamethemeurl + 'modules/js/OnEnteringState.bas.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.7s5s.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.tac.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.faf.js',
+   g_gamethemeurl + 'modules/js/OnUpdateActionButtons.bas.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.tac.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.faf.js',
+   g_gamethemeurl + 'modules/js/OnLeavingState.bas.js',
    g_gamethemeurl + 'modules/js/Setup.js',
    g_gamethemeurl + 'modules/js/Utilities.js',
    g_gamethemeurl + 'modules/js/Notifications.js',
@@ -69,14 +72,17 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         seventhseacityoffivesails.onenteringstate_7s5s,
         seventhseacityoffivesails.onenteringstate_tac,
         seventhseacityoffivesails.onenteringstate_faf,
+        seventhseacityoffivesails.onenteringstate_bas,
         seventhseacityoffivesails.onleavingstate,
         seventhseacityoffivesails.onleavingstate_7s5s,
         seventhseacityoffivesails.onleavingstate_tac,
         seventhseacityoffivesails.onleavingstate_faf,
+        seventhseacityoffivesails.onleavingstate_bas,
         seventhseacityoffivesails.onupdateactionbuttons,
         seventhseacityoffivesails.onupdateactionbuttons_7s5s,
         seventhseacityoffivesails.onupdateactionbuttons_tac,
         seventhseacityoffivesails.onupdateactionbuttons_faf,
+        seventhseacityoffivesails.onupdateactionbuttons_bas,
         seventhseacityoffivesails.setup,
         seventhseacityoffivesails.utilities,
         seventhseacityoffivesails.notifications,
@@ -109,16 +115,13 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             //Recruit types
             this.NORMAL_RECRUIT_TYPE = 0;
             this.KASPAR_RECRUIT_TYPE = 1;
+            this.CIRILO_RECRUIT_TYPE = 2;
+            this.SILVER_TONGUE_RECRUIT_TYPE = 3;
 
             //Equip types
             this.NORMAL_EQUIP_TYPE = 0;
             this.SMUGGLED_ITEM_EQUIP_TYPE = 1;
             this.LETS_HAGGLE_EQUIP_TYPE = 2;
-
-            //Recruit types
-            this.NORMAL_RECRUIT_TYPE = 0;
-            this.KASPAR_RECRUIT_TYPE = 1;
-            this.CIRILO_RECRUIT_TYPE = 2;
 
             //Challenge types
             this.NORMAL_CHALLENGE_TYPE = 0;
@@ -140,6 +143,13 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.DON_CONSTANZO_CHALLENGE_TYPE = 19;
             this.SANJAY_CHALLENGE_TYPE = 22;
             this.WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
+            this.DANILO_CHALLENGE_TYPE = 25;
+            this.RATTLE_THE_RIGGING_CHALLENGE_TYPE = 26;
+            this.RAVEN_CHALLENGE_TYPE = 27;
+            this.NO_MORE_WORDS_CHALLENGE_TYPE = 28;
+            this.STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
+            this.CELERITY_CHALLENGE_TYPE = 30;
+            this.HONORABLE_CHALLENGE_TYPE = 31;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;
@@ -158,11 +168,16 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.SILVER_SPINE_ABILITY_USED = 'Silver Spine Ability Used';
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
+            this.GIACINTO_INFLUENCE_REDUCTION_CONDITION = 'Influence Reduced by Giacinto';
             this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
+            this.TOMOE_SANGO_CONDITION = 'Finesse Modified by Tomoe Sango';
             this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';
+            this.FORGED_FOR_BATTLE_CONDITION = 'Finesse Modified by Forged for Battle';
+            this.ADRIFT_IN_THE_WIND_CONDITION = 'Finesse Modified by Adrift in the Wind';
             this.HARPOON_CONDITION = 'Harpooned (-1 Finesse; cannot swap or move)';
             this.LODESTONE_CONDITION = 'Lodestone (opponents cannot move Home)';
             this.SHACKLES_CONDITION = 'Shackled (cannot move)';
+            this.FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
             this.CHALLENGER = 'Challenger';
             this.DEFENDER = 'Defender';
 

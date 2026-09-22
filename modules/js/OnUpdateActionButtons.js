@@ -123,7 +123,9 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaRecruitActionParley': () => {
-            this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+            // WHY: Silver Tongue Risk already paid — Back would land on basic Recruit performer choose.
+            if (args.recruitType != this.SILVER_TONGUE_RECRUIT_TYPE)
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             this.addActionButton(`actChooseYes`, _('Yes'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyYes', {}));
             this.addActionButton(`actChooseNo`, _('No'), () => this.bgaPerformAction('actHighDramaRecruitActionParleyNo', {}));
         },
@@ -297,7 +299,7 @@ onUpdateActionButtons: function( stateName, args )
                 : _('Refuse');
             this.addActionButton(`btnRefuse`, refuseLabel, () => this.bgaPerformAction('actHighDramaChallengeActionReject', {})) 
             this.addActionButton(`actChooseCardSelected`, _('Intervene'), () => this.onChooseInPlayCardConfirmed());
-            if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+            if (args.challengeType == this.EPEE_SANGLANTE_CHALLENGE_TYPE || args.challengeType == this.UNSANCTIONED_DUEL_CHALLENGE_TYPE || args.challengeType == this.STAND_YOUR_GROUND_CHALLENGE_TYPE)
                 dojo.addClass('btnRefuse', 'disabled');
             if (args.challengeType == this.AJA_CHALLENGE_TYPE && args.defenderFinesse < 3)
                 dojo.addClass('btnRefuse', 'disabled');
@@ -306,6 +308,9 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('btnRefuse', 'disabled');
             // WHY: Mōri Daichi — relative Combat blocks refuse for either participant role.
             if (args.cannotRefuseDueToDaichi)
+                dojo.addClass('btnRefuse', 'disabled');
+            // WHY: Knives Out — characters at its location cannot refuse.
+            if (args.cannotRefuseDueToKnivesOut)
                 dojo.addClass('btnRefuse', 'disabled');
             dojo.addClass('actChooseCardSelected', 'disabled');
         },
@@ -454,6 +459,7 @@ onUpdateActionButtons: function( stateName, args )
     this.onUpdateActionButtons_7s5s( stateName, args );        
     this.onUpdateActionButtons_tac( stateName, args );
     this.onUpdateActionButtons_faf( stateName, args );
+    this.onUpdateActionButtons_bas( stateName, args );
 }
 
 })

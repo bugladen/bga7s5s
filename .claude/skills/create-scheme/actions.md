@@ -6,17 +6,60 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 | Card phrase | Action base class |
 |---|---|
+| **`<b>Action:</b>`** on a scheme (not City Action) | `SchemeAction` — `RequiresPerformerSelected = false`; no city-performer gate |
 | **`<b>City Action:</b>`** on a scheme | `SchemeCityAction` |
 | **`<b>Leader City Action:</b>`** on a scheme | `SchemeCityAction` (with a `hasTrait("Leader")` performer-filter) |
 | **`<b>Risk City Action:</b>`** | `RiskCityAction` (the Risk shape — pressures/wagers; see `create-character`) |
 
-`SchemeCityAction extends Scheme` — so the action class IS the scheme. (Same shape as `CharacterAction extends Character`.) The action class is what gets registered in `$this->Actions = [new Action_NNNNN()]` on the scheme card.
+`SchemeCityAction extends SchemeAction extends CardAction`. The action object is registered on the scheme via `$this->Actions = [new Action_NNNNN()]` (`IHasActions` + `ActionTrait`).
 
-Pre-commit hook: `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
+**WHY not collapse Action into City Action:** `SchemeCityAction::isAvailableToPlayer` requires `count(getCharactersInCityByPlayerId) > 0`. A plain **Action:** that targets a location (or other non-performer thing) must use `SchemeAction` or it stays unavailable when you have no city characters — even if Kaspar/Daniella are at Home. Reference: `_04015`.
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`.
+Pre-commit hook: `SchemeAction` / `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
+
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`, `_04034`, `_04045`.
 
 **Action-object persistence:** public fields on the Action (`$MoveMode`, `$pendingMusterId`, …) survive only if you call `$game->updateCardObjectInDb($owner)` after mutating them. `$owner->IsUpdated = true` alone is **not** flushed before `stRunEvents` rebuilds cards from DB (learned on `_03029` / `_03062` / `_03063`).
+
+### Pattern M — Scheme Action: uncontrolled location → name-matched characters → optional discard
+
+Use when the printed keyword is **`<b>Action:</b>`** (not City Action) and the text targets an **uncontrolled City location**, moves **named characters** there (heal), then optionally discards an available City Card. Canonical: `_04015` (Through Thick and Thin). Discard filter sibling: `Action_01112b` (Carnaval).
+
+**Flow:**
+
+1. `SchemeAction` + `RequiresPerformerSelected = false`. Availability: scheme at Home (parent) + ≥1 named character in play under the player + ≥1 uncontrolled city location (`$location->Controller == 0`).
+2. `EventActionTriggered` → re-validate → `createTransitionEvent(..., "NNNNN", $this->Id)` into HD location-pick state.
+3. HD state `NNNNN`: `locationIds` = uncontrolled city names. On confirm stash `Game::CHOSEN_LOCATION`. For each controlled match of the printed Names (in printed order): skip move if already there; else `createCardMovingEvent(..., engage=false)`; heal 1 only if `Wounds > 0` (`Action_02040` idiom).
+4. **"Complete as much of an effect as possible"** — if only Kaspar is in play, move/heal Kaspar and skip Daniella (and vice versa). Do **not** throw when one name is missing.
+5. **Name matching, not CardNumber.** Reprints share Names across ids (Kaspar `_01035`/`_03014`, Daniella `_01036`/`_03013`). Use `$character->Name === clienttranslate('Kaspar Dietrich')` (etc.) over `getCharactersInPlayByPlayerId`. Hardcoding one CardNumber misses the other printing.
+6. Optional **"Then you may discard an available City Card"**: if ≥1 discardable card at the chosen location, Transition `"NNNNN_2"`; else queue `createActionResolvedEvent` and finish. State 2: highlight `ids` + Confirm + **Pass** (`actFromActionPass`). Pass is always legal (may). Available = `ICityDeckCard` + `!isControlled()` + `canBeDiscardedFromCity()` + `Location === chosen`. Discard via `createCardAddedToCityDiscardPileEvent(..., $asEffect = true)`.
+7. **ActionResolved timing:** queue after discard/pass, or when skipping the discard state. Do **not** use Pattern L's ActionResolved-before-Transition ordering here — the optional discard is still part of this action, not a trailing multi-player coda.
+8. Named transitions on both HD states when `"zombie"` / `"pass"` siblings exist (`"locationChosen"`, `"cardDiscarded"`, `"pass"`).
+
+**JS:** State 1 = city locations from `locationIds` + Confirm. State 2 = `highlightCardsAsSelectable(ids)` + Confirm + Pass; leave unhighlights / `resetCityLocations`.
+
+Reference: `Action_04015`, `State_highDramaPhase04015{,_2}`.
+
+### Pattern N — Opponent may lose control, or wound opposing characters
+
+Use when the printed City Action is **"If an opponent controls this location • They may choose to lose control of it. If they do not, wound all opposing characters there"**. Canonical: `_04034` (Explosive Ultimatum). Choice UX sibling: `Maneuver_01110`. Opponent-becomes-active sibling: `Action_04009`.
+
+**Flow:**
+
+1. `SchemeCityAction` + `RequiresPerformerSelected = true`.
+2. `getPerformersForAction` / availability: city performers whose location has `Controller != 0 && Controller != playerId` (an opponent controls it). Do **not** require `canLocationBecomeUncontrolledBy` for availability — Decline still wounds.
+3. `EventActionTriggered`: re-validate → `Game::CHOSEN_LOCATION = $performer->Location` → `createTransitionEvent((int)$location->Controller, $owner->Id, "NNNNN", $this->Id)`. WHY 1st arg = location controller: `EventTransition` changes the active player to that id before `nextState("NNNNN")`.
+4. HD state `NNNNN` (activeplayer = controlling opponent):
+   - Args: `location`, `canLoseControl` (`canLocationBecomeUncontrolledBy($actingPlayerId, $location)`), `performerId` for highlight.
+   - Buttons: **Lose Control** (`actFromCardWithId` id `1`) only when `canLoseControl`; **Decline** (id `2`) always.
+5. Lose Control → `createLocationBecomesUncontrolledEvent($actingPlayerId, $location)` (gate again server-side) + `createActionResolvedEvent($actingPlayerId)`.
+6. Decline → wound every character at the location with `ControllerId != 0 && ControllerId != actingPlayerId` (`createCharacterBeingWoundedEvent`) + `createActionResolvedEvent`. "Opposing" here is vs the **scheme controller** (acting player), not vs the declining opponent.
+7. Named success (`"choiceMade"`) when `"zombie"` also exists. Zombie: id `1` if `canLoseControl`, else id `2`.
+8. Flatten `location` onto GameState `getArgs()` top level if the description uses `${location}` (BGA substitutes top-level keys).
+
+**JS:** Highlight performer; buttons from `args.args.canLoseControl` in **OnUpdateActionButtons** (one less nest than OnEnteringState — see helpers.md). No Back (opponent is choosing, not the acting player re-picking).
+
+Reference: `Action_04034`, `State_highDramaPhase04034`. Uncontrol gate: `Theah::canLocationBecomeUncontrolledBy` / `Action_01112a` / `Maneuver_01110`.
 
 ### Pattern H — Immediate-resolve City Action (no HD sub-state)
 
@@ -142,6 +185,56 @@ Use when the City Action musters a character from The Locker (often with a wound
 
 Reference: `Action_03062`, `State_highDramaPhase03062`, Character dusk condition path.
 
+### Move performer to a location with a wounded enemy
+
+Use when the City Action is **"Move your performer to a location with a wounded enemy"** (often **Duelist City Action**). Canonical: `_04004` (Blood Money).
+
+**Flow:**
+
+1. `SchemeCityAction` + `RequiresPerformerSelected = true`. Trait gate in `getPerformersForAction`.
+2. Destinations helper: other City locations (`Name != performer->Location`) that have ≥1 character with `ControllerId != performer->ControllerId` and `Wounds > 0`.
+3. Availability = `count(getPerformersForAction) > 0` where performers also have `count(destinations) > 0` — do not offer a dead move.
+4. `EventActionTriggered` → re-validate → `createTransitionEvent(..., "NNNNN", $this->Id)` into one HD location-pick state.
+5. Args expose `performerId` + `locationIds`. On confirm: `createCardMovingEvent(..., engage=false)` + `createActionResolvedEvent`.
+6. Named success (`"locationChosen"`) if the state also has `"zombie"` (or `"back"`) — do not use `""` alongside siblings.
+
+**JS:** city location select from `locationIds` + highlight performer + Confirm. Leave: `resetCityLocations` + unhighlight.
+
+Reference: `Action_04004`, `State_highDramaPhase04004`. Adjacent-only move parallel: `Action_01059`.
+
+### Pattern L — Destroy controlled character, Claim, Each player discards
+
+Use when the City Action is **"Destroy another character you control at your performer's location • Claim this location. Each player discards a card"** (often **Red Hand**). Canonical: `_04005` (Denounced, Disgraced).
+
+**Not Pattern H** — needs an HD character pick after framework performer select. Contrast `Action_01015` (destroys the **performer** as cost, wounds another) — here the destroy target is **another controlled character**, and the performer survives to claim.
+
+**Flow:**
+
+1. `SchemeCityAction` + `IAbilityThatTargetsCharacters` + `RequiresPerformerSelected = true`. Trait gate in `getPerformersForAction` (e.g. `hasTrait("Red Hand")`).
+2. Full legality for performers: ≥1 other controlled character at `$performer->Location` **and** `$theah->canLocationBeClaimedBy` when Claim is a printed payoff (same discipline as Pattern H — heavy cost is still a dead spend if claim is impossible).
+3. `EventActionTriggered` → validate → `createTransitionEvent(..., "NNNNN", $this->Id)` into HD character-pick state.
+4. HD state `NNNNN` (activeplayer): highlight `ids` of destroy targets; on confirm:
+   - `$target->unEquipAllAttachments($theah)` then `createCharacterDestroyedEvent(...)` — WHY unequip first: `EventCharacterDestroyed` recreates the card and does **not** auto-unequip (same as `Action_01018` / `Action_01015`).
+   - Claim via `createLocationClaimedEvent` (recheck claimability; if blocked, notify and continue — trailing discard still fires).
+   - Queue `createActionResolvedEvent` **then** (if any player has a hand card) `createTransitionEvent(..., "NNNNN_2", $this->Id)`.
+5. HD state `NNNNN_2` (`MULTIPLE_ACTIVE_PLAYER`): **"Each player"** includes the acting player. Custom `onEnteringState` — do **not** call `stMultiPlayerInitSansInitiatingPlayer` (Patricia `01095` is opponents-only). Activate only players with ≥1 hand card via `$game->getGameDeckObject()->getCardsInLocation(LOCATION_HAND, $playerId)` — Game `$cards` is **private** from State classes. Empty list → `setPlayersMultiactive([], "multipleOk")` immediately completes (dusk-discard precedent). Each player: `actFromCardWithId` + `createCardDiscardedFromHandEvent(..., $asEffect = true)` + `setPlayerNonMultiactive(..., 'multipleOk')`. Use `getCurrentPlayerId()` in multiplayer (not `getActivePlayerId`).
+
+**ActionResolved before discard Transition — WHY:**
+
+`EventActionResolved` defaults to `MEDIUM_PRIORITY` (3); `EventTransition` is priority 8. Queuing ActionResolved then Transition means the HD action wraps first; discard is a trailing multi-state returning to `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Same ordering as `Action_01095b`. Do **not** move ActionResolved after the multi-discard completes.
+
+**Back from destroy pick → performer re-pick:**
+
+If Eddie wants Back on the first HD sub-state (return to framework performer chooser), `"back" => States::HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH` — **not** bare `HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER`.
+
+WHY: `stHighDramaInPlayActionDispatch` queues `EventActionTriggered` *before* branching to CHOOSE_PERFORMER. That Triggered event is what the Action handles to `Transition("NNNNN")`. Bare back to CHOOSE_PERFORMER leaves the second performer pick with no fresh Triggered → HD_EVENTS empties → next player. DISPATCH is `type=game` and immediately lands on `highDramaInPlayActionChoosePerformer` after re-queuing Triggered.
+
+Do **not** put Back on the multi-discard state (after commit). Legacy `states.7s5s.php` backs → CHOOSE_PERFORMER (`01015` etc.) have the same re-entry bug if restored.
+
+**JS:** State 1 = character highlight + Confirm + Back (`actBack`). State 2 = `factionHand.setSelectionMode('single')` + Confirm via `onCardDiscarded`; enable Confirm in `EventHandlers.js` (mirror `highDramaPhase01095`).
+
+Reference: `Action_04005`, `State_highDramaPhase04005{,_2}`. Character-destroy parallel: `Action_01018`. Opponents-only multi-discard contrast: `Action_01095b` / `State_highDramaPhase01095`.
+
 ### High Drama action sub-states (City Action / Sorcerer City Action)
 
 Planning resolve sub-states use `PLANNING_PHASE_RESOLVE_SCHEMES_*` (`26<NNNNN>`) and `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`. **Scheme actions played during High Drama use a different map:**
@@ -157,6 +250,8 @@ Planning resolve sub-states use `PLANNING_PHASE_RESOLVE_SCHEMES_*` (`26<NNNNN>`)
 **Performer-required actions:** set `$this->RequiresPerformerSelected = true` on the action. The framework sets `Game::CHOSEN_PERFORMER` before your first sub-state runs.
 
 **Multi-step with Back:** middle/final states expose `#[PossibleAction] actBack()` and a `"back"` transition to the prior state; JS adds `<` calling `actBack`. Reference: `State_highDramaPhase03029_2`, `State_highDramaPhase03cd01_2`. **If the state also has a success transition, that success key must be named — never `""` alongside `"back"`** (see GameState transition pitfall).
+
+**Back from first HD sub-state to framework performer chooser:** `"back" => HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH`, **not** bare `HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER`. WHY: DISPATCH re-queues `EventActionTriggered` before branching to the performer picker; bare CHOOSE_PERFORMER leaves the second pick without a Triggered event and the action silently ends. Learned on `_04005` (legacy `01015` inline backs have the same trap). See Pattern L.
 
 **Sorcerer performer gate on a scheme City Action:** override `getPerformersForAction` to filter `hasTrait("Sorcerer")`. In `isAvailableToPlayer`, loop performers and return true only if at least one has a legal target for at least one printed branch — don't gate availability on a single fixed performer.
 
@@ -222,7 +317,24 @@ Use when the text is **"Engage your performer • They issue a [Stat] challenge 
 3. `"NNNNN"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` maps to **`HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`** (framework target picker — no custom HD state for the target pick). Implement `isValidTargetForAbility` for server validation.
 4. Mint a `CHALLENGE_TYPE` kept **out of** `stIssueChallenge`'s auto-engage list. WHY: engage already ran in step 2; `NORMAL_CHALLENGE_TYPE` would double-engage. Same idea as Cornered / Sanjay / Don Constanzo.
 
-**Engagement trichotomy** (see `create-character` Pattern F): (a) Engage printed → engage in ActionTriggered + custom type out of auto-engage (`_03042`, Cornered); (b) conditional engage; (c) never engages (Sanjay). Do not copy the wrong case.
+**Engagement trichotomy** (see `create-character` Pattern F): (a) Engage printed → engage in ActionTriggered + custom type out of auto-engage (`_03042`, Cornered); (b) conditional engage; (c) never engages (Sanjay, **En Garde** `_04045`). Do not copy the wrong case.
+
+### En Garde Duelist unrefusable Combat challenge (same performer issues)
+
+Use when the printed text is **"En Garde Duelist Action: Your performer issues an unrefusable [Combat] challenge to target opposing character"** plus accept-time threat and/or destroy-during-duel payoff. Canonical: `_04045` (Stand Your Ground). Unrefusable sibling: Unsanctioned Duel `Action_02061`. During-duel correlator: Epee `Action_01071`. Accept-time threat: Sworn Swords `Action_03030`.
+
+**Flow:**
+
+1. `SchemeCityAction` + `IAbilityThatTargetsCharacters` + `RequiresPerformerSelected = true`. Printed "Action" (not City Action) still needs a city performer to issue a challenge — use City Action base.
+2. `getPerformersForAction`: `hasTrait("Duelist")` + `!$Engaged` (En Garde) + `canChallenge` + ≥1 opposing at location. `isAvailableToPlayer` = `count(...) > 0`.
+3. `EventActionTriggered`: re-validate. **Do not engage.** Set `STAT_COMBAT` + custom `CHALLENGE_TYPE`. Transition `"NNNNN"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`.
+4. Keep the type **off** `stIssueChallenge` auto-engage **and** off Unsanctioned's `stSetupChallenge` engage special-case. En Garde means the performer stays unengaged.
+5. **Unrefusable (lockstep):** `FrameworkActionsTrait::actHighDramaChallengeActionReject` throw; `OnUpdateActionButtons.js` disable Refuse (same `if` as Epee/Unsanctioned); matching JS int in `seventhseacityoffivesails.js`; **ZombieTrait accept-challenge must Accept** (default is Reject — would throw). Do **not** gate intervene.
+6. **When accepted, your participant gains a threat:** `EventGenerateChallengeThreat` + type match **and this scheme's owner controls `$event->actorId`** (the challenger). Do **not** persist `$IssuedThisChallenge` — `EventActionResolved` `!IN_DUEL` fires in the challenge pipeline and wipes it before threat generate. Mirror match: the opponent's scheme owner is not the challenger, so they do not add a second threat.
+7. **If your adversary is destroyed during the duel, gain a Renown:** Action `handleEvent` on `EventCharacterDestroyed`. Gate scheme `LOCATION_PLAYER_HOME` + `IN_DUEL` + type + **challenger controlled by this scheme's owner**. Destroyed id is the **defender** (issuer's adversary). Do **not** pay the defending mirror scheme when the challenger dies. Queue `createPlayerGainsReknownEvent` (score).
+8. Pre-commit: challenge-flow `createActionResolvedEvent()` comment (Cornered / `_03042`).
+
+Reference: `Action_04045`, `Action_02061`, `Action_01071`, `Action_03030`.
 
 ### Pattern G — Discard-to-refuse (conditional refuse cost)
 

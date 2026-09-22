@@ -48,6 +48,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['characterCombatModified', 1],
             ['characterFinesseModifed', 1],
             ['characterInfluenceModified', 1],
+            ['characterResolveModified', 1],
             ['characterIntervened', 500],
             ['cardMustered', 1000],
             ['characterRecruited', 1000],
@@ -68,6 +69,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['firstPlayer', 1000],
             ['locationClaimed', 500],
             ['parleyInterveneListUpdated', 1],
+            ['motionToDelayLabelUpdated', 1],
             ['sirensScreamUsedListUpdated', 1],
             ['crabsInABucketUsedListUpdated', 1],
             ['locationActionUsedListUpdated', 1],
@@ -83,10 +85,18 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['indomitableWillConditionEnded', 500],
             ['contemptAndHatredConditionStarted', 1],
             ['contemptAndHatredConditionEnded', 1],
+            ['giacintoInfluenceReductionStarted', 1],
+            ['giacintoInfluenceReductionEnded', 1],
             ['solineElGatoConditionStarted', 1],
             ['solineElGatoConditionEnded', 1],
+            ['tomoeSangoConditionStarted', 1],
+            ['tomoeSangoConditionEnded', 1],
             ['epeeSanglanteConditionStarted', 1],
             ['epeeSanglanteConditionEnded', 1],
+            ['forgedForBattleConditionStarted', 1],
+            ['forgedForBattleConditionEnded', 1],
+            ['adriftInTheWindConditionStarted', 1],
+            ['adriftInTheWindConditionEnded', 1],
             ['harpoonConditionStarted', 1],
             ['harpoonConditionEnded', 1],
             ['lodestoneConditionStarted', 1],
@@ -1402,6 +1412,24 @@ return declare('seventhseacityoffivesails.notifications', null, {
             dojo.removeClass(element, '_7sfs-modified-stat-value');
     },
 
+    notif_characterResolveModified: function( notif )
+    {
+        debug( 'notif_characterResolveModified' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.characterId];
+        card.modifiedResolve = args.newResolve;
+
+        const element = $(`${card.divId}_resolve_value`);
+        element.innerHTML = card.modifiedResolve;
+        // WHY: Wounds also mark Resolve as modified visually (see createCard / wound notifs).
+        if (card.modifiedResolve != card.resolve || card.wounds > 0)
+            dojo.addClass(element, '_7sfs-modified-stat-value');
+        else
+            dojo.removeClass(element, '_7sfs-modified-stat-value');
+    },
+
     notif_cardSentToLocker: async function( notif )
     {
         debug( 'notif_cardSentToLocker' );
@@ -1953,6 +1981,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_giacintoInfluenceReductionStarted: function( notif )
+    {
+        debug( 'notif_giacintoInfluenceReductionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.GIACINTO_INFLUENCE_REDUCTION_CONDITION))
+                card.conditions.push(this.GIACINTO_INFLUENCE_REDUCTION_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_giacintoInfluenceReductionEnded: function( notif )
+    {
+        debug( 'notif_giacintoInfluenceReductionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.GIACINTO_INFLUENCE_REDUCTION_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
     notif_solineElGatoConditionStarted: function( notif )
     {
         debug( 'notif_solineElGatoConditionStarted' );
@@ -1982,6 +2039,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         }
     },
 
+    notif_tomoeSangoConditionStarted: function( notif )
+    {
+        debug( 'notif_tomoeSangoConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.TOMOE_SANGO_CONDITION))
+                card.conditions.push(this.TOMOE_SANGO_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_tomoeSangoConditionEnded: function( notif )
+    {
+        debug( 'notif_tomoeSangoConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.TOMOE_SANGO_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
     notif_epeeSanglanteConditionStarted: function( notif )
     {
         debug( 'notif_epeeSanglanteConditionStarted' );
@@ -2007,6 +2093,64 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.EPEE_SANGLANTE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_forgedForBattleConditionStarted: function( notif )
+    {
+        debug( 'notif_forgedForBattleConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.FORGED_FOR_BATTLE_CONDITION))
+                card.conditions.push(this.FORGED_FOR_BATTLE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_forgedForBattleConditionEnded: function( notif )
+    {
+        debug( 'notif_forgedForBattleConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.FORGED_FOR_BATTLE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_adriftInTheWindConditionStarted: function( notif )
+    {
+        debug( 'notif_adriftInTheWindConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.ADRIFT_IN_THE_WIND_CONDITION))
+                card.conditions.push(this.ADRIFT_IN_THE_WIND_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_adriftInTheWindConditionEnded: function( notif )
+    {
+        debug( 'notif_adriftInTheWindConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.ADRIFT_IN_THE_WIND_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },
@@ -2094,6 +2238,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.SHACKLES_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_fatesSilenceConditionStarted: function( notif )
+    {
+        debug( 'notif_fatesSilenceConditionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.FATES_SILENCE_CONDITION))
+                card.conditions.push(this.FATES_SILENCE_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_fatesSilenceConditionEnded: function( notif )
+    {
+        debug( 'notif_fatesSilenceConditionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.FATES_SILENCE_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },
@@ -2793,6 +2966,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         this.displayForumInterveneList(args.interveneList);
+    },
+
+    notif_motionToDelayLabelUpdated: function( notif )
+    {
+        debug( 'notif_motionToDelayLabelUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayMotionToDelayLabel(args.locationName);
     },
 
     notif_sirensScreamUsedListUpdated: function( notif )

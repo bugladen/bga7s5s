@@ -70,6 +70,32 @@ Contrast: Yevgeni `_01116` adds +1 Thrust on every combat card (`actorId` only, 
 
 Reference: `_03037` Sanjay, `_01116` Yevgeni.
 
+### Combat-card trait → Lethal
+
+For text like **"When Jak-Sen's combat card is a Sorcery, gain Lethal"** / **"When Rosa's combat card is a Revelry, gain Lethal"** — passive on the **card class**, not a Technique:
+
+```php
+if ($event instanceof EventDuelCalculateCombatCardStats && $event->actorId == $this->Id)
+{
+    $combatCard = $event->theah->game->getCardObjectFromDb($event->combatCardId);
+    if ($combatCard && $combatCard->hasTrait("Sorcery"))  // or "Revelry", etc.
+    {
+        $lethalEvent = EventFactory::createGainLethalEvent($this->Id, $event->theah);
+        $event->theah->queueEvent($lethalEvent);
+        $event->explanations[] = sprintf(
+            $event->theah->game->translate('%s: Combat card is Sorcery — Threat is Lethal.'),
+            $this->getInjectCode()
+        );
+    }
+}
+```
+
+WHY `EventDuelCalculateCombatCardStats` (not Technique Calculate): the printed ability is an unconditional duel passive tied to the combat card trait, not a chosen Technique. Rosa `_02033` is the Revelry sibling; Jak-Sen `_04041` is Sorcery.
+
+WHY `getCardObjectFromDb($event->combatCardId)`: the calc event carries the combat card id directly — same load path as Rosa. Contrast Elena/Daichi Techniques that filter `getCombatCardsForCurrentRound()` by `ControllerId` for Technique availability.
+
+Reference: `_04041` Jak-Sen, `_02033` Rosa.
+
 ### Drawing cards
 
 - One card: `EventFactory::createCardDrawnEvent($playerId, $reason)` then `queueEvent`.
@@ -102,6 +128,32 @@ The factories are:
 - `createCharacterPanacheModifiedEvent` (Leader only)
 
 When the predicate that drives the modifier changes (a character moves into/out of the affected location, a duel ends), queue the inverse event to undo it. See `_01089` Soline el Gato — `lowerFinesse` on `EventDuelStarted`, `raiseFinesse` on `EventDuelEnd` / opposite swap. Track which character was affected on `$this->AffectedCharacterId` and set `$this->IsUpdated = true` so the change persists.
+
+### During a duel, Owner's adversary has −N[Stat]
+
+For Tomoe Sango `_04043` ("During a duel, Sango's adversary has −1[Finesse]"):
+
+**Lifecycle** — same duel-boundary events as Soline `_01089`:
+- `EventDuelStarted` — if Owner is challenger → debuff defender; if Owner is defender → debuff challenger
+- `EventDuelEnd` — restore
+- `EventDefenderSwapped` / `EventChallengerSwapped` — clear if Owner leaves; apply if Owner enters; transfer if Owner's adversary is swapped while she remains
+
+**Identity gate ≠ Soline.** Soline's printed text is a location aura ("adversaries at Soline's location") implemented as duel-time when *your* participant is at her location. Sango's printed text is **"Sango's adversary"** — gate on `$event->challengerId == $this->Id` / `$event->defenderId == $this->Id` (Owner herself participating). Do not copy Soline's controller+location gate onto "Owner's adversary" wording.
+
+**Condition + client notifs** — stamp a named `Game::*_CONDITION` on the adversary and fire `*ConditionStarted` / `*ConditionEnded` notifs (Giacinto / Soline tooltip pattern). Wire the string constant in `Game.php`, `seventhseacityoffivesails.js`, and `Notifications.js`. Idempotent `hasCondition` before ±1 so double-apply cannot stack.
+
+**Clear immediately when Owner leaves play mid-duel** (user-confirmed for Sango):
+
+| Event | Why |
+|---|---|
+| `EventCharacterDestroyed` + `characterId == Owner.Id` | Destroy has `runEventHubAfterCards = true`, then EventHub **recreates** the card (`instantiateCard`) — wipes `$AffectedCharacterId`. Clear in card `handleEvent` **before** that recreate. |
+| `EventCardSentToLocker` + `cardId == Owner.Id` | Destroy does **not** emit CardSentToLocker (EventHub comment). This covers spend-to-locker paths. |
+
+WHY not rely on `EventDuelEnd` alone after destroy: locker cards are not loaded by `Theah::buildCity`, so `EventDuelEnd` never runs on the recreated Owner. Leaving the sticky condition on the adversary forever is the regression.
+
+**Optional safety-net** (Sango): mirror the debuffed id into a game global on apply; clear the global on restore; call a static `clearPendingDebuff($game)` from `StatesTrait::stDuelEnd` (Desideria `flushPendingRecovers` shape). Primary path is still immediate Destroy/Locker clear — the flush is a no-op when the global was already zeroed.
+
+Reference: `_04043` Tomoe Sango; Soline lifecycle sibling `_01089`; leave-play clear sibling `_04032` Giacinto (Destroy + CardSentToLocker pair).
 
 ### While equipped with a Weapon (count-transition, not a bool flag)
 
@@ -200,6 +252,59 @@ Edge cases (Elena journal `2026-05-16-01-elena-agnelli-03004-implementation.md` 
 - **Owner swapped into / out of an in-progress duel.** Not handled by the basic pattern. The next `EventDuelEndOfRound` recomputes from the player's line, which may already contain cards played by a prior duelist. Flag for QA if the text is sensitive to this; usually unimportant.
 - **Owner destroyed mid-duel.** `EventDuelEnd` still fires and resets the bonus. `ModifiedFinesse` on a discarded card doesn't affect anything else, so no special handling needed.
 
+### Adversary cannot Maneuver while trait in dueling line
+
+For text like **"While Raven has a Ranged card in her dueling line, the adversary cannot perform Maneuvers"** — a **live condition** ban (not a Technique that arms a sticky flag). Override `eventCheck` on the **card class**:
+
+```php
+public function eventCheck(Event $event)
+{
+    parent::eventCheck($event);
+
+    // WHY EventResolveManeuver + adversaryId (Maryam Technique_01186): blocks only the
+    // adversary's Maneuvers. Owner's own Maneuvers stay legal.
+    if ($event instanceof EventResolveManeuver && $event->adversaryId == $this->Id)
+    {
+        if ($this->hasTraitCardInDuelingLine($event->theah, "Ranged"))
+        {
+            throw new UserException(/* … */);
+        }
+    }
+}
+
+private function hasTraitCardInDuelingLine(Theah $theah, string $trait): bool
+{
+    // WHY participant gate (Elena): LOCATION_DUELING_LINE is per-player.
+    $challengerId = $theah->getDuelChallengerId();
+    $defenderId = $theah->getDuelDefenderId();
+    if ($this->Id != $challengerId && $this->Id != $defenderId)
+    {
+        return false;
+    }
+
+    foreach ($theah->getCardObjectsAtLocation(Game::LOCATION_DUELING_LINE, $this->ControllerId) as $card)
+    {
+        if ($card->hasTrait($trait))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+```
+
+| Shape | When | Event | Scope |
+|---|---|---|---|
+| **Live dueling-line condition** (Raven `_04012`) | While trait card is in Owner's line | `EventResolveManeuver` + `adversaryId == Owner.Id` | Re-check line each resolve — no sticky flag |
+| **Armed Technique flag** (Maryam `Technique_01186`) | After Technique resolves, until Owner's next round / duel end | Same Resolve + `adversaryId` gate + `$CancelOpponentManeuvers` | Sticky bool on the Technique |
+| **Global ban while Maneuver active** (Maneuver_01129) | After that Maneuver resolves for the rest of the duel | `EventManeuverActivated` (and Techniques) when `$IsActive` | Blocks **everyone**, including the Owner |
+
+WHY not `EventManeuverActivated` for Raven/Maryam: Activated has no `adversaryId` — you'd invent controller comparisons and still need the participant/line gates. Resolve's `adversaryId` is the established adversary-scoped backstop.
+
+Acceptable UX gap (Maryam too): the adversary may still *select* a Maneuver and fail at resolve. An Activated-time block would be an enhancement, not the mirror.
+
+Reference: `_04012` Raven; `Technique_01186` Maryam; contrast `Maneuver_01129`.
+
 ### Location-counting passives — `EventCardMoved` fires BEFORE the DB updates
 
 For "while you control another X at <Owner>'s location, she has +N [Stat]" (Angeline Dèmone `_03026`) or any other passive that **counts who is at a location** in response to `EventCardMoved` — the DB location field hasn't been updated yet when card->handleEvent runs. `EventCardMoved` sets `runEventHubAfterCards = true`, so the EventHub's location update runs AFTER every card's `handleEvent`. A naive `getCharactersAtLocation($this->Location)` returns the *pre-move* state: the moving card is still at `fromLocation`, not at `toLocation`.
@@ -284,6 +389,50 @@ WHY not just hook the post-tense `EventCardMoved` differently — there's no lat
 
 Reference: `_03026` Angeline (binary bonus), `_01037` Edeline (per-character count via `$adjustment` int).
 
+### Multi-stat location aura — flag ±1, not absolute
+
+For text like Axelle `_04022` ("While you control a Duelist at this location, Axelle gains +1 Finesse and +1 Influence"):
+
+- Same **Angeline lifecycle** (move / muster / approach / destroy / recruit) and **stale-DB** exclude-out / include-in.
+- Prefer **Ise/Benci public bool flag** + `createCharacterFinesseModifedEvent` / `createCharacterInfluenceModifiedEvent` (±1) **only on flag transition**.
+- WHY not Angeline absolute `$this->Stat + $bonus`: Axelle buffs stats that attachments also mutate — absolute would wipe those mods on every recount. Single-stat Influence-only Angeline still uses absolute; multi-stat (or Combat/Finesse that attachments commonly touch) use the flag.
+
+Reference: `_04022` Axelle; `_03026` Angeline (single-stat absolute); `_04001` Benci / `_03016` Ise (flag).
+
+### Opposed by N+ wounded characters — location count + wound state
+
+For text like "While Benci is opposed by two or more wounded characters, he gains +1[Combat]" (`_04001` Benci). Combine:
+
+1. **Ise flag ±1** for the Combat bonus (attachments also mutate `ModifiedCombat` — do **not** set absolute `Combat + bonus`).
+2. **Angeline/Edeline location recount** on `EventCardMoved` / muster / approach / destroy / recruit, counting **opposing** characters (`isNotControlledByPlayer`) with wounds.
+3. **Wound/heal recount** on `EventCharacterWounded` / `EventCharacterHealed` when the event character is at Owner's location (or is Owner — usually irrelevant for opposing counts).
+
+**Home short-circuit (load-bearing):** `Game::LOCATION_PLAYER_HOME` is one location string for every player. `getOpposingCharactersAtLocation(HOME, …)` returns enemies sitting at *their* Homes. You cannot be "opposed" at Home — if `$location == LOCATION_PLAYER_HOME`, return count `0`.
+
+**Wound-event order:** cards handle `EventCharacterWounded` in foreach order; the wounded character may not have run yet when Owner recounts. If `$event->characterId == $character->Id && ! $event->characterHandled`, add `$event->wounds` (or subtract for heal) when testing `Wounds > 0`.
+
+**Move stale-DB:** same Angeline exclude-out / include-in when the moving card is an opposing wounded character.
+
+Reference: `_04001` Benci; Ise `_03016` (flag); Angeline `_03026` (location timing).
+
+### Opposing trait −N Influence at Owner's location
+
+For text like Giacinto `_04032` ("Opposing **Sorcerers** have −1[Influence]"):
+
+This is a **debuff aura on opposing characters**, not a self-buff. Mirror Contempt and Hatred `_01143` for the apply/remove/condition/notif machinery, but scope like Benci/Axelle (location + opposing), not global.
+
+1. **Track debuffed character ids** on the aura source (survive via `IsUpdated`).
+2. **Apply** −N via `createCharacterInfluenceModifiedEvent` + a named `Game::*_CONDITION` string + `conditionsApplied` notif on each newly qualifying Sorcerer.
+3. **Remove** +N + `conditionsRemoved` when they leave scope (move away, lose Sorcerer, Owner leaves, etc.).
+4. **Eligible set** = opposing (`getOpposingCharactersAtLocation` / controller mismatch) + `hasTrait("Sorcerer")` at **Owner's current location**.
+5. **Home → empty list** — same shared-`LOCATION_PLAYER_HOME` trap as Benci. Clear every debuff when Owner moves Home; skip muster/recruit hooks while Owner is at Home.
+6. **Stale-DB on `EventCardMoved`** — Angeline exclude-out / include-in when recounting who shares Owner's location.
+7. **Lifecycle hooks** — move / muster / approach / destroy / recruit / Owner sent to locker (clear all).
+
+WHY not global `_01143`: printed "Opposing" in this codebase always means same location + different controller. A city-wide Influence tax would over-hit.
+
+Reference: `_04032` Giacinto; condition/notif sibling `_01143`; location opposing siblings `_04001` Benci / `_04022` Axelle.
+
 ### Location Technique grant aura — "Your other characters at this location gain: Technique: …"
 
 For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"), Stranahan `_02022` ("Your Musketeers … gain Lethal"), or Yepikhodov `_03051` ("Your other characters … gain Technique: Engage … Copy …"). This is a **card-class `handleEvent` passive**, not a Reaction and not a Technique mounted on the aura source himself (unless the printed text also gives him the Technique).
@@ -322,6 +471,38 @@ WHY `setId` before `setOwnerId`: `setId` overwrites both `Id` and `ClassId`; `se
 **Known hole (accept when mirroring Jean):** `EventCharacterRecruited` does **not** also emit `EventCardMoved`. If the *aura source* is recruited into a location that already has allies, those allies are not granted until a later move. Same hole exists on `_01067` / `_02022`. Do not invent an extra Recruited-self branch unless Eddie asks — stay consistent with Jean.
 
 Reference: `_03051` Yepikhodov (no trait filter; granted Technique is interactive), `_01067` Jean (`Technique_PlusOneRiposte` with ClassId `Technique_01067`), `_02022` Stranahan (`Technique_GainLethal`).
+
+### Location trait-stat aura — "Your <Trait>s at Home and <Owner>'s location gain +N[Stat] / +M Resolve"
+
+For text like Danilo `_04002` ("Your **Thugs** at **Home** and Danilo's location gain +1[Finesse] and +1 Resolve"). This is **not** a Technique grant (Jean) — it buffs **stats** on other controlled characters that match a trait and location predicate.
+
+**Shape:**
+
+1. Track `$BuffedIds` (list of character ids currently holding the aura) on the aura source — survive via `IsUpdated`.
+2. On relevant events, recompute the eligible set and apply/remove only on set transitions (same idea as Weapon count-transition / Ise flag — avoid stacking).
+3. Finesse/Combat/Influence → `createCharacter<Stat>ModifiedEvent` (Finesse factory typo `Modifed`).
+4. Resolve → **direct** `$thug->ModifiedResolve ±1` (no factory) **and** emit `characterResolveModified` client notif — see "Resolve client sync" under Phase-conditional Resolve below. Without the notif the chip stays flat while Finesse updates (Danilo playtest).
+
+**Eligibility:**
+
+- Controlled by aura source's controller, `hasTrait(<printed trait>)`, not the aura source (unless the source also has the trait and the text includes him — Danilo is not a Thug).
+- Location is **Home OR aura source's current location**. When printed "at Home and X's location", Home is **always** in scope even when the aura source is in the city. When the aura source is at Home the two locations collapse (set membership — no double-apply).
+- Home lookup: `getCharactersAtHomeByPlayerId($controllerId)` / effective-location `== LOCATION_PLAYER_HOME`. **Never** `getCharactersAtLocation(HOME)` — shared string across players (Benci / opposing-count lesson).
+
+**Lifecycle hooks (same family as Jean / Angeline):**
+
+| Event | What to do |
+|---|---|
+| `EventCardMoved` | Recompute with move-event compensation (effective `toLocation` for mover; include-in / exclude-out) |
+| `EventCharacterMustered` / `EventApproachCharacterPlayed` / `EventCharacterRecruited` | Recompute; force-include newly entered Thug when ControllerId may still be unset |
+| `EventCharacterDestroyed` (aura source) | `clearAll` — strip every buffed id |
+| `EventCharacterDestroyed` (other) | Exclude the destroyed id (`runEventHubAfterCards` — still looks in-play during card `handleEvent`) |
+
+On Resolve **remove**, run the Joern destruction check if `Wounds >= ModifiedResolve`.
+
+Contrast Technique aura (Jean): Home usually **excluded**; grant/remove Techniques by ClassId rather than ±1 stats.
+
+Reference: `_04002` Danilo.
 
 ### Forced muster/approach triggers — hook BOTH `EventCharacterMustered` AND `EventApproachCharacterPlayed`
 
@@ -446,6 +627,37 @@ WHY `EventDuskEndOfDay` for the restore (not `EventDuskPhaseEnd`):
 - `EventDuskPhaseEnd` would work too (Brute discard at end-of-day doesn't read Resolve), but EndOfDay is the strict latest safe point.
 
 Reference: `_03015` Joern Kietelsson. Note that the same pattern applies in reverse for "+N Resolve" phase-conditional buffs.
+
+### Resolve client sync — `characterResolveModified` notif (required for live chip)
+
+Finesse / Combat / Influence factories run through EventHub handlers that call `notify->all("characterFinesseModifed"|…)` and `Notifications.js` updates the chip. **Resolve has no such pipeline.** Mutating `ModifiedResolve` + `IsUpdated` persists to DB but the Resolve number on the card stays flat until something else redraws it (Danilo `_04002` playtest: Finesse moved, Resolve did not).
+
+Whenever a passive/aura changes Resolve and the player must see it immediately:
+
+```php
+$oldResolve = $character->ModifiedResolve;
+$character->ModifiedResolve += 1; // or -= 1
+$character->IsUpdated = true;
+
+$theah->game->notify->all(
+    "characterResolveModified",
+    clienttranslate('The resolve of ${character_name} went from ${oldResolve} to ${newResolve} due to: ${reason}.'),
+    [
+        'i18n' => ['character_name'],
+        "character_name" => $character->Name,
+        "characterId" => $character->Id,
+        "oldResolve" => $oldResolve,
+        "newResolve" => $character->ModifiedResolve,
+        "reason" => $this->getInjectCode(),
+    ]
+);
+```
+
+Client: subscribe `['characterResolveModified', 1]` in `Notifications.js` `setupNotifications` and implement `notif_characterResolveModified` mirroring `notif_characterFinesseModifed` (set `modifiedResolve`, update `${divId}_resolve_value`, keep `_7sfs-modified-stat-value` when `modifiedResolve != resolve || wounds > 0`).
+
+WHY not invent a factory yet: Joern-style direct mutation remains the server truth; the notif is the missing half. A future `createCharacterResolveModifiedEvent` could centralize both — until then, emit the notif at every Resolve mutation that should be visible. Joern's phase penalty historically used `message`-only (chip may lag); prefer `characterResolveModified` for new work.
+
+Reference: `_04002` Danilo (aura); `_03015` Joern (phase Resolve — add the notif if live chip matters).
 
 ### Wound-prevention passive — `eventCheck` on `EventCharacterBeingWounded`
 
@@ -713,6 +925,49 @@ Named city location constants (real ones in `Game.php`):
 
 Reference: `_03028` Térence, `_01089` Soline (duel boundary + swap discipline — but Soline modifies *adversaries*, Térence modifies *self*).
 
+### Gains traits while participating in a duel
+
+For text like Iago `_04033` ("While Iago is participating in a duel, he gains **Pirate** and **Scoundrel**"):
+
+Grant on **self** via `addTrait` / `removeTrait` (not a `hasTrait` override). Track a `$DuelTraitsApplied` bool so apply is idempotent and clear only removes what this card granted.
+
+**Lifecycle** (same participation gates as Térence `_03028` / Soline `_01089`):
+
+| Event | Action |
+|---|---|
+| `EventDuelStarted` when `$event->challengerId` or `defenderId` == `$this->Id` | `applyDuelTraits` |
+| `EventDuelEnd` | `clearDuelTraits` |
+| `EventChallengerSwapped` / `EventDefenderSwapped` | apply when `$this->Id` becomes the new participant; clear when leaving |
+
+```php
+private function applyDuelTraits(Event $event): void
+{
+    if ($this->DuelTraitsApplied) return;
+    if ($this->ControllerId == 0 || $event->theah->game->characterIsInDiscardOrLocker($this)) return;
+
+    $this->addTrait($event->theah->game, "Pirate");
+    $this->addTrait($event->theah->game, "Scoundrel");
+    $this->DuelTraitsApplied = true;
+    $this->IsUpdated = true;
+}
+```
+
+`addTrait` / `removeTrait` already emit `traitAdded` / `traitRemoved` client notifs — no extra notify needed.
+
+**Contrasts:**
+
+| Shape | Who gets the trait | Scope |
+|---|---|---|
+| Iago `_04033` | **Self** while duel participant | Duel start/end + swaps |
+| Daniella `Action_03013` | **Opposing** characters | While using abilities (turn-scoped Continuous Action) |
+| El Gato Mask `_03043` | Equipped character | Equip / unequip |
+
+Do **not** invent a sticky Technique flag for a printed passive that lasts the whole duel — that belongs on the card class.
+
+Novel printed trait strings (e.g. **Razor** on Iago's scaffold) must also be added to `TraitNames::$TraitsJson` alphabetically (checklist 65).
+
+Reference: `_04033` Iago; participation sibling `_03028` Térence; equip-grant sibling `_03043`; opposing-tag sibling `Action_03013`.
+
 ### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
 
 For text like "While using your abilities, characters opposing <Owner> may be considered <Trait>" (Daniella Dietrich `_03013`): the trait must light up on *opposing* characters, not on the owner. The Uwe Zimmerman `_01043` `hasTrait` override pattern is the WRONG fit — that pattern lights up the *receiver* of `hasTrait`, so it only works when the card being considered is the card whose `hasTrait` was overridden. For the opposing-direction case, mirror the Wilhelm Dünst `Action_02013` pattern instead: **mutate the opposing characters' `ModifiedTraits` directly via `addTrait` / `removeTrait`**, keep a tracked set of the ids you tagged, and untag at the scope boundary.
@@ -762,6 +1017,75 @@ WHY tracked-set + skip-already-tagged:
 WHY "opposing" = controller-mismatch + location-match: this matches `Theah::getOpposingCharactersAtLocation` and the codebase-wide definition (see the memory note). Don't roll your own filter; just pull from the location and exclude same-controller.
 
 Scope boundary for untagging: the scope is whatever the card text says. Daniella's "while using your abilities" reads as "for the duration of your turn" once you map ability-use to turn-scope — `EventPlayerTurnEnd` is the natural clear. Add `EventCardMoved` / `EventCharacterDestroyed` cleanups for the owner so an outstanding tag set doesn't get orphaned on a character that no longer opposes her.
+
+### Cost +1 taxes (equip vs recruit)
+
+Printed cost increases ("gains +1 cost") are implemented as **negative discounts**. The hook depends on *what* is being paid for — there is no generic `getCostDiscount`.
+
+| Printed trigger | Override | Call sites |
+|---|---|---|
+| **Equips** an attachment | `getEquipDiscount` | `Theah::getEquipDiscount` (equip / Let's Haggle / etc.) |
+| **Recruits** a Mercenary | **`getParleyDiscount`** | `FrameworkActionsTrait` recruit parley yes/no + `stRecruitComputeDiscount` / undo paths |
+
+**There is no `getRecruitDiscount`.** Do not invent one. Recruit cost is always `$WealthCost - getParleyDiscount(...)` (Cirilo's flat-cost type overrides *after* the discount global is set).
+
+```php
+// Recruit +1 cost — Hans Offenheim _04011
+public function getParleyDiscount(Theah $theah, Character $performer, bool $parleying, array &$explanations): int
+{
+    $discount = parent::getParleyDiscount($theah, $performer, $parleying, $explanations);
+
+    // WHY: Italic En Garde = Engaged=false (Astrid _04cd04 pressure sibling).
+    // Opposing + cardInCity: Home shares one location string across players.
+    if (
+        ! $this->Engaged
+        && $this->isControlled()
+        && $performer->isNotControlledByPlayer($this->ControllerId)
+        && $performer->Location == $this->Location
+        && $theah->cardInCity($performer)
+    )
+    {
+        $discount -= 1;
+        $explanations[] = sprintf(
+            $theah->game->translate("%s: +1 because performer is opposing Hans Offenheim."),
+            $this->getInjectCode()
+        );
+    }
+
+    return $discount;
+}
+```
+
+```php
+// Equip +1 cost — Makepeace _01092 (no En Garde on that print)
+public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, array &$explanations): int
+{
+    $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
+
+    if (
+        $performer->isNotControlledByPlayer($this->ControllerId)
+        && $performer->Location == $this->Location
+        && $theah->cardInCity($performer)
+    )
+    {
+        $discount -= 1;
+        $explanations[] = sprintf(
+            $theah->game->translate("%s: +1 because performer is opposing Makepeace Botwighte."),
+            $this->getInjectCode()
+        );
+    }
+
+    return $discount;
+}
+```
+
+WHY gate on `$parleying` is usually unnecessary for a recruit tax: `getParleyDiscount` is **only** called from recruit flows in this codebase (Kaspar/Song-of-Eisen *self* discounts also live here and *do* gate on `$parleying` / performer-is-self). A tax on "when an opposing character recruits" applies whether or not they Parley.
+
+Italic *En Garde* on a Character (not CityCharacter) is still `!$this->Engaged` — same precondition as Pattern G on city characters and En Garde Actions/Reactions. It is not flavor and not an Engage cost.
+
+Contrast: Leader *self* Parley discounts (Kaspar `_01035`, Character base Influence-while-parleying) use `$discount += N` when `$performer->Id == $this->Id && $parleying`. Cost *taxes* use `-= 1` on opposing performers.
+
+Reference: `_04011` Hans (recruit), `_01092` Makepeace (equip), scheme sibling `_03063` (equip onto character opposing your Scoundrel).
 
 ### Continuous Action — passive ability that lives on an `Action` class but never appears in the UI
 
@@ -847,11 +1171,15 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventCharacterCombatModified` / `EventCharacterInfluenceModified` | A character's modified stat changed (`$event->CharacterId`, `$event->OldCombat`/`NewCombat` or `OldInfluence`/`NewInfluence`) | Re-sync a "set [StatA] equal to [StatB]" link when the source stat changes, or re-apply the link when an external effect mutates the target stat during the override. EventHub applies the new stat **before** card `handleEvent` runs (`runEventHubAfterCards = false`). Reference: `_03028` Térence. |
 | `EventAttachmentEquipped` | An attachment was equipped (`$event->characterId`, `$event->attachmentId`; `$event->asAction` distinguishes action-equip vs passive) | "After a character equips an attachment at [location] …" City Reactions. Look up equipping character via `getCharacterById($event->characterId)` and compare `.Location` to the named city constant. Skip `$attachment->FakeAttachment`. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01039` (owner self-equip only). |
 | `EventDuelEndOfRound` | A duel round just ended; both combat cards are in the dueling line; the next round hasn't begun | Recompute "for each X in my dueling line" running bonuses *before* the next round's gambling. `_03004` Elena. |
-| `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel (`$event->gambled` is set from `duel_round.gambled`) | "+X to combat card stats" — `_01116` Yevgeni (every card); gambled-only — `_03037` Sanjay (`$event->gambled` gate) |
+| `EventDuelNewRound` | A new duel round is starting (`$event->actorId` is whose turn it is; `$event->round`) | "At the beginning of the first round" (gate `round == 1` — Andare `Reaction_04031`); "**adversary's next round**" deferred Technique effects (gate `actorId != owner.Id` — Iago `Technique_04033`, Lorenzo `Technique_01090`). |
+| `EventResolveManeuver` | A Maneuver is resolving (`$event->playerId` actor, `$event->adversaryId` opponent, `$event->maneuverId`) | "Adversary cannot perform Maneuvers" backstop — gate `adversaryId == Owner.Id`. `_04012` Raven (live line condition); `Technique_01186` Maryam (armed flag). |
+| `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel (`$event->gambled` is set from `duel_round.gambled`) | "+X to combat card stats" — `_01116` Yevgeni (every card); gambled-only — `_03037` Sanjay (`$event->gambled` gate); combat-card trait → Lethal — `_04041` Jak-Sen / `_02033` Rosa |
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
 | `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006` |
 | `EventSchemeCardRevealed` | A scheme is revealed | Leaders react via the base `Leader::handleEvent`; only override if you have card-specific logic |
-| `EventCharacterDestroyed` | A character is destroyed (`runEventHubAfterCards = true`, so the destroyed character's `.Location` is STILL set during `handleEvent` — the locker move runs AFTER all card handlers). Look up via `getCharacterById($event->characterId)` and compare `.Location == $owner->Location` for "another character at this location" triggers. | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent. "After another character at this location is destroyed …" — `_03027` Odette, `Reaction_01013`. |
+| `EventCharacterDestroyed` | A character is destroyed (`runEventHubAfterCards = true`, so the destroyed character's `.Location` is STILL set during `handleEvent` — the locker move runs AFTER all card handlers). Look up via `getCharacterById($event->characterId)` and compare `.Location == $owner->Location` for "another character at this location" triggers. **After card handlers, EventHub recreates the card** (`instantiateCard`) — instance fields like `$AffectedCharacterId` are wiped. | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent. "After another character at this location is destroyed …" — `_03027` Odette, `Reaction_01013`. Duel-scoped debuffs that track instance state: clear **before** recreate (`_04043` Sango) — see "During a duel, Owner's adversary has −N[Stat]". |
+| `EventCardSentToLocker` | Card moved to locker without going through Destroy (`$event->cardId`, `$event->playerId`). **Destroy does not emit this** (EventHub). | Spend-to-locker / non-destroy locker paths. Pair with `EventCharacterDestroyed` when clearing leave-play auras/debuffs (`_04032` Giacinto, `_04043` Sango). |
+| `EventHighDramaPhaseEnd` | High Drama phase ending | "At the end of High Drama …" Reactions / Forced. Reference: `Reaction_01045`, `Reaction_04043` (claim uncontrolled). |
 | `EventSorcererAbilityPlayed` | A sorcerer ability resolved | "After <X> performs a Sorcerer ability …" reactions, Pattern D below |
 | `EventActionResolved` | An action just resolved | "After an Action resolves …" reactions, `Reaction_01089` |
 | `EventCardMoving` / `EventCardMoved` | Pre / past tense of a card-to-location move | `Moving` is cancelable (`$event->canceled = true`) — use for opt-out Reactions (Pattern D "Cancel-and-reissue"). `Moved` is the past-tense receiver — use for "after X moves to/from this location" triggers. The Dusk auto-move emits `Moving` with `$sourceId == 0`; ability-driven moves pass a non-zero sourceId. Reference: `Reaction_03016a` (cancel), `Reaction_03016b` (react to). |

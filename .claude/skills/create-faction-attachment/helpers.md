@@ -9,7 +9,8 @@
 - `$theah->getLeaderByPlayerId(int $playerId): ?Leader` — get a player's Leader (returns null if destroyed).
 - `$theah->getCardObjectsAtLocation(string $location, int $playerId = 0): Card[]` — all cards in a generic location (`Game::LOCATION_HAND`, `Game::LOCATION_PLAYER_HOME`, etc.). For hand, pass the player id.
 - `$theah->locationInCity(string $location): bool` / `$theah->cardInCity(Card $card): bool` — canonical City checks. **Required** for attachment City Actions (no `AttachmentCityAction` base).
-- `$theah->getCityLocations(): CityLocation[]` — all five city slots; map `->Name` when building destination lists.
+- `$theah->getCityLocations(): CityLocation[]` — all five city slots; map `->Name` when building destination lists. Each has `->Renown` (int). **Home has no Renown track** — `getCityLocation(LOCATION_PLAYER_HOME)` throws; treat Home as 0. A "more Renown than current" filter can never match Home (`Action_04036b`).
+- `$game->getNextEventBatchId()` — share one `batchId` across `createRenownMovingBetweenLocationsEvent` + `createRenownRemovedFromLocationEvent` + `createRenownAddedToLocationEvent(..., isMove=true)` so the UI plays a relocate as one animation (`_04034`, `Action_01007`, `Action_04036a`).
 - `$game->getCardObjectFromDb(int $id): ?Card` — hydrate any card from db (works even if it's not in `Theah::$cards`).
 - `$game->getGameDeckObject(int $playerId = 0): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` queries discard; `getPlayerHand($playerId)` queries hand.
 - `$game->getPlayerFactionDeckName(int $playerId): string` — the deck-table location string for a player's faction deck.
@@ -19,10 +20,21 @@
 - `$card->addCondition($condition)` / `hasCondition($condition)` / `removeCondition($condition)` — lasting stamped state (Harpoon remainder-of-duel, Lodestone/Shackles while-equipped, Soline, Indomitable Will). Define the string on `Game` as `final const`. JS constant must match exactly.
 - `$game->updateCardObjectInDb($card)` — flush condition / property stamps when the next event rebuild must see them (do not rely on `IsUpdated` alone for mid-resolve stamps).
 - `$game->characterIsInDiscardOrLocker(Character $character): bool` — skip restoring duel-end conditions on already-removed characters.
-- `$theah->getDuelRoundActor()` / `getDuelRoundOpponent()` — current duel participants for Gambling / remainder-of-duel effects.
+- `$theah->getDuelRoundActor()` / `getDuelRoundOpponent()` — current duel **round** actor/opponent for Gambling Techniques / remainder-of-duel effects.
+- `$event->actorId` on `EventDuelEndOfRound` — gate "at the end of **your** round" to `$event->actorId == $owningCharacter->Id` (`Technique_04016`).
+- `$theah->getDuelChallengerId()` / `getDuelDefenderId()` / `getDuelOpponentId($participantId)` — duel **roster** ids for Pattern B''' "is this character in the duel / who is their adversary" gates (`_04006`). Prefer these over round-actor helpers when the bonus is participant-scoped, not round-actor-scoped.
+- `$theah->getNumberOfGambleCardsToReveal(Character $actor): array` — returns `[$count, $explanationsHtml]`; base count is **2** plus every card's `getNumberOfGambleCardsToReveal` override. Attachments that add reveals implement the per-card override (Gallegos `_01101`, Assassin's Garb `_04006`, Jägerarmbrust `_04017`).
 - `$theah->swapParticipantsInDuel($duelId, $round, $oldId, $newId)` — mid-duel participant replace. Harpoon-style "cannot be swapped" must throw here *before* DB mutate.
 - `$this->getInjectCode()` — inline-styled card name for notifications (`${attachment_inject_code}` placeholder).
 - **Attachment `ControllerId` after equip:** `EventHub` sets it to the **equipping player**. For `CanEquipToOpponents`, that is *not* the equipped character's controller — use `$attachedTo->ControllerId` for the victim.
+- **"After a \<Trait\> equips this card"** ≠ **"May only equip to \<Trait\>"**. Former = Reaction offer gate on the host's traits (`Reaction_04016`). Latter = Pattern A `canAttachTo` + `eventCheck(Equipping)`.
+- **"If your participant is a \<Trait\>…"** inside Technique/Action text ≠ availability / Pattern A. Resolve-time effect gate only (`Technique_04017`). Unconditional halves still fire for other hosts.
+- **Passive "when … gambles, reveal an additional card"** ≠ **Gambling Technique** keyword. Former = B''' override; latter = `DUEL_GAMBLED` availability (`_04017` has both shapes on one card — do not conflate).
+- **"Pressure fails instead" (difference ≤1)** ≠ Risk Objection pay path. Attachment versions engage in `performReaction` and rebuild a failed Result — do not `ICancelReaction` / `EventRiskReactionTriggered` (`Reaction_04026` vs `Reaction_01027`).
+- **"Ignore that wound" from an opponent's ability** ≠ Cascade pay path. Attachment versions cancel-first `EventCharacterBeingWounded`, engage in `performReaction`, and drop the saved clone — do not copy `Reaction_02059`'s entering-pay / `EventRiskReactionTriggered` (`Reaction_04053` vs Cascade). Target is the **equipped** character only (Cascade allows any controlled character).
+- **Stat-threshold equip** ("N[Finesse] or more") ≠ trait equip and ≠ Shackles ally-compare. Dual-gate `Modified* >= N` (`_04053`).
+
+**`EventAttachmentUnequipped` + `AttachedToId`:** EventHub clears `$attachment->AttachedToId = 0` **before** card `handleEvent` (event does not set `runEventHubAfterCards`). Any unequip cleanup that needs the former host must use `$event->characterId` (Pattern B trait remove, B'' condition clear, B''' bonus undo — `_04006`).
 
 **`EventCardMoving` opponent detection:** use `$event->sourceId` → source card `ControllerId`, **not** `$event->initiatingPlayerId`. WHY: `Maneuver_01033` sets initiatingPlayerId to the victim. Own abilities pass the owner's card as `sourceId` and must still be allowed (Lodestone City Action).
 
@@ -34,12 +46,22 @@ Event factories you'll likely need:
 - `createCardAddedToFactionDeckEvent($playerId, $cardId, $onTop)` — `$onTop = false` sinks to bottom; use `$attachment->OwnerId` for the playerId
 - `createAttachmentDiscardedFromPlayEvent($attachment, $sourceId = 0, $asEffect = false, ?$fromLocation = null, $cityDiscardPlayerId = 0)` — city vs faction discard; use this for destroy/discard of attachments
 - `createCardDiscardedFromPlayEvent($ownerId, $cardId, $location, $sourceId, $asEffect)` — faction cards / characters only; prefer `createAttachmentDiscardedFromPlayEvent` for attachments
+- `createCardDiscardedFromHandEvent($ownerId, $cardId, $sourceId, $asPayment, $asPlayed, $asEffect)` — adversary hand discard from Technique (`Technique_04017` / `01093`); usually `$asEffect = true`
 - `createCardEngagedEvent($playerId, $cardId, $sourceId, $abilityId)` — "Engage this card" on an attachment Technique: `$cardId` = attachment id
 - `createCardMovingEvent($playerId, $cardId, $from, $to, $engage = true, $sourceId = 0, $abilityId = '')` — default `$engage = true`; pass `false` when move is an effect and engage/sink was a separate cost. `$unstoppable = true` bypasses Harpoon-style move blocks (Lodestone Home-from-opponent gate does not check unstoppable — printed text is ability-scoped).
 - `createCharacterFinesseModifedEvent($playerId, $characterId, $old, $new, $reason)` — note the historical typo `Modifed` in the factory name. Siblings: `createCharacterCombatModifiedEvent`, `createCharacterInfluenceModifiedEvent`.
+- `createCharacterBeingHealedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')` — heal Reaction / Action (`Reaction_04016`, `Reaction_03027a`)
+- `createThreatModifiedEvent($challengerThreat, $defenderThreat, …)` — "each participant gains a threat" = `(1, 1)` (`Technique_04016`, `Reaction_02039`)
+- `createLocationPressureResultEvent($playerId, $performerId, $location, $pressureType, $success, $totalsExplanation, $highDramaBasicAction, $abilityId)` — rebuild pressure outcome after `deletePressureResultEvents()` (`Reaction_04026` / `Reaction_01027`); pass `success: false` to fail
 - `createTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — for attachment Actions, `$sourceId` is usually the **attachment** id
+- `createTechniqueTransitionEvent($playerId, $sourceId, $transition, $abilityId)` — HIGHEST_PRIORITY choice interrupt (adversary discard picker, attachment destroy pick). Attachment-hosted: `$sourceId` = attachment id (`Technique_04017` / `04013`)
 - `createCharacterBeingWoundedEvent($characterId, $sourceId, $wounds, $reason, $abilityId = '')`
 - `createReactionTransitionEvent($playerId, $sourceId, $reactionId)`
+- `createRenownMovingBetweenLocationsEvent($playerId, $from, $to, $amount, $description)` — animation/intent half of a relocate; pair with Removed + Added and a shared `batchId`
+- `createRenownRemovedFromLocationEvent($playerId, $location, $amount, $source)` — mutate the from-slot
+- `createRenownAddedToLocationEvent($playerId, $location, $amount, $description, $isMove = false)` — pass `$isMove = true` when this is the to-half of a relocate (not a fresh place)
 - `createActionResolvedEvent($playerId)`
 - `createSorcererAbilityStartEvent($playerId, $sourceId, $abilityId, $performerId, $targetId = 0, $targetLocation = '')`
 - `createSorcererAbilityPlayedEvent($playerId, $sourceId, $abilityId, $performerId, $targetId = 0, $targetLocation = '')`
+
+Also: `$theah->deletePressureResultEvents()` — wipe queued `EventLocationPressureResult` before re-queueing a failed Result (`Reaction_04026`).

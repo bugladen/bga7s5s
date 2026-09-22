@@ -47,8 +47,63 @@ if ($event instanceof EventSorcererAbilityPlayed && $this->isAvailable())
 Only if the card text says "**Sorcerer** Reaction" or "**Sorcerer** City Reaction." Examples:
 - `Reaction_02001` (Andriana, "**Sorcerer** Reaction: …") implements `ISorcererAbility`.
 - `Reaction_03001` (Cesca del Rosso, "**City Reaction**: …") does NOT — the text doesn't carry the Sorcerer keyword.
+- `Reaction_04003b` (Desideria, "**City Reaction**: After Desideria performs a Sorcerer ability…") does NOT — same rule; wound+draw must not re-emit Sorcerer-played.
 
 This matters because if a Reaction is a Sorcerer ability and it wounds, that wound's `EventSorcererAbilityPlayed` would re-trigger the same "after a Sorcerer ability" type reaction in a loop. `setUsed` breaks the loop in practice, but the cleaner answer is: **follow the card text literally.** If the keyword isn't printed, the ability isn't Sorcerer.
+
+When `implements ISorcererAbility`, you MUST also call both:
+- `createSorcererAbilityStartEvent()` at the start of resolution
+- `createSorcererAbilityPlayedEvent()` at the end of resolution
+
+The pre-commit hook enforces this.
+
+### En Garde City Reaction / En Garde Reaction (precondition)
+
+Printed: **`<b>En Garde City Reaction:</b>`** or **`<b>En Garde Reaction:</b>`**.
+
+- Gate `!$owner->Engaged` in `handleEvent` (and re-check in `performReaction` if you want belt-and-suspenders).
+- **Do not** queue `createCardEngagedEvent` unless Engage is printed as a cost.
+- City variant also needs `cardInCity($owner)`.
+
+Same En Garde semantics as Pattern C En Garde City Action (Tijani `_04cd29`). Reference: `Reaction_04003a`.
+
+### Destroyed ally → hand (duel or opponent's effect)
+
+Printed shape (Desideria `_04003`): **"After your Thug at this location is destroyed during a duel or by an opponent's effect, wound <Owner> • Put the Thug in your hand."**
+
+**Trigger:** `EventCharacterDestroyed` with Odette/Vissenta gates (`isAvailable`, `cardInCity` if City, your Trait/controller, `$destroyed->Location == $owner->Location`). WHY Location still matches during `handleEvent`: `runEventHubAfterCards = true` — locker/discard move runs after card handlers (same as `Reaction_03027a`).
+
+**Cause gate — `EventCharacterDestroyed` has no `sourceId`:**
+
+| Arm | How |
+|---|---|
+| "during a duel" | `$globals->get(Game::IN_DUEL)` at Destroyed time (covers duel threat wounds **and** direct destroys like Dante `Maneuver_01031`) |
+| "by an opponent's effect" | On `EventCharacterWounded`, if the wound would kill (`Wounds + event.wounds >= ModifiedResolve + WoundsHealedIncoming`) **and** `source.ControllerId` is a live opponent, mark `$opponentLethalThugId`. Destroyed qualifies if id matches. |
+
+Crew Cap / Dawn / own self-wound outside duel do **not** qualify (no mark, not `IN_DUEL`).
+
+**Hand return recipe** (after EventHub has reinjected a fresh card into locker or discard):
+
+- Brute → discard; everyone else → locker (`EventHub` CharacterDestroyed).
+- Locker: `createCardRemovedFromLockerEvent` then `createCardAddedToHandEvent`.
+- Discard: `createCardRemovedFromPlayerDiscardPileEvent` then `createCardAddedToHandEvent`.
+
+**CRITICAL — defer Hand while `IN_DUEL`:**
+
+`stDuelNextPlayer` only preserves leftover threat when the dead participant is still in `Locker-` / `Discard-`. Moving them to Hand makes `!$actorIsDead && locations differ` → nullify remaining adversary threat → duel can end with threat still on the board (`_results/2026-07-28-duel-continue-on-death.md`).
+
+Do **not** copy Object of Wonder's reaction-instance `WaitAfterDuel` alone:
+
+- Locker cards are **not** loaded by `Theah::buildCity`, so EventDuelEnd on the Thug never fires across requests.
+- If Owner's wound cost kills her, EventHub reinstantiates the card and wipes private reaction fields.
+
+Canonical deferral (Desideria):
+
+1. On accept during `IN_DUEL`: queue Owner wound now; stash thug id in a **per-player game global**; leave Thug in Locker/Discard.
+2. Outside duel: Hand return immediate.
+3. `StatesTrait::stDuelEnd` (after clearing `IN_DUEL`) calls a static `flushPendingRecovers($game)` on the Reaction class to move any pending ids to hand.
+
+Reference: `Reaction_04003a`; attachment deferral sibling `Reaction_01202` (OK to use instance flags — attachment stays in play).
 
 When `implements ISorcererAbility`, you MUST also call both:
 - `createSorcererAbilityStartEvent()` at the start of resolution
@@ -330,6 +385,30 @@ Effect: Pattern D "Move <Owner> to any City location" button list (`Reaction_030
 
 WHY Continuous for Leader Ekaterina: unlabelled After…may + Tomoe end-of-HD multi-claim abuse lines need every claim prompt, not a once-per-day Reaction slot. Reference: `Reaction_03049`, Continuous sibling `Reaction_03025`.
 
+### Opponent engages your other Trait → they may En Garde
+
+For Aimée `_04021`: **"After an opponent's effect engages your other Musketeer at this location, they may en garde."** Unlabelled After…may → **Continuous** Pattern D (no `setUsed(true)`; keep `$this->setUsed(` in a comment).
+
+**Trigger:** `EventCardEngaged` with `!$event->canceled`.
+
+**Gates:**
+
+1. `$this->isAvailable()`
+2. Owner in play (`ControllerId > 0`, `!characterIsInDiscardOrLocker`)
+3. **Opponent's effect** — mirror `Reaction_03031::isOpponentAbility`:
+   - `$source = getCardById($event->sourceId)` → `ControllerId` is a live opponent (`!= owner` and `!= 0`), **or**
+   - in-play action via `getInPlayActionById($event->abilityId)` whose owning card has an opponent controller
+   - **`sourceId == 0` is NOT an effect** — Challenge / framework auto-engage (`FrameworkActionsTrait`) omits source; do not prompt
+4. Engaged card is a `Character`, **not** Owner (`cardId != owner.Id`), same controller, same location, has the printed Trait (e.g. Musketeer)
+
+**Timing trap:** `EventCardEngaged.runEventHubAfterCards = true` — Hub sets `Engaged = true` **after** card `handleEvent`. Do **not** require `$musketeer->Engaged` at trigger time. Stash a public `$engagedMusketeerId` for serialize; in `performReaction` re-validate `Engaged` (and location/trait/controller) before `createCardEngagedEvent`.
+
+**Buttons:** En Garde / Pass. Effect = `createCardEngardedEvent(owner.ControllerId, musketeer.Id, owner.Id, $this->Id)`. Clear stash after Pass or En Garde. Continuous → omit `setUsed(true)` on success.
+
+Contrast: Ved'ma `Reaction_01124` (self Engaged by own Sorcery Risk — daily Reaction, not Continuous, not opponent-gated).
+
+Reference: `Reaction_04021`; opponent-ability helper sibling `Reaction_03031`; Continuous siblings `Reaction_03049` / `Reaction_03025`.
+
 ### Cancel-and-reissue Reaction — opt out of an auto-emitted event
 
 For text like "During Dusk, you may choose not to move <Owner> Home" (`_03016` Ise). The framework's `stDuskPhaseCleanup` emits a `createCardMovingEvent(..., LOCATION_PLAYER_HOME, $engage=false, $sourceId=0)` for every non-Home controlled character. The Reaction intercepts that event, asks the player, and either keeps it canceled (effect: stay) or re-queues it (effect: go home as normal).
@@ -420,12 +499,68 @@ WHY `stackEvent` (not `queueEvent`) for the transition: stacking puts the reacti
 
 Reference: `Reaction_03016a` (Ise Dusk opt-out, on a Character in play), `Reaction_01140` (in-hand RiskReaction sibling — same dance for player-driven moves).
 
+**Discard events also support `cancelDeclinedByCardIds`.** `EventCardDiscardedFromPlay` and `EventCardAddedToCityDiscardPile` carry the same array field as `EventCardMoving` (added for Tomas `_04013`). Clone before `$event->canceled = true`, Decline re-queues with `cancelDeclinedByCardIds[] = $owner->Id`. Do not invent a parallel marker.
+
+### Cancel opponent move or engage
+
+Printed shape (Jak-Sen `_04041`): **"<b>City Reaction:</b> When your character at <Owner>'s location would be moved or engaged by an opponent's effect • Cancel that move or engage."**
+
+This is cancel-and-reissue on **two** event types — not a past-tense "after moved/engaged" Reaction, and not a full-ability cancel (Unyielding Loyalty / Hexenwerk). Only the move **or** the engage is canceled; other effects in the same ability batch still resolve.
+
+**Triggers:**
+
+| Event | Location gate | Decline re-queue guard |
+|---|---|---|
+| `EventCardMoving` | `$event->fromLocation == $owner->Location` (location write deferred — `runEventHubAfterCards`) | `$event->cancelDeclinedByCardIds[] = $owner->Id` (built-in, Stubborn/Ise) |
+| `EventCardEngaged` | `$character->Location == $owner->Location` | `$skipNextEngagedEvent` on the Reaction — **`EventCardEngaged` has no `cancelDeclinedByCardIds`** (Unyielding Loyalty shape) |
+
+**Shared gates:** `isAvailable()`, `cardInCity($owner)` (City Reaction), Owner in play, your character (`ControllerId == owner.ControllerId`, `instanceof Character`), **opponent's effect** via Aimée `Reaction_04021::isOpponentEffect` / `Reaction_03031` (`sourceId==0` is framework auto-engage / dusk move-home — **not** an effect), `!$event->canceled`, Moving also `!$event->unstoppable`.
+
+**Flow:** clone + `unset($clone->theah)` → `$event->canceled = true` → `stackEvent` reaction transition → Cancel/Decline buttons. Cancel path: notify + `setUsed(true)` (event already canceled). Decline path: re-queue clone with the guard above. Do **not** `deleteEventBatch` — text cancels only that move/engage.
+
+WHY Opponent-effect via `sourceId`/`abilityId`, not `initiatingPlayerId`: some Maneuvers set initiating player to the victim (`Maneuver_01033`). Same trap as Aimée / faction-attachment helpers.
+
+Reference: `Reaction_04041` Jak-Sen; cancel-move siblings `Reaction_03016a` / `Reaction_01140`; opponent-effect helper `Reaction_04021`; engage Decline skip `Reaction_01032`.
+
+### Would-be-discarded attachment → equip paying costs
+
+Printed shape (Tomas `_04013`): **"City Reaction: When a non-Artifact attachment equipped to your character at this location would be put into a discard pile • Equip it to your character at this location instead, paying all costs."**
+
+This is cancel-and-reissue **plus** click-to-pay equip — not a past-tense "after discarded" Reaction (the card must never reach the discard pile on Accept).
+
+**Trigger both discard pipelines:**
+
+| Pipeline | Event |
+|---|---|
+| Faction / Risk attachments | `EventCardDiscardedFromPlay` |
+| City attachments | `EventCardAddedToCityDiscardPile` |
+
+Both set `runEventHubAfterCards = true`, so `$event->canceled = true` in card `handleEvent` prevents the Hub move (same as Mysta `_02037` Forced sink).
+
+**WHY stash on `EventAttachmentUnequipped` (map `attachmentId => hostId`):**
+
+1. Destroy/type-limit/death always queue **unequip then discard**. Unequip has `runEventHubAfterCards = false` → Hub clears `AttachedToId` **before** discard card handlers run.
+2. Discard `sourceId` is **not** reliably the host — `Technique_02026b` / destroy effects pass the ability owner; only `Character::unEquipAllAttachments` / `Reaction_AttachmentTypeLimit` pass the character id.
+3. A single pending id loses multi-attachment death chains (A/B/C unequip then discard FIFO). Use a **map**; clear entries on equip of that id, dusk end, Accept, Decline.
+
+Gates on discard: `isAvailable`, `cardInCity($owner)`, non-Artifact, not `FakeAttachment`, `fromLocation == owner.Location`, host was your character at that location (stash or still-attached fallback), **and** ≥1 affordable eligible equip target (`canAttachTo` + `!hasEquipRestrictions` + `handWealthCount >= equipCost`). Skip the prompt when nobody can be paid for.
+
+**Stages:** `'pick'` (button per eligible character with printed cost) → `'pay'` (Don Constanzo click-to-pay) → finalize. Cost 0 skips pay. Cost = `max(0, WealthCost - getEquipDiscount(performer, attachment))`.
+
+**Do NOT use `PAY_STATE_EQUIP_ATTACHMENT`.** That success path returns to High Drama player-turn; discard salvage fires mid-duel / type-limit / character death. Roll payment inside the Reaction.
+
+**Finalize:** queue payment hand discards (`asPayment = true`) atomically → `getRequiredAttachTargetId` → `createAttachmentEquippedEvent(..., $asAction = true, discount, cost, explanations)` → `eventCheck` → queue. `setUsed(true)` only on Accept.
+
+**Decline:** re-queue cloned discard with `cancelDeclinedByCardIds[] = owner.Id`; do **not** `setUsed` (another attachment the same day can still salvage). Use `stackEvent` for the reaction transition so the prompt jumps ahead of later discards in the same batch.
+
+Reference: `Reaction_04013`; payment sibling `Reaction_03003`; cancel-dance sibling `Reaction_03016a`; Forced discard-cancel sibling `_02037` Mysta.
+
 ### Reactions that need to pay a wealth cost — click-to-pay
 
-For Reactions where the effect costs Wealth (e.g., Don Constanzo's "at -1 cost"), the framework's `PAY_STATE_PLAY_BRUTE` / `actPayForBrute` is usually NOT a fit because:
+For Reactions where the effect costs Wealth (e.g., Don Constanzo's "at -1 cost", Tomas's "paying all costs" re-equip), the framework's `PAY_STATE_PLAY_BRUTE` / `actPayForBrute` / **`PAY_STATE_EQUIP_ATTACHMENT`** is usually NOT a fit because:
 
-- Its success transition is hard-coded to `HIGH_DRAMA_PLAYER_TURN_EVENTS`, but reactions can fire outside high drama (dawn cleanup, pressure, duel cleanup) and must return to whatever state cycle invoked them.
-- It requires the paid-for card to be in `LOCATION_HAND`. Reactions like "from hand or discard pile" don't fit.
+- Its success transition is hard-coded to `HIGH_DRAMA_PLAYER_TURN_EVENTS`, but reactions can fire outside high drama (dawn cleanup, pressure, duel cleanup, mid-duel discard) and must return to whatever state cycle invoked them.
+- It requires the paid-for card to be in `LOCATION_HAND`. Reactions like "from hand or discard pile" or "already in play, about-to-discard" don't fit.
 
 Instead, do the payment **inside the Reaction class** using the standard `playerReaction` loop. Pattern:
 
@@ -444,7 +579,7 @@ Instead, do the payment **inside the Reaction class** using the standard `player
 7. **Always set `$owner->IsUpdated = true`** on every reaction-instance state mutation so the framework persists the running totals across reaction-loop iterations.
 8. **Skip the `'pay'` stage entirely when `cost == 0`** — go straight to finalize.
 
-Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of this pattern.
+Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay implementation. Equip-paying sibling: `Reaction_04013` (Tomas) — same click-to-pay loop, cost from `getEquipDiscount`, finalize via `createAttachmentEquippedEvent`.
 
 ### Reaction examples
 
@@ -460,7 +595,139 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical implementation of 
 | `Reaction_02001` | Andriana — Sorcerer Reaction (so implements `ISorcererAbility`); button-prompts to wound a non-Sorcerer. |
 | `Reaction_03001` | Cesca del Rosso's "after Cesca performs a Sorcerer ability, wound an opposing character" — button-per-opposing-character target picker, with a Pass button. |
 | `Reaction_03003` (Don Constanzo) | Multi-stage Reaction with hand/discard source selection, **incremental click-to-pay wealth handling** rolled inside the reaction (no PAY_STATE_PLAY_BRUTE coupling), and muster-at-Home. Canonical reference for cost-bearing Reactions and "put into play from hand or discard pile." |
+| `Reaction_04013` (Tomas — salvage attachment) | **Would-be-discard → equip paying costs.** Cancel both discard events; unequip-stash map for host identity; pick character + click-to-pay (`getEquipDiscount`); Decline re-queues discard via `cancelDeclinedByCardIds`. No `PAY_STATE_EQUIP_ATTACHMENT`. |
 | `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
 | `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
 | `Reaction_03040` (Soline el Gato — any character arrives) | **"After a character moves here"** without enemy gate — allies trigger too. Effect: button-per-other-city-location + Pass; `createCardMovingEvent(engage=false)` for Soline herself. Contrast `Reaction_03016b` (enemy-only) and `Reaction_01089` (adjacent-only after Action resolves). |
+| `Reaction_04003a` (Desideria — Thug destroy → hand) | **En Garde City Reaction** + duel/opponent cause gate + **deferred mid-duel Hand return**. `EventCharacterWounded` marks opponent lethal; Destroyed ORs `IN_DUEL`; locker/discard → hand; `stDuelEnd` flush. |
+| `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |
+| `Reaction_04021` (Aimée — opponent engages ally Musketeer) | **Continuous** on `EventCardEngaged`; opponent-effect gate (`sourceId==0` skip); other Trait at location; En Garde via `createCardEngardedEvent`; Engaged re-check in `performReaction` (`runEventHubAfterCards`). |
+| `Reaction_04041` (Jak-Sen — cancel opponent move/engage) | **City Reaction** cancel-and-reissue on `EventCardMoving` **and** `EventCardEngaged`; opponent-effect gate; Cancel/Decline; Moving → `cancelDeclinedByCardIds`; Engaged → `skipNextEngagedEvent`; cancel only that event (no batch delete). |
+| `Reaction_04022` (Axelle — adversary combat card → threat) | **`EventCombatCardAnnounced`** + asymmetric `createThreatModifiedEvent`; your participant by ControllerId; En Garde rider `!$Engaged` adds adversary threat. Risk sibling `Reaction_02039` (both + pay). |
+| `Reaction_04031` (Andare — first round remove your participant's threat) | **`EventDuelNewRound` `round == 1`** + duel-at-location + En Garde `!$Engaged`; remove-only via `createThreatModifiedEvent(-1,0)`/`(0,-1)`; threat > 0 valid-target gate. Fuller sibling `Reaction_01203` (add or remove either participant). |
+| `Reaction_04023` (Monet — reveal deck / optional equip / discard any / sink) | **En Garde** + Owner-moves-to-city (`Reaction_03025`) + multi-stage in-reaction reveal/equip/pay/discard/sink. No states/JS. Equip pay = Tomas click-to-pay (not `PAY_STATE_EQUIP_ATTACHMENT`). Deck→discard = Action_01134 notify+`moveCard`; sink = `createCardAddedToFactionDeckEvent(..., false)`. |
+| `Reaction_04042` (Kaj Relic Raider — muster → City Deck Artifact → Home equip) | **Muster OR Approach** + multi-stage in-reaction search/equip/pay. Affordability gate before prompt (keep — Approach before Planning Draw). Home hosts via `getCharactersAtHomeByPlayerId`. Public search log needs `cards[]`. Not HD / not `PAY_STATE_EQUIP_ATTACHMENT` (contrast city Kaj `Action_01180`). |
 
+### Muster → search City Deck Artifact → equip at Home
+
+Printed (Kaj `_04042`): **Reaction: After Kaj musters • Search the City Deck for an Artifact and equip it to your character at Home, paying all costs. *(Shuffle the City Deck.)***
+
+**Trigger:** OR `EventCharacterMustered` AND `EventApproachCharacterPlayed` with `characterId == $owner->Id` (checklist 24 / Joern). `EventCharacterMustered` alone misses Approach.
+
+**WHY multi-stage inside `playerReaction` (not High Drama states / not `PAY_STATE_EQUIP_ATTACHMENT`):** Muster fires during Approach **and** High Drama. City Kaj `Action_01180` uses HD states + the shared equip-pay state — that path is HD-cycle coupled and will not return correctly from Approach. Monet/Tomas shape: `$stage` + `requeue()` via `createReactionTransitionEvent`.
+
+**Affordability gate before prompt — keep it.** Require ≥1 City Deck Artifact with ≥1 eligible Home host the player can afford (`canAttachTo` + `!hasEquipRestrictions` + `handWealthCount >= equipCost`). Playtest: Approach in Planning with an empty hand correctly skipped the Reaction. Approach runs *before* Planning Draw, so empty-hand Approach is common. Do **not** remove the gate to "always prompt" — a no-op Search/Pass when nothing is payable is wrong.
+
+**Hosts:** `getCharactersAtHomeByPlayerId($owner->ControllerId)` — **never** `getCharactersAtLocation(LOCATION_PLAYER_HOME)` (shared Home string).
+
+**Search UI:** Name-deduped Artifact buttons from `getCardObjectsAtLocation(LOCATION_CITY_DECK)` (city-event search button shape). Skip `FakeAttachment`.
+
+**Public search log (hover for all players):** On opening search, `notify->all` with implode of `getInjectCode()` **and** `"cards" => array of getPropertyArray()`. WHY `cards[]`: City Deck Artifacts are not in opponents' `cardProperties`; `format_string_recursive_with_injection` seeds `logCardCache` from notify args that carry id+type objects (including arrays) — same as gamble reveal / Risk play. Inject codes alone leave opponents with bold names / broken hover.
+
+**Shuffle:** Parenthetical applies once the deck was searched (set a `$didSearch` / equivalent when the reaction opens into search). Pass/abort after looking still shuffles. (If the UI opens directly into search, Pass always shuffles — acceptable; they saw the list.)
+
+**Stages** (typical): search Artifact → pick Home host → click-to-pay (Tomas) → finalize. Skip pay when cost is 0.
+
+**Finalize:** Queue payment discards atomically → `getRequiredAttachTargetId` → `createAttachmentEquippedEvent` (pre-commit). Hub moves the City Deck card.
+
+**setUsed(true)** when the player commits to searching (or on successful equip — match sibling discipline; Kaj uses search-open / equip finalize consistently with Monet's Reveal-vs-Pass).
+
+Contrast: city Kaj `Action_01180` (HD reveal top 4 / sink rest / `PAY_STATE_EQUIP_ATTACHMENT`); Monet `Reaction_04023` (faction deck reveal after self-move); Tomas `Reaction_04013` (click-to-pay equip).
+
+Reference: `Reaction_04042`; muster pair Joern / Cirilo; pay sibling `Reaction_04013`; city-Action contrast `Action_01180`.
+
+### En Garde Reaction: reveal deck, optional equip paying costs, discard any, sink rest
+
+For Monet `_04023`: **"En Garde Reaction: After Monet moves to a City location • Reveal the top four cards of your deck. You may equip a revealed attachment to a character you control at this location, paying all costs. Discard any then sink the rest."**
+
+**Trigger:** `EventCardMoved` with Angeline `Reaction_03025` gates (`cardId == owner.Id`, `locationInCity(toLocation)`) **plus** En Garde `!$owner->Engaged` and deck nonempty (`getCardsOnTopOfPlayerFactionDeck(..., 1)`).
+
+**WHY fully button-based (no chooseList states):** Monet can move during any EVENTS dispatcher. Queuing `createTransitionEvent("04023")` would require registering that key on every dispatcher. Tomas/Don Constanzo `requeue()` via `createReactionTransitionEvent` stays inside the ambient reaction loop.
+
+**Stages** (`$stage` + `requeue` after each step):
+
+| Stage | Buttons |
+|---|---|
+| `''` | Reveal / Pass |
+| `equip` | one button per equippable revealed Attachment; Skip equip |
+| `character` | Equip to {name} (cost N); Back |
+| `pay` | click-to-pay (Tomas); Back |
+| `discard` | Discard {name} per remaining; Sink the rest |
+
+**Equip:** `canAttachTo` + `!hasEquipRestrictions` + `handWealthCount >= cost` at Owner's location (includes Monet). Finalize: payment discards → `getRequiredAttachTargetId` → `createAttachmentEquippedEvent` (deck card; Hub `moveCard`s it). Auto-skip equip stage when no affordable legal attachment.
+
+**Discard any:** no EventFactory for deck→player-discard — mirror Action_01134 / Action_02002 (`cardAddedToPlayerDiscardPile` notify + `moveCard` to `getPlayerDiscardDeckName`).
+
+**Sink rest:** `createCardAddedToFactionDeckEvent(..., false)` per remaining (Otto `_01038`).
+
+**setUsed(true)** on Reveal (mandatory first effect), not on Pass. Mid-flow has no Decline after reveal — player must finish discard/sink.
+
+Contrast: city Kaj `Action_01180` uses High Drama states + `PAY_STATE_EQUIP_ATTACHMENT` (City Deck, Action-only). Faction Kaj `Reaction_04042` is the in-reaction City Deck Artifact search sibling (muster/Approach — also must not use HD pay state). Yevgeni `Reaction_03052` uses phase-scoped private states (Dusk only).
+
+Reference: `Reaction_04023`; trigger sibling `Reaction_03025`; pay sibling `Reaction_04013`; reveal-Action sibling `Action_01038` / `Action_01180`; muster-search sibling `Reaction_04042`.
+
+### Adversary announces combat card → threat
+
+For Axelle `_04022`: **"Reaction: During a duel, after an opposing adversary announces their combat card • Your participant gains a threat. If Axelle is en garde, the adversary also gains a threat."**
+
+**Trigger:** `EventCombatCardAnnounced` (same event as Risk `Reaction_02039` / `Reaction_01135`). Gates:
+
+1. `$this->isAvailable()`
+2. `Game::IN_DUEL`
+3. Owner in play (ControllerId ≠ 0, not discard/locker)
+4. `$event->playerId != $owner->ControllerId` (adversary announces, not you)
+5. Owner's controller has a duel participant (`getDuelChallengerId` / `getDuelDefenderId` ControllerId match) — else no "your participant"
+
+**Effect:** `createThreatModifiedEvent($challengerThreat, $defenderThreat)`. Map "your participant" to the side whose participant `ControllerId == owner.ControllerId`. **En Garde rider** = `!$owner->Engaged` — also +1 the other side. Not an Engage cost; Owner need not be the duel participant.
+
+**UX:** Accept/Pass buttons; description can mention the en garde rider when `!$Engaged`. `setUsed(true)` on Accept. No state / no JS.
+
+Contrast: `Reaction_02039` is an in-hand Risk that always adds (1,1) after paying Wealth.
+
+### Duel at location, first round → remove your participant's threat
+
+For Andare `_04031`: **"En Garde Reaction: When a duel occurs at this location, at the beginning of the first round • Remove one threat from your participant."**
+
+**Trigger:** `EventDuelNewRound` with `$event->round == 1`. WHY not `EventDuelStarted`: the printed window is "beginning of the first round" — same event Leja `Reaction_01203` uses for add/remove threat at round 1.
+
+**Gates:**
+
+1. `$this->isAvailable()`
+2. Owner `isControlled()`
+3. **En Garde** = `!$owner->Engaged` (precondition, not an Engage cost) — re-check in `performReaction`
+4. **Location** — duel "at this location": `$owner->Location == $challenger->Location || $owner->Location == $defender->Location` (use `$event->challengerId` / `$event->defenderId` on the round event)
+5. **Valid-target** — owner must control a participant with threat > 0 before queuing the transition. Read current threat from `Game::CHALLENGER_THREAT` / `Game::DEFENDER_THREAT` globals. If neither side you control has threat, skip — avoids a useless Pass-only prompt.
+
+**Effect:** Map "your participant" to the challenger or defender whose `ControllerId == $owner->ControllerId`. Queue `createThreatModifiedEvent(-1, 0)` or `(0, -1)`. Remove Threat / Pass buttons; `setUsed(true)` on Remove.
+
+**Siblings:**
+
+| Card | Difference |
+|---|---|
+| `Reaction_01203` (Leja, CityCharacter) | Add **or** remove from **either** participant; multiple buttons per side |
+| `Reaction_04031` (Andare) | Remove only, **your** participant only, En Garde precondition |
+
+No state / no JS. Owner need not be a duel participant — only present at the duel location.
+
+Reference: `Reaction_04031`; fuller sibling `Reaction_01203`.
+
+### End of High Drama → claim uncontrolled location
+
+For Tomoe Sango `_04043`: **"En Garde Reaction: At the end of High Drama, if Sango's location is uncontrolled • Claim her location."**
+
+**Trigger:** `EventHighDramaPhaseEnd` — same phase event as `Reaction_01045` (end-of-HD Gain Renown).
+
+**Gates:**
+
+1. `$this->isAvailable()`
+2. Owner controlled + not discard/locker
+3. **En Garde** = `!$owner->Engaged` (precondition, not Engage cost)
+4. **`cardInCity($owner)`** — Home is never uncontrolled/claimable
+5. **`getControllerForLocation($owner->Location) == 0`** — text says uncontrolled
+6. **`canLocationBeClaimedBy($owner->ControllerId, $owner->Location)`** — Indomitable Will / `CanBeClaimed` flag
+
+WHY both controller `== 0` and `canLocationBeClaimedBy`: neither alone is enough. CanBeClaimed can be false under IW while the location is still uncontrolled; CanBeClaimed alone does not mean uncontrolled (already-controlled locations must not prompt).
+
+**Effect:** Claim/Pass buttons (stash `$location` on the Reaction like `Reaction_03005`). On Claim: re-check Engaged + uncontrolled + claimable, then `createLocationClaimedEvent($owner->ControllerId, $owner->Id, $location)`. `setUsed(true)` on Claim. Pass declines without `setUsed`. No state / no JS.
+
+Reference: `Reaction_04043`; phase sibling `Reaction_01045`; claim sibling `Reaction_03005`.

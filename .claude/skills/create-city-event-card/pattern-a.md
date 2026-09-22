@@ -2,9 +2,19 @@
 
 ## Pattern A — Forced Ability
 
-Override `handleEvent`. Gate the body on (a) event type, (b) `cardInCity($this)`, and (c) any text-specific condition like "at this location" or "when a character equips this card."
+Override `handleEvent`. Gate each Forced clause on (a) event type, (b) the correct location/identity guard for that trigger (see below), and (c) any text-specific condition like "at this location" or "when a character equips this card."
 
-Template:
+**Location guard is trigger-dependent — do not blanket every Forced with `cardInCity($this)`:**
+
+| Printed trigger | Gate | WHY |
+|---|---|---|
+| **When this card is revealed** | `$event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id` | City events "reveal" by being placed at a city location. There is no separate `EventCardRevealed` for city cards. Do **not** also require `cardInCity($this)` — the card is mid-placement; `$event->cardId == $this->Id` is the identity check. Effects that need "this location" use **`$event->location`**, not `$this->Location` — see sub-patterns "Add a Renown to this location" / `bas/_04cd19`. |
+| **At the end of High Drama** / while already in play at a city location | `$event->theah->cardInCity($this)` (plus location match if needed) | Card must still be sitting in the city. See sub-patterns "At the end of High Drama". |
+| **At the beginning of Dusk** / while in play | `$event instanceof EventDuskPhaseBegin && $event->theah->cardInCity($this)` | Dispatched by `stDuskPhaseBegin` before cleanup moves characters Home. See sub-patterns "At the beginning of Dusk" and "does not move Home during Dusk". |
+| **After a character at this location becomes engaged** | `$event instanceof EventCardEngaged && !$event->canceled && cardInCity($this)` + Character + location match | `EventCardEngaged` also fires for **attachments**. Filter with `getCharacterById` (null → skip). Check `canceled` — cards run before EventHub for this event (`runEventHubAfterCards=true`); impervious cancelers may set canceled in the same pass. See sub-patterns and `bas/_04cd19`. |
+| Pressure / equip / other in-play effects | `cardInCity($this)` and usually `$event->location == $this->Location` | Same as in-play city Forced. |
+
+Template (in-play / location-gated Forced):
 
 ```php
 public function handleEvent(Event $event)
@@ -23,11 +33,57 @@ public function handleEvent(Event $event)
 }
 ```
 
-If the Forced effect needs to queue further game events (wound, remove from play, transition to a custom state), use `EventFactory::create*Event(...)` and `$event->theah->queueEvent(...)`. See `_03cd05` (wound on equip) and `_03cd01` (queues `CardRemovedFromPlayEvent` and then listens for it to shuffle).
+Template (reveal Forced — note the different gate):
+
+```php
+if ($event instanceof EventCityCardAddedToLocation && $event->cardId == $this->Id)
+{
+    // e.g. each player draws — queue createCardDrawnEvent, do not draw decks directly
+    // e.g. add Renown here — createRenownAddedToLocationEvent(..., $event->location, ...)
+}
+```
+
+Template (engage-at-location Forced — Character filter required):
+
+```php
+if ($event instanceof EventCardEngaged
+    && ! $event->canceled
+    && $event->theah->cardInCity($this))
+{
+    $character = $event->theah->getCharacterById($event->cardId);
+    if ($character === null || $character->Location != $this->Location)
+    {
+        return;
+    }
+    // queue createCharacterBeingWoundedEvent(...) — do not mutate Wounds directly
+}
+```
+
+If the Forced effect needs to queue further game events (wound, draw, renown, remove from play, transition to a custom state), use `EventFactory::create*Event(...)` and `$event->theah->queueEvent(...)`. See `_03cd05` (wound on equip), `_03cd01` (queues `CardRemovedFromPlayEvent` and then listens for it to shuffle), `_03cd13` / `bas/_04cd07` (queue `createCardDrawnEvent` per eligible player), `bas/_04cd19` (reveal Renown + engage wound).
+
+### Multiple Forced clauses on one card
+
+A card can have several `<b>Forced:</b>` paragraphs. Put each in its own `if` branch inside a single `handleEvent`. Early-`return` after a reveal branch is fine when later branches cannot apply to the same event. Pure dual-Forced cards need **no** Action/Reaction/State/JS — see `bas/_04cd07` (Festival of Fools: reveal + end HD draws) and `bas/_04cd19` (Blood in the Water: reveal Renown + engage wound).
+
+### Interactive Forced ("must choose")
+
+Printed **Forced** that still requires a player to pick a target is **not** a City Action and **not** a Reaction. Do not invent `IHasActions` / Pass / Decline just because there is a picker.
+
+Recipe (canonical: `bas/_04cd11` Let Bygones Be Bygones; older single-player cousin: `_01177` Penya Shows The Way):
+
+1. **`handleEvent`** on the trigger (e.g. `EventDuskPhaseBegin` + `cardInCity`) — find eligible players (`ORDER BY turn_order`), skip anyone with no legal target, queue one `EventFactory::createTransitionEvent($playerId, $this->Id, "04cdNN")` each.
+2. **State class** under `States/<exp>/` — thin wrapper; card owns `argsFromCard` / `actFromCardWithId` / `eventCheck`. Register the transition key on the matching EVENTS state (`DUSK_PHASE_BEGIN_EVENTS` for dusk begin — **not** High Drama EVENTS).
+3. **No Pass** when the text says "must choose." Zombie handler auto-picks the first eligible target (do not `nextState` without applying the Forced).
+4. **JS** in expansion `OnEntering` / `OnUpdateActionButtons` / `OnLeaving` — character picker like `duskPhaseBegin01177`, Confirm only.
+5. After choice: queue effect events (heal, condition, etc.), then `nextState()` back to the EVENTS runner so heals process before the next player's transition.
+
+WHY not treat as Reaction: Reaction is optional ("you may"). Forced-with-choice is mandatory when eligible; declining is illegal.
 
 ### Event ordering inside handleEvent
 
 For events with `runEventHubAfterCards = false` (the default), EventHub processes the event first, then every card's `handleEvent` fires. This means you can queue `createCardRemovedFromPlayEvent` and have another `handleEvent` branch on this same card listen for the resulting `EventCardRemovedFromPlay` to do follow-up work (e.g., Penya shuffling the city deck after moving into it).
+
+For events with `runEventHubAfterCards = true` (notably **`EventCardEngaged`** / **`EventCardEngarded`**), cards run **before** EventHub. Cancelers (Maryam impervious, etc.) set `$event->canceled = true` during that card pass; EventHub then no-ops. Forced "After … becomes engaged" should gate on `!$event->canceled`. Residual race if this card's `handleEvent` runs *before* the canceler in the same foreach — same limitation as other engage listeners; do not invent a post-hub engage-done event.
 
 ### Pressure-modifying Forced (very common)
 
@@ -58,3 +114,7 @@ If the rule is genuinely new:
 2. Add a branch in `UtilitiesTrait::pressureLocation()` next to the existing `CLAUDE_PRESSURE_TYPE` / `CONSTANZO_PRESSURE_TYPE` blocks.
 
 Reference cards: `_01006` (Don Constanzo, Forced bonus), `tac/_02044` (Solomonia, Forced bonus), `_7s5s/_01184` Reaction (Claude — same flag as `_03cd08`, different trigger style).
+
+### Continuous location rules (not Forced)
+
+Some city events print a standing rule with **no** Forced/Action/Reaction label (e.g. Knives Out: "Characters at this location cannot refuse challenges"). That is **not** Pattern A — do not listen for challenge events in `handleEvent`. Use the Daichi-style static gate in [sub-patterns.md](sub-patterns.md) "Location-scoped cannot refuse".

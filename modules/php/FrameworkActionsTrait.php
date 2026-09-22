@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -80,6 +81,13 @@ trait FrameworkActionsTrait
 
     public function actBack(): void
     {
+        $stateName = $this->gamestate->getCurrentMainState()->name;
+        if ($stateName === "highDramaChallengeActionChooseTarget"
+            && $this->globals->get(Game::CHALLENGE_TYPE) == Game::NO_MORE_WORDS_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("You cannot go back after engaging an attachment."));
+        }
+
         $this->gamestate->nextState("back");
     }
 
@@ -458,7 +466,9 @@ trait FrameworkActionsTrait
         $recruitType = $this->globals->get(Game::RECRUIT_TYPE);
         // WHY: Parley is chosen before the target. A Yes must not stick to a
         // Negotiable=false mercenary (no discount, and the performer would still engage).
-        if ($recruitType == Game::NORMAL_RECRUIT_TYPE && $performerParleyed
+        // SILVER_TONGUE shares the same Negotiable gate (may Parley without engaging).
+        if (($recruitType == Game::NORMAL_RECRUIT_TYPE || $recruitType == Game::SILVER_TONGUE_RECRUIT_TYPE)
+            && $performerParleyed
             && ( ! $recruit instanceof CityCharacter || ! $recruit->Negotiable))
         {
             throw new \BgaUserException(clienttranslate("You cannot Parley when recruiting this character."));
@@ -469,7 +479,9 @@ trait FrameworkActionsTrait
         $event = EventFactory::createEnteringPayStateEvent($playerId, $recruitId, Game::PAY_STATE_RECRUIT_MERCENARY);
         $this->theah->queueEvent($event);
 
-        if ($performerParleyed && !$performer->Engaged)
+        // WHY: NORMAL Parley engages; SILVER_TONGUE explicitly "parley without engaging".
+        // Kaspar never sets PERFORMER_PARLEYED (own parley state). Cirilo skips Parley.
+        if ($performerParleyed && ! $performer->Engaged && $recruitType == Game::NORMAL_RECRUIT_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performerId);
             $this->theah->eventCheck($engageEvent);
@@ -1379,6 +1391,11 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Unsanctioned Duel: Refusing a Challenge is not allowed."));
         }
 
+        if ($challengeType == Game::STAND_YOUR_GROUND_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("Stand Your Ground: Refusing a Challenge is not allowed."));
+        }
+
         $this->theah->buildCity();
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
@@ -1414,6 +1431,13 @@ trait FrameworkActionsTrait
         if (_03050::challengeRefusalBlocked($refuseCheckChallenger, $refuseCheckDefender))
         {
             throw new UserException(clienttranslate("Mōri Daichi: This challenge cannot be refused (greater Combat)."));
+        }
+
+        // WHY: Knives Out — characters at its location cannot refuse (any challenge type).
+        // Use live $target (not last-known): destroyed defenders are out of city → gate off.
+        if ($target !== null && _04cd09::challengeRefusalBlocked($this->theah, $target))
+        {
+            throw new UserException(clienttranslate("Knives Out: Characters at this location cannot refuse challenges."));
         }
 
         // WHY: When Least Expected — Duelist performer can only refuse by discarding a card.
@@ -1959,6 +1983,34 @@ trait FrameworkActionsTrait
         }
 
         $card->actFromCardPass($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId);
+    }
+
+    public function actFromCardRevealHand(): void
+    {
+        $this->theah->buildCity();
+        $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
+        $actionId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+
+        if ($sourceId != Game::THEAH_ID)
+        {
+            $internalSourceId = substr($actionId, 0, strpos($actionId, "_"));
+
+            if ($internalSourceId !== "" && is_numeric($internalSourceId) && $internalSourceId != $sourceId)
+            {
+                $sourceId = $internalSourceId;
+            }
+        }
+
+        if ($sourceId === null) {
+            throw new \BgaUserException(clienttranslate("Unable to process action. Please try again or refresh the page."));
+        }
+
+        $card = $this->theah->getCardById($sourceId);
+        if ($card === null) {
+            throw new \BgaUserException(clienttranslate("Card not found. Please try again or refresh the page."));
+        }
+
+        $card->actFromCardRevealHand($this, $this->gamestate->getCurrentMainStateId(), $this->gamestate->getCurrentMainState()->name, $actionId);
     }
 
     public function actFromCardWithId(int $id)

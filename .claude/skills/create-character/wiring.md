@@ -99,6 +99,45 @@ public function actFromCardWithLocations(string $locations): void
 
 There is no `clearCityLocationAsSelectable` function — that's a hallucinated name. The existing helper is `resetCityLocations()` (in `modules/js/Utilities.js`), which strips `_7sfs-selectable` / `_7sfs-selected` / `_7sfs-chosen` and the pointer cursor from every active city location element (plus the player Home endcap). Every existing location-picker cleanup in `OnLeavingState.tac.js` uses it; mirror that.
 
+### chooseList read-only acknowledge (ACTIVE_PLAYER — show revealed cards)
+
+For High Drama text where **the action owner must see a public hand reveal in chooseList** (not only log inject codes) — Giacinto `_04032_4`:
+
+- State type = **ACTIVE_PLAYER** for the viewer (usually Owner). **Not** `MULTIPLE_ACTIVE_PLAYER` + `stMultiPlayerInitCardRevealAcknowledge*` — auto-ack pref / zombies clear seats and the state leaves immediately.
+- `OnEnteringState`: unhide `choose_container` / `chooseList`; `addCardToDeck` each `args.args.args.cards`; `setSelectionMode(0)`.
+- `OnUpdateActionButtons`: Ok → `bgaPerformAction('actPass', {})` where the state's `actPass` only `nextState("ok")` (avoid `Game::actPass` "passes" log).
+- `OnLeavingState`: hide/clear chooseList.
+- After Ok, if another player must act (hand-owner discard), use a **GAME** bridge state to `changeActivePlayer` then enter the picker (01192_2) — do not rely on activeplayer `onEnteringState` alone.
+
+Contrast: duel public multi-ack (`Technique_03043`); private look (`Technique_03052` + `argsForStatePrivate`).
+
+### chooseList sink / reorder — `EventHandlers.js` is mandatory
+
+`OnEnteringState` + `OnUpdateActionButtons` alone are **not** enough for chooseList multi-select or reorder chips. Selection clicks route through `EventHandlers.js` → `onChooseCardClicked`. The **default** else branch only enables Confirm when `getSelectedItems().length === 1` and never calls `addSortTagToCard`.
+
+| State purpose | Required `onChooseCardClicked` behavior | Mirror |
+|---|---|---|
+| Multi-select sink ("sink any / one or both") | Enable Confirm when `length > 0` | `highDramaPhase04cd15`, `duelChooseTechnique_04001` |
+| Reorder ("return in any order") | `this.addSortTagToCard(item_id)` + enable when all items selected | `highDramaPhase04cd15_2`, `duskPhaseBegin03052_2`, `duelChooseTechnique_04001_2` |
+
+Symptom if missing reorder wiring: cards select but **no number-order chips** appear. Symptom if missing multi-sink wiring: Confirm stays disabled when 2+ cards are selected.
+
+Private Look states read cards from `args.args._private.args.cards` (from `argsForStatePrivate`), not `args.args.args.cards`.
+
+## Resolve chip — `characterResolveModified`
+
+Resolve has **no** EventHub factory/notif (unlike Finesse/Combat/Influence). After mutating `ModifiedResolve`, emit:
+
+```js
+// setupNotifications:
+['characterResolveModified', 1],
+
+// handler — mirror notif_characterFinesseModifed; keep modified class when wounds > 0
+notif_characterResolveModified: function(notif) { … }
+```
+
+Server args: `characterId`, `oldResolve`, `newResolve`, `reason`. Without this, `IsUpdated` persists to DB but the Resolve chip stays flat (Danilo `_04002` playtest). See Pattern A "Resolve client sync".
+
 ## Pre-Commit Hook (relevant subset)
 
 `.githooks/pre-commit` enforces, for the files you touch when implementing a Character or Leader:
@@ -125,5 +164,5 @@ The card class itself (`_NNNNN extends Character` / `extends Leader`) has no hoo
   - Reaction:   `...\cards\<expansion>\reactions`
   - State:      `Bga\Games\SeventhSeaCityOfFiveSails\States\<expansion>`
 - **"Opposing"** means BOTH different controller AND same location. Never roll your own `ControllerId !=` filter.
-- **`TraitNames::$TraitsJson`** (`modules/php/Traits.php`) is the canonical Trait list for "Name a Trait" pickers. Add new Traits in alphabetical order.
+- **`TraitNames::$TraitsJson`** (`modules/php/TraitNames.php`) is the canonical Trait list for "Name a Trait" pickers. Add new Traits in alphabetical order when a card introduces one (e.g. Protégé on `_04001`).
 

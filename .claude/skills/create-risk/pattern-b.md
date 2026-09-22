@@ -56,3 +56,383 @@ WHY exclude `0`: uncontrolled city locations are not controlled by anyone, so th
 
 **Location chooser ≠ character chooser:** do not `implements IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters` for B.1 Actions. JS is the `highDramaPhase03009` / `03032` / `03045` trio (`makeCityLocationSelectable` + Confirm Location).
 
+### Pattern B.2 — "Equip this card to …" (RiskAttachment)
+
+Some Risks are played from hand as an Action that **equips a FakeAttachment stand-in** onto a character. The original Risk moves to `LOCATION_PERMANENTLY_HIDDEN`; while equipped, its while-equipped Forced / continuous effects live on the attachment class — **not** on the Risk (E.1). Combat-card play of the Risk (Riposte/Parry/Thrust) is unrelated and stays on the Risk constructor.
+
+**Files:**
+
+| Piece | Location |
+|---|---|
+| Risk | `cards/<expansion>/_NNNNN.php` — `IHasActions` + Action; `IRiskThatTargetsCharacters` only if printed **"target"** |
+| Action | `cards/<expansion>/actions/Action_NNNNN.php` — `RiskAction` (± `ISorcererAbility`, ± `IAbilityThatTargetsCharacters`) |
+| FakeAttachment | `cards/<expansion>/_NNNNN_<Suffix>.php` — `Attachment implements IRiskAttachment` + `RiskAttachmentTrait` |
+
+**Action shape (mirror `Action_01025` / `Action_04008`):**
+
+1. **Performers:** usually city + opposed (`getCharactersInCityWithOpposingCharacters`) + trait gates (`Sorcerer`/`Strega`). Filter performers that have ≥1 legal equip target at their location.
+2. **Targets:** opposing at performer location (`isNotControlledByPlayer`). Layer printed filters (`! hasTrait("Leader")`, etc.).
+3. **`EventActionTriggered`:** transition `"NNNNN"` to a character-chooser GameState (bas/faf JS trio: highlight performer + `highlightCardsAsSelectable` + Confirm).
+4. **On confirm:** `createSorcererAbilityStartEvent` (if Sorcerer) → `$game->createRiskAttachment($game, "NNNNN_Suffix", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id, $this->Id)` → `createActionResolvedEvent` → `createSorcererAbilityPlayedEvent` (pass `$character->Id` / location as target for Cesca/sorcery observers).
+5. **`createRiskAttachment` class name** is the suffix only (`"04008_Silence"`) — `getCardClassName` prepends expansion from the first two digits.
+
+**FakeAttachment constructor:** `$this->FakeAttachment = true;` `$this->ShowStatModifiers = false;` copy Name/Image/Traits from the Risk as needed. Do **not** set Riposte on the attachment for pre-commit FactionAttachment rules — this is not a `FactionAttachment`.
+
+**Forced "At the end of High Drama, if this card is equipped • Destroy it":** on the attachment:
+
+```php
+if ($event instanceof EventHighDramaPhaseEnd && $this->isAttached())
+{
+    $this->removeRiskAttachment($event->theah);
+}
+```
+
+`removeRiskAttachment` queues unequip → discard FakeAttachment → hide FakeAttachment → restore original Risk to the owner's discard. Mirror `_01025_Burden` / `_04008_Silence`. Do **not** put this Forced on the Risk class (Risk is hidden while equipped).
+
+**"This ability cannot be copied":** Cesca's `Reaction_01008::isCopyable` is an **opt-in allow-list**. Printed "cannot be copied" → **do not** add `Action_NNNNN` to that list and do not add a `copyCard` branch. Historical exceptions (`Action_01025`, `Action_01161`) remain allow-listed despite the same wording — do not expand. Printed **"target"** still requires `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters` (Rules Team / Maryam / other targeted reactions); Cesca copy is a separate gate.
+
+**While-equipped continuous effects** (blank text box, Forced engarde-destroy, stat grants) belong on the FakeAttachment's `handleEvent`. Blank text box → Pattern E.3.
+
+**WHY not invent Maneuvers:** stubs sometimes import leftover `Maneuver_NNNNNa/b` from adjacent cards. If Text has no Maneuver clause, do not create Maneuver files.
+
+References: `_01025` / `Action_01025` / `_01025_Burden` (equip opposing, no printed "target", engarde-destroy Forced), `_04008` / `Action_04008` / `_04008_Silence` (equip **target** opposing non-Leader + E.3 blanking), `_01161` / `Action_01161` / `_01161_Boon` (Sorcerer City Action equip + engage cost + dusk discard).
+
+### Pattern B.3 — En Garde Action: Target opponent forces a challenge onto your performer
+
+Printed (Rattle the Rigging `_04009`): **`<b>En Garde Action:</b> Target opponent chooses one of their characters opposing your performer. The chosen character issues a [Combat] challenge to your performer. If your performer is a <b>Duelist</b>, their first combat card gains +1[Riposte].`**
+
+This is the **invert** of Defending Honor `_01078` ("Target enemy character issues a challenge to one of your characters — their choice"):
+
+| | `_01078` Defending Honor | `_04009` Rattle the Rigging |
+|---|---|---|
+| Ability target wording | **Target enemy character** | **Target opponent** (player) |
+| Cesca interfaces | Yes (`IRiskThatTargetsCharacters`) | **No** — player Target; opponent's character pick is not your ability target |
+| Who picks the challenger | You (enemy is `CHOSEN_PERFORMER`) | Opponent (among their opposing `canChallenge` characters) |
+| Who picks the defender | Opponent (shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`) | Fixed = your En Garde performer |
+| Challenge type | `DEFENDING_HONOR_CHALLENGE_TYPE` off auto-engage | Fresh type off auto-engage |
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true`. **En Garde** heading → filter performers `!$Engaged` **and** ≥1 opposing character at their location with `canChallenge($theah)`. Start from `parent::getPerformersForAction` (home eligible in principle; opposing usually forces city).
+2. **No `IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters`.** "Target opponent" is a player chooser (`CHOSEN_OPPONENT` + opponent name buttons). Opponent then picks a character — that chooser is **their** selection, not the ability's Cesca target. Contrast `_01078` which prints "Target enemy character."
+3. **`EventActionTriggered`:** stash `$DefenderId = CHOSEN_PERFORMER` (will be overwritten). Collect opponent ids who have ≥1 `canChallenge` character at the defender's location. One opponent → auto-set `CHOSEN_OPPONENT` and transition `"NNNNN_2"` with **that opponent** as the transition `playerId`. Multiple → transition `"NNNNN"` (you pick opponent) then from `actFromActionWithId` queue `"NNNNN_2"` via EVENTS so `EventTransition` changes active player.
+4. **Opponent character confirm:** validate opposing + same location + `ControllerId == CHOSEN_OPPONENT` + `canChallenge`. Then:
+   - `CHOSEN_PERFORMER` = chosen enemy (challenger)
+   - `CHOSEN_TARGET` = `$DefenderId` (your performer)
+   - `CHALLENGE_STAT` = printed bracket (`STAT_COMBAT`)
+   - Mint a fresh `CHALLENGE_TYPE` and keep it **off** `stIssueChallenge` auto-engage list
+   - Transition `"NNNNN_3"` → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE` (skip shared choose-target — defender is fixed)
+5. **WHY custom type off auto-engage:** forced *enemy* "issues a challenge" must not free-engage them for you. Same trichotomy seat as Defending Honor / Sanjay. Contrast Arrogant `_03008` / Courageous `_03058` where **your** performer issues → `NORMAL` auto-engage is correct. Do **not** add Engage unless printed.
+6. **Optional "If your performer is a Duelist, their first combat card gains +X[Riposte]":** on confirm, if `$defender->hasTrait("Duelist")`, set sticky `$FirstCombatCardRiposteCharacterId = $defender->Id` on the Action (`IsUpdated`). On `EventDuelCalculateCombatCardStats` when `$event->actorId` matches, `addRiposte(X)` once and clear. Clear unused arm on `EventDuelEnd` and on `EventActionResolved` when `!IN_DUEL` (cancel/refuse — arm must not leak into a later duel; discard is in `buildCity` so the Action still receives events).
+7. **Pre-commit:** `// createActionResolvedEvent() is called when the challenge is resolved` comment (same as other challenge-issuing Actions).
+8. **Wire:** `"NNNNN"` / `"NNNNN_2"` → GameState classes; `"NNNNN_3"` → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Matching JS int for the new `CHALLENGE_TYPE`. bas/faf JS trio: opponent buttons on step 1; character highlight+Confirm on step 2.
+
+**Do not** route through shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` when the defender is fixed — that state is for picking the challenge target. `_01078` uses it because the *defender* is the free choice; here the *challenger* is.
+
+References: `_04009` / `Action_04009` / `State_highDramaPhase04009` + `_2`; invert sibling `_01078` / `Action_01078` / `DEFENDING_HONOR_CHALLENGE_TYPE`.
+
+### Pattern B.4 — Sink up to N from a discard pile • draw • sink this card
+
+Printed (Unravel the Thread `_04010`): **`<b>Sorcerer Action:</b> Sink up to two cards from a single discard pile. Then, draw a card and sink this card.`**
+
+`RiskAction` (+ `ISorcererAbility` when Sorcerer). The Risk is already in discard as a played hand Action by resolve time — exclude **self** from the "up to N" pick.
+
+**Recipe:**
+
+1. **Performers:** `parent::getPerformersForAction` + Sorcerer (or printed trait) gate. Home eligible unless text says City.
+2. **Always enter a pile-chooser state** (`"NNNNN"`). List **every** player discard pile **and City Discard**, even when empty. Do **not** auto-skip when 0/1 non-empty piles, and do **not** hide empty piles (Eddie: City Discard must stay visible when empty).
+3. **Second state** (`"NNNNN_2"`): multi-select up to N from the chosen pile. **Pass = sink none** (0 cards), then still draw + sink self. Exclude the played Risk's own id from the pick pool.
+4. **Sink destinations:**
+   - Player discard card → bottom of **that card's owner's** faction deck (`createCardAddedToFactionDeck` / sink helpers).
+   - City Discard card → bottom of **City Deck** (not a player faction deck).
+5. Then `createCardDrawnEvent` → sink **this** Risk to the bottom of the owner's faction deck → `createActionResolvedEvent`. Bracket with Sorcerer start/played when applicable.
+6. **Wire** under `HIGH_DRAMA_PLAYER_TURN_EVENTS`; GameState classes + bas/faf JS trio (pile name buttons; chooseList multi-select + Pass). `EventHandlers.js` if multi-confirm needs a shared helper.
+7. **Cesca:** if Sorcerer Action with no character Target, Cesca copies when she is the **performer** — add `Action_NNNNN` to `Reaction_01008` allow-list + `copyCard("NNNNN")` (card copy, not host Action on Cesca — wealth pay + sink-self need a real hand Risk).
+
+**Do not** invent a Maneuver for this clause. No `IRiskThatTargetsCharacters` (discard/card chooser, not character Target).
+
+References: `_04010` / `Action_04010` / `State_highDramaPhase04010` + `_2`.
+
+### Pattern B.5 — En Garde Action: Target adjacent enemy • move performer there • filtered multi-player discard
+
+Printed (Seek Each Devil `_04018`): **`<b>En Garde Action:</b> Target an enemy character at an adjacent <b>City</b> location • Move your performer there. Then, each other player who controls a <b>Sorcerer</b> or <b>Monster</b> there discards a card.`** Often paired with Pattern E.2 **"While your performer is an Academic or Hunter, this card has -1 cost."**
+
+This is **not** B.1 (location chooser) and **not** B.3 (Target opponent / forced challenge). Printed **"Target"** an enemy character → character chooser + Cesca interfaces.
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters`.
+2. **En Garde** heading → filter performers `!$Engaged` **and** ≥1 valid adjacent-City enemy. Start from `parent::getPerformersForAction` (home eligible — plain Action, not City Action).
+3. **Targets:** controlled characters at `getAdjacentCityLocations($performer->Location, $includeHome = false)` with `ControllerId != performer`. Uncontrolled mercenaries are **not** enemies.
+4. **`EventActionTriggered`:** clear sticky discard list; transition `"NNNNN"` to character-chooser GameState (bas JS trio: highlight performer + `highlightCardsAsSelectable` + Confirm).
+5. **On confirm:** `eventCheck` + queue `createCardMovingEvent(..., engage: false, …)` (performer → target's location). **Do not** invent Engage — En Garde is only a precondition.
+6. **Trailing discard (multi-active, not sequential turns):**
+   - Collect **other** player ids who control ≥1 `Sorcerer` or `Monster` at the destination **and** have ≥1 hand card. One discard per player even if they control both traits / multiple such characters.
+   - Stash as public `$PlayersToDiscard` on the Action + `$owner->IsUpdated = true`. WHY sticky on Action: Risk is already in discard by resolve; `buildCity` loads discard so State_2 / `actFromActionWithId` still see the Action (same seat as `_04005` / `_04009`).
+   - Queue `createActionResolvedEvent` **before** the discard `createTransitionEvent("NNNNN_2")` (priority 3 before 8) — HD action wraps; discard is a trailing multi-player effect (`Action_04005` / `Action_01095b`).
+   - Empty list → notify + skip `_2` (do **not** grey the Action when no one will discard — move is the primary effect).
+7. **State `_2`:** `StateType::MULTIPLE_ACTIVE_PLAYER`. `onEnteringState` re-filters `$PlayersToDiscard` for non-empty hands and `setPlayersMultiactive(..., "multipleOk")`. **WHY not pass the turn around:** BGA multi-active makes **all** discarders active at once; each calls `setPlayerNonMultiactive` after picking; last one fires `"multipleOk"`. Do **not** invent sequential single-active player states.
+8. **Discard act:** `createCardDiscardedFromHandEvent(..., asEffect: true)` + notify; validate player ∈ `$PlayersToDiscard` and card ∈ their hand.
+9. **Timing note:** discard-player list may be computed at target confirm against the destination **before** the move event applies. That matches post-move for *other* players' Sorcerer/Monster presence (your performer moving does not change that set; acting player is excluded anyway).
+10. **JS:** character-chooser trio for `"NNNNN"`; for `"NNNNN_2"`: `factionHand.setSelectionMode('single')` + `actChooseDiscardCard` / `onCardDiscarded` + `EventHandlers.js` enable when selection length &gt; 0 (mirror `highDramaPhase04005_2`).
+11. **Skip `EventCharacterTargeted`** unless you need Vittoria-style redirect sync — bulk of recent Target Actions (`_04008`, `_03011`, `_01115`) omit it; `_01162` / `_01078` are the exceptions that fire it.
+12. **No Cesca allow-list** unless the Action is also Sorcerer.
+
+**Contrast:**
+| | B.1 (`_03009` / `_03045`) | B.3 (`_04009`) | B.5 (`_04018`) |
+|---|---|---|---|
+| Chooser | Location | Opponent (player) then enemy character | Enemy character |
+| Cesca | No | No ("Target opponent") | Yes ("Target … character") |
+| Move | Performer to chosen location | None (challenge) | Performer to target's location |
+| Follow-up | None / wound cost | Forced challenge | Filtered multi-player discard |
+
+References: `_04018` / `Action_04018` / `State_highDramaPhase04018` + `_2`; discard seat `_04005` / `State_highDramaPhase04005_2` / Patricia `_01095`; En Garde precondition `_04009`.
+
+### Pattern B.6 — En Garde Action: Engage attachment → issue [Combat] challenge to target opposing
+
+Printed (No More Words `_04019`): **`<b>En Garde Action:</b> Engage a <b>Melee Weapon</b> or <b>Eisenfaust</b> attachment equipped to your performer • They issue a [Combat] challenge to target opposing character.`**
+
+This is **not** B.3 (forced enemy challenger), **not** A.5/A.6 (engage **performer** then challenge), and **not** Yield `_02020` (City Action: target first, then attachment, then opponent may-engage/wound — no challenge).
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"target opposing character"**).
+2. **En Garde** heading → filter performers `!$Engaged` **and** `canChallenge($theah)` **and** ≥1 eligible unengaged attachment **and** ≥1 opposing at location. Start from `parent::getPerformersForAction` (plain Action — home eligible).
+3. **Attachment filter** (mirror `Action_02020`):
+
+```php
+($attachment->hasTrait("Weapon") && $attachment->hasTrait("Melee"))
+    || $attachment->hasTrait("Eisenfaust");
+```
+
+Also require `!$attachment->Engaged` and `$attachment->AttachedToId == $performer->Id`.
+
+4. **Two-step flow (printed bullet order: Engage attachment **then** challenge):**
+   - `"NNNNN"` → GameState attachment chooser (named buttons from `getArgsFromAction` `attachments[]` — mirror tac `highDramaPhase02020_2` **OnUpdateActionButtons**, not in-play card highlight).
+   - On attachment confirm: `createCardEngagedEvent` on the **attachment** (cost paid — irreversible).
+   - Set `CHALLENGE_STAT = STAT_COMBAT`.
+   - Mint **`NO_MORE_WORDS_CHALLENGE_TYPE`** (or card-specific name) — **not** `NORMAL_CHALLENGE_TYPE`.
+   - Transition `"NNNNN_2"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`.
+   - `nextState("attachmentChosen")` → EVENTS processes transition to choose-target.
+
+5. **WHY custom type when there is no refuse/intervene side effect:** `OnUpdateActionButtons.js` shows Back on `highDramaChallengeActionChooseTarget` **only** when `args.challengeType == NORMAL_CHALLENGE_TYPE`. After attachment Engage, Back would let the player undo past a paid cost. Custom type hides Back in UI; also guard `FrameworkActionsTrait::actBack()` when state is `highDramaChallengeActionChooseTarget` and type matches (blocks API abuse).
+
+6. **WHY custom type still goes ON `stIssueChallenge` auto-engage list:** printed Engage cost is on the **attachment**, not the performer. Performer should still auto-engage when issuing (same as `NORMAL` challenge flow). Contrast Censure `_03057` / Cornered `_03021` where **performer** Engage is paid on `EventActionTriggered` → type stays **off** auto-engage to avoid double-engage.
+
+7. **"They issue a challenge":** attachments do not issue challenges in the engine — **performer** stays `CHOSEN_PERFORMER` for the challenge pipeline.
+
+8. **`isValidTargetForAbility`:** opposing controlled character at performer's location (mirror `Action_01083` / `Action_03058`).
+
+9. **Wire:** `"NNNNN"` → `State_highDramaPhaseNNNNN`; `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. Add constant to `Game.php` + `seventhseacityoffivesails.js`. Add type to auto-engage `if` in `StatesTrait::stIssueChallenge`.
+
+10. **JS (bas expansion):** `OnEnteringState` highlight performer; `OnUpdateActionButtons` attachment name buttons (`args.args.attachments.forEach`); `OnLeavingState` unhighlight performer. No Back on attachment step (single forward path).
+
+11. **Pre-commit:** `// createActionResolvedEvent() is called when the challenge is resolved` on the Action.
+
+**Contrast:**
+
+| | Yield `_02020` (City) | B.6 `_04019` |
+|---|---|---|
+| Base | `RiskCityAction` | `RiskAction` (home performers OK) |
+| Order | Target character → attachment → opponent response | Attachment → shared challenge target |
+| Engage cost | Attachment | Attachment |
+| Follow-up | May engage / wound target | Combat challenge |
+| Challenge type | N/A | Custom (not NORMAL — no Back on chooseTarget) |
+
+References: `_04019` / `Action_04019` / `State_highDramaPhase04019`; attachment filter `Action_02020`; challenge target `Action_01083`; Back hide `NO_MORE_WORDS_CHALLENGE_TYPE` + `FrameworkActionsTrait::actBack`.
+
+### Pattern B.7 — En Garde Action: Target opposing non-Leader en garde • they may engage or you claim
+
+Printed (A Costly Accord `_04027`): **`<b>En Garde Diplomat Action:</b> Target an opposing non-<b>Leader</b> that is en garde • They may engage. If they do not, claim this location.`**
+
+This is **not** A.5 (claim-on-refuse after a challenge — no `CHALLENGE_TYPE`), **not** B.6 (no attachment Engage / challenge), and **not** D.1.2 (RiskReaction Engage-or-wound). Same family as Yield `_02020` / Duckfoot `_01049` / Wrath `_01034` "they may engage" — decline consequence here is **you claim**, not wound / engarde performer.
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"Target"**).
+2. **Heading gates stack:** En Garde → `!$Engaged`; **Diplomat** (or other trait in the heading) → `hasTrait("Diplomat")`. Start from `parent::getPerformersForAction` (plain Action — home eligible). Filter performers with ≥1 valid target.
+3. **Targets:** opposing at performer location (`getOpposingCharactersAtLocation`), `! hasTrait("Leader")`, en garde (`!$Engaged`).
+4. **`EventActionTriggered`:** transition `"NNNNN"` to character-chooser GameState (bas JS trio: highlight performer + `highlightCardsAsSelectable` + Confirm).
+5. **On target confirm:** set `CHOSEN_TARGET`; transition `"NNNNN_2"` with **target's ControllerId** as the transition `playerId` (opponent becomes active).
+6. **State `_2` — labeled Engage / Decline buttons** (mirror Yield `highDramaPhase02020_3`):
+   - `id == 1` → `createCardEngagedEvent` on the target (voluntary engage — use target's ControllerId as the engage `playerId`).
+   - `id == 2` → notify decline; if `cardInCity($performer)` **and** `canLocationBeClaimedBy($performer->ControllerId, $location)` → `createLocationClaimedEvent($performer->ControllerId, $performer->Id, $location)`; else notify cannot claim.
+7. **WHY labeled Decline+Claim, not Pass:** Wrath `_01034` uses Pass when the alternate is soft ("en garde your performer"). When decline has a concrete location claim, label the button so the opponent sees the stake (Yield uses "Decline and Wound").
+8. **WHY `ActionResolved` after the opponent chooses:** the printed effect *is* engage-or-claim. Contrast Yield `_02020` / Seek `_04018`, which fire ActionResolved once costs / primary move are locked and treat the opponent response as trailing. Do **not** resolve before `"NNNNN_2"`.
+9. **WHY claimability only at decline emit:** engage may still happen when the location is unclaimable — same discipline as Censure `_03057` / Ambitious `_03067`. Do **not** grey the Action on `canLocationBeClaimedBy`.
+10. **No `CHALLENGE_TYPE`:** this never enters the challenge pipeline. Do not clone A.5 correlator plumbing.
+11. **Wire:** `"NNNNN"` / `"NNNNN_2"` → GameState classes under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. bas JS: character-chooser trio for step 1; step 2 highlight performer + target + Engage / Decline and Claim buttons.
+12. **Stub hygiene:** Traits use `Bureaucracy` (not `Beauracracy`); Montaigne faction stubs sometimes typo `Montagne` — fix to `Montaigne`.
+
+**Contrast:**
+
+| | Yield `_02020` | Wrath `_01034` | A.5 Censure `_03057` | B.7 `_04027` | A.15 `_04049` |
+|---|---|---|---|---|---|
+| Base | `RiskCityAction` | `RiskAction` | `RiskCityAction` | `RiskAction` | `RiskCityAction` |
+| Cost before choice | Engage attachment | Wound performer | Engage performer + challenge | None (En Garde precondition only) | None |
+| Opponent UI | Engage / Decline and Wound | Engage / Pass | Challenge accept/refuse | Engage / Decline and Claim | Engage / Decline and Move → location |
+| Decline effect | Wound target | En garde performer | Claim via `EventChallengeRejected` | Claim via Action act | Target moves adjacent |
+| ActionResolved | After attachment paid (before response) | After opponent chooses | Challenge pipeline | After opponent chooses | After engage **or** location confirm |
+| Already Engaged | auto-wound | N/A | N/A | illegal target (print says en garde) | skip to move chooser |
+
+References: `_04027` / `Action_04027` / `State_highDramaPhase04027` + `_2`; Yield buttons `Action_02020` / `highDramaPhase02020_3`; claim emit `Action_03057` / `_03057`; Cesca Target `Action_04018`; City Action engage-or-adjacent-move sibling Pattern A.15 / `_04049`.
+
+### Pattern B.8 — En Garde Action: Target opposing • move both to controlled or Leader City location
+
+Printed (Depose `_04028`): **`<b>En Garde Musketeer Action:</b> Target an opposing character • Move them and your performer to a <b>City</b> location you control, or one where you control a <b>Leader</b>.`**
+
+This is **not** B.5 (moves only the performer to the target's location / adjacent-enemy scan), **not** B.1 (location chooser only — no character Target), and **not** the adjacent-only move-both of Tea and Cakes `_02025` / Giacinto `_01205` (those use `getAdjacentCityLocations`; Depose omits "adjacent").
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + `IAbilityThatTargetsCharacters` / Risk `IRiskThatTargetsCharacters` (printed **"Target"** opposing character).
+2. **Heading gates stack:** En Garde → `!$Engaged`; **Musketeer** (or other trait in the heading) → `hasTrait(...)`. Start from `parent::getPerformersForAction` (plain Action — home eligible).
+3. **Targets:** opposing at performer location (`getOpposingCharactersAtLocation`) — no adjacent scan, no Leader/non-Leader filter unless printed.
+4. **Destinations** (second chooser — iterate **all** city locations, not adjacency):
+
+```php
+foreach ($theah->getCityLocations() as $cityLocation) {
+    $name = $cityLocation->Name;
+    if ($name === $performer->Location) continue; // WHY: "Move … to" — same spot is a no-op
+    $youControl = $theah->game->getControllerForLocation($name) == $performer->ControllerId;
+    $leaderThere = ($leader = $theah->getLeaderByPlayerId($performer->ControllerId)) !== null
+        && $leader->Location === $name;
+    if ($youControl || $leaderThere) { /* offer */ }
+}
+```
+
+5. **Availability:** grey the Action when the performer has opposing targets but **zero** legal destinations (same discipline as B.1 "has ≥1 valid destination").
+6. **Two-step flow** (mirror `_02025` JS, different destination predicate):
+   - `"NNNNN"` → character-chooser GameState (`characterChosen` → `_2` **direct** on the GameState — do **not** route `_2` through `HIGH_DRAMA_PLAYER_TURN_EVENTS` unless you need an active-player swap).
+   - `"NNNNN_2"` → location-chooser GameState with **Back** to step 1 (`actBack` / `highDramaPhase02025_2` shape).
+7. **On location confirm:** shared `batchId`; queue target move then performer move — both `engage=false` (En Garde heading is precondition only; no printed Engage cost). `eventCheck` both; `createActionResolvedEvent` on confirm.
+8. **WHY move target first:** matches `_02025` / `_01205` ordering; both share destination and `batchId`.
+9. **"Where you control a Leader":** your Leader **character** at that location (`getLeaderByPlayerId` + `Location` match) — distinct from claim-control alone (you may move to an uncontrolled spot where your Leader sits).
+10. **Wire:** `"NNNNN"` only under `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`; define both GameState classes + `States::HIGH_DRAMA_PLAYER_TURN_NNNNN` / `_NNNNN_2`. bas JS trio: character Confirm on step 1; `makeCityLocationSelectable` + Back + Confirm Location on step 2 (highlight performer + target as chosen).
+
+**Contrast:**
+
+| | B.5 `_04018` | B.1 `_03045` | `_02025` Tea and Cakes | B.8 `_04028` |
+|---|---|---|---|---|
+| Target | Adjacent enemy | N/A (location) | Opposing (Influence ≤) | Opposing (same location) |
+| Who moves | Performer only | Performer only | Target + performer | Target + performer |
+| Destination | Target's location | Adjacent claim-controlled | Adjacent City | Any City you control **or** Leader at |
+| Adjacency | Yes (target scan) | Yes | Yes | **No** |
+| Cesca | Yes | No | Yes | Yes |
+
+References: `_04028` / `Action_04028` / `State_highDramaPhase04028` + `_2`; move-both + batchId `Action_02025` / `Action_01205`; destination claim-control `Action_03045`; En Garde precondition `_04018`.
+
+### Pattern B.9 — En Garde Merchant Action: Take control of opposing equipped attachment → pay → equip (+ draw rider)
+
+Printed (A Fine Addition `_04029`): **`<b>En Garde Merchant Action:</b> Take control of target attachment equipped to an opposing character and equip it to your character at this location, paying all costs. Its last controller draws a card unless your <b>Leader</b> is a <b>Villain</b>.`**
+
+This is **not** B.2 (RiskAttachment fake equip), **not** Robbery City Action (`Action_01113` discard-pile + opponent chooser), and **not** B.6 (Engage attachment then challenge). Clone the **equipped** steal path from `Maneuver_01113` plus the wealth-pay state from `Action_01113` / `State_highDramaPhase01113_3`.
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true` + **`IAbilityThatTargetsCards`** on the Action (marker interface — **no** `isValidTargetForAbility`; validation lives in `getStealableAttachments` + act re-check). **Do not** mark `IRiskThatTargetsCharacters` on the Risk — the chooser is attachments, not characters (Cesca character-target only).
+2. **Heading gates stack:** En Garde → `!$Engaged`; **Merchant** (or other trait in heading) → `hasTrait("Merchant")`. Start from `parent::getPerformersForAction` (plain Action — home in pool), then **also** require `cardInCity($performer)` — printed "at this location" on a City Action-less Risk means City location, not Home (`Action_04011` idiom).
+3. **Stealable pool:** `getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)` → each host's `$host->Attachments` → `getAttachmentById` → filter with `getEquipDiscount`, `hasEquipRestrictions`, `canAttachTo`.
+4. **Wealth adjustment (availability + args + act):** centralize in `getWealthAdjustment(Theah $theah)`:
+
+```php
+// Risk implements IWealthCost — reserve cards that pay for / leave with the Risk.
+$selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
+return -($selfWealth + $owner->getWealthCost());
+```
+
+Pass the same adjustment into **every** `getStealableAttachments(...)` call (grey check, `getArgsFromAction`, `actFromActionWithId` re-validation). Mirror `Action_01113` comment on why.
+
+5. **0-cost equip:** after discount, if `$cost == 0`, **skip** the `handWealth < $cost` check — risk-in-hand alone is enough (Langschwert `_01048`). When `$cost > 0`, apply adjusted hand wealth.
+6. **Two-step flow:**
+   - `"NNNNN"` → attachment-chooser GameState. Args: `attachments[]` with `id` + `name` = `"{$attachment->Name} ({$host->Name})"` for disambiguation (mirror `Action_04019` button shape, not in-play highlight).
+   - On attachment confirm: stash **`CHOSEN_OPPONENT` = `$host->ControllerId`** (last controller for draw rider — reuse global, do not invent Action fields).
+   - Steal sequence (order matters): `ControllerId` → performer → `updateCardObjectInDb` + `addCardToWorld` → `createAttachmentUnequippedEvent` → `createCardDiscardedFromPlayEvent` → set `CHOSEN_ATTACHMENT` / `CHOSEN_CARD_COST` → `createCardRemovedFromPlayerDiscardPileEvent` → `createCardAddedToHandEvent` → `createEnteringPayStateEvent(..., PAY_STATE_EQUIP_ATTACHMENT)` → transition `"NNNNN_2"`.
+   - `"NNNNN_2"` → wealth pay (`actFromActionWithIds`): validate attachment in hand → pay → `createAttachmentEquippedEvent` with `getRequiredAttachTargetId` → draw rider → `createActionResolvedEvent`.
+7. **Draw rider:** after equip, if `getLeaderByPlayerId($owner->ControllerId)` is null **or** Leader lacks `Villain` trait → `createCardDrawnEvent($lastControllerId, sprintf($game->translate("%s effect"), $owner->getInjectCode()))`. **Two arguments required** — one-arg call fatals. Draw goes to **last attachment controller** (`CHOSEN_OPPONENT`), not the active player.
+8. **Wire:** `"04029"` / `"04029_2"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`; states `4<NNNNN>` / `4<NNNNN>2`. JS bas trio: step 1 attachment name buttons (`highDramaPhase04019` shape); step 2 `actPayForCards` + `onPaymentConfirmedFromCard` (`01113_3` shape); `EventHandlers.js` `payForCard` on `_2`. 0-cost equip: confirm with **empty** hand selection (`isValidWealthPayment(0, 0, false)`).
+9. **Do not** gate on uncontrolled City attachments at the location unless printed text says so — Dawn scheme cards sit at most City spots; that gate hid normal steal play during `_04029` testing.
+
+**Contrast:**
+
+| | Robbery Action `_01113` | Robbery Maneuver `_01113` equipped | B.9 `_04029` |
+|---|---|---|---|
+| Source | Opponent discard pile | Adversary equipped + discard | Opposing at performer location equipped |
+| Performer gate | Pirate + city | Pirate duel actor | En Garde Merchant + city |
+| Chooser | Opponent then attachment | Attachment list | Attachment list (host in label) |
+| Pay state | `_01113_3` | In maneuver act | `_04029_2` |
+| Extra rider | None | None | Last controller draws unless your Leader Villain |
+
+References: `_04029` / `Action_04029` / `State_highDramaPhase04029` + `_2`; steal sequence `Maneuver_01113`; wealth pay `Action_01113` / `State_highDramaPhase01113_3`; draw `Action_04010`; city performer `Action_04011`.
+
+### Pattern B.10 — En Garde Academic Action: Discard available City Card • look at City Deck • may add one • sink rest • locked extra action
+
+Printed (Cats in Every Corner `_04037`): **`<b>En Garde Academic Action:</b> Discard an available City Card at this location • Look at the top five cards of the City Deck. You may add one to this location, then sink the rest. Then, your performer may perform another action. <i>(It must be performed and they must be the performer)</i>`**
+
+Composes a discard **cost** + City Deck look/add/sink + Pattern A.2 extra action. **Not** B.4 (sink from discard piles). **Not** A.11 / B.1 (no location chooser). **Not** Cesca (City Card chooser; text never says Target).
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true`. Heading gates: En Garde → `!$Engaged`; **Academic** → `hasTrait("Academic")` (not Sorcerer). Start from `parent::getPerformersForAction` (plain Action — home in pool). Grey when the performer has no discardable City Card at their location (Home usually fails this, not a city-only filter).
+2. **"Available City Card"** = `ICityDeckCard` + `!isControlled()` + `canBeDiscardedFromCity()` at `$performer->Location`. Mirror `Action_01112b` / `Action_04015::getDiscardableCityCardsAtLocation`.
+3. **State `"NNNNN"`** — in-play City Card chooser (bas `04015_2` / `01112` trio: `highlightCardsAsSelectable` + Confirm). **No Pass** — discard is the cost. **No Back** after the Risk is paid.
+4. **On discard confirm:**
+   - **Peek first** via `getCardsOnTopOfCityDeck(5)` and stash property arrays in `CHOSEN_CARD` (02014 / 03052). **WHY before the discard event:** that helper reshuffles City Discard when the deck is short. If the cost card has already landed in discard, it can shuffle back into the look.
+   - Queue `createCardAddedToCityDiscardPileEvent(..., $asEffect = false)` — discard is the printed cost (before the `•`), not the effect (Tomas-style cancel cares).
+   - If peeked count > 0 → look notify + `createTransitionEvent("NNNNN_2")`. If 0 → still grant A.2 extra action + `createActionResolvedEvent` (complete as much as possible; look is not a gate).
+   - `nextState("cardDiscarded")` → EVENTS so discard flushes before the look UI.
+5. **State `"NNNNN_2"`** — chooseList of peeked cards (`setSelectionMode(1)`). Confirm = add that card to `$performer->Location` via `createCityCardAddedToLocationEvent`. **Pass = add none**, then still sink the rest. Default EventHandlers single-select enable is enough (no custom handler).
+6. **Sink the rest** (every peeked id except the added one) via `createCardAddedToCityDeckEvent($playerId, $id, $onTop = false)`. No reorder. Queued sinks are fine — there is no top-insert race (contrast C.8).
+7. **Then Pattern A.2:** `EXTRA_ACTIONS = 1` + `EXTRA_ACTION_PERFORMER = $performer->Id`. "May" → Pass is allowed on the follow-up turn.
+8. **Wire** both `"NNNNN"` and `"NNNNN_2"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. GameState named transitions (`cardDiscarded` / `cardAdded` / `pass` / `zombie`) — no `""`.
+
+References: `_04037` / `Action_04037` / `State_highDramaPhase04037` + `_2`; discard filter `_01112b` / `_04015`; peek stash `Action_02014` / `Reaction_03052`; add-to-location `Action_03cd20`; extra action `Action_03032`.
+
+### Pattern B.11 — En Garde Leader Action: fewer-characters If • choose-stat challenge • Target opposing non-Leader
+
+Printed (Honorable `_04057`): **`<b>En Garde Leader Action:</b> If you control fewer characters than an opponent • Your performer issues a challenge to target opposing non-<b>Leader</b> controlled by that opponent, using your choice of [Combat], [Finesse], or [Influence].`**
+
+Composition of Leader-trait performer + En Garde precondition + character-count If + choose-stat + shared challenge (do not invent a new challenge channel):
+
+1. **`RiskAction`** (plain Action — not City) + **`IAbilityThatTargetsCharacters`** / Risk **`IRiskThatTargetsCharacters`** (printed **"target"**). **`RequiresPerformerSelected = true`**.
+2. **Leader heading = trait gate, not singleton:** filter performers with `hasTrait("Leader")` via `getPerformersForAction` (start from `parent::…`). **WHY not `getLeaderByPlayerId` alone:** more than one Leader can be in play (e.g. Bravos muster). Mirror `Action_01072` / `Action_02014`.
+3. **Availability gates (all required):**
+   - **En Garde** heading → `!$performer->Engaged` (precondition — **not** `createCardEngagedEvent` in announce).
+   - `canChallenge($theah)` + `cardInCity` + ≥1 challengeable stat (`canPressure` dashed-stat gates for Combat/Finesse/Influence).
+   - **Character-count If:** `count(getCharactersInPlayByPlayerId)` — require **exists** an opponent with a strictly greater count (`$myCount < $oppCount`). Same discipline as A.8 fewer-locations — not fewest-overall.
+   - ≥1 valid target (below).
+4. **Valid target** (gate availability and `isValidTargetForAbility` the same way — resolve performer via `CHOSEN_PERFORMER`):
+   - Opposing at performer's location.
+   - `! hasTrait("Leader")`.
+   - Target's controller has **more** characters in play than you (strict `>` / `$myCount < $theirCount`).
+5. **`EventActionTriggered`:** `createTransitionEvent(..., "NNNNN")` into choose-stat GameState (Ambitious `_03067` buttons: id 1/2/3 → Combat/Finesse/Influence). Pay path already set `CHOSEN_PERFORMER`.
+6. **`actFromActionWithId` (stat chosen):** validate En Garde + Leader trait + If + challengeable stat still true → mint **`HONORABLE_CHALLENGE_TYPE`** (or card-named type) **off** `stIssueChallenge` auto-engage list + set `CHALLENGE_STAT` → `createTransitionEvent(..., "NNNNN_2")` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` → `nextState("statChosen")`.
+7. **WHY custom type off auto-engage:** print has **no Engage cost** — En Garde is only a precondition. Do **not** treat this like basic Challenge / `NORMAL` (those auto-engage the challenger). Type still must **not** be `NORMAL` so Back stays hidden after pay + choose-stat (JS Back is NORMAL-only). Contrast B.6 (`_04019`) which **does** auto-engage because the printed Engage was on an attachment, not the performer.
+8. **No Unique locker** unless text says "Send this card to The Locker" — Unique trait alone is deck-construction. Contrast A.8 Ambitious.
+9. **Wire** `"NNNNN"` → choose-stat GameState and `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. bas JS choose-stat trio mirrors `highDramaPhase03067`.
+
+**Contrast:** A.8 = Leader + fewer-**locations** + choose-stat **pressure** + locker. A.6 = Duelist City + location headcount If + fixed Combat (`NORMAL` auto-engage). B.6 = En Garde + attachment Engage + Combat (`NO_MORE_WORDS` **on** auto-engage). Arrogant `_03008` = no printed Engage but uses `NORMAL` so basic challenge engage applies — Honorable deliberately does **not**.
+
+References: `_04057` / `Action_04057` / `State_highDramaPhase04057`; multi-Leader performer `Action_01072` / `Action_02014`; choose-stat UI `_03067`; off-auto-engage custom type `_04009` / `_04047`; character-count If shape A.8 / `Action_03067`.
+
+### Pattern B.12 — En Garde Action: recruit target available Mercenary • may parley without engaging
+
+Printed (Silver Tongue `_04059`): **`<b>En Garde Action:</b> If your performer is a non-<b>Hero</b> • They recruit target available <b>Mercenary</b> at their location, paying all costs. They may parley without engaging.`**
+
+Often composes with Pattern **E.2** (`"While your performer is a Merchant or Scoundrel, this card has -1 cost"` — Action-only discount; no invented Maneuver).
+
+Reuse the **shared Recruit Action pipeline** (Cirilo / Kaspar), do **not** invent a card-specific mercenary chooser + pay GameState trio:
+
+1. **`RiskAction`** + **`IAbilityThatTargetsCharacters`** / Risk **`IRiskThatTargetsCharacters`** (printed **"target"** Mercenary character). Cirilo historically used `IAbilityThatTargetsCards` — prefer Characters for Mercenary targets. **`RequiresPerformerSelected = true`**.
+2. **Performer filters:** En Garde (`!$Engaged` — precondition, not Engage cost) + **non-Hero** bullet-If (availability filter) + `cardInCity` + ≥1 **available Mercenary** at location (`!isControlled() && hasTrait("Mercenary")` — `$includeUncontrolled = true`).
+3. **`EventActionTriggered`:** `RECRUIT_TYPE = SILVER_TONGUE_RECRUIT_TYPE` (new global next to Cirilo/Kaspar) + `createTransitionEvent(..., "04059")` → **`HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE`** (not straight to choose-merc). **WHY PARLEYABLE:** Cirilo skips Parley because he already Engaged as Action cost; Silver Tongue needs Yes/No for the Influence discount.
+4. **Do not Engage on Parley:** in `actHighDramaRecruitActionMercenaryChosen`, engage only when `RECRUIT_TYPE == NORMAL` (Kaspar never sets `PERFORMER_PARLEYED`; Cirilo skips Parley). SILVER_TONGUE sets `PERFORMER_PARLEYED` via shared ParleyYes but must skip the engage branch — that is the printed **"without engaging"**.
+5. **Negotiable gate:** same as NORMAL — Parley Yes must not stick to `Negotiable=false` (chooser filter + act throw). Paying all costs = printed WealthCost (not Cirilo's forced 1).
+6. **Back UX:** Risk is already paid when ActionTriggered fires. Hide Back on Parley / choose-merc / pay for SILVER_TONGUE (Cirilo shape). Expose `recruitType` from `argsHighDramaRecruitActionParley`.
+7. **ActionResolved:** comes from `actHighDramaRecruitActionPayForMercenary` — Action file keeps Cirilo-style comment so RiskAction pre-commit is satisfied without double-resolve.
+8. **Wire** `"04059" => HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. JS: `SILVER_TONGUE_RECRUIT_TYPE = 3` in `seventhseacityoffivesails.js`.
+
+**Contrast:** Cirilo `_01009` = engage cost + skip Parley + cost 1 / lose Negotiable. Kaspar `_01035` = own parley state + "parley even while engaged" (lifts Engaged gate, still no engage-on-parley because already engaged). Basic Recruit = Parley engages.
+
+References: `_04059` / `Action_04059`; Cirilo `Action_01009` + `"01009"` → choose-merc; Kaspar `Action_01035` Parley-without-engage-consequence; E.2 discount `Action_04018` / `Action_04030`.
+
