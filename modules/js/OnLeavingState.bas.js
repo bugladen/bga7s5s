@@ -547,6 +547,15 @@
                 }
             },
 
+            'highDramaPhase04057': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase04028': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

@@ -272,6 +272,7 @@ class Game extends \Bga\GameFramework\Table
     final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;
     final const STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
     final const CELERITY_CHALLENGE_TYPE = 30;
+    final const HONORABLE_CHALLENGE_TYPE = 31;
 
     //Duel global variables
     //Duel Names

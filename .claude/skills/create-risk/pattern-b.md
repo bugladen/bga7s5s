@@ -388,3 +388,30 @@ Composes a discard **cost** + City Deck look/add/sink + Pattern A.2 extra action
 
 References: `_04037` / `Action_04037` / `State_highDramaPhase04037` + `_2`; discard filter `_01112b` / `_04015`; peek stash `Action_02014` / `Reaction_03052`; add-to-location `Action_03cd20`; extra action `Action_03032`.
 
+### Pattern B.11 — En Garde Leader Action: fewer-characters If • choose-stat challenge • Target opposing non-Leader
+
+Printed (Honorable `_04057`): **`<b>En Garde Leader Action:</b> If you control fewer characters than an opponent • Your performer issues a challenge to target opposing non-<b>Leader</b> controlled by that opponent, using your choice of [Combat], [Finesse], or [Influence].`**
+
+Composition of Leader-trait performer + En Garde precondition + character-count If + choose-stat + shared challenge (do not invent a new challenge channel):
+
+1. **`RiskAction`** (plain Action — not City) + **`IAbilityThatTargetsCharacters`** / Risk **`IRiskThatTargetsCharacters`** (printed **"target"**). **`RequiresPerformerSelected = true`**.
+2. **Leader heading = trait gate, not singleton:** filter performers with `hasTrait("Leader")` via `getPerformersForAction` (start from `parent::…`). **WHY not `getLeaderByPlayerId` alone:** more than one Leader can be in play (e.g. Bravos muster). Mirror `Action_01072` / `Action_02014`.
+3. **Availability gates (all required):**
+   - **En Garde** heading → `!$performer->Engaged` (precondition — **not** `createCardEngagedEvent` in announce).
+   - `canChallenge($theah)` + `cardInCity` + ≥1 challengeable stat (`canPressure` dashed-stat gates for Combat/Finesse/Influence).
+   - **Character-count If:** `count(getCharactersInPlayByPlayerId)` — require **exists** an opponent with a strictly greater count (`$myCount < $oppCount`). Same discipline as A.8 fewer-locations — not fewest-overall.
+   - ≥1 valid target (below).
+4. **Valid target** (gate availability and `isValidTargetForAbility` the same way — resolve performer via `CHOSEN_PERFORMER`):
+   - Opposing at performer's location.
+   - `! hasTrait("Leader")`.
+   - Target's controller has **more** characters in play than you (strict `>` / `$myCount < $theirCount`).
+5. **`EventActionTriggered`:** `createTransitionEvent(..., "NNNNN")` into choose-stat GameState (Ambitious `_03067` buttons: id 1/2/3 → Combat/Finesse/Influence). Pay path already set `CHOSEN_PERFORMER`.
+6. **`actFromActionWithId` (stat chosen):** validate En Garde + Leader trait + If + challengeable stat still true → mint **`HONORABLE_CHALLENGE_TYPE`** (or card-named type) **off** `stIssueChallenge` auto-engage list + set `CHALLENGE_STAT` → `createTransitionEvent(..., "NNNNN_2")` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` → `nextState("statChosen")`.
+7. **WHY custom type off auto-engage:** print has **no Engage cost** — En Garde is only a precondition. Do **not** treat this like basic Challenge / `NORMAL` (those auto-engage the challenger). Type still must **not** be `NORMAL` so Back stays hidden after pay + choose-stat (JS Back is NORMAL-only). Contrast B.6 (`_04019`) which **does** auto-engage because the printed Engage was on an attachment, not the performer.
+8. **No Unique locker** unless text says "Send this card to The Locker" — Unique trait alone is deck-construction. Contrast A.8 Ambitious.
+9. **Wire** `"NNNNN"` → choose-stat GameState and `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. bas JS choose-stat trio mirrors `highDramaPhase03067`.
+
+**Contrast:** A.8 = Leader + fewer-**locations** + choose-stat **pressure** + locker. A.6 = Duelist City + location headcount If + fixed Combat (`NORMAL` auto-engage). B.6 = En Garde + attachment Engage + Combat (`NO_MORE_WORDS` **on** auto-engage). Arrogant `_03008` = no printed Engage but uses `NORMAL` so basic challenge engage applies — Honorable deliberately does **not**.
+
+References: `_04057` / `Action_04057` / `State_highDramaPhase04057`; multi-Leader performer `Action_01072` / `Action_02014`; choose-stat UI `_03067`; off-auto-engage custom type `_04009` / `_04047`; character-count If shape A.8 / `Action_03067`.
+
