@@ -267,6 +267,15 @@ class Action_03013 extends CharacterAction
      */
     private function getEligibleTargets(Theah $theah, Character $owner): array
     {
+        // WHY: LOCATION_PLAYER_HOME is one string for every player. getOpposingCharactersAtLocation
+        // would treat enemies at *their* Homes as co-located with Daniella. Player Homes are
+        // distinct spaces — you cannot oppose someone at Home (Benci / Action_04042).
+        // isAvailableToPlayer already requires cardInCity; this keeps picker/eligibility honest.
+        if ($owner->Location === Game::LOCATION_PLAYER_HOME || ! $theah->cardInCity($owner))
+        {
+            return [];
+        }
+
         $opposing = $theah->getOpposingCharactersAtLocation($owner->Location, $owner->ControllerId);
         return array_values(array_filter(
             $opposing,
@@ -287,7 +296,9 @@ class Action_03013 extends CharacterAction
             return [false, $theah->game->translate("Character must be controlled by an opponent.")];
         }
 
-        if ($character->Location !== $owner->Location)
+        if ($character->Location !== $owner->Location
+            || $owner->Location === Game::LOCATION_PLAYER_HOME
+            || ! $theah->cardInCity($owner))
         {
             return [false, $theah->game->translate("Character must be at Daniella's location.")];
         }

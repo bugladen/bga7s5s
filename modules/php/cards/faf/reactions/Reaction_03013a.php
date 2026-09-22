@@ -67,6 +67,14 @@ class Reaction_03013a extends CardReaction
      */
     private function getEligibleTargets(Theah $theah, Character $owner): array
     {
+        // WHY: LOCATION_PLAYER_HOME is one string for every player. getOpposingCharactersAtLocation
+        // would treat enemies at *their* Homes as co-located with Daniella. Player Homes are
+        // distinct spaces — you cannot oppose someone at Home (Benci / Action_04042).
+        if ($owner->Location === Game::LOCATION_PLAYER_HOME || ! $theah->cardInCity($owner))
+        {
+            return [];
+        }
+
         $opposing = $theah->getOpposingCharactersAtLocation($owner->Location, $owner->ControllerId);
         return array_values(array_filter(
             $opposing,
@@ -273,8 +281,11 @@ class Reaction_03013a extends CardReaction
             $characterId = (int) substr($reactionId, strlen('grant-'));
             $character = $game->theah->getCharacterById($characterId);
 
+            // WHY re-check cardInCity: Location string equality alone is wrong at Home
+            // (shared LOCATION_PLAYER_HOME across players).
             if ($character !== null
                 && $character->ControllerId !== $owner->ControllerId
+                && $game->theah->cardInCity($owner)
                 && $character->Location === $owner->Location
                 && ! $character->hasTrait("Sorcerer")
                 && ! in_array($character->Id, $this->TaggedCharacterIds, true))
