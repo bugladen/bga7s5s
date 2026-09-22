@@ -597,6 +597,12 @@
                 }
             },
 
+            'highDramaPhase04060': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                }
+            },
+
             'highDramaPhase04032': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

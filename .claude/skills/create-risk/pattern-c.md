@@ -393,9 +393,11 @@ References: `_04048` / `Maneuver_04048a`/`b`; claim emit `Maneuver_01107` / `Rea
 
 When the maneuver only adds/subtracts stat values and has no one-shot side effect (no draw, no wound, no transition), implement **only** the `EventDuelCalculateManeuverValues` branch and skip `EventResolveManeuver` entirely. The framework still rolls back the calc on cancel, and there's nothing to resolve. Negative deltas are fine (`$event->thrust -= 3`, `$event->parry -= 1` — same as `Maneuver_03009`'s −1 Thrust).
 
+**Exclusive "instead" branch on location control** (e.g. **"+1[Thrust]. If this location is uncontrolled, +1[Riposte] instead"** — `_04060`): check `getControllerForLocation($actor->Location) == 0` in calc and apply **one** stat, not both. **"This location"** = `$actor->Location` (C.10 / `Maneuver_01110`). **Not** C.10 (always Riposte + resolve claim/unclaim). No states / no JS / `EventManeuverCanceled handler not needed`.
+
 **Two distinct pure-calc Maneuvers on one Risk** (even with the **same** trait prefix, e.g. two Duelist Maneuvers): still split `Maneuver_NNNNNa` / `Maneuver_NNNNNb` — do not merge into one class with a mode. Each gets its own Duelist/`DUEL_GAMBLED` gate + calc branch + `EventManeuverCanceled handler not needed` comment. If the card also prints a shared "-1 cost while …" clause, hang `getManeuverFromCombatCardDiscount` on **exactly one** of them (Pattern E dual-Maneuver footgun — `Card` sums).
 
-Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling), `Maneuver_04007a`/`b` (dual Duelist pure-calc ± Riposte/Parry/Thrust + wounds discount on `a` only). **Exception:** Comforting (`Maneuver_03070`) is C.6 excess but **not** pure-calc — it uses Resolve `ThreatModified` on `starting_*` + zero-delta Calculate rebuild.
+Reference: `Maneuver_03011` ("control X at duel location" → `+1 Riposte`), `Maneuver_03048` (Pattern C.6 threat move — same pure-calc discipline), `Maneuver_03058` (Pattern C.7 opposing-character scaling), `Maneuver_04007a`/`b` (dual Duelist pure-calc ± Riposte/Parry/Thrust + wounds discount on `a` only), `Maneuver_04060` (Thrust **or** Riposte-if-uncontrolled). **Exception:** Comforting (`Maneuver_03070`) is C.6 excess but **not** pure-calc — it uses Resolve `ThreatModified` on `starting_*` + zero-delta Calculate rebuild.
 
 ### Pure-resolve maneuvers (no calc branch)
 

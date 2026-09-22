@@ -1104,6 +1104,7 @@ $machinestates = [
                 "04057_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 // WHY: Silver Tongue — enter PARLEYABLE (not choose-merc) so Parley Yes/No still offered.
                 "04059" => States::HIGH_DRAMA_RECRUIT_ACTION_PARLEYABLE,
+                "04060" => States::HIGH_DRAMA_PLAYER_TURN_04060,
                 "04cd01" => States::HIGH_DRAMA_PLAYER_TURN_04CD01,
                 "04cd01b" => States::HIGH_DRAMA_PLAYER_TURN_04CD01B,
                 "04cd04" => States::HIGH_DRAMA_PLAYER_TURN_04CD04,

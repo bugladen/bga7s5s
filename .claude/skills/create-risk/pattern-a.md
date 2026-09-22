@@ -505,6 +505,23 @@ Same "they may engage / if they do not …" family as B.7 / Yield / Duckfoot, bu
 
 References: `_04049` / `Action_04049` / `State_highDramaPhase04049` + `_2` + `_3`; B.7 buttons `_04027`; Duckfoot already-Engaged `Action_01049`; adjacent move emit `Action_02023` / Confusion `Reaction_03068`; Influence compare wording `Action_03008` (`<=` contrast).
 
+### Pattern A.16 — Choose controlled City location (no Renown or no characters) • becomes uncontrolled
+
+For City Actions like **"City Action: Choose a controlled City location with no Renown or no characters • It becomes uncontrolled."** — see `_04060` (Worldly). Sibling plain-Action shape: Status Matters `_01086` ("no characters or only Mercenaries").
+
+1. **`RiskCityAction`** — city-character availability gate only. **No** `RequiresPerformerSelected` (text never names a performer). **No** Cesca — location chooser; printed **"Choose"** not character **"Target"**.
+2. **Eligible locations:** `getCityLocations()` where `Controller != 0` **and** `canLocationBecomeUncontrolledBy` **and** (`Renown == 0` **or** `count(getCharactersAtLocation) == 0`). Any controller — not yours-only (contrast A.12).
+3. **`EventActionTriggered`:** `createTransitionEvent(..., "NNNNN")` → location GameState. Confirm: re-validate eligible → `createLocationBecomesUncontrolledEvent($owner->ControllerId, $location)` (emit-only Indomitable Will notify) → `createActionResolvedEvent` → `"locationChosen"`.
+4. **JS:** `01086` location-only trio (no performer highlight) — not A.12/`04039` performer+location.
+
+**WHY not A.12:** A.12 is engage + lose-control **cost** on a location **you** control → claim payoff. A.16's whole effect is unclaim; filter is emptiness (Renown/characters), not ownership.
+
+**WHY not C.10:** C.10 unclaims the **duel** location as a Maneuver If with no chooser. A.16 is a High Drama location picker.
+
+Often pairs with pure-calc **" +N Thrust. If this location is uncontrolled, +N Riposte instead"** (`Maneuver_04060`) — exclusive calc branch on `getControllerForLocation($actor->Location) == 0`; not C.10 (always Riposte + claim/unclaim).
+
+References: `_04060` / `Action_04060` / `State_highDramaPhase04060`; filter sibling `Action_01086`; unclaim emit `Action_04039` / `Maneuver_04048b`.
+
 ### Common precondition predicates
 
 A few wordings recur often:
