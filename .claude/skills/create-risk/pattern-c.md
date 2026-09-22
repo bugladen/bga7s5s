@@ -72,6 +72,20 @@ if (! $theah->game->globals->get(Game::DUEL_GAMBLED, false)) return false;
 
 `Game::DUEL_GAMBLED` is set true in `FrameworkActionsTrait::actChooseGambleCard` when the gambled combat card is locked in, and cleared in `stDoneRound`. See `Technique_03002` (Aja) for the same gate on the Technique side.
 
+### "If the adversary is engaged • …" — Maneuver **cost** vs effect If vs Pattern E discount
+
+Parse the bullet carefully. Three different shapes use similar wording:
+
+| Printed shape | Meaning | Wire |
+|---|---|---|
+| **`Sorcerer Maneuver: If the adversary is engaged • +1[Riposte]`** (± trailing **"If your participant is en garde, draw"**) | Engaged is a **Maneuver cost / availability requirement**. Once the Maneuver is offered and used, Riposte **always** applies. Trailing "If … en garde, draw" is a separate resolve bonus. | `isAvailableToPlayer`: live adversary `Engaged` (see below) + Sorcerer actor. Calc always `+= 1` Riposte. Draw only in `EventResolveManeuver` when `!$actor->Engaged`. See `_04058`. |
+| **"If the adversary is a Sorcerer or Monster • +2 Parry or +2 Thrust"** (C.3) | Adversary-trait **gate on availability** for a choice Maneuver — both branches are payoffs of the Maneuver, not a cost paid on the board. | `isAvailable` trait check; choice at activate. See `_03024`. |
+| **"While the adversary is engaged, this card has -1 cost"** (Pattern E) | Combat-card **Wealth** discount only — does **not** grey the Maneuver or gate Riposte. | `getManeuverFromCombatCardDiscount` with live Engaged check. See `_01084`. |
+
+**Live adversary Engaged check (not `getDuelRoundOpponent()` alone):** last-known opponent objects can restore `Engaged` from when the adversary was still in play. Use `getCharacterById(getDuelOpponentId($actor->Id))` and reject discard/locker — same WHY as `Maneuver_01084`'s discount.
+
+**Do not** treat "If the adversary is engaged • +1 Riposte" as "always offer the Maneuver and only add Riposte when Engaged" — that misreads the cost bullet (user correction on `_04058`).
+
 ### "If your participant has more / equal or greater <Stat> than the adversary" gate
 
 Parse the printed comparison literally — the operator is part of the card text:
@@ -108,7 +122,7 @@ $event->explanations[] = sprintf(
 
 The calc event can fire multiple times during a single round (recalc on engage state changes etc.) — so put **one-shot** side effects (draw a card, wound, transition) in `EventResolveManeuver`, which fires once.
 
-References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat), `Maneuver_03070` (Pattern C.6 — Parry += excess over adversary `CHALLENGE_STAT`), `Maneuver_03058` (Pattern C.7 — +N Parry and Thrust per opposing at duel location).
+References: `Maneuver_01061` (conditional draw on equipped Weapon), `Maneuver_01084` (Duelist gate + adversary Thrust bonus next round + combat-card discount when adversary engaged), `Maneuver_04058` (Sorcerer Maneuver — adversary Engaged as **cost** + always Riposte + en garde draw), `Maneuver_01115` (cross-player hand-pick discard via `createTransitionEvent` to the adversary's controller), `Maneuver_01166` / `Maneuver_03036` (+N for each other dueling-line card), `Maneuver_03008` (Gambling gate + Influence comparison + Riposte+draw), `Maneuver_03009` (Strega gate + `-1 Thrust` in calc + wound adversary in resolve), `Maneuver_03011` (Gambling gate + "control trait X at duel location" → pure `+1 Riposte` in calc), `Maneuver_03033` (Gambling gate + equal-or-greater Influence → pure-resolve wound adversary, no calc), `Maneuver_03045` (Gambling gate only + `+2 Riposte` in calc + wound **participant** in resolve), `Maneuver_03048` (Pattern C.6 — Riposte += `getCurrentDuelThreat` to move all threat), `Maneuver_03070` (Pattern C.6 — Parry += excess over adversary `CHALLENGE_STAT`), `Maneuver_03058` (Pattern C.7 — +N Parry and Thrust per opposing at duel location).
 
 ### "Wound your participant" vs "Wound the adversary"
 

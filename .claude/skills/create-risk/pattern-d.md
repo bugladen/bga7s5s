@@ -344,27 +344,50 @@ Same mechanical meaning as Hexenjagd (`Reaction_01053`): `getCharactersAtLocatio
    - If `loadAbility()` returns `IAbilityThatTargetsCharacters` → `isValidTargetForAbility` enforces "(If they are able)"; invalid → cancel + message.
    - **Else** → `releaseEvent($characterId)` directly (non-targeting abilities).
    - `setUsed` here (Risk is already in discard from pay).
-4. **`performReaction('decline')`** — mirror 02016: only re-`releaseEvent` to the original target for `EventCharacterIntervened` (with `$skipNextEvent = true`); other saved events stay canceled.
+4. **`performReaction('decline')`** — **always** re-`releaseEvent` onto the **original** target with `$skipNextEvent = true` (mirror fixed Cross `Reaction_02016`). Leaving the canceled wound/move/engage permanently canceled makes Decline a free cancel of the opponent's ability — a rules exploit. **Do not** copy Altruistic `Reaction_03031`'s Decline path (it only re-releases intervenes and leaves other events canceled — latent bug). Intervene Decline still re-queues the intervene notify without clobbering `oldTargetId` (02016 intervene branch).
 
 `releaseEvent()` mutates the cloned event's target field (`characterId` / `cardId`) and re-queues it. For intervention, also swap `DUEL_DEFENDER` and set `CHOSEN_TARGET` — copy verbatim from `Reaction_02016`.
 
 **WHY defer `releaseEvent` to `EventRiskReactionTriggered`:** same discipline as Pattern D.2 — the Risk must be paid before the redirect lands; framework cancel-reactions during pay should not re-emit a redirected event if the Risk is declined mid-pay.
 
-**Do not copy 02016's wound-on-redirect** unless the card text says so — Cross of the Martyrs wounds the redirect target 1; Altruistic does not.
+**Do not copy 02016's wound-on-redirect** unless the card text says so — Cross of the Martyrs wounds the redirect target 1; Altruistic / Shield Rite do not.
 
-#### 02016 (AttachmentReaction) vs 03031 (RiskReaction) — when to use which pattern
+### Pattern D.4.1 — Redirect wound to **target opposing** character instead
 
-| | `Reaction_02016` (attachment) | `Reaction_03031` (Risk) |
+Printed (Shield Rite `_04058`): **`<b>En Garde Sorcerer Reaction:</b> When an opponent's ability would wound your performer • Wound target opposing character instead.`**
+
+Same clone-cancel-reemit + Risk pay split as D.4, with these deltas:
+
+| | D.4 Altruistic `_03031` | D.4.1 Shield Rite `_04058` |
 |---|---|---|
-| Base | `AttachmentReaction` — equipped character is the protected target | `RiskReaction` — any of your characters; Risk in hand is the cost |
+| Verbs | wound / move / engage (+ intervene) | **wound only** (unless print names more) |
+| Protected character | any of yours | **your performer** with En Garde + heading gates |
+| Destination pool | other **friendly** at same location | **opposing** at same location (`getOpposingCharactersAtLocation`) |
+| Printed "target" | no → **no** Cesca | yes → `IAbilityThatTargetsCharacters` + `IRiskThatTargetsCharacters` |
+| "(If they are able)" | yes → re-check source ability when it implements Cesca | **absent** → redirect unconditionally (do not `loadAbility` / `isValidTargetForAbility` on the source) |
+| Sorcerer / En Garde | none | `ISorcererAbility` + `hasTrait("Sorcerer")` + `!$Engaged` on the wounded performer; emit start/played after pay around `releaseEvent` |
+| Decline | **follow 02016** (re-release original) — do not ship Altruistic free-cancel | same — re-release original + `skipNextEvent` |
+
+**WHY not a fresh 1-wound:** "instead" substitutes the destination of the pending wound (same wounds/source/abilityId). Clone-cancel-reemit, not cancel + `createCharacterBeingWoundedEvent` from this Reaction.
+
+Hide the offer when no opposing character is at the performer's location (same "must be possible" discipline as D.1.1).
+
+References: `Reaction_04058` (Shield Rite), `Reaction_03031` (friendly D.4), `Reaction_02016` (Decline re-release + structural template).
+
+#### 02016 (AttachmentReaction) vs 03031 / 04058 (RiskReaction) — when to use which pattern
+
+| | `Reaction_02016` (attachment) | `Reaction_03031` / `Reaction_04058` (Risk) |
+|---|---|---|
+| Base | `AttachmentReaction` — equipped character is the protected target | `RiskReaction` — Risk in hand is the cost |
 | Trigger gate | Requires `IAbilityThatTargetsCharacters` | Opponent source only (`isOpponentAbility`) |
 | Event breadth | wound/move/engage/heal/targeted/challenge/intervene | Narrow to printed verbs (+ intervene if needed) |
 | Resolution | `performReaction` resolves inline (no pay) | Pay in `performReaction`; redirect in `EventRiskReactionTriggered` |
 | Owner lookup | `getOwningCharacter` / `getOwningAttachment` | `getOwningCard` (the Risk) |
+| Decline | re-release original (fixed) | **must** re-release original (same as 02016) |
 
-Reach for `Reaction_01014` (Vittoria — Thug-only redirect) or `Reaction_02016` when adapting attachment reactions; reach for `Reaction_03031` when porting that shape to a hand-paid Risk with effect-based wording.
+Reach for `Reaction_01014` (Vittoria — Thug-only redirect) or `Reaction_02016` when adapting attachment reactions; reach for `Reaction_03031` for friendly hand-paid redirect; reach for `Reaction_04058` when print says **target opposing** instead.
 
-References: `Reaction_03031` (Altruistic), `Reaction_02016` (structural template on attachments), `Reaction_01053` (Hexenjagd — "performer at that location" chooser semantics on a Risk).
+References: `Reaction_03031` (Altruistic), `Reaction_04058` (Shield Rite), `Reaction_02016` (structural template on attachments + Decline), `Reaction_01053` (Hexenjagd — "performer at that location" chooser semantics on a Risk).
 
 ### Pattern D.5 — Deck-reveal Sorcerer Reaction (`CardReaction`, not `RiskReaction`)
 
@@ -471,6 +494,7 @@ Compare:
 - `Reaction_03046a` (Passionate Duelist) — same intervene role as Subtle; gate `hasTrait("Duelist")` on `$event->newTargetId`, then engarde that character after pay.
 - `Reaction_03046b` (Passionate Pirate) — "your performer" is the **challenger** (`CHOSEN_PERFORMER`), not the intervener. Gate `hasTrait("Pirate")` on the challenger; engarde the challenger after pay. Mutually exclusive with the Duelist clause on the same intervene event (you cannot be both intervening player and the challenger's controller for one challenge).
 - `Reaction_03031` (Altruistic) — "Your **performer at that location** suffers those effects instead." Here "performer" means **another of your characters at the affected character's location** (`getCharactersAtLocationByPlayerId`, excluding the character being wounded/moved/engaged). The player picks which one via redirect buttons — same pool semantics as Hexenjagd's wound-performer chooser (`Reaction_01053`), not a search for a trait-bearing role elsewhere on the board.
+- `Reaction_04058` (Shield Rite) — "Wound **target opposing** character instead." Destination pool flips to `getOpposingCharactersAtLocation`; printed "target" → Cesca; En Garde Sorcerer gates on the wounded performer; Decline re-releases like fixed `02016`.
 
 This matters for `ISorcererAbility`'s `createSorcererAbilityStartEvent($performerId)` arg — pass the trigger-named character's id, not a generic "any Strega I control."
 

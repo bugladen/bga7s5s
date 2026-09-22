@@ -23,7 +23,7 @@ Combat-card cost discounts ("this card has -1 cost when …") live on the **Mane
 
 | Printed condition | Gate |
 |---|---|
-| "While the adversary is engaged" | `$adversary->Engaged` — `Maneuver_01084` |
+| "While the adversary is engaged" | `$adversary->Engaged` — `Maneuver_01084` (**Wealth discount only** — not a Maneuver availability cost; contrast `_04058` "If the adversary is engaged • +1 Riposte" where Engaged is the Maneuver cost — see pattern-c.md) |
 | "If your participant has more [Finesse] than the adversary" | `$actor->ModifiedFinesse > $adversary->ModifiedFinesse` — `Maneuver_03036` |
 | "While the adversary has more wounds than your participant" | `$adversary->Wounds > $actor->Wounds` — `Maneuver_04007a` |
 | "If this card was gambled" | `$theah->game->globals->get(Game::DUEL_GAMBLED, false)` — `Maneuver_03048` |
