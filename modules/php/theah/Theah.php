@@ -389,10 +389,11 @@ class Theah
                         continue;
                     }
 
-                    // WHY: Same dusk priority race — scheme/attachment already in Locker-*
-                    // (or discard) must not open a playerReaction prompt.
-                    if (strpos($card->Location, 'Locker-') !== false
-                        || strpos($card->Location, 'Discard-') !== false)
+                    // WHY Locker only (not Discard): dusk scheme→locker left orphaned
+                    // reaction transitions (Great Game). Played Risks live in Discard-*
+                    // during post-pay stages — Unyielding Loyalty cost choice, Vantage
+                    // Point opponent pick, etc. — and must still open playerReaction.
+                    if (strpos($card->Location, 'Locker-') !== false)
                     {
                         continue;
                     }
