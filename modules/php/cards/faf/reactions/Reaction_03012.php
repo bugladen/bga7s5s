@@ -76,6 +76,8 @@ class Reaction_03012 extends RiskReaction implements ISorcererAbility
             $game->notify->all("duelStatChanged", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction. The challenge becomes an [Influence] challenge.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "duelStat" => $game->translate("Influence"),
+                // WHY: raw stat for CSS class; duelStat is translated for display.
+                "challengeStat" => Game::STAT_INFLUENCE,
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
             ]);
 

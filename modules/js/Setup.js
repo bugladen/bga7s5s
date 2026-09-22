@@ -18,6 +18,12 @@ return declare('seventhseacityoffivesails.setup', null, {
         debug( "Starting game setup" );
         debug( "gamedatas", gamedatas );
 
+        // WHY: createCharacterCard restores Challenger/Defender chips early; challenge-type
+        // icon needs this before city/home cards are built.
+        if (gamedatas.challengeStat) {
+            this.challengeStat = gamedatas.challengeStat;
+        }
+
         // Initialize Tippy.js (processes any queued tooltips once tippy is loaded)
         this.initTippy();
 

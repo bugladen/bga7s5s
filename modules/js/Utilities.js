@@ -1199,6 +1199,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 class: '_7sfs-challenger-chip',
             }),  `${divId}_image`, 'last');
             this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+            this.placeChallengeStatChip(divId, this.challengeStat || this.gamedatas.challengeStat);
         }
         if (character.conditions.includes(this.DEFENDER)) {
             id = `${divId}_defender`;
@@ -1207,6 +1208,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 class: '_7sfs-defender-chip',
             }),  `${divId}_image`, 'last');
             this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+            this.placeChallengeStatChip(divId, this.challengeStat || this.gamedatas.challengeStat);
         }
         if (character.wounds > 0)
         {
@@ -1779,6 +1781,48 @@ return declare('seventhseacityoffivesails.utilities', null, {
             challengeStatClass: (challengeStat || '').toLowerCase(),
         }),  'city-wrapper', 'before');
         this.setupDuelScrollSync();
+    },
+
+    // WHY: Same Combat/Finesse/Influence sprites as in-play character stats, in a white
+    // circle left of Challenger/Defender chips. Shared by issue/swap/refresh/stat-change.
+    placeChallengeStatChip: function(divId, challengeStat) {
+        if (!divId || !challengeStat) return;
+
+        const chipId = `${divId}_challenge_stat`;
+        if ($(chipId)) {
+            dojo.destroy(chipId);
+        }
+
+        const statClass = String(challengeStat).toLowerCase();
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: chipId,
+            class: '_7sfs-challenge-stat-chip',
+        }),  `${divId}_image`, 'last');
+        dojo.place(`<div class="_7sfs-card-${statClass}-image"></div>`, chipId);
+        this.addTippyTooltip( chipId, `<div class='_7sfs-basic-tooltip'>${_("Challenge Stat")}: ${_(challengeStat)}</div>` );
+    },
+
+    removeChallengeStatChip: function(divId) {
+        if (!divId) return;
+        const chipId = `${divId}_challenge_stat`;
+        if ($(chipId)) {
+            dojo.destroy(chipId);
+        }
+    },
+
+    updateChallengeStatChips: function(challengeStat) {
+        if (!challengeStat) return;
+        this.challengeStat = challengeStat;
+        if (this.gamedatas) {
+            this.gamedatas.challengeStat = challengeStat;
+        }
+
+        Object.values(this.cardProperties || {}).forEach((character) => {
+            if (!character?.divId || !character.conditions) return;
+            if (character.conditions.includes(this.CHALLENGER) || character.conditions.includes(this.DEFENDER)) {
+                this.placeChallengeStatChip(character.divId, challengeStat);
+            }
+        });
     },
 
     // WHY: canceled names are stored as "Card: Ability (Canceled)" — strike only the

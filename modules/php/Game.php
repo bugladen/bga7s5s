@@ -501,6 +501,9 @@ class Game extends \Bga\GameFramework\Table
 
         $inDuel = $this->globals->get(Game::IN_DUEL, false);
         $result["inDuel"] = $inDuel;
+        // WHY: Challenger/Defender chips (and challenge-type icon) show before IN_DUEL
+        // during accept/refuse. Refresh mid-challenge needs the stat even when not in duel.
+        $result["challengeStat"] = $this->globals->get(Game::CHALLENGE_STAT);
         if ($inDuel)
         {
             $round = $this->globals->get(Game::DUEL_ROUND);
@@ -513,8 +516,6 @@ class Game extends \Bga\GameFramework\Table
             $targetId = $this->globals->get(Game::CHOSEN_TARGET);
             $target = $this->getCardObjectFromDb($targetId);
             $result["defendingPlayerId"] = $target->ControllerId;
-
-            $result["challengeStat"] = $this->globals->get(Game::CHALLENGE_STAT);
 
             $result["duelRounds"] = $this->getDuelRows();
         }

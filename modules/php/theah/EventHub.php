@@ -1349,6 +1349,8 @@ trait EventHub
                         "technique_inject_code" => $techniqueOwner?->getInjectCode(),
                         "challengerId" => $challenger->Id,
                         "defenderId" => $defender->Id,
+                        // WHY: raw Combat/Finesse/Influence for client CSS class — not translated.
+                        "challengeStat" => $statUsed,
                     ]);
                 };
                 $handler($this, $event);

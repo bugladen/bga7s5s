@@ -1722,6 +1722,34 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     z-index: 10;
 }
 
+/* WHY: Left of Challenger/Defender (80px). Light grey circle + border so the sprite reads on card art. */
+._7sfs-challenge-stat-chip {
+    position: absolute;
+    left: 55px;
+    top: 2px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background-color: #d3d3d3;
+    border: 2px solid black;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+._7sfs-challenge-stat-chip > div {
+    float: none;
+    margin: 0;
+}
+
+/* WHY: Influence sprite is wider/optical-center differs from Combat/Finesse in the circle. */
+._7sfs-challenge-stat-chip > ._7sfs-card-influence-image {
+    position: relative;
+    left: -2px;
+}
+
 ._7sfs-wound-chip {
     position: absolute;
     background-image: url('img/boardResources.jpg');

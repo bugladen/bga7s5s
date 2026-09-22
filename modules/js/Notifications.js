@@ -2416,6 +2416,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+        this.challengeStat = args.challengeStat;
+        if (this.gamedatas) {
+            this.gamedatas.challengeStat = args.challengeStat;
+        }
+
         const challenger = this.cardProperties[args.challengerId];
         challenger.conditions.push(this.CHALLENGER);
         const challengerImage = $(`${challenger.divId}_image`);
@@ -2425,6 +2430,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
         this.addTippyTooltip( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.placeChallengeStatChip(challenger.divId, args.challengeStat);
         this.refreshTooltipForCard(challenger);
 
         const defender = this.cardProperties[args.defenderId];
@@ -2436,6 +2442,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
         this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.placeChallengeStatChip(defender.divId, args.challengeStat);
         this.refreshTooltipForCard(defender);
     },
 
@@ -2450,6 +2457,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         oldChallenger.conditions = oldChallenger.conditions.filter(condition => condition !== this.CHALLENGER);
         const oldChallengerChipId = `${oldChallenger.divId}_challenger`;
         dojo.destroy(oldChallengerChipId);
+        this.removeChallengeStatChip(oldChallenger.divId);
         this.refreshTooltipForCard(oldChallenger);
 
         const newChallenger = this.cardProperties[args.newChallengerId];
@@ -2461,6 +2469,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-challenger-chip',
         }),  challengerImage, 'last');
         this.addTippyTooltip( challengerChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
+        this.placeChallengeStatChip(newChallenger.divId, this.challengeStat || this.gamedatas.challengeStat);
         this.refreshTooltipForCard(newChallenger);
     },
 
@@ -2475,6 +2484,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         oldDefender.conditions = oldDefender.conditions.filter(condition => condition !== this.DEFENDER);
         const oldDefenderChipId = `${oldDefender.divId}_defender`;
         dojo.destroy(oldDefenderChipId);
+        this.removeChallengeStatChip(oldDefender.divId);
         this.refreshTooltipForCard(oldDefender);
 
         const newDefender = this.cardProperties[args.newDefenderId];
@@ -2486,6 +2496,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
         this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.placeChallengeStatChip(newDefender.divId, this.challengeStat || this.gamedatas.challengeStat);
         this.refreshTooltipForCard(newDefender);
     },
 
@@ -2500,6 +2511,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         oldTarget.conditions = oldTarget.conditions.filter(condition => condition !== this.DEFENDER);
         const oldDefenderChipId = `${oldTarget.divId}_defender`;
         dojo.destroy(oldDefenderChipId);
+        this.removeChallengeStatChip(oldTarget.divId);
         this.refreshTooltipForCard(oldTarget);
 
         const newTarget = this.cardProperties[args.newTargetId];
@@ -2511,6 +2523,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             class: '_7sfs-defender-chip',
         }),  defenderImage, 'last');
         this.addTippyTooltip( defenderChipId, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
+        this.placeChallengeStatChip(newTarget.divId, this.challengeStat || this.gamedatas.challengeStat);
         this.refreshTooltipForCard(newTarget);
     },
 
@@ -2540,11 +2553,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+        // Prefer raw challengeStat (CSS-safe); fall back to duelStat for older notifs.
+        const challengeStat = args.challengeStat || args.duelStat;
+        this.updateChallengeStatChips(challengeStat);
+
         const target = $('duel_stat_value');
         if (!target) return;
 
         dojo.empty(target);
-        const statClass = (args.duelStat || '').toLowerCase();
+        const statClass = (challengeStat || '').toLowerCase();
         dojo.place(`<div class="_7sfs-card-${statClass}-image"></div>`, target);
     },
 
@@ -2857,6 +2874,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+        this.challengeStat = null;
+        if (this.gamedatas) {
+            this.gamedatas.challengeStat = null;
+        }
 
         const challenger = this.cardProperties[args.challengerId];
         if (challenger)
@@ -2864,6 +2885,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
             const challengerChipId = `${challenger.divId}_challenger`;
             dojo.destroy(challengerChipId);
+            this.removeChallengeStatChip(challenger.divId);
             this.refreshTooltipForCard(challenger);
         }
 
@@ -2873,6 +2895,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
             const defenderChipId = `${defender.divId}_defender`;
             dojo.destroy(defenderChipId);
+            this.removeChallengeStatChip(defender.divId);
             this.refreshTooltipForCard(defender);
         }
     },
@@ -2883,6 +2906,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
+        this.challengeStat = null;
+        if (this.gamedatas) {
+            this.gamedatas.challengeStat = null;
+        }
 
         const challenger = this.cardProperties[args.challengerId];
         if (challenger)
@@ -2890,6 +2917,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
             const challengerChipId = `${challenger.divId}_challenger`;
             dojo.destroy(challengerChipId);
+            this.removeChallengeStatChip(challenger.divId);
             this.refreshTooltipForCard(challenger);
         }
 
@@ -2899,6 +2927,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
             const defenderChipId = `${defender.divId}_defender`;
             dojo.destroy(defenderChipId);
+            this.removeChallengeStatChip(defender.divId);
             this.refreshTooltipForCard(defender);
         }
     },
@@ -2911,6 +2940,10 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         this.inDuel = false;
+        this.challengeStat = null;
+        if (this.gamedatas) {
+            this.gamedatas.challengeStat = null;
+        }
         dojo.destroy('duel_wrapper');
 
         const challenger = this.cardProperties[args.challengerId];
@@ -2919,6 +2952,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
             const challengerChipId = `${challenger.divId}_challenger`;
             dojo.destroy(challengerChipId);
+            this.removeChallengeStatChip(challenger.divId);
             this.refreshTooltipForCard(challenger);
         }
 
@@ -2928,6 +2962,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
             const defenderChipId = `${defender.divId}_defender`;
             dojo.destroy(defenderChipId);
+            this.removeChallengeStatChip(defender.divId);
             this.refreshTooltipForCard(defender);
         }
 
