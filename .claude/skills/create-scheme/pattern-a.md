@@ -167,6 +167,18 @@ public function actFromCardWithIds(Game $game, int $state, string $stateName, st
 
 Reference: `_01071`, `_02014`, `_02046`, `_02052`.
 
+### ≤1 Renown location, then Renown elsewhere + claim lock
+
+When the scheme says **"Choose a location with one or less Renown. Add a Renown to a different location"** and below the rule **"The chosen location cannot be controlled"** (Motion to Delay):
+
+1. **State 1:** `locationIds` = city locs with `Renown <= 1`. Pass when none (`_01072` Pass-throw-if-eligible).
+2. On pick: persist `$ChosenLocation` on the scheme + `updateCardObjectInDb`; `theah->setLocationCanBeClaimed($loc, false)`; `eventCheck` on `EventLocationClaimed` for that name. Queue `"NNNNN_2"` at MEDIUM_PRIORITY → EVENTS (same multi-step as `_04051`).
+3. **State 2:** `locationIds` exclude `$ChosenLocation` → Renown add.
+4. On scheme `EventCardSentToLocker`: restore `setLocationCanBeClaimed(true)` and clear `$ChosenLocation` (Leshiye idiom). Scheme stays at **Home** — do **not** move it onto the city.
+5. Do **not** auto-unclaim if the location is already controlled.
+
+Reference: `_04052`; claim-lock sibling `_01126` (Leshiye moves onto the city).
+
 ### Docks or Bazaar (two named locations)
 
 When the scheme says **"Add a Renown to [The City Docks] or [The Grand Bazaar]"**:

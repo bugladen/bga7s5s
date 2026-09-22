@@ -454,10 +454,13 @@ class Game extends \Bga\GameFramework\Table
         $result["locationControllers"] = $this->theah->getCityLocationControllers();
 
         $result["forumInterveneList"] = [];
+        $result["motionToDelayLocation"] = null;
         foreach ($this->theah->getCardsInPlay() as $card) {
             if ($card instanceof cards\_7s5s\_01150) {
                 $result["forumInterveneList"] = $card->getInterveneListData($this);
-                break;
+            }
+            if ($card instanceof cards\bas\_04052 && $card->ChosenLocation !== '') {
+                $result["motionToDelayLocation"] = $card->ChosenLocation;
             }
         }
 

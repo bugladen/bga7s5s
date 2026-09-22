@@ -382,6 +382,20 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_04052': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseResolveSchemes_04052_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.clientStateArgs = {};
+                }
+            },
+
             'planningPhaseEnd_04051': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.resetCityLocations();

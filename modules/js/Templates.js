@@ -271,6 +271,10 @@
         <div id="forum-parley-intervene-list" class="_7sfs-forum-intervene-list"></div>
         `;
 
+        window.jstpl_motion_to_delay_label = `
+        <div id="motion-to-delay-label" class="_7sfs-forum-intervene-list"></div>
+        `;
+
         window.jstpl_sirens_scream_used_list = `
         <div id="sirens-scream-used-list" class="_7sfs-card-player-list"></div>
         `;

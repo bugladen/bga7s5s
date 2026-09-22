@@ -2147,6 +2147,36 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    // WHY: Reminder that Motion to Delay locked this location from being claimed.
+    // Same overlay shape as Parley Gone Wrong's Forum intervene list.
+    displayMotionToDelayLabel: function(locationName) {
+        this.removeMotionToDelayLabel();
+
+        if (!locationName) {
+            return;
+        }
+
+        const imageElement = this.getCityLocationElement(locationName);
+        if (!imageElement) return;
+
+        dojo.place(this.format_block('jstpl_motion_to_delay_label', {}), imageElement, 'first');
+
+        const container = $('motion-to-delay-label');
+        dojo.create('span', {
+            innerHTML: _('Motion to Delay'),
+            style: 'color: #ffffff',
+        }, container);
+
+        this.addTippyTooltip('motion-to-delay-label', `<div class='_7sfs-basic-tooltip'>${_('Motion to Delay - This location cannot be controlled')}</div>`);
+    },
+
+    removeMotionToDelayLabel: function() {
+        const existing = $('motion-to-delay-label');
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
+
     displaySirensScreamUsedList: function(cardId, usedList) {
         this.removeSirensScreamUsedList();
 

@@ -127,4 +127,9 @@
 | `modules/php/States/bas/State_planningPhaseEnd_04051.php` | Forced claim pick for controller (`locationIds` claimable). |
 | `modules/php/States/bas/State_planningPhaseEnd_04051_2.php` | Forced claim pick for chosen opponent (exclude `$claimedLocation`). |
 | `modules/php/cards/faf/reactions/Reaction_03005.php` | Null-performer `createLocationClaimedEvent` sibling (Reaction, not Forced). |
+| `modules/php/cards/bas/_04052.php` (Motion to Delay) | **≤1 Renown location pick → Renown elsewhere** + **chosen location cannot be controlled** (`$ChosenLocation` + `setLocationCanBeClaimed` + `eventCheck` LocationClaimed; restore on locker — Leshiye idiom, scheme stays at Home) + **Forced HD End draw** when any opponent controls more city locs. Init 90 / Panache -1 / Bureaucracy+Authority / Neutral. Pass when no ≤1-Renown locs (`_01072`). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04052.php` | Resolve state 1: low-Renown location pick + Pass. |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04052_2.php` | Resolve state 2: different-location Renown. |
+| `modules/php/cards/_7s5s/_01126.php` (Leshiye) | Claim-lock sibling (`setLocationCanBeClaimed` + `eventCheck`); Leshiye moves onto the city — Motion to Delay does not. |
+| `modules/php/cards/_7s5s/_01072.php` (Réputation Méritée) | Pass-when-no-eligible-location sibling (0 Renown filter). |
 

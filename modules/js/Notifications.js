@@ -69,6 +69,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['firstPlayer', 1000],
             ['locationClaimed', 500],
             ['parleyInterveneListUpdated', 1],
+            ['motionToDelayLabelUpdated', 1],
             ['sirensScreamUsedListUpdated', 1],
             ['crabsInABucketUsedListUpdated', 1],
             ['locationActionUsedListUpdated', 1],
@@ -2965,6 +2966,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         this.displayForumInterveneList(args.interveneList);
+    },
+
+    notif_motionToDelayLabelUpdated: function( notif )
+    {
+        debug( 'notif_motionToDelayLabelUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayMotionToDelayLabel(args.locationName);
     },
 
     notif_sirensScreamUsedListUpdated: function( notif )
