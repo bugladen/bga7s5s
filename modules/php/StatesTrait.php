@@ -803,6 +803,10 @@ trait StatesTrait
         $abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, "");
 
         $this->globals->set(Game::CHALLENGE_CANCELLED, false);
+        // WHY: Reset accepted too — leftover true from a prior fizzled accept (or SETUP
+        // intervene) made CHECK_CANCELLED prefer "accepted" over You're Embarrassing
+        // Yourself / Move Along / Unyielding challenge-cancel.
+        $this->globals->set(Game::CHALLENGE_ACCEPTED, false);
 
         $challengeEvent = $this->theah->createEvent(Events::ChallengeIssued);
         if ($challengeEvent instanceof EventChallengeIssued)
@@ -881,38 +885,53 @@ trait StatesTrait
         }
 
         $accepted = $this->globals->get(GAME::CHALLENGE_ACCEPTED, false);
-        $cancelled = $target->ControllerId == 0 || $this->globals->get(Game::CHALLENGE_CANCELLED, false);
-        if ($accepted)
-        {
-            $this->gamestate->nextState("accepted");
-        }
-        else if ($cancelled)
+        // WHY: ControllerId==0 covers unclaimed/city-deck edge; null target (destroyed
+        // before this gate) is not auto-cancel — Stiletto ruling keeps Accept UI.
+        $cancelled = ($target !== null && $target->ControllerId == 0)
+            || $this->globals->get(Game::CHALLENGE_CANCELLED, false);
+        // WHY: Cancel before Accept — otherwise leftover CHALLENGE_ACCEPTED or a SETUP
+        // intervene (Mourad / Heroic Intervention) ignores 01088 cancel after pay.
+        if ($cancelled)
         {
             $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
             $challenger = $this->theah->getCardById($challengerId);
-            $challenger->removeCondition(GAME::DUEL_CHALLENGER);
-            $this->theah->game->updateCardObjectInDb($challenger);
+            if ($challenger !== null)
+            {
+                $challenger->removeCondition(GAME::DUEL_CHALLENGER);
+                $this->theah->game->updateCardObjectInDb($challenger);
+            }
             
             $defenderId = $this->globals->get(GAME::CHOSEN_TARGET);
             $defender = $this->theah->getCardById($defenderId);
-            $defender->removeCondition(GAME::DUEL_DEFENDER);
-            $this->theah->game->updateCardObjectInDb($defender);
+            if ($defender !== null)
+            {
+                $defender->removeCondition(GAME::DUEL_DEFENDER);
+                $this->theah->game->updateCardObjectInDb($defender);
+            }
 
             $this->globals->set(Game::PASS_COUNT, 0);
+            $this->globals->delete(Game::CHALLENGE_ACCEPTED);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($challenger->ControllerId);
+            $resolvedPlayerId = $challenger !== null
+                ? $challenger->ControllerId
+                : (int) $this->globals->get(GAME::CURRENT_PLAYER);
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($resolvedPlayerId);
             $this->theah->queueEvent($actionResolvedEvent);
 
             $this->notifyAllPlayers("challengeCancelled", clienttranslate('Challenge was cancelled.'), [
                 "challengerId" => $challengerId,
                 "defenderId" => $defenderId,
-                "challengingPlayerId" => $challenger->ControllerId,
-                "defendingPlayerId" => $defender->ControllerId
+                "challengingPlayerId" => $challenger?->ControllerId ?? 0,
+                "defendingPlayerId" => $defender?->ControllerId ?? 0
             ]);
 
             $this->clearChallengeLastKnownParticipants();
 
             $this->gamestate->nextState("cancelled");
+        }
+        else if ($accepted)
+        {
+            $this->gamestate->nextState("accepted");
         }
         else
         {
@@ -995,6 +1014,9 @@ trait StatesTrait
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($resolvedPlayerId);
                 $this->theah->queueEvent($actionResolvedEvent);
                 $this->clearChallengeLastKnownParticipants();
+                // WHY: Fizzle skips stDuelEnd — without this, leftover ACCEPTED makes the
+                // next challenge's CHECK_CANCELLED ignore You're Embarrassing Yourself.
+                $this->globals->delete(Game::CHALLENGE_ACCEPTED);
                 $this->gamestate->nextState("fizzled");
                 return;
             }

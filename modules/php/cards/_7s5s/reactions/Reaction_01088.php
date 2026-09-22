@@ -38,16 +38,18 @@ class Reaction_01088 extends RiskReaction implements ICancelReaction
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventChallengeIssued && $this->isAvailable())
+        if ($event instanceof EventChallengeIssued && $this->isAvailable() && ! $event->canceled)
         {
             $risk = $this->getOwningCard($event->theah);
             if ($risk->Location == Game::LOCATION_HAND)
             {
-                $game = $event->theah->game;
-                $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-                $performer = $game->theah->getCharacterById($performerId);
+                $challenger = $event->theah->getCharacterById($event->challengerId);
 
-                if ($performer->hasTrait("Mercenary") && $performer->isNotControlledByPlayer($risk->ControllerId))
+                // WHY: Use challengerId from the event (not CHOSEN_PERFORMER) — same
+                // identity as the issued challenge even if globals are mid-rewrite.
+                if ($challenger !== null
+                    && $challenger->hasTrait("Mercenary")
+                    && $challenger->isNotControlledByPlayer($risk->ControllerId))
                 {
                     $transition = EventFactory::createReactionTransitionEvent($risk->ControllerId, $risk->Id, $this->Id);
                     $event->theah->queueEvent($transition);
@@ -67,6 +69,7 @@ class Reaction_01088 extends RiskReaction implements ICancelReaction
                 ]);
     
                 $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+                $this->setUsed($game->theah, true);
             }
         }
     }
@@ -78,11 +81,13 @@ class Reaction_01088 extends RiskReaction implements ICancelReaction
         if ($reactionId == 'cancelChallenge')
         {
             $owner = $this->getOwningCard($game->theah);
-            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
-            $game->theah->queueEvent($event);
-
+            // WHY: stack (EnteringPay on top) — same order as Stubborn / Mireli / Night
+            // of Drinking. queue left pay behind other SETUP events and delayed cancel.
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
+            $game->theah->stackEvent($event);
+
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
+            $game->theah->stackEvent($event);
         }
 
         $game->gamestate->nextState('done');
