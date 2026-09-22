@@ -232,7 +232,48 @@ When the printed text says "Cancel the movement" / "Cancel the [effect]" and the
 
 **`EventRenownMovingBetweenLocations` is informational only** — it has no `EventHub` handler, so canceling/deleting it does nothing on its own. The actual Renown state change is in the `Added`/`Removed` pair queued alongside it with shared `batchId`. To cancel a Renown movement, delete those two; ignore the Moving event itself (it's already been dequeued and processed by the time you reach `EventRiskReactionTriggered`, anyway).
 
-References: `Reaction_03020` (Commanding — Leader Reaction canceling Renown movement from Leader's location); the related but simpler `Reaction_01140` (Stubborn — `ICancelReaction` that cancels an `EventCardMoving` in-place via `$event->canceled = true` + saved-event re-emit on decline, no post-pay batch deletion needed).
+**Location gate variants (parse print literally):**
+| Print | Gate |
+|---|---|
+| **"from [role]'s location"** (Commanding — Leader) | `$leader->Location == $event->fromLocation` only |
+| **"to or from your performer's location"** (Greed) | controlled character at `$event->fromLocation` **or** `$event->toLocation` (Home has no Renown — skip `LOCATION_PLAYER_HOME`) |
+
+Public saved fields (`$batchId`, locations, `$amount`) survive pay serialize (same discipline as D.2). No Cesca / no states / no JS.
+
+References: `Reaction_03020` (Commanding — Leader from-only); `Reaction_04056a` (Greed — to-or-from any performer); the related but simpler `Reaction_01140` (Stubborn — `ICancelReaction` that cancels an `EventCardMoving` in-place via `$event->canceled = true` + saved-event re-emit on decline, no post-pay batch deletion needed).
+
+### Pattern D.6 — En Garde RiskReaction: collect one fewer Renown
+
+When the printed text says **When a player would collect Renown from your performer's location • They collect one fewer** (± **`<b>En Garde Reaction:</b>`**; ± italic *"Even during Plunder."* / *"Remaining Renown stays."*), wire a **hand-paid RiskReaction** — **do not** copy Ekaterina `_03049`'s automatic `eventCheck` passive.
+
+| | Ekaterina `_03049` (Leader passive) | Greed `_04056b` (RiskReaction) |
+|---|---|---|
+| Shape | `eventCheck` on the card class — always on | Offer → pay → effect (`ICancelReaction` + `stackEvent`) |
+| Who | Opponent only | Parse print: **"a player"** = any collector (incl. self); **"an opponent"** = exclude owner |
+| Gate | She is in city at that location | ± En Garde `!$Engaged` performer of yours at collect location + Risk in hand |
+| Timing | Mutates amounts at **queue** time | Offer/pay must pre-empt already-queued Gains/Removed |
+
+**Two Collect pipelines** (same event-order facts as create-character Pattern A / `_03049` — reuse the analysis, not the passive code):
+
+| Pipeline | Order | Offer trigger |
+|---|---|---|
+| **Plunder** (`stPlunderGainRenown`) | Take → Gains → Removed | `EventPlayerTakeReknownForControlledLocation` (`reknown > 0`); `PLUNDER_GAIN_RENOWN_EVENTS` already has reaction/pay |
+| **Ability Collect** (Sanjay / pressure Collect) | Removed → Gains | `EventRenownRemovedFromLocation` with `playerId != 0` **and** `$theah->hasQueuedPlayerGainsReknownForPlayer($event->playerId)` — distinguishes Collect from **Move** (Removed → Added) |
+
+1. **`implements ICancelReaction`** + **`stackEvent`** the reaction transition and pay events (same priority math as D.3 — Gains/Removed are already queued at MEDIUM when Take/Removed is current).
+2. **Effect in `EventRiskReactionTriggered`:**
+   - Plunder (`$needsPutBack = false`): `$theah->decrementFirstQueuedPlayerGainsReknown($collectorId)` **and** `decrementFirstQueuedRenownRemovedFromLocation($location)` so Remaining stays without a put-back.
+   - Ability Collect (`$needsPutBack = true`): Removed's hub already applied full remove before the offer — decrement queued Gains, then `queueEvent(createRenownAddedToLocationEvent(…, 1, …))` put-back.
+3. **Hide when meaningless:** amount ≤ 0; no legal En Garde performer at location; ability path without a queued Gains for that player.
+4. **No Cesca** (no printed Target character chooser). Split dual Reactions into `a`/`b` when the card also has a cancel-move clause (`_04056`).
+
+**WHY not Ekaterina's `eventCheck` mutate:** a Reaction must let the controller Decline and leave Collect intact. Mutating at queue time before the offer would deny even on Pass.
+
+**WHY decrement queued rows (not "gains N then loses 1"):** cleaner notify; remaining Renown stays without compensating after hub apply when Removed is still pending.
+
+**Cosmetic:** Plunder Take hub may still notify "will receive X" with the pre-reduce amount — acceptable.
+
+References: `Reaction_04056b` (Greed); contrast passive `_03049` Ekaterina; Collect emitters `Action_02035` / `Reaction_03037`; Move producers that must **not** offer (`Action_01189b`, `Action_02025`).
 
 ### Pattern D.4 — RiskReaction that redirects wound/move/engage effects to another character
 
@@ -384,9 +425,9 @@ When text says **When a pressure occurs at an adjacent location, if your perform
 - **Performer location** = one of `getAdjacentCityLocations($event->location, false)` — scan each adjacent spot for owner's `!$Engaged` characters with a `Weapon`+`Ranged` attachment (`Maneuver_01055` / `Action_01055` attachment loop).
 - **Not** the same as Loyal (`_03035`), which counts non-Mercs **at** `$event->location`, nor `_02044` (Solomonia buffs Influence when pressure is at a location **adjacent to** Forum while Solomonia ** sits at** Forum).
 
-**`<b>En Garde Reaction:</b>`** uses the same `!$Engaged` precondition as En Garde Action — the label only changes ability type (Pattern D vs B), not the mechanical gate.
+**`<b>En Garde Reaction:</b>`** uses the same `!$Engaged` precondition as En Garde Action — the label only changes ability type (Pattern D vs B), not the mechanical gate. Applies to pressure (`_04020`) and collect-one-fewer (`_04056b`) alike.
 
-See composite wiring: `Reaction_04020` (D.2.2 + D.1.2).
+See composite wiring: `Reaction_04020` (D.2.2 + D.1.2); `Reaction_04056b` (D.6).
 
 ### `EventHighDramaPhasePlayerPassed` trigger semantics
 

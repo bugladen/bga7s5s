@@ -1641,6 +1641,21 @@ class Theah
         $this->db->deleteRenownRemovedFromLocationEventsByBatchId($batchId);
     }
 
+    public function decrementFirstQueuedPlayerGainsReknown(int $playerId, int $delta = 1): bool
+    {
+        return $this->db->decrementFirstQueuedPlayerGainsReknown($playerId, $delta);
+    }
+
+    public function decrementFirstQueuedRenownRemovedFromLocation(string $location, int $delta = 1): bool
+    {
+        return $this->db->decrementFirstQueuedRenownRemovedFromLocation($location, $delta);
+    }
+
+    public function hasQueuedPlayerGainsReknownForPlayer(int $playerId): bool
+    {
+        return $this->db->hasQueuedPlayerGainsReknownForPlayer($playerId);
+    }
+
     public function deleteManeuverEvents(string $maneuverId)
     {
         $this->db->deleteManeuverEvents($maneuverId);

@@ -57,6 +57,10 @@ Event factories you'll likely need:
 Targeted-batch deletion helpers (Pattern D.3 — see the producer side in `_01117`, `_01062`, `_01150` for the canonical "queue Moving + Add + Removed with shared batchId" idiom):
 - `$theah->deleteRenownAddedToLocationEventsByBatchId(int $batchId)` / `deleteRenownRemovedFromLocationEventsByBatchId(int $batchId)` — pass-throughs to `DB` helpers that anchor on `'%EventRenown<X>%'` AND `'%batchId";i:{N};%'` (note trailing `;`). Prefer these over `deleteEventBatch($batchId)` when you want to cancel only the state-mutating add/remove events, not every batch member.
 
+Queued Collect-amount helpers (Pattern D.6 — Greed `_04056b`; contrast Ekaterina `_03049` which mutates at `eventCheck` / queue time):
+- `$theah->hasQueuedPlayerGainsReknownForPlayer(int $playerId)` — true when a pending `EventPlayerGainsReknown` for that player has `amount > 0`. Use on `EventRenownRemovedFromLocation` to distinguish **Collect** (Removed→Gains) from **Move** (Removed→Added).
+- `$theah->decrementFirstQueuedPlayerGainsReknown(int $playerId, int $delta = 1)` / `decrementFirstQueuedRenownRemovedFromLocation(string $location, int $delta = 1)` — mutate the first matching serialized row in `events` (priority/id order). Plunder path decrements both; ability Collect decrements Gains only and put-backs 1 via `createRenownAddedToLocationEvent` because Removed already applied.
+
 `queueEvent` vs `stackEvent` rule of thumb:
 - `queueEvent` → priority = the event's own `priority` field (defaults to `MEDIUM_PRIORITY = 3`). The event runs after all currently-pending events with lower-priority numbers (higher actual priority).
 - `stackEvent` → priority = `min(current event_priorities) - 1`. Pre-empts every currently-pending event.
