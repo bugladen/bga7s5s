@@ -3,7 +3,8 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\GameFramework\UserException;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,7 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
+class Action_02020 extends RiskCityAction implements IAbilityThatTargetsCharacters
 {
     public function __construct()
     {
@@ -21,6 +22,64 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
 
         $this->Name = clienttranslate("Manipulate a Non-Leader Character");
         $this->RequiresPerformerSelected = true;
+    }
+
+    private function isEligibleAttachment(?Attachment $attachment): bool
+    {
+        if ($attachment === null || $attachment->Engaged)
+        {
+            return false;
+        }
+
+        // WHY: printed "Melee Weapon or Eisenfaust attachment" — Panzerhand is Armor+Eisenfaust
+        // (not Weapon), so Eisenfaust alone must qualify.
+        return ($attachment->hasTrait("Weapon") && $attachment->hasTrait("Melee"))
+            || $attachment->hasTrait("Eisenfaust");
+    }
+
+    /**
+     * @return list<Attachment>
+     */
+    private function getEligibleAttachments(Theah $theah, Character $performer): array
+    {
+        $attachments = [];
+        foreach ($performer->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if ($this->isEligibleAttachment($attachment))
+            {
+                $attachments[] = $attachment;
+            }
+        }
+
+        return $attachments;
+    }
+
+    /**
+     * @return list<Character>
+     */
+    private function getValidTargets(Theah $theah, Character $performer): array
+    {
+        $opposing = $theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId);
+        // WHY no Engaged filter: print is "opposing non-Leader" only — not "that is en garde"
+        // (contrast B.7 _04027). Already Engaged → auto-wound after attachment cost (Duckfoot).
+        return array_values(array_filter(
+            $opposing,
+            fn(Character $character) => ! $character->hasTrait("Leader")
+        ));
+    }
+
+    /**
+     * @return list<Character>
+     */
+    private function getEligiblePerformers(int $playerId, Theah $theah): array
+    {
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        return array_values(array_filter(
+            $performers,
+            fn(Character $performer) => count($this->getEligibleAttachments($theah, $performer)) > 0
+                && count($this->getValidTargets($theah, $performer)) > 0
+        ));
     }
 
     public function isValidTargetForAbility(Game $game, Character $character): array
@@ -33,6 +92,11 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
 
+        if ($performer === null)
+        {
+            return [false, $game->translate("Performer not found")];
+        }
+
         if ($character->ControllerId == $performer->ControllerId)
         {
             return [false, $game->translate("Character is the same controller as the performer")];
@@ -43,56 +107,22 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
             return [false, $game->translate("Character is not at the same location as the performer")];
         }
 
-        if ($character->Engaged)
-        {
-            return [false, $game->translate("Character is already engaged")];
-        }
-
         return [true, ""];
-    }
-
-    private function getPerformers(int $playerId, Theah $theah): array
-    {
-        $availablePerformers = [];
-        $performers = $theah->getcharactersInCityByPlayerId($playerId);
-        foreach ($performers as $performer)
-        {
-            $opposingCharacters = $theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId);
-            $opposingCharacters = array_filter($opposingCharacters, fn($character) => ! $character->hasTrait("Leader") && ! $character->Engaged);
-            if (count($opposingCharacters) == 0)
-            {
-                continue;
-            }
-
-            foreach ($performer->Attachments as $attachmentId)
-            {
-                $attachment = $theah->getAttachmentById($attachmentId);
-                if ($attachment && (($attachment->hasTrait("Weapon") && $attachment->hasTrait("Melee")) || $attachment->hasTrait("Eisenfaust")))
-                {
-                    $availablePerformers[$performer->Id] = $performer;
-                    break;
-                }
-            }
-        }
-
-        return array_values($availablePerformers);
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
-        if ( ! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
+        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
         }
 
-        $performers = $this->getPerformers($playerId, $theah);
-
-        return count($performers) > 0;
+        return count($this->getEligiblePerformers($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        return $this->getPerformers($playerId, $theah);
+        return $this->getEligiblePerformers($playerId, $theah);
     }
 
     public function handleEvent(Event $event)
@@ -119,10 +149,9 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
             $args['performerId'] = $performerId;
-
-            $opposingCharacters = $game->theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId);
-            $opposingCharacters = array_filter($opposingCharacters, fn($character) => ! $character->hasTrait("Leader") && ! $character->Engaged);
-            $args['ids'] = array_map(fn($character) => $character->Id, array_values($opposingCharacters));
+            $args['ids'] = $performer !== null
+                ? array_map(fn(Character $character) => $character->Id, $this->getValidTargets($game->theah, $performer))
+                : [];
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02020_2)
@@ -132,10 +161,9 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
             $args['performerId'] = $performerId;
 
             $args['attachments'] = [];
-            foreach ($performer->Attachments as $attachmentId)
+            if ($performer !== null)
             {
-                $attachment = $game->theah->getAttachmentById($attachmentId);
-                if ($attachment && (($attachment->hasTrait("Weapon") && $attachment->hasTrait("Melee")) || $attachment->hasTrait("Eisenfaust")))
+                foreach ($this->getEligibleAttachments($game->theah, $performer) as $attachment)
                 {
                     $args['attachments'][] = [
                         "id" => $attachment->Id,
@@ -145,14 +173,12 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
             }
 
             $characterId = $game->globals->get(Game::CHOSEN_CARD);
-            $character = $game->theah->getCharacterById($characterId);
             $args['characterId'] = $characterId;
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_02020_3)
         {
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
             $args['performerId'] = $performerId;
 
             $args['characterId'] = $game->globals->get(Game::CHOSEN_CARD);
@@ -202,12 +228,7 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
                 throw new UserException($game->translate("Attachment is not attached to the performer"));
             }
 
-            if ($attachment->Engaged)
-            {
-                throw new UserException($game->translate("Attachment is already engaged"));
-            }
-
-            if (! (($attachment->hasTrait("Weapon") && $attachment->hasTrait("Melee")) || $attachment->hasTrait("Eisenfaust")))
+            if (! $this->isEligibleAttachment($attachment))
             {
                 throw new UserException($game->translate("Attachment is not a Melee Weapon or Eisenfaust"));
             }
@@ -222,8 +243,24 @@ class Action_02020 extends RiskAction implements IAbilityThatTargetsCharacters
             $characterId = $game->globals->get(Game::CHOSEN_CARD);
             $character = $game->theah->getCharacterById($characterId);
 
-            $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "02020_2", $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+            // WHY already Engaged → auto-wound: print has no en-garde target filter
+            // (unlike B.7 _04027). Mirror Duckfoot _01049 / Point of Order _04049 —
+            // "if they do not" is automatic when they cannot engage.
+            if ($character->Engaged)
+            {
+                $game->notify->all("message", clienttranslate('${owner_inject_code}: ${character_inject_code} is already Engaged and is wounded.'), [
+                    "owner_inject_code" => $owner->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
+
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $game->theah->queueEvent($woundEvent);
+            }
+            else
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "02020_2", $this->Id);
+                $game->theah->queueEvent($transitionEvent);
+            }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
