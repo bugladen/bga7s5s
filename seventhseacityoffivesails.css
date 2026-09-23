@@ -1809,12 +1809,36 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     background-color: silver;
 
     font-size: 12pt;
+}
+
+#duel_table {
     border-collapse: collapse;
+}
+
+/* WHY separate: border-radius on <tr> is ignored under border-collapse:collapse */
+._7sfs-threat-table {
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 #duel_table>tbody>:nth-child(1), #duel_table>tbody>:nth-child(2), ._7sfs-duel-acting-character
 {
     background-color: white;
+}
+
+._7sfs-duel-acting-character > td {
+    border-top: 2px solid gold;
+    border-bottom: 2px solid gold;
+}
+
+._7sfs-duel-acting-character > td:first-child {
+    border-left: 2px solid gold;
+    border-radius: 8px 0 0 8px;
+}
+
+._7sfs-duel-acting-character > td:last-child {
+    border-right: 2px solid gold;
+    border-radius: 0 8px 8px 0;
 }
 
 #duel_table {
@@ -1833,6 +1857,14 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     text-align: center;
     table-layout: auto;
     width:auto;
+}
+
+/* WHY: Maneuver/Technique names run long; 4pt under table 12pt keeps chips at their own size. Header stays 12pt. */
+#duel_table td:nth-child(6),
+#duel_table td:nth-child(7),
+#duel_table td:nth-child(8),
+#duel_table td:nth-child(9) {
+    font-size: 8pt;
 }
 
 #duel_table td#duel_stats {
