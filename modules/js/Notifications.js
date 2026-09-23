@@ -2536,6 +2536,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         this.inDuel = true;
         this.duelRound = 0;
+        // WHY: Challenge-type chips are for the accept/refuse window; duel table shows the type after.
+        this.removeAllChallengeStatChips();
         this.displayDuelTable(args.challengeStat);
         
         if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)

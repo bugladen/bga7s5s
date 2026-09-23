@@ -22,3 +22,9 @@ Then nudged 5px closer to conditions → left:55px.
 Background → light grey (#d3d3d3) + 2px #888 border.
 Influence icon: left -3px inside circle (wider sprite optical center).
 Finesse icon: left -1px inside circle.
+
+## Pre-duel only (follow-up)
+User: once duel started, stop showing challenge type on characters.
+- notif_duelStarted: removeAllChallengeStatChips
+- placeChallengeStatChip / createCharacterCard / updateChallengeStatChips gate on this.inDuel
+- Setup sets this.inDuel early so mid-duel refresh does not re-place chips

@@ -1199,7 +1199,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 class: '_7sfs-challenger-chip',
             }),  `${divId}_image`, 'last');
             this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Challenger")}</div>` );
-            this.placeChallengeStatChip(divId, this.challengeStat || this.gamedatas.challengeStat);
+            // WHY: Challenge-type icon is pre-duel only; duel table shows the stat once started.
+            if (!this.inDuel) {
+                this.placeChallengeStatChip(divId, this.challengeStat || this.gamedatas.challengeStat);
+            }
         }
         if (character.conditions.includes(this.DEFENDER)) {
             id = `${divId}_defender`;
@@ -1208,7 +1211,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
                 class: '_7sfs-defender-chip',
             }),  `${divId}_image`, 'last');
             this.addTippyTooltip( id, `<div class='_7sfs-basic-tooltip'>${_("Duel Defender")}</div>` );
-            this.placeChallengeStatChip(divId, this.challengeStat || this.gamedatas.challengeStat);
+            if (!this.inDuel) {
+                this.placeChallengeStatChip(divId, this.challengeStat || this.gamedatas.challengeStat);
+            }
         }
         if (character.wounds > 0)
         {
@@ -1783,10 +1788,10 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.setupDuelScrollSync();
     },
 
-    // WHY: Same Combat/Finesse/Influence sprites as in-play character stats, in a white
-    // circle left of Challenger/Defender chips. Shared by issue/swap/refresh/stat-change.
+    // WHY: Same Combat/Finesse/Influence sprites as in-play character stats, in a light-grey
+    // circle left of Challenger/Defender chips. Pre-duel only — duel table owns the stat once started.
     placeChallengeStatChip: function(divId, challengeStat) {
-        if (!divId || !challengeStat) return;
+        if (!divId || !challengeStat || this.inDuel) return;
 
         const chipId = `${divId}_challenge_stat`;
         if ($(chipId)) {
@@ -1810,12 +1815,23 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    removeAllChallengeStatChips: function() {
+        Object.values(this.cardProperties || {}).forEach((character) => {
+            if (character?.divId) {
+                this.removeChallengeStatChip(character.divId);
+            }
+        });
+    },
+
     updateChallengeStatChips: function(challengeStat) {
         if (!challengeStat) return;
         this.challengeStat = challengeStat;
         if (this.gamedatas) {
             this.gamedatas.challengeStat = challengeStat;
         }
+
+        // WHY: Once in duel, only the duel table shows the type — do not re-place on characters.
+        if (this.inDuel) return;
 
         Object.values(this.cardProperties || {}).forEach((character) => {
             if (!character?.divId || !character.conditions) return;

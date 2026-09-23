@@ -19,9 +19,13 @@ return declare('seventhseacityoffivesails.setup', null, {
         debug( "gamedatas", gamedatas );
 
         // WHY: createCharacterCard restores Challenger/Defender chips early; challenge-type
-        // icon needs this before city/home cards are built.
+        // icon needs this before city/home cards are built. inDuel early so we skip
+        // challenge-type chips on mid-duel refresh (duel table shows the type instead).
         if (gamedatas.challengeStat) {
             this.challengeStat = gamedatas.challengeStat;
+        }
+        if (gamedatas.inDuel) {
+            this.inDuel = true;
         }
 
         // Initialize Tippy.js (processes any queued tooltips once tippy is loaded)
