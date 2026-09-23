@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _02027 extends FactionAttachment
@@ -113,6 +114,23 @@ class _02027 extends FactionAttachment
         {
             $character = $event->theah->getCharacterById($event->cardId);
             if ($character)
+            {
+                $this->modifyInfluence($event->theah, $character, -1);
+            }
+        }
+
+        // WHY: EventCardMoved with engage=true sets Engaged in EventHub directly — it never
+        // fires EventCardEngaged. City-to-city Move Action uses that path, so without this
+        // the en-garde +1 stayed on while engaged; dusk EventCardEngaged then stacked a
+        // second +1 (Guillén 2 Inf → 4). runEventHubAfterCards=true, so Engaged is still
+        // false here when the move is about to engage — same timing as EventCardEngaged.
+        if ($event instanceof EventCardMoved
+            && $this->isAttached()
+            && $event->cardId == $this->AttachedToId
+            && $event->engage)
+        {
+            $character = $event->theah->getCharacterById($event->cardId);
+            if ($character && ! $character->Engaged)
             {
                 $this->modifyInfluence($event->theah, $character, -1);
             }
