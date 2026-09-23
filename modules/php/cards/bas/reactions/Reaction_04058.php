@@ -23,6 +23,11 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
     // WHY public: skipNextEvent must survive serialize across Decline re-release.
     public bool $skipNextEvent = false;
 
+    // WHY public: Cesca (Reaction_01008) beginCopy must survive serialize across target/pay.
+    // When set, Decline / invalid-target must NOT re-release onto the performer — there is no
+    // intercepted opponent wound to restore; release would wrongly wound Cesca's ally.
+    public bool $isCescaCopy = false;
+
     public ?int $performerId = null;
     public ?int $chosenTargetId = null;
 
@@ -42,13 +47,22 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        $performer = $theah->getCharacterById($this->performerId);
+        $performer = $this->performerId !== null ? $theah->getCharacterById($this->performerId) : null;
         if ($performer === null)
         {
+            // WHY: Always offer Decline — a failed Cesca beginCopy seed (performerId null)
+            // previously returned zero buttons and soft-locked playerReaction.
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
             return $array;
         }
 
         $owner = $this->getOwningCard($theah);
+        if ($owner === null)
+        {
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
+            return $array;
+        }
+
         $opposing = $theah->getOpposingCharactersAtLocation($performer->Location, $owner->ControllerId);
         foreach ($opposing as $character)
         {
@@ -126,6 +140,12 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
                 return;
             }
 
+            // WHY: Temp hand copy from Cesca must not intercept unrelated wounds while waiting on target/pay.
+            if ($this->isCescaCopy)
+            {
+                return;
+            }
+
             if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->characterId))
             {
                 if ($this->skipNextEvent)
@@ -172,9 +192,17 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
                     'character_inject_code' => $character->getInjectCode(),
                     'error' => $errorMessage,
                 ]);
-                // WHY: Pay already spent the Risk; re-release original wound so the ability does not fizzle.
-                $this->releaseEvent($game, (int) $this->performerId);
-                $this->skipNextEvent = true;
+                if ($this->isCescaCopy)
+                {
+                    // WHY: Synthetic wound only — do not dump it onto the original performer.
+                    $this->characterWoundedEvent = null;
+                }
+                else
+                {
+                    // WHY: Pay already spent the Risk; re-release original wound so the ability does not fizzle.
+                    $this->releaseEvent($game, (int) $this->performerId);
+                    $this->skipNextEvent = true;
+                }
                 $this->setUsed($game->theah, true);
                 $this->resetSavedState($owner);
                 return;
@@ -229,10 +257,63 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
     {
         $this->performerId = null;
         $this->chosenTargetId = null;
+        $this->isCescaCopy = false;
         if ($owner !== null)
         {
             $owner->IsUpdated = true;
         }
+    }
+
+    /**
+     * Cesca (Reaction_01008) copy entry: temp Risk is already in hand; skip intercept and open
+     * the opposing-target chooser. Synthetic 1-wound is released onto the chosen target after pay.
+     * WHY public: Reaction_01008 hosts via copyCard and must jump past EventCharacterBeingWounded.
+     */
+    public function beginCopy(Game $game, int $performerId): void
+    {
+        $owner = $this->getOwningCard($game->theah);
+        if ($owner === null)
+        {
+            return;
+        }
+
+        // WHY addCardToWorld: createCardInLocation does not register the temp hand card.
+        // Without it, sticky performerId is set on an orphan instance while getOwningCard /
+        // playerReaction args load a fresh DB card with performerId=null → zero buttons.
+        $game->theah->addCardToWorld($owner);
+
+        // Prefer the reaction living on the world card (may differ from $this after DB reload).
+        $copy = $owner->getReactionById($this->Id);
+        if (! ($copy instanceof self))
+        {
+            return;
+        }
+
+        $copy->isCescaCopy = true;
+        $copy->performerId = $performerId;
+        $copy->chosenTargetId = null;
+        $copy->skipNextEvent = false;
+
+        // WHY synthetic: original intercepted wound already resolved before Cesca's Copy click.
+        // Fresh 1-wound from this copy; releaseEvent overwrites characterId with the chosen target.
+        $wound = EventFactory::createCharacterBeingWoundedEvent(
+            $performerId,
+            $owner->Id,
+            1,
+            $owner->getInjectCode(),
+            $copy->Id
+        );
+        unset($wound->theah);
+        $copy->characterWoundedEvent = $wound;
+
+        $owner->IsUpdated = true;
+        // WHY immediate persist: beginCopy runs outside runEvents' IsUpdated flush; the
+        // following reaction transition may open playerReaction on a new request that
+        // rebuilds from DB.
+        $game->updateCardObjectInDb($owner);
+
+        $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $copy->Id);
+        $game->theah->queueEvent($transition);
     }
 
     public function isValidTargetForAbility(Game $game, Character $character): array
@@ -303,13 +384,21 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
         }
         else
         {
-            // WHY: Intercept clones+cancels the wound. Decline must re-release onto the original
-            // performer or the opponent's ability fizzles for free (Cross `_02016` fix).
-            if ($this->performerId !== null)
+            if ($this->isCescaCopy)
             {
-                $this->releaseEvent($game, $this->performerId);
+                // WHY: No intercepted opponent wound — Decline just aborts the copy effect.
+                $this->characterWoundedEvent = null;
             }
-            $this->skipNextEvent = true;
+            else
+            {
+                // WHY: Intercept clones+cancels the wound. Decline must re-release onto the original
+                // performer or the opponent's ability fizzles for free (Cross `_02016` fix).
+                if ($this->performerId !== null)
+                {
+                    $this->releaseEvent($game, $this->performerId);
+                }
+                $this->skipNextEvent = true;
+            }
             $this->resetSavedState($owner);
         }
 

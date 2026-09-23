@@ -16,12 +16,16 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04010;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\maneuvers\Maneuver_04058;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04058;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03009;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02010;
@@ -41,10 +45,12 @@ class Reaction_01008 extends CardReaction
     public int $sourceId;
     public string $sourceAbilityId;
     public int $sourceTargetId = 0;
+    public int $sourcePerformerId = 0;
 
     public Array $copiedActions = [];
     public Array $copiedCards = [];
     public Array $copiedReactions = [];
+    public Array $copiedManeuvers = [];
 
     public function __construct()
     {
@@ -54,6 +60,7 @@ class Reaction_01008 extends CardReaction
         $this->sourceId = 0;
         $this->sourceAbilityId = "";
         $this->sourceTargetId = 0;
+        $this->sourcePerformerId = 0;
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -93,6 +100,7 @@ class Reaction_01008 extends CardReaction
                 $this->sourceId = $event->sourceId;
                 $this->sourceAbilityId = $event->abilityId;
                 $this->sourceTargetId = $event->targetId;
+                $this->sourcePerformerId = $event->performerId;
                 $cesca->IsUpdated = true;
                 $reactionEvent = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $this->Id);
                 $event->theah->queueEvent($reactionEvent);
@@ -120,6 +128,9 @@ class Reaction_01008 extends CardReaction
                         $this->sourceId = $event->sourceId;
                         $this->sourceAbilityId = $event->abilityId;
                         $this->sourceTargetId = $event->targetId;
+                        // EventCharacterTargeted has no performerId — Reaction copies that need it
+                        // (e.g. Reaction_04058) rely on the SorcererAbilityPlayed branch above.
+                        $this->sourcePerformerId = 0;
                         $cesca->IsUpdated = true;
                         $reactionEvent = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $this->Id);
                         $event->theah->queueEvent($reactionEvent);
@@ -175,6 +186,15 @@ class Reaction_01008 extends CardReaction
             }
             $this->copiedReactions = [];
 
+            foreach ($this->copiedManeuvers as $maneuver)
+            {
+                if ($cesca instanceof IHasManeuvers)
+                {
+                    $cesca->removeManeuver($maneuver, $event->theah->game);
+                }
+            }
+            $this->copiedManeuvers = [];
+
             $cesca->IsUpdated = true;
         }
 
@@ -205,8 +225,10 @@ class Reaction_01008 extends CardReaction
             || $ability instanceof Action_02051
             || $ability instanceof Action_03009
             || $ability instanceof Action_04010
+            || $ability instanceof Maneuver_04058
             || $ability instanceof Reaction_02001
-            || $ability instanceof Reaction_03007;
+            || $ability instanceof Reaction_03007
+            || $ability instanceof Reaction_04058;
     }
 
     private function announceReaction(Game $game, ICardAbility $ability): void
@@ -234,8 +256,10 @@ class Reaction_01008 extends CardReaction
             $game->theah->queueEvent($woundEvent);
 
             $copyAction = false;
+            $copyManeuver = false;
             $cardCopied = false;
             $action = null;
+            $maneuver = null;
 
             //Cesca's own ability to Reveal Top Card of your Faction Deck
             if ($ability instanceof Action_01008)
@@ -377,6 +401,53 @@ class Reaction_01008 extends CardReaction
                 $ability = $card->getAbilityById("{$card->Id}_Action_04010");
             }
 
+            //Shield Rite — Sorcerer Maneuver (+1 Riposte, draw if en garde)
+            //Host on Cesca and re-resolve like Katain (Reaction_02011). Reachability: only when
+            //Cesca is the duel actor (SorcererAbilityPlayed has no target). Adversary-engaged cost
+            //is re-checked via isAvailableToPlayer in the copyManeuver block below.
+            if ($ability instanceof Maneuver_04058)
+            {
+                $copyManeuver = true;
+                $maneuver = new Maneuver_04058();
+                $maneuver->setOwnerId($cesca->Id);
+                if ($cesca instanceof IHasManeuvers) $cesca->addManeuver($maneuver, $game);
+            }
+
+            //Shield Rite — En Garde Sorcerer Reaction (wound target opposing instead)
+            //WHY copyCard (not host on Cesca): RiskReaction pay discards the Risk from hand —
+            //hosting on a Character would try to discard Cesca. beginCopy seeds a synthetic
+            //1-wound and opens the opposing-target chooser (original intercept already resolved).
+            if ($ability instanceof Reaction_04058)
+            {
+                if ($this->sourcePerformerId === 0)
+                {
+                    throw new \BgaUserException($game->translate("Cannot copy Shield Rite Reaction without a performer."));
+                }
+
+                $performer = $game->theah->getCharacterById($this->sourcePerformerId);
+                if ($performer === null)
+                {
+                    throw new \BgaUserException($game->translate("Performer not found."));
+                }
+
+                $opposing = $game->theah->getOpposingCharactersAtLocation($performer->Location, $cesca->ControllerId);
+                if (count($opposing) === 0)
+                {
+                    throw new \BgaUserException($game->translate("No opposing characters at the performer's location to target."));
+                }
+
+                $card = $this->copyCard($game, "04058", $cesca->ControllerId);
+                // WHY: createCardInLocation leaves the card out of theah; beginCopy needs the
+                // world instance so performerId persists into playerReaction args.
+                $game->theah->addCardToWorld($card);
+                /** @var Reaction_04058 $copy */
+                $copy = $card->getAbilityById("{$card->Id}_Reaction_04058");
+                $copy->beginCopy($game, $this->sourcePerformerId);
+
+                $this->setUsed($game->theah, true);
+                $this->announceReaction($game, $ability);
+            }
+
             //Adriana — Wound Non-Sorcerer (copy of Sorcerer Reaction)
             //Host a transient copy of the Reaction on Cesca, pre-set with the same triggering target
             //(Cesca's trigger guarantees the target is at her location), then queue the reaction-transition
@@ -448,6 +519,31 @@ class Reaction_01008 extends CardReaction
                 $transition = EventFactory::createActionTriggeredEvent($cesca->ControllerId, $cesca->Id, $cesca->Id, $action->Id);
                 $game->theah->queueEvent($transition);
     
+                $this->setUsed($game->theah, true);
+                $this->announceReaction($game, $ability);
+            }
+
+            //If it was a maneuver, check if it is available to copy
+            if ($copyManeuver)
+            {
+                if ($maneuver instanceof Maneuver && ! $maneuver->isAvailableToPlayer($cesca->ControllerId, $game->theah))
+                {
+                    throw new \BgaUserException($game->translate("Maneuver is not available to perform due to prerequisites."));
+                }
+
+                $this->copiedManeuvers[] = $maneuver;
+                $cesca->IsUpdated = true;
+
+                $adversaryId = $game->theah->getDuelOpponentId($cesca->Id);
+
+                $resolveEvent = EventFactory::createResolveManeuverEvent($cesca->ControllerId, $adversaryId, $maneuver->Id);
+                $game->theah->eventCheck($resolveEvent);
+                $game->theah->queueEvent($resolveEvent);
+
+                $threatEvent = EventFactory::createDuelCalculateManeuverValuesEvent($cesca->Id, $adversaryId, $maneuver->Id);
+                $game->theah->eventCheck($threatEvent);
+                $game->theah->queueEvent($threatEvent);
+
                 $this->setUsed($game->theah, true);
                 $this->announceReaction($game, $ability);
             }
