@@ -22,8 +22,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques\Technique_02054;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRangedAbilityPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_02011 extends CardReaction
@@ -31,6 +33,7 @@ class Reaction_02011 extends CardReaction
     public int $sourceId;
     public string $sourceAbilityId;
     public string $sourceTargetLocation = '';
+    public int $sourceTargetId = 0;
 
     public Array $copiedActions = [];
     public Array $copiedManeuvers = [];
@@ -45,6 +48,7 @@ class Reaction_02011 extends CardReaction
         $this->sourceId = 0;
         $this->sourceAbilityId = '';
         $this->sourceTargetLocation = '';
+        $this->sourceTargetId = 0;
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -82,6 +86,7 @@ class Reaction_02011 extends CardReaction
                     $this->sourceId = $event->sourceId;
                     $this->sourceAbilityId = $event->abilityId;
                     $this->sourceTargetLocation = $event->targetLocation;
+                    $this->sourceTargetId = $event->targetId;
                     $katain->IsUpdated = true;
 
                     $reactionTransition = EventFactory::createReactionTransitionEvent($katain->ControllerId, $katain->Id, $this->Id);
@@ -324,17 +329,52 @@ class Reaction_02011 extends CardReaction
             {
                 $this->copiedTechniques[] = $technique;
                 $katain->IsUpdated = true;
-    
-                $adversaryId = $game->theah->getDuelOpponentId($katain->Id);
-    
-                $resolveEvent = EventFactory::createResolveTechniqueEvent($katain->ControllerId, $katain->Id, $adversaryId, $technique->Id);
-                $game->theah->eventCheck($resolveEvent);
-                $game->theah->queueEvent($resolveEvent);
-        
-                $threatEvent = EventFactory::createDuelCalculateTechniqueValuesEvent($katain->Id, $adversaryId, $technique->Id);
-                $game->theah->eventCheck($threatEvent);
-                $game->theah->queueEvent($threatEvent);
-    
+
+                $inDuel = (bool) $game->globals->get(Game::IN_DUEL, false);
+
+                if ($inDuel)
+                {
+                    $adversaryId = $game->theah->getDuelOpponentId($katain->Id);
+
+                    $resolveEvent = EventFactory::createResolveTechniqueEvent($katain->ControllerId, $katain->Id, $adversaryId, $technique->Id);
+                    $game->theah->eventCheck($resolveEvent);
+                    $game->theah->queueEvent($resolveEvent);
+
+                    $threatEvent = EventFactory::createDuelCalculateTechniqueValuesEvent($katain->Id, $adversaryId, $technique->Id);
+                    $game->theah->eventCheck($threatEvent);
+                    $game->theah->queueEvent($threatEvent);
+                }
+                else
+                {
+                    // WHY: Jägerarmbrust (and other challenge Techniques) fire
+                    // EventRangedAbilityPlayed during GenerateChallengeThreat — there is
+                    // no duel row yet, so getDuelOpponentId fatals. Adversary is the
+                    // challenge target; effects ride a seeded GenerateChallengeThreat
+                    // with skipBaseStatThreat so Combat/Finesse/Influence is not re-added.
+                    $adversaryId = $this->sourceTargetId
+                        ?: (int) $game->globals->get(Game::CHOSEN_TARGET, 0);
+
+                    $resolveEvent = EventFactory::createResolveTechniqueEvent($katain->ControllerId, $katain->Id, $adversaryId, $technique->Id);
+                    $resolveEvent->inDuel = false;
+                    $game->theah->eventCheck($resolveEvent);
+                    $game->theah->queueEvent($resolveEvent);
+
+                    $threatEvent = $game->theah->createEvent(Events::GenerateChallengeThreat);
+                    if ($threatEvent instanceof EventGenerateChallengeThreat)
+                    {
+                        $threatEvent->actorId = $katain->Id;
+                        $threatEvent->adversaryId = $adversaryId;
+                        $threatEvent->techniqueId = $technique->Id;
+                        $threatEvent->statUsed = $game->globals->get(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+                        $threatEvent->actorThreat = (int) $game->globals->get(Game::CHALLENGER_THREAT, 0);
+                        $threatEvent->adversaryThreat = (int) $game->globals->get(Game::DEFENDER_THREAT, 0);
+                        $threatEvent->adversaryThreatIsLethal = (bool) $game->globals->get(Game::DEFENDER_THREAT_IS_LETHAL, false);
+                        $threatEvent->skipBaseStatThreat = true;
+                    }
+                    $game->theah->eventCheck($threatEvent);
+                    $game->theah->queueEvent($threatEvent);
+                }
+
                 $this->setUsed($game->theah, true);
                 $this->announceReaction($game, $ability);
             }

@@ -1452,7 +1452,9 @@ trait EventHub
                     // WHY: Locker is not in buildCity. A Stiletto-killed challenger is absent
                     // from $theah->cards, so Character::handleEvent never added base Threat —
                     // apply ChallengeIssued snapshot here (same logic as Character.php).
-                    if (! array_key_exists($event->actorId, $theah->cards))
+                    // skipBaseStatThreat: Katain effects-only copy re-queues this event with
+                    // totals already seeded — do not stack a second base-stat add.
+                    if (! $event->skipBaseStatThreat && ! array_key_exists($event->actorId, $theah->cards))
                     {
                         $statSource = $theah->game->getChallengeLastKnownCharacter($event->actorId);
                         if ($statSource === null)

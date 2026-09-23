@@ -52,3 +52,9 @@ First **Risk Reaction** on Katain's allow-list. Card has Ranged trait; ability n
 - Destroy-as-cost (Duckfoot / Throwing Knife) already no-ops when owner is Character; Character-hosted copy remains correct.
 - Any new `IRangedAbility` must get a `Reaction_02011` copy branch + cost-skip if it has Engage/Discard/Destroy costs.
 - Do not move 04020's ranged event back to wound-only — breaks Katain on engage path.
+
+## Follow-up: challenge-time technique copy crash
+
+`getDuelOpponentId` fatals when Katain copies a Technique played during Challenge (Jägerarmbrust fires ranged from `EventGenerateChallengeThreat` — no duel row). Stack: Reaction_02011 → Theah::getDuelOpponentId → undefined array key 0.
+
+Fix: branch on `IN_DUEL`. Challenge path: adversary from `sourceTargetId` / `CHOSEN_TARGET`, `ResolveTechnique` with `inDuel=false`, seeded `GenerateChallengeThreat` with new `skipBaseStatThreat` so Combat/Finesse/Influence is not stacked again while copy still adds +Threat / discard. Character + EventHub locker fallback honor the flag. Technique_04017 passes `adversaryId` as ranged `targetId`.

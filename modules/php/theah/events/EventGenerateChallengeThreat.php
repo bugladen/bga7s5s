@@ -14,6 +14,9 @@ class EventGenerateChallengeThreat extends Event
     public bool $adversaryThreatIsLethal;
     public Array $explanations;
     public string $statUsed;
+    // WHY: Katain re-queues this event for a copied Technique's effects only —
+    // base challenge-stat threat is already in the seeded totals.
+    public bool $skipBaseStatThreat;
 
     public function __construct()
     {
@@ -27,6 +30,7 @@ class EventGenerateChallengeThreat extends Event
         $this->adversaryThreatIsLethal = false;
         $this->explanations = [];
         $this->statUsed = Game::STAT_COMBAT;
+        $this->skipBaseStatThreat = false;
         $this->runEventHubAfterCards = true;
     }
  

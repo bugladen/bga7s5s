@@ -141,7 +141,8 @@ class Technique_04017 extends Technique implements IRangedAbility
                     $owner->ControllerId,
                     $owner->Id,
                     $this->Id,
-                    $event->actorId
+                    $event->actorId,
+                    $event->adversaryId
                 );
                 $event->theah->queueEvent($rangedAbilityPlayedEvent);
             }
@@ -163,7 +164,8 @@ class Technique_04017 extends Technique implements IRangedAbility
                     $attachment->ControllerId,
                     $attachment->Id,
                     $this->Id,
-                    $event->actorId
+                    $event->actorId,
+                    $event->adversaryId
                 );
                 $event->theah->queueEvent($rangedAbilityPlayedEvent);
             }

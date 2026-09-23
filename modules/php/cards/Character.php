@@ -427,7 +427,7 @@ abstract class Character extends Card implements IHasTechniques
     // overridden handleEvent after parent::handleEvent.
     public function handleCoreCharacterEvent(Event $event): void
     {
-        if ($event instanceof EventGenerateChallengeThreat && $event->actorId == $this->Id)
+        if ($event instanceof EventGenerateChallengeThreat && $event->actorId == $this->Id && ! $event->skipBaseStatThreat)
         {
             // WHY: Destroy recreates printed Modified*; use ChallengeIssued snapshot when
             // the challenger was killed by a reaction (e.g. Stiletto) before GenerateThreat.
