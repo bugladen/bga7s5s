@@ -2430,6 +2430,25 @@
                     this.chooseList.setSelectionMode(1);
                 }
             },
+
+            'planningPhaseApproach01200_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    const translated = dojo.string.substitute(
+                        _("${playerName}'s Approach Deck"),
+                        {
+                            playerName: args.args._private.args.playerName
+                        }
+                    );
+                    $('choose_container_name').innerHTML = translated;
+
+                    args.args._private.args.cards.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
     
             'highDramaPhase01205': () => {
                 if (this.isCurrentPlayerActive()) {

@@ -6,6 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IPayTimeCostDiscount;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -17,7 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01116b extends CardReaction
+class Reaction_01116b extends CardReaction implements IPayTimeCostDiscount
 {
     private bool $IsActive = false;
     private int $PayStateType = 0;
@@ -99,6 +100,32 @@ class Reaction_01116b extends CardReaction
         }
 
         $game->gamestate->nextState("done");
+    }
+
+    /**
+     * WHY: Multi-step equip UIs (Kaj Reaction_04042) let the player Back and pick a
+     * different attachment after Activate. DiscountedCardId must follow the new target
+     * or the -1 is lost; scoping to one id still prevents mid-chain bleed (Stubborn).
+     */
+    public function isDiscountActive(): bool
+    {
+        return $this->IsActive;
+    }
+
+    public function retargetDiscountedCard(int $cardId): void
+    {
+        if ($this->IsActive && $cardId > 0)
+        {
+            $this->DiscountedCardId = $cardId;
+        }
+    }
+
+    public function clearActiveDiscount(): void
+    {
+        $this->IsActive = false;
+        $this->DiscountedCardId = 0;
+        $this->PayStateType = 0;
+        $this->InternalId = '';
     }
 
     public function getActionFromHandDiscount(Theah $theah, ?Character $performer, CardAction $action, Array &$explanations): int

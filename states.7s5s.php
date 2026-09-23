@@ -1567,6 +1567,36 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
             
         ]
     ],
+
+    // WHY: Kaj Reaction_04042 can equip Crystal Eye during Approach (state 220). HD-only
+    // "01200" transition crashed there; these return to Approach EVENTS, not HD EVENTS.
+    States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200 => [
+        "name" => "planningPhaseApproach01200",
+        "description" => clienttranslate('${actplayer} is choosing an opponent for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('Crystal Eye') . clienttranslate(': ${you} must choose an opponent:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2
+        ]
+    ],
+
+    States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2 => [
+        "name" => "planningPhaseApproach01200_2",
+        "description" => clienttranslate('${actplayer} is choosing a card for Crystal Eye\'s Forced Ability.'),
+        "descriptionmyturn" => clienttranslate('Crystal Eye') . clienttranslate(': ${you} must choose a card:'),
+        "type" => "activeplayer",
+        "args" => "argsForStatePrivate",
+        "possibleactions" => [
+            "actFromCardWithId",
+        ],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS,
+        ]
+    ],
     
     States::HIGH_DRAMA_PLAYER_TURN_01205 => [
         "name" => "highDramaPhase01205",

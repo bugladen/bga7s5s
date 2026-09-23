@@ -606,7 +606,7 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_04022` (Axelle — adversary combat card → threat) | **`EventCombatCardAnnounced`** + asymmetric `createThreatModifiedEvent`; your participant by ControllerId; En Garde rider `!$Engaged` adds adversary threat. Risk sibling `Reaction_02039` (both + pay). |
 | `Reaction_04031` (Andare — first round remove your participant's threat) | **`EventDuelNewRound` `round == 1`** + duel-at-location + En Garde `!$Engaged`; remove-only via `createThreatModifiedEvent(-1,0)`/`(0,-1)`; threat > 0 valid-target gate. Fuller sibling `Reaction_01203` (add or remove either participant). |
 | `Reaction_04023` (Monet — reveal deck / optional equip / discard any / sink) | **En Garde** + Owner-moves-to-city (`Reaction_03025`) + multi-stage in-reaction reveal/equip/pay/discard/sink. No states/JS. Equip pay = Tomas click-to-pay (not `PAY_STATE_EQUIP_ATTACHMENT`). Deck→discard = Action_01134 notify+`moveCard`; sink = `createCardAddedToFactionDeckEvent(..., false)`. |
-| `Reaction_04042` (Kaj Relic Raider — muster → City Deck Artifact → Home equip) | **Muster OR Approach** + multi-stage in-reaction search/equip/pay. Affordability gate before prompt (keep — Approach before Planning Draw). Home hosts via `getCharactersAtHomeByPlayerId`. Public search log needs `cards[]`. Not HD / not `PAY_STATE_EQUIP_ATTACHMENT` (contrast city Kaj `Action_01180`). |
+| `Reaction_04042` (Kaj Relic Raider — muster → City Deck Artifact → Home equip) | **Muster OR Approach** + multi-stage in-reaction search/equip/pay. **No wealth/affordability gates** (0-cost Artifacts, empty-hand Approach, Leader Yevgeni pay-time discount); Pass always. Home hosts via `getCharactersAtHomeByPlayerId`. Public search log needs `cards[]`. Not HD / not `PAY_STATE_EQUIP_ATTACHMENT` (contrast city Kaj `Action_01180`). |
 
 ### Muster → search City Deck Artifact → equip at Home
 
@@ -616,17 +616,17 @@ Printed (Kaj `_04042`): **Reaction: After Kaj musters • Search the City Deck f
 
 **WHY multi-stage inside `playerReaction` (not High Drama states / not `PAY_STATE_EQUIP_ATTACHMENT`):** Muster fires during Approach **and** High Drama. City Kaj `Action_01180` uses HD states + the shared equip-pay state — that path is HD-cycle coupled and will not return correctly from Approach. Monet/Tomas shape: `$stage` + `requeue()` via `createReactionTransitionEvent`.
 
-**Affordability gate before prompt — keep it.** Require ≥1 City Deck Artifact with ≥1 eligible Home host the player can afford (`canAttachTo` + `!hasEquipRestrictions` + `handWealthCount >= equipCost`). Playtest: Approach in Planning with an empty hand correctly skipped the Reaction. Approach runs *before* Planning Draw, so empty-hand Approach is common. Do **not** remove the gate to "always prompt" — a no-op Search/Pass when nothing is payable is wrong.
+**Do not wealth-gate the trigger or the buttons.** Open search when ≥1 City Deck Artifact has ≥1 legal Home host (`canAttachTo` + `!hasEquipRestrictions`) — **ignore hand wealth entirely**. WHY: Approach runs before Planning Draw (empty hand is common); 0-cost Artifacts exist; Leader Yevgeni (`_01116`) can discount non-character cards **during pay** (not visible to a pre-pay `handWealthCount` check). List every attachable Artifact / host; Pass is always available when nothing can be paid for.
 
 **Hosts:** `getCharactersAtHomeByPlayerId($owner->ControllerId)` — **never** `getCharactersAtLocation(LOCATION_PLAYER_HOME)` (shared Home string).
 
-**Search UI:** Name-deduped Artifact buttons from `getCardObjectsAtLocation(LOCATION_CITY_DECK)` (city-event search button shape). Skip `FakeAttachment`.
+**Search UI:** Name-deduped Artifact buttons from `getCardObjectsAtLocation(LOCATION_CITY_DECK)` (city-event search button shape). Skip `FakeAttachment`. No affordability filter on buttons — Pass covers empty-hand / unaffordable cases.
 
 **Public search log (hover for all players):** On opening search, `notify->all` with implode of `getInjectCode()` **and** `"cards" => array of getPropertyArray()`. WHY `cards[]`: City Deck Artifacts are not in opponents' `cardProperties`; `format_string_recursive_with_injection` seeds `logCardCache` from notify args that carry id+type objects (including arrays) — same as gamble reveal / Risk play. Inject codes alone leave opponents with bold names / broken hover.
 
-**Shuffle:** Parenthetical applies once the deck was searched (set a `$didSearch` / equivalent when the reaction opens into search). Pass/abort after looking still shuffles. (If the UI opens directly into search, Pass always shuffles — acceptable; they saw the list.)
+**Shuffle:** Parenthetical applies once the deck was searched (set a `$didSearch` / equivalent when the reaction opens into search). Pass/abort after looking **and** successful equip both shuffle. (If the UI opens directly into search, Pass always shuffles — correct; they saw the list.)
 
-**Stages** (typical): search Artifact → pick Home host → click-to-pay (Tomas) → finalize. Skip pay when cost is 0.
+**Stages** (typical): search Artifact → pick Home host → **`EventEnteringPayState` (`PAY_STATE_EQUIP_ATTACHMENT` + `CHOSEN_PERFORMER`)** so pay-time discounts (`IPayTimeCostDiscount`: Yevgeni / Daniella / …) can fire → click-to-pay (Tomas) → finalize. Skip pay when cost is already 0. After discount reactions, refresh cost via `getEquipDiscount`; if cost drops to 0, Equip/Pass instead of hand cards. On Back + new Artifact, `retargetDiscountedCard` on any active `IPayTimeCostDiscount`; clear on reaction exit.
 
 **Finalize:** Queue payment discards atomically → `getRequiredAttachTargetId` → `createAttachmentEquippedEvent` (pre-commit). Hub moves the City Deck card.
 

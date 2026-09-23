@@ -414,6 +414,7 @@ $machinestates = [
             "transitions" => [
                 "reaction" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS,
                 "pay" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION,
+                "01200" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS,
                 "endOfGame" => States::END_GAME
             ]

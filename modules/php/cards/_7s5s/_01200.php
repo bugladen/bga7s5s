@@ -94,7 +94,10 @@ class _01200 extends CityAttachment implements IHasReactions
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200 || $state == States::DUEL_END_OF_ROUND_01200 || $state == States::DUEL_RESOLVE_MANEUVER_01200)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200
+            || $state == States::DUEL_END_OF_ROUND_01200
+            || $state == States::DUEL_RESOLVE_MANEUVER_01200
+            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200)
         {
             $opponents = [];
             $players = $game->loadPlayersBasicInfos();
@@ -107,7 +110,10 @@ class _01200 extends CityAttachment implements IHasReactions
             $args['opponents'] = $opponents;
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2 || $state == States::DUEL_END_OF_ROUND_01200_2 || $state == States::DUEL_RESOLVE_MANEUVER_01200_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2
+            || $state == States::DUEL_END_OF_ROUND_01200_2
+            || $state == States::DUEL_RESOLVE_MANEUVER_01200_2
+            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2)
         {
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
 
@@ -133,7 +139,10 @@ class _01200 extends CityAttachment implements IHasReactions
         parent::actFromCardWithId($game, $state, $stateName, $actionId, $id);
         
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200 || $state == States::DUEL_END_OF_ROUND_01200 || $state == States::DUEL_RESOLVE_MANEUVER_01200)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200
+            || $state == States::DUEL_END_OF_ROUND_01200
+            || $state == States::DUEL_RESOLVE_MANEUVER_01200
+            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200)
         {
             $players = $game->loadPlayersBasicInfos();
             if ( ! isset($players[$id]))
@@ -150,7 +159,10 @@ class _01200 extends CityAttachment implements IHasReactions
             $game->gamestate->nextState();
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2 || $state == States::DUEL_END_OF_ROUND_01200_2 || $state == States::DUEL_RESOLVE_MANEUVER_01200_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2
+            || $state == States::DUEL_END_OF_ROUND_01200_2
+            || $state == States::DUEL_RESOLVE_MANEUVER_01200_2
+            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2)
         {
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
             $activePlayerId = $game->getActivePlayerId();

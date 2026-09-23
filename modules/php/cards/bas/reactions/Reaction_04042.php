@@ -3,7 +3,10 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IPayTimeCostDiscount;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -41,7 +44,19 @@ class Reaction_04042 extends CardReaction
 
         if ($this->stage === 'pay')
         {
+            $owner = $this->getOwningCharacter($theah);
+            if ($owner !== null)
+            {
+                $this->refreshPaymentCost($theah, $owner);
+            }
             $attachment = $theah->getAttachmentById($this->pendingAttachmentId);
+            if ($this->paidCost <= 0)
+            {
+                return $base . sprintf(
+                    $theah->game->translate('${you} may equip %s (cost reduced to 0): '),
+                    $attachment ? $attachment->Name : ''
+                );
+            }
             return $base . sprintf(
                 $theah->game->translate('Pay %d Wealth for %s — click cards in your hand. Paid so far: %d.'),
                 $this->paidCost,
@@ -71,6 +86,8 @@ class Reaction_04042 extends CardReaction
         if ($this->stage === 'search')
         {
             // Dedupe by Name — identical City Deck copies are indistinguishable.
+            // WHY no affordability filter: Leader Yevgeni (_01116) can discount
+            // non-character cards during pay; Pass covers anything still unaffordable.
             $seen = [];
             foreach ($this->getArtifactsInCityDeck($game) as $card)
             {
@@ -78,12 +95,13 @@ class Reaction_04042 extends CardReaction
                 {
                     continue;
                 }
-                if (count($this->getEligibleHomeHosts($theah, $owner, $card)) == 0)
+                if (count($this->getAttachableHomeHosts($theah, $owner, $card)) == 0)
                 {
                     continue;
                 }
                 $seen[$card->Name] = true;
-                $array[] = $this->createButtonProperty($game, $card->Name, 'search-' . $card->Id);
+                $label = sprintf($game->translate('%s (Cost: %d)'), $card->Name, $card->WealthCost);
+                $array[] = $this->createButtonProperty($game, $label, 'search-' . $card->Id);
             }
             $array[] = $this->createButtonProperty($game, $game->translate('Pass'), 'pass');
         }
@@ -94,13 +112,12 @@ class Reaction_04042 extends CardReaction
             $attachment = $theah->getAttachmentById($this->pendingAttachmentId);
             if ($attachment instanceof Attachment)
             {
-                foreach ($this->getEligibleHomeHosts($theah, $owner, $attachment) as $character)
+                foreach ($this->getAttachableHomeHosts($theah, $owner, $attachment) as $character)
                 {
-                    $cost = $this->equipCost($theah, $character, $attachment);
                     $label = sprintf(
-                        $game->translate('Equip to %s (cost %d)'),
-                        $character->Name,
-                        $cost
+                        $game->translate('Equip %s to %s'),
+                        $attachment->Name,
+                        $character->Name
                     );
                     $array[] = $this->createButtonProperty($game, $label, 'equip_' . $character->Id);
                 }
@@ -110,6 +127,16 @@ class Reaction_04042 extends CardReaction
 
         if ($this->stage === 'pay')
         {
+            $this->refreshPaymentCost($theah, $owner);
+
+            // After Yevgeni (or other pay-time discounts) the cost may drop to 0.
+            if ($this->paidCost <= 0)
+            {
+                $array[] = $this->createButtonProperty($game, $game->translate('Equip'), 'confirmEquip');
+                $array[] = $this->createButtonProperty($game, $game->translate('Pass'), 'pass');
+                return $array;
+            }
+
             $array[] = $this->createButtonProperty($game, $game->translate('< Back'), 'back');
             $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
             foreach ($hand as $card)
@@ -151,7 +178,11 @@ class Reaction_04042 extends CardReaction
                 return;
             }
 
-            if (! $this->hasAffordableArtifactSearch($event->theah, $owner))
+            // WHY no wealth/affordability gate: Approach before Planning Draw often
+            // means empty hand, but 0-cost Artifacts exist and Leader Yevgeni can
+            // discount during pay. Fire when ≥1 Artifact has a legal Home host;
+            // Pass exits (and shuffles) when nothing can be paid for.
+            if (! $this->hasSearchableArtifact($event->theah, $owner))
             {
                 return;
             }
@@ -182,6 +213,19 @@ class Reaction_04042 extends CardReaction
         if ($reactionId === 'pass')
         {
             $this->finishWithoutEquip($game, $owner);
+            $game->gamestate->nextState("done");
+            return;
+        }
+
+        if ($reactionId === 'confirmEquip')
+        {
+            $this->refreshPaymentCost($game->theah, $owner);
+            if ($this->paidCost <= 0)
+            {
+                $this->finalize($game, $owner);
+                return;
+            }
+            $this->requeue($game, $owner);
             $game->gamestate->nextState("done");
             return;
         }
@@ -221,7 +265,7 @@ class Reaction_04042 extends CardReaction
         if (! ($attachment instanceof Attachment)
             || $attachment->Location != Game::LOCATION_CITY_DECK
             || ! $attachment->hasTrait("Artifact")
-            || count($this->getEligibleHomeHosts($game->theah, $owner, $attachment)) == 0)
+            || count($this->getAttachableHomeHosts($game->theah, $owner, $attachment)) == 0)
         {
             $this->requeue($game, $owner);
             $game->gamestate->nextState("done");
@@ -251,7 +295,7 @@ class Reaction_04042 extends CardReaction
         }
 
         $match = null;
-        foreach ($this->getEligibleHomeHosts($game->theah, $owner, $attachment) as $character)
+        foreach ($this->getAttachableHomeHosts($game->theah, $owner, $attachment) as $character)
         {
             if ($character->Id == $characterId)
             {
@@ -266,6 +310,17 @@ class Reaction_04042 extends CardReaction
             return;
         }
 
+        $this->chosenCharacterId = $match->Id;
+        $this->paidCardIds = [];
+        $this->paidWealth = 0;
+        $this->paidHasWealthCard = false;
+        $owner->IsUpdated = true;
+
+        // WHY: If a pay-time discount (Yevgeni / Daniella / …) already Activated then the
+        // player Back'd to another Artifact, DiscountedCardId still points at the old
+        // card — retarget before cost calc.
+        $this->syncPayTimeDiscountTargets($game, $owner, $attachment->Id);
+
         [$discount, $explanations] = $game->theah->getEquipDiscount($match, $attachment);
         $cost = $attachment->WealthCost - $discount;
         if ($cost < 0)
@@ -273,20 +328,27 @@ class Reaction_04042 extends CardReaction
             $cost = 0;
         }
 
-        $this->chosenCharacterId = $match->Id;
         $this->paidDiscount = $discount;
         $this->paidExplanations = is_string($explanations) ? $explanations : '';
         $this->paidCost = $cost;
-        $this->paidCardIds = [];
-        $this->paidWealth = 0;
-        $this->paidHasWealthCard = false;
-        $owner->IsUpdated = true;
 
         if ($cost <= 0)
         {
             $this->finalize($game, $owner);
             return;
         }
+
+        // WHY: Leader Yevgeni (_01116) listens on EventEnteringPayState for -1 cost on
+        // non-character payments. Click-to-pay must emit it before the pay UI, with
+        // CHOSEN_PERFORMER set so calculateInHandPayDiscount can re-run getEquipDiscount
+        // after Activate. Cost is refreshed when the pay stage UI loads.
+        $game->globals->set(Game::CHOSEN_PERFORMER, $match->Id);
+        $payEvent = EventFactory::createEnteringPayStateEvent(
+            $owner->ControllerId,
+            $attachment->Id,
+            Game::PAY_STATE_EQUIP_ATTACHMENT
+        );
+        $game->theah->queueEvent($payEvent);
 
         $this->stage = 'pay';
         $this->requeue($game, $owner);
@@ -298,6 +360,13 @@ class Reaction_04042 extends CardReaction
         if ($this->stage !== 'pay')
         {
             $game->gamestate->nextState("done");
+            return;
+        }
+
+        $this->refreshPaymentCost($game->theah, $owner);
+        if ($this->paidCost <= 0)
+        {
+            $this->finalize($game, $owner);
             return;
         }
 
@@ -406,11 +475,17 @@ class Reaction_04042 extends CardReaction
 
         $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $character->Id);
 
+        // WHY top-level card property arrays: attachment was in the City Deck —
+        // opponents lack it in cardProperties. Seed logCardCache via id+type objects
+        // (combat-card announce pattern), not only a nested cards[] array.
         $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} searched the City Deck and equips ${attachment_inject_code} to ${character_inject_code}.'), [
             "reaction_inject_code" => $owner->getInjectCode(),
             "player_name" => $game->getPlayerNameById($owner->ControllerId),
             "attachment_inject_code" => $attachment->getInjectCode(),
             "character_inject_code" => $character->getInjectCode(),
+            "card" => $owner->getPropertyArray($game),
+            "card_" . $attachment->Id => $attachment->getPropertyArray($game),
+            "card_" . $character->Id => $character->getPropertyArray($game),
         ]);
 
         $equipEvent = EventFactory::createAttachmentEquippedEvent(
@@ -429,6 +504,7 @@ class Reaction_04042 extends CardReaction
         $game->theah->queueEvent($equipEvent);
 
         $this->shuffleCityDeck($game, $owner);
+        $this->clearPayTimeDiscounts($game, $owner);
         $this->resetState($owner);
         $this->setUsed($game->theah, true);
 
@@ -442,6 +518,9 @@ class Reaction_04042 extends CardReaction
         {
             $this->shuffleCityDeck($game, $owner);
         }
+        // WHY: pay-time IsActive is not cleared by ActionResolved here — clear so Back/Pass
+        // mid-flow cannot leak the -1 onto a later unrelated equip this turn.
+        $this->clearPayTimeDiscounts($game, $owner);
         $this->resetState($owner);
         // Pass / abort does not burn the Reaction — muster only fires once anyway.
     }
@@ -458,6 +537,54 @@ class Reaction_04042 extends CardReaction
     {
         $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
         $game->theah->queueEvent($transition);
+    }
+
+    /**
+     * WHY: After Activate, Back + a different Artifact would leave DiscountedCardId on the
+     * old card (pay-time discounts scope -1 to that id). Retarget so the discount follows
+     * the new pick — any IPayTimeCostDiscount (Yevgeni, Daniella Faith/Sorcery, …).
+     */
+    private function syncPayTimeDiscountTargets(Game $game, Character $owner, int $attachmentId): void
+    {
+        foreach ($this->getActivePayTimeDiscounts($game, $owner) as [$reaction, $card])
+        {
+            $reaction->retargetDiscountedCard($attachmentId);
+            $card->IsUpdated = true;
+        }
+    }
+
+    private function clearPayTimeDiscounts(Game $game, Character $owner): void
+    {
+        foreach ($this->getActivePayTimeDiscounts($game, $owner) as [$reaction, $card])
+        {
+            $reaction->clearActiveDiscount();
+            $card->IsUpdated = true;
+        }
+    }
+
+    /**
+     * @return array<int, array{0: IPayTimeCostDiscount, 1: Card}>
+     */
+    private function getActivePayTimeDiscounts(Game $game, Character $owner): array
+    {
+        $out = [];
+        foreach ($game->theah->getAllCards() as $card)
+        {
+            if (! ($card instanceof IHasReactions)
+                || $card->ControllerId != $owner->ControllerId)
+            {
+                continue;
+            }
+
+            foreach ($card->getReactions() as $reaction)
+            {
+                if ($reaction instanceof IPayTimeCostDiscount && $reaction->isDiscountActive())
+                {
+                    $out[] = [$reaction, $card];
+                }
+            }
+        }
+        return $out;
     }
 
     private function resetState(?Character $owner): void
@@ -478,11 +605,12 @@ class Reaction_04042 extends CardReaction
         }
     }
 
-    private function hasAffordableArtifactSearch(Theah $theah, Character $owner): bool
+    private function hasSearchableArtifact(Theah $theah, Character $owner): bool
     {
         foreach ($this->getArtifactsInCityDeck($theah->game) as $attachment)
         {
-            if (count($this->getEligibleHomeHosts($theah, $owner, $attachment)) > 0)
+            // Ignore wealth — 0-cost Artifacts and pay-time discounts (Yevgeni).
+            if (count($this->getAttachableHomeHosts($theah, $owner, $attachment)) > 0)
             {
                 return true;
             }
@@ -493,31 +621,32 @@ class Reaction_04042 extends CardReaction
     /**
      * WHY inject codes: search buttons only show plain Name strings (no hover
      * tooltip). Monet Reaction_04023 uses the same implode(getInjectCode) pattern.
-     * WHY cards[]: City Deck Artifacts are not in opponents' cardProperties;
-     * format_string_recursive_with_injection seeds logCardCache from notify args
-     * (id+type objects, including arrays) — same as gamble reveal / Risk play.
+     * WHY top-level card_* property arrays (not only cards[]): format_string_recursive
+     * seeds logCardCache from notify args with id+type. Nested cards[] only hydrates
+     * if the Array.isArray scan is present; singular top-level objects match the
+     * combat-card / Risk-play pattern and work with the older scanner too.
      */
     private function notifyArtifactSearch(Game $game, Character $owner): void
     {
         $artifacts = $this->getArtifactsInCityDeck($game);
         $names = [];
-        $cards = [];
+        $args = [
+            'reaction_inject_code' => $owner->getInjectCode(),
+            'player_name' => $game->getPlayerNameById($owner->ControllerId),
+            'card' => $owner->getPropertyArray($game),
+        ];
         foreach ($artifacts as $attachment)
         {
             $names[] = $attachment->getInjectCode();
-            $cards[] = $attachment->getPropertyArray($game);
+            $args['card_' . $attachment->Id] = $attachment->getPropertyArray($game);
         }
+        $args['count'] = count($names);
+        $args['names'] = implode(', ', $names);
 
         $game->notify->all(
             'message',
             clienttranslate('${reaction_inject_code}: ${player_name} searches the City Deck for Artifacts (${count}): ${names}'),
-            [
-                'reaction_inject_code' => $owner->getInjectCode(),
-                'player_name' => $game->getPlayerNameById($owner->ControllerId),
-                'count' => count($names),
-                'names' => implode(', ', $names),
-                'cards' => $cards,
-            ]
+            $args
         );
     }
 
@@ -538,12 +667,14 @@ class Reaction_04042 extends CardReaction
     }
 
     /**
+     * Legal Home hosts (attach + restrictions only — no wealth gate).
+     * WHY: Leader Yevgeni can discount during pay; Pass covers unaffordable cases.
+     *
      * @return Character[]
      */
-    private function getEligibleHomeHosts(Theah $theah, Character $owner, Attachment $attachment): array
+    private function getAttachableHomeHosts(Theah $theah, Character $owner, Attachment $attachment): array
     {
         $out = [];
-        $handWealth = $theah->game->handWealthCount($owner->ControllerId);
         // WHY: Home is a shared location string — never getCharactersAtLocation(HOME).
         foreach ($theah->getCharactersAtHomeByPlayerId($owner->ControllerId) as $character)
         {
@@ -560,14 +691,31 @@ class Reaction_04042 extends CardReaction
             {
                 continue;
             }
-            $cost = $this->equipCost($theah, $character, $attachment);
-            if ($handWealth < $cost)
-            {
-                continue;
-            }
             $out[] = $character;
         }
         return $out;
+    }
+
+    private function refreshPaymentCost(Theah $theah, Character $owner): void
+    {
+        $attachment = $theah->getAttachmentById($this->pendingAttachmentId);
+        $character = $theah->getCharacterById($this->chosenCharacterId);
+        if (! ($attachment instanceof Attachment) || ! ($character instanceof Character))
+        {
+            return;
+        }
+
+        [$discount, $explanations] = $theah->getEquipDiscount($character, $attachment);
+        $cost = $attachment->WealthCost - $discount;
+        if ($cost < 0)
+        {
+            $cost = 0;
+        }
+
+        $this->paidDiscount = $discount;
+        $this->paidExplanations = is_string($explanations) ? $explanations : '';
+        $this->paidCost = $cost;
+        $owner->IsUpdated = true;
     }
 
     private function equipCost(Theah $theah, Character $performer, Attachment $attachment): int
