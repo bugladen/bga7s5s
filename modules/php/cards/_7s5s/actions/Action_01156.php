@@ -55,7 +55,10 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
-            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01156", $this->Id);
+            // WHY: Matchlock cost is "Discard a card • …". Katain copies effects only —
+            // jump straight to the target picker (01156_2), skipping the discard state.
+            $transitionName = $this->IsEffectsOnlyCopy ? "01156_2" : "01156";
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, $transitionName, $this->Id);
             $event->theah->queueEvent($transition);
         }
     }
@@ -173,10 +176,13 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
                     "musket_inject_code" => $musket->getInjectCode(),
                 ]);
 
-                $discardCardId = $game->globals->get(Game::CHOSEN_CARD);
-                $discardCard = $game->getCardObjectFromDb($discardCardId);
-                $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
-                $game->theah->queueEvent($discardEvent);
+                if (! $this->IsEffectsOnlyCopy)
+                {
+                    $discardCardId = $game->globals->get(Game::CHOSEN_CARD);
+                    $discardCard = $game->getCardObjectFromDb($discardCardId);
+                    $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
+                    $game->theah->queueEvent($discardEvent);
+                }
 
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
@@ -198,10 +204,13 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
                     "musket_inject_code" => $musket->getInjectCode(),
                 ]);
     
-                $discardCardId = $game->globals->get(Game::CHOSEN_CARD);
-                $discardCard = $game->getCardObjectFromDb($discardCardId);
-                $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
-                $game->theah->queueEvent($discardEvent);   
+                if (! $this->IsEffectsOnlyCopy)
+                {
+                    $discardCardId = $game->globals->get(Game::CHOSEN_CARD);
+                    $discardCard = $game->getCardObjectFromDb($discardCardId);
+                    $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
+                    $game->theah->queueEvent($discardEvent);
+                }
 
                 $transition = EventFactory::createTransitionEvent($target->ControllerId, $musket->Id, "01156_3", $this->Id);
                 $game->theah->queueEvent($transition);

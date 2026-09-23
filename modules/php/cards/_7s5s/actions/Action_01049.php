@@ -16,7 +16,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharacters, IRangedAbility
 {
-    // Used when creating copies.  Ensures the correct card is engaged when the copy is used.
+    // WHY: Katain hosts a copy on the Character. Wound effect includes "engage this
+    // card" — point that engage at the real flintlock, not Katain. Not a cost redirect;
+    // Technique_01049's Engage-as-cost is skipped via IsEffectsOnlyCopy instead.
     public ?int $originalAttachmentId = null;
 
     public function __construct()

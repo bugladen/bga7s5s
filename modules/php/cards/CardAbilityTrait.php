@@ -17,6 +17,10 @@ trait CardAbilityTrait
     public int $OwnerId;
     public string $Name;
     public bool $Used;
+    // WHY: Katain (Reaction_02011) and similar "Copy the effects" abilities must not
+    // re-pay the source ability's costs (Engage this card, Discard a card, etc.).
+    // Dame/Yepikhodov use Technique::$IsTemporaryCopy for the same idea on Techniques.
+    public bool $IsEffectsOnlyCopy = false;
 
     public function initializeAbility()
     {
@@ -30,6 +34,7 @@ trait CardAbilityTrait
 
         $this->Name = "";
         $this->Used = false;
+        $this->IsEffectsOnlyCopy = false;
     }
 
     public function getId(): string

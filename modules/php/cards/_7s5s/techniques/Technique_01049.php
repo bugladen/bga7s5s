@@ -45,10 +45,15 @@ class Technique_01049 extends Technique implements IRangedAbility
 
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
-            $owner = $this->getOwningCard($event->theah);
-            $engageId = $this->originalAttachmentId ?? $owner->Id;
-            $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $engageId, $owner->Id, $this->Id);
-            $event->theah->queueEvent($engageEvent);
+            // WHY: printed cost is "Engage this card • Gain Lethal". Effects-only copies
+            // (Katain IsEffectsOnlyCopy; Dame/Yepikhodov IsTemporaryCopy) must not re-engage.
+            if (! $this->IsTemporaryCopy && ! $this->IsEffectsOnlyCopy)
+            {
+                $owner = $this->getOwningCard($event->theah);
+                $engageId = $this->originalAttachmentId ?? $owner->Id;
+                $engageEvent = EventFactory::createCardEngagedEvent($event->playerId, $engageId, $owner->Id, $this->Id);
+                $event->theah->queueEvent($engageEvent);
+            }
         }
 
         if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)

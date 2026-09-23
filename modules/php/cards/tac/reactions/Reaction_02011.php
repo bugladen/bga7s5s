@@ -147,6 +147,10 @@ class Reaction_02011 extends CardReaction
                 $copyAction = true;
                 $action = new Action_01049();
                 $action->setOwnerId($katain->Id);
+                $action->IsEffectsOnlyCopy = true;
+                // WHY keep originalAttachmentId: City Action effect includes "engage this
+                // card" when wounding — that is effect text, not a cost. Point engage at
+                // the real flintlock (owner is Katain). Contrast Technique_01049 below.
                 $action->originalAttachmentId = $source->Id;
                 if ($katain instanceof IHasActions) $katain->addAction($action, $game);
             }
@@ -157,7 +161,9 @@ class Reaction_02011 extends CardReaction
                 $copyTechnique = true;
                 $technique = new Technique_01049();
                 $technique->setOwnerId($katain->Id);
-                $technique->originalAttachmentId = $source->Id;
+                // WHY no originalAttachmentId: Technique cost is "Engage this card • …".
+                // IsEffectsOnlyCopy skips that engage in Technique_01049::handleEvent.
+                $technique->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasTechniques) $katain->addTechnique($technique, $game);
             }
 
@@ -167,6 +173,7 @@ class Reaction_02011 extends CardReaction
                 $copyAction = true;
                 $action = new Action_01055();
                 $action->setOwnerId($katain->Id);
+                $action->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasActions) $katain->addAction($action, $game);
             }
             if ($ability instanceof Maneuver_01055)
@@ -174,6 +181,7 @@ class Reaction_02011 extends CardReaction
                 $copyManeuver = true;
                 $maneuver = new Maneuver_01055();
                 $maneuver->setOwnerId($katain->Id);
+                $maneuver->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasManeuvers) $katain->addManeuver($maneuver, $game);
             }
 
@@ -183,6 +191,7 @@ class Reaction_02011 extends CardReaction
                 $copyManeuver = true;
                 $maneuver = new Maneuver_01057();
                 $maneuver->setOwnerId($katain->Id);
+                $maneuver->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasManeuvers) $katain->addManeuver($maneuver, $game);
             }
 
@@ -192,6 +201,7 @@ class Reaction_02011 extends CardReaction
                 $copyAction = true;
                 $action = new Action_01156();
                 $action->setOwnerId($katain->Id);
+                $action->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasActions) $katain->addAction($action, $game);
             }
 
@@ -201,6 +211,7 @@ class Reaction_02011 extends CardReaction
                 $copyTechnique = true;
                 $technique = new Technique_01157();
                 $technique->setOwnerId($katain->Id);
+                $technique->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasTechniques) $katain->addTechnique($technique, $game);
             }
 
@@ -210,15 +221,17 @@ class Reaction_02011 extends CardReaction
                 $copyAction = true;
                 $action = new Action_01191();
                 $action->setOwnerId($katain->Id);
+                $action->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasActions) $katain->addAction($action, $game);
             }
 
             //Concealed Flintlock
             if ($ability instanceof Technique_02054)
             {
-                $copyManeuver = true;
+                $copyTechnique = true;
                 $technique = new Technique_02054();
                 $technique->setOwnerId($katain->Id);
+                $technique->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasTechniques) $katain->addTechnique($technique, $game);
             }
 
