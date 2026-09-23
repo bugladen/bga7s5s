@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -22,8 +23,20 @@ class Technique_02021 extends Technique
             return false;
         }
 
+        // WHY: "adversary" is in the cost (before •) — duel-only, not a challenge
+        // Technique. Same rule as Technique_02023 / 01066.
+        if (! $theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            return false;
+        }
+
         $anghos = $this->getOwningCharacter($theah);
-        $adversary = $theah->getDuelRoundOpponent($playerId);
+        $adversary = $theah->getDuelRoundOpponent();
+        if ($adversary === null)
+        {
+            return false;
+        }
+
         return $anghos->Influence > $adversary->Influence;
     }
 

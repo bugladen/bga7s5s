@@ -1956,6 +1956,12 @@ class Theah
     public function getDuelRoundOpponent() : ?Character
     {
         $actor = $this->getDuelRoundActor();
+        // WHY: getDuelRoundActor() returns null outside an active duel (challenge
+        // TechniqueAvailable, etc.). Callers must get null — not a fatal on Id.
+        if ($actor === null)
+        {
+            return null;
+        }
         $opponentId = $this->getDuelOpponentId($actor->Id);
         $opponent = $this->getCharacterById($opponentId);
 
