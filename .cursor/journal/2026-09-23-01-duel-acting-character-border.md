@@ -21,3 +21,5 @@ Fix: split collapse rules — `#duel_table` stays collapse; `._7sfs-threat-table
 ## Maneuver/Technique font size
 
 User: reduce Maneuver + Technique column cells by 4pt. Table is 12pt → 8pt on data cols 6–9 only (header stays 12pt). Combat chips keep their own 18pt so only the ability name text really shrinks — which is the point (long names).
+
+Later: +1pt → 9pt (still 3pt under table default).

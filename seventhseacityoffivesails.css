@@ -1859,12 +1859,23 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     width:auto;
 }
 
-/* WHY: Maneuver/Technique names run long; 4pt under table 12pt keeps chips at their own size. Header stays 12pt. */
+/* WHY: Maneuver/Technique names run long; 3pt under table 12pt keeps chips at their own size. Header stays 12pt. Was 8pt; +1pt per user ask. */
 #duel_table td:nth-child(6),
 #duel_table td:nth-child(7),
 #duel_table td:nth-child(8),
 #duel_table td:nth-child(9) {
-    font-size: 8pt;
+    font-size: 9pt;
+}
+
+/* WHY: Maneuver/Technique columns can stack several labels (live <p>, reload <div>); border each so they read as separate rows. */
+#duel_table td[id$="_maneuver"] > p,
+#duel_table td[id$="_maneuver"] > div,
+#duel_table td[id$="_technique"] > p,
+#duel_table td[id$="_technique"] > div {
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 2px 4px;
+    margin: 2px 0;
 }
 
 #duel_table td#duel_stats {
