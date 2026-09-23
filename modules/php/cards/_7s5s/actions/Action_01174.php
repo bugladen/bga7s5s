@@ -54,7 +54,25 @@ class Action_01174 extends RiskAction implements IAbilityThatTargetsCards
             $availableAttachments = [];
             foreach ($attachments as $attachment)
             {
-                $availableAttachments[] = ['id' => $attachment->Id, 'name' => $attachment->Name];
+                // WHY: Multiple copies of the same attachment can be in play — include
+                // controller + host so the button list is unambiguous.
+                $character = $attachment->attachedTo($game->theah);
+                if ($character !== null)
+                {
+                    $playerName = $game->getPlayerNameById($character->ControllerId);
+                    $name = sprintf(
+                        $game->translate('%s (%s\'s %s)'),
+                        $attachment->Name,
+                        $playerName,
+                        $character->Name
+                    );
+                }
+                else
+                {
+                    $name = $attachment->Name;
+                }
+
+                $availableAttachments[] = ['id' => $attachment->Id, 'name' => $name];
             }
             
             $args["attachments"] = $availableAttachments;
