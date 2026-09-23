@@ -100,18 +100,22 @@ class Action_02045 extends SchemeCityAction implements ISorcererAbility
         {
             $owner = $this->getOwningCard($event->theah);
             $game = $event->theah->game;
+            // WHY: Reaction_01118 (Elina) keys on performerId == Elina. Omitting it left
+            // performerId=0 and sourceId=scheme, so her "after she performs a Sorcerer
+            // ability" renown reaction never opened for this action.
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
 
             if ($event->success)
             {
-                $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->queueEvent($sorceryPlayedEvent);
-
+                // WHY: Played deferred to deck-search finish (actFromAction*) — pressure
+                // success is only half the ability; fire after search/pass so reactions
+                // see the full resolve (same optional-tail pattern as Action_01134).
                 $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "02045", $this->Id);
                 $event->theah->queueEvent($transition);
             }
             else
             {
-                $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id);
+                $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
                 $event->theah->queueEvent($sorceryPlayedEvent);
 
                 $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
@@ -196,6 +200,10 @@ class Action_02045 extends SchemeCityAction implements ISorcererAbility
                 "player_name" => $game->getPlayerNameById($playerId),
             ]);
 
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $game->theah->queueEvent($sorceryPlayedEvent);
+
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
@@ -223,6 +231,10 @@ class Action_02045 extends SchemeCityAction implements ISorcererAbility
             $game->notifyAllPlayers("message", clienttranslate('${player_name} shuffles their deck.'), [
                 "player_name" => $game->getPlayerNameById($playerId),
             ]);
+
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
+            $game->theah->queueEvent($sorceryPlayedEvent);
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
             $game->theah->queueEvent($actionResolvedEvent);
