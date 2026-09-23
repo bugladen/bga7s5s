@@ -10,10 +10,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01055;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01057;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01049;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01157;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\techniques\Technique_04017;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\techniques\Technique_02054;
@@ -28,16 +30,21 @@ class Reaction_02011 extends CardReaction
 {
     public int $sourceId;
     public string $sourceAbilityId;
+    public string $sourceTargetLocation = '';
 
     public Array $copiedActions = [];
     public Array $copiedManeuvers = [];
     public Array $copiedTechniques = [];
+    public Array $copiedReactions = [];
 
     public function __construct()
     {
         parent::__construct();
 
         $this->Name = clienttranslate("Copy Ranged Ability");
+        $this->sourceId = 0;
+        $this->sourceAbilityId = '';
+        $this->sourceTargetLocation = '';
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -74,6 +81,7 @@ class Reaction_02011 extends CardReaction
                 {
                     $this->sourceId = $event->sourceId;
                     $this->sourceAbilityId = $event->abilityId;
+                    $this->sourceTargetLocation = $event->targetLocation;
                     $katain->IsUpdated = true;
 
                     $reactionTransition = EventFactory::createReactionTransitionEvent($katain->ControllerId, $katain->Id, $this->Id);
@@ -111,6 +119,15 @@ class Reaction_02011 extends CardReaction
                 }
             }
             $this->copiedTechniques = [];
+
+            foreach ($this->copiedReactions as $reaction)
+            {
+                if ($katain instanceof IHasReactions)
+                {
+                    $katain->removeReaction($reaction, $event->theah->game);
+                }
+            }
+            $this->copiedReactions = [];
             $katain->IsUpdated = true;
         }
     }
@@ -138,9 +155,11 @@ class Reaction_02011 extends CardReaction
             $copyAction = false;
             $copyManeuver = false;
             $copyTechnique = false;
+            $copyReaction = false;
             $action = null;
             $maneuver = null;
             $technique = null;
+            $reaction = null;
 
             // Polished Flintlock
             if ($ability instanceof Action_01049)
@@ -246,7 +265,20 @@ class Reaction_02011 extends CardReaction
                 if ($katain instanceof IHasTechniques) $katain->addTechnique($technique, $game);
             }
 
-            if ($copyAction || $copyManeuver || $copyTechnique)
+            // Vantage Point — first Risk Reaction on Katain's allow-list.
+            // WHY host on Katain + beginEffectsCopy: effects are multi-stage reaction buttons
+            // (opponent −1, then engage-or-wound). Skip wealth pay (IsEffectsOnlyCopy / no pay state).
+            // Pressure location comes from the RangedAbilityPlayed event (pressured site).
+            if ($ability instanceof Reaction_04020)
+            {
+                $copyReaction = true;
+                $reaction = new Reaction_04020();
+                $reaction->setOwnerId($katain->Id);
+                $reaction->IsEffectsOnlyCopy = true;
+                if ($katain instanceof IHasReactions) $katain->addReaction($reaction, $game);
+            }
+
+            if ($copyAction || $copyManeuver || $copyTechnique || $copyReaction)
             {
                 $cardId = str_replace("copyRangedAbility-", "", $reactionId);
                 $discardEvent = EventFactory::createCardDiscardedFromHandEvent($katain->ControllerId, $cardId, $katain->Id);
@@ -303,6 +335,17 @@ class Reaction_02011 extends CardReaction
                 $game->theah->eventCheck($threatEvent);
                 $game->theah->queueEvent($threatEvent);
     
+                $this->setUsed($game->theah, true);
+                $this->announceReaction($game, $ability);
+            }
+
+            if ($copyReaction && $reaction instanceof Reaction_04020)
+            {
+                $this->copiedReactions[] = $reaction;
+                $katain->IsUpdated = true;
+
+                $reaction->beginEffectsCopy($game->theah, $this->sourceTargetLocation, $katain->Id);
+
                 $this->setUsed($game->theah, true);
                 $this->announceReaction($game, $ability);
             }

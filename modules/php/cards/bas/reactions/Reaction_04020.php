@@ -6,6 +6,7 @@ use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -14,7 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacters
+class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacters, IRangedAbility
 {
     // WHY public: multi-stage reaction may hand off to another player across serialize/DB round-trips.
     public string $stage = '';
@@ -278,6 +279,27 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         return [true, ''];
     }
 
+    /**
+     * Katain (Reaction_02011) effects-only copy entry: skip wealth pay, run post-pay effect stages.
+     * WHY public: copy hosts this Reaction on a Character and must jump straight to effects.
+     */
+    public function beginEffectsCopy(Theah $theah, string $pressureLocation, int $performerId): void
+    {
+        $this->stage = '';
+        $this->pressureLocation = $pressureLocation;
+        $this->performerId = $performerId;
+        $this->targetOpponentId = 0;
+        $this->targetCharacterId = 0;
+
+        $owner = $this->getOwningCard($theah);
+        if ($owner !== null)
+        {
+            $owner->IsUpdated = true;
+        }
+
+        $this->beginPostPayFlow($theah);
+    }
+
     private function beginPostPayFlow(Theah $theah): void
     {
         $owner = $this->getOwningCard($theah);
@@ -397,25 +419,30 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         );
         $theah->eventCheck($woundEvent);
         $theah->queueEvent($woundEvent);
-
-        $performer = $theah->getCharacterById($this->performerId);
-        if ($performer !== null)
-        {
-            $rangedEvent = EventFactory::createRangedAbilityPlayedEvent(
-                $owner->ControllerId,
-                $owner->Id,
-                $this->Id,
-                $performer->Id,
-                $target->Id,
-                $target->Location
-            );
-            $theah->queueEvent($rangedEvent);
-        }
     }
 
     private function finalize(Theah $theah): void
     {
         $owner = $this->getOwningCard($theah);
+
+        // WHY fire here (not only on wound): matches Action_01049 engage-or-wound — Katain must
+        // see EventRangedAbilityPlayed when the target engages too. IRangedAbility marker alone
+        // is not enough; the event is what Reaction_02011 listens for.
+        $performer = $theah->getCharacterById($this->performerId);
+        if ($owner !== null && $performer !== null)
+        {
+            $target = $this->targetCharacterId > 0 ? $theah->getCharacterById($this->targetCharacterId) : null;
+            $rangedEvent = EventFactory::createRangedAbilityPlayedEvent(
+                $owner->ControllerId,
+                $owner->Id,
+                $this->Id,
+                $performer->Id,
+                $target?->Id ?? 0,
+                $target?->Location ?? $this->pressureLocation
+            );
+            $theah->queueEvent($rangedEvent);
+        }
+
         $this->setUsed($theah, true);
         $this->resetWithoutUse($owner);
     }
