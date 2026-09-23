@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\techniques;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThrea
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Technique_04017 extends Technique
+class Technique_04017 extends Technique implements IRangedAbility
 {
     public function __construct()
     {
@@ -69,13 +70,18 @@ class Technique_04017 extends Technique
                 return;
             }
 
-            $engageEvent = EventFactory::createCardEngagedEvent(
-                $event->playerId,
-                $attachment->Id,
-                $attachment->Id,
-                $this->Id
-            );
-            $event->theah->queueEvent($engageEvent);
+            // WHY: "Engage this card • +1 Thrust …" — Engage is cost. Katain
+            // (IsEffectsOnlyCopy) / Dame/Yepikhodov (IsTemporaryCopy) copy effects only.
+            if (! $this->IsTemporaryCopy && ! $this->IsEffectsOnlyCopy)
+            {
+                $engageEvent = EventFactory::createCardEngagedEvent(
+                    $event->playerId,
+                    $attachment->Id,
+                    $attachment->Id,
+                    $this->Id
+                );
+                $event->theah->queueEvent($engageEvent);
+            }
 
             // WHY: Challenge discard waits for Accept/Intervene (EventGenerateChallengeThreat
             // + CHALLENGE_ACCEPTED). Refuse still runs Resolve and GenerateThreat — queuing
@@ -116,18 +122,28 @@ class Technique_04017 extends Technique
             {
                 $attachment = $this->getOwningCard($event->theah);
                 $owner = $this->getOwningCharacter($event->theah);
-                if ($attachment === null || $owner === null)
+                if ($attachment !== null && $owner !== null)
                 {
-                    return;
+                    $participant = $event->theah->getCharacterById($event->actorId) ?? $owner;
+                    $this->queueAdversaryDiscardIfEligible(
+                        $event->theah,
+                        $participant,
+                        $attachment,
+                        $event->adversaryId
+                    );
                 }
+            }
 
-                $participant = $event->theah->getCharacterById($event->actorId) ?? $owner;
-                $this->queueAdversaryDiscardIfEligible(
-                    $event->theah,
-                    $participant,
-                    $attachment,
-                    $event->adversaryId
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner !== null)
+            {
+                $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent(
+                    $owner->ControllerId,
+                    $owner->Id,
+                    $this->Id,
+                    $event->actorId
                 );
+                $event->theah->queueEvent($rangedAbilityPlayedEvent);
             }
         }
 
@@ -140,6 +156,17 @@ class Technique_04017 extends Technique
                 $attachment !== null ? $attachment->getInjectCode() : $this->Name,
                 $this->Name
             );
+
+            if ($attachment !== null)
+            {
+                $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent(
+                    $attachment->ControllerId,
+                    $attachment->Id,
+                    $this->Id,
+                    $event->actorId
+                );
+                $event->theah->queueEvent($rangedAbilityPlayedEvent);
+            }
         }
     }
 
@@ -180,6 +207,7 @@ class Technique_04017 extends Technique
             // WHY: sourceId = attachment — FrameworkActionsTrait hydrates source and
             // getTechniqueById; character sourceId would hide an attachment-hosted technique.
             // Challenge path transitions from GENERATE_THREAT_EVENTS (Accept/Intervene hub).
+            // Katain/Dame copies host on the Character — sourceId is that Character then.
             $transition = EventFactory::createTechniqueTransitionEvent(
                 $adversary->ControllerId,
                 $attachment->Id,

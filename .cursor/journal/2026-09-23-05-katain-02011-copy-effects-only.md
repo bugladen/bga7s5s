@@ -24,8 +24,17 @@ Contrast Cesca (`Reaction_01008`): "performs a copy … paying all costs." Katai
 
 Concealed Flintlock branch set `$copyManeuver = true` while creating a Technique — would null-deref `$maneuver` on resolve. Corrected to `$copyTechnique = true`.
 
+## Follow-up: Jägerarmbrust Technique_04017
+
+Missed from the IRangedAbility allow-list (new BAS Ranged weapon). Same pattern:
+- `implements IRangedAbility` + `EventRangedAbilityPlayed` on duel calc / challenge threat
+- Skip Engage cost when `IsTemporaryCopy || IsEffectsOnlyCopy`
+- `Reaction_02011` hosts a copy with `IsEffectsOnlyCopy = true`
+- Effects (+1 Thrust, Academic/Hunter discard) still run on the copy
+
 ## Do not regress
 
 - Do not strip Action_01049's `originalAttachmentId` engage-on-wound — that is effect text.
 - Do not treat Cesca copies as effects-only — she pays costs by design.
 - Destroy-as-cost (Duckfoot / Throwing Knife) already no-ops when owner is Character; Character-hosted copy remains correct.
+- Any new `IRangedAbility` must get a `Reaction_02011` copy branch + cost-skip if it has Engage/Discard/Destroy costs.

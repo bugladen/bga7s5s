@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01055;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01057;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01049;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01157;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\techniques\Technique_04017;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
@@ -230,6 +231,16 @@ class Reaction_02011 extends CardReaction
             {
                 $copyTechnique = true;
                 $technique = new Technique_02054();
+                $technique->setOwnerId($katain->Id);
+                $technique->IsEffectsOnlyCopy = true;
+                if ($katain instanceof IHasTechniques) $katain->addTechnique($technique, $game);
+            }
+
+            // Jägerarmbrust
+            if ($ability instanceof Technique_04017)
+            {
+                $copyTechnique = true;
+                $technique = new Technique_04017();
                 $technique->setOwnerId($katain->Id);
                 $technique->IsEffectsOnlyCopy = true;
                 if ($katain instanceof IHasTechniques) $katain->addTechnique($technique, $game);
