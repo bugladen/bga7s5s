@@ -1122,7 +1122,8 @@ trait UtilitiesTrait
      * +1 when a Thug is at the location). Does not apply reaction-chosen
      * mid-pressure modifiers (Loyal, Pack Tactics, …).
      *
-     * Ordered by turn_order for stable color order in the UI.
+     * Ordered by turn_order on the server; the client puts the viewing player first
+     * (notify->all cannot be per-viewer).
      *
      * @return array<string, list<array{playerId:int, playerColor:string, influence:int}>>
      */

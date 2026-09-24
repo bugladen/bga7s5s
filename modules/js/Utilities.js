@@ -2239,12 +2239,16 @@ return declare('seventhseacityoffivesails.utilities', null, {
 
     // WHY: Standing Influence totals per city location (Parley-style overlay,
     // top-left white). Values are getInfluencePressureValue sums (claim-relevant).
+    // Viewer-first order is done here (not in PHP notify->all) so each client
+    // sees their own total first.
     displayLocationInfluenceTotals: function(locationInfluenceTotals) {
         this.removeLocationInfluenceTotals();
 
         if (!locationInfluenceTotals) {
             return;
         }
+
+        const viewerId = Number(this.player_id);
 
         Object.keys(locationInfluenceTotals).forEach((locationName) => {
             const totals = locationInfluenceTotals[locationName];
@@ -2255,12 +2259,22 @@ return declare('seventhseacityoffivesails.utilities', null, {
             const imageElement = this.getCityLocationElement(locationName);
             if (!imageElement) return;
 
+            // WHY: Stable sort — viewer first, everyone else keeps server turn_order.
+            const ordered = totals.slice();
+            if (viewerId) {
+                ordered.sort((a, b) => {
+                    const aMine = Number(a.playerId) === viewerId ? 0 : 1;
+                    const bMine = Number(b.playerId) === viewerId ? 0 : 1;
+                    return aMine - bMine;
+                });
+            }
+
             const id = locationName.replace(/[^a-zA-Z0-9]/g, '_');
             dojo.place(this.format_block('jstpl_location_influence_list', { id }), imageElement, 'first');
 
             const container = $(`location-influence-list-${id}`);
             // WHY: &nbsp; (not ' ') so the gap survives even if CSS ever goes back to flex.
-            container.innerHTML = totals.map((entry) =>
+            container.innerHTML = ordered.map((entry) =>
                 `<span style="color:#${entry.playerColor}">${entry.influence}</span>`
             ).join('&nbsp;');
 

@@ -48,4 +48,5 @@ Don't move refresh back into EventPlayerTurnEnd — Eddie switched to board-chan
 Don't notify inside individual EventHub cases — `runEvents` after-pipeline is the right single place.
 Don't drop Solomonia's standing +1 thinking PRESSURE_TYPE-only bonuses are all ephemeral — her aura is board state; Loyal/Pack Tactics are the reaction ones to skip.
 Don't drop Constanzo's +1 when a controlled Thug is at the location — same standing gap as Solomonia was.
+Don't order viewer-first in PHP notify->all — that would put one player's order on everyone's screen. Reorder in `displayLocationInfluenceTotals` with `this.player_id`.
 
