@@ -203,7 +203,9 @@ class Reaction_01032 extends RiskReaction
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 $card = $event->theah->getCardById($event->cardId);
-                if ($owner->ControllerId == $card->ControllerId && 
+                // WHY: Card text is "your cards" — attachments engage too (Henri, Yield, etc.).
+                if ($card !== null &&
+                    $owner->ControllerId == $card->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'engagedEvent');
@@ -216,8 +218,11 @@ class Reaction_01032 extends RiskReaction
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
             {
-                $character = $event->theah->getCharacterById($event->cardId);
-                if ($owner->ControllerId == $character->ControllerId && 
+                // WHY: getCharacterById is null for attachments. Dusk cleanup and several
+                // abilities engarde attachments; that was a fatal on ControllerId.
+                $card = $event->theah->getCardById($event->cardId);
+                if ($card !== null &&
+                    $owner->ControllerId == $card->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'engardedEvent');
@@ -231,7 +236,8 @@ class Reaction_01032 extends RiskReaction
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 $card = $event->theah->getCardById($event->cardId);
-                if ($owner->ControllerId == $card->ControllerId && 
+                if ($card !== null &&
+                    $owner->ControllerId == $card->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->initiatingPlayerId))
                 {
                     $this->interceptEvent($event, 'cardMovingEvent');
@@ -245,7 +251,8 @@ class Reaction_01032 extends RiskReaction
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 $character = $event->theah->getCharacterById($event->characterId);
-                if ($owner->ControllerId == $character->ControllerId && 
+                if ($character !== null &&
+                    $owner->ControllerId == $character->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
                     $this->interceptEvent($event, 'characterWoundedEvent');
@@ -259,7 +266,8 @@ class Reaction_01032 extends RiskReaction
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 $character = $event->theah->getCharacterById($event->characterId);
-                if ($owner->ControllerId == $character->ControllerId && 
+                if ($character !== null &&
+                    $owner->ControllerId == $character->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
                 {
                     $this->interceptEvent($event, 'characterHealedEvent');
@@ -273,7 +281,8 @@ class Reaction_01032 extends RiskReaction
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 $character = $event->theah->getCharacterById($event->targetId);
-                if ($owner->ControllerId == $character->ControllerId &&
+                if ($character !== null &&
+                    $owner->ControllerId == $character->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'characterTargetedEvent');
@@ -288,7 +297,8 @@ class Reaction_01032 extends RiskReaction
             {
                 $defender = $event->theah->getCharacterById($event->defenderId);
                 $challenger = $event->theah->getCharacterById($event->challengerId);
-                if (($owner->ControllerId == $defender->ControllerId || $owner->ControllerId == $challenger->ControllerId) && 
+                if ($defender !== null && $challenger !== null &&
+                    ($owner->ControllerId == $defender->ControllerId || $owner->ControllerId == $challenger->ControllerId) &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'challengeIssuedEvent');
