@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -69,7 +70,7 @@ class _01144 extends Scheme implements IHasReactions
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2)
         {
-            $args["location"] = $game->globals->get(GAME::CHOSEN_LOCATION);
+            $args["location"] = $game->globals->get(Game::CHOSEN_LOCATION);
         }
 
         return $args;
@@ -81,14 +82,21 @@ class _01144 extends Scheme implements IHasReactions
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01144)
         {
-            $location = $ids[0];
+            // WHY: Client can submit [] / [null] (empty confirm dialog, crafted request).
+            // Without this guard, createRenownAddedToLocationEvent TypeErrors on null.
+            $location = $ids[0] ?? null;
+            $cityLocations = array_keys($game->theah->getCityLocations());
+            if (!is_string($location) || !in_array($location, $cityLocations, true)) {
+                throw new UserException($game->translate("Invalid city location."));
+            }
+
             $activePlayerId = $game->getActivePlayerId();
     
             $event = EventFactory::createRenownAddedToLocationEvent($activePlayerId, $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
     
-            $game->globals->set(GAME::CHOSEN_LOCATION, $location);
+            $game->globals->set(Game::CHOSEN_LOCATION, $location);
     
             // Get all the reknown to compare
             $players = $game->getObjectListFromDb("SELECT player_id, player_score score FROM player ORDER BY player_score DESC");
@@ -122,7 +130,16 @@ class _01144 extends Scheme implements IHasReactions
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01144_2)
         {
-            $location = $ids[0];
+            // WHY: Same null/empty ids risk as step 1; also enforce "different location" server-side.
+            $location = $ids[0] ?? null;
+            $firstLocation = $game->globals->get(Game::CHOSEN_LOCATION);
+            $cityLocations = array_keys($game->theah->getCityLocations());
+            if (!is_string($location)
+                || !in_array($location, $cityLocations, true)
+                || $location === $firstLocation)
+            {
+                throw new UserException($game->translate("You must choose a different city location."));
+            }
     
             $event = EventFactory::createRenownAddedToLocationEvent($game->getActivePlayerId(), $location, 1, $this->getInjectCode());
             $game->theah->eventCheck($event);
