@@ -455,6 +455,7 @@ class Game extends \Bga\GameFramework\Table
 
         $result["locationReknown"] = $this->theah->getCityLocationReknown();
         $result["locationControllers"] = $this->theah->getCityLocationControllers();
+        $result["locationInfluenceTotals"] = $this->getLocationInfluenceTotalsData();
 
         $result["forumInterveneList"] = [];
         $result["motionToDelayLocation"] = null;

@@ -273,6 +273,11 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.displayLocationControlChip(this.LOCATION_CITY_GOVERNORS_GARDEN);
         }
 
+        // WHY: After all city images have data-location so getCityLocationElement finds them.
+        if (gamedatas.locationInfluenceTotals) {
+            this.displayLocationInfluenceTotals(gamedatas.locationInfluenceTotals);
+        }
+
         if (gamedatas.sirensScreamUsedList && gamedatas.sirensScreamUsedList.usedList.length > 0) {
             this.displaySirensScreamUsedList(gamedatas.sirensScreamUsedList.cardId, gamedatas.sirensScreamUsedList.usedList);
         }

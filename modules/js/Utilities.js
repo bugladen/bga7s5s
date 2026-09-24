@@ -2237,6 +2237,44 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    // WHY: Standing Influence totals per city location (Parley-style overlay,
+    // top-left white). Values are getInfluencePressureValue sums (claim-relevant).
+    displayLocationInfluenceTotals: function(locationInfluenceTotals) {
+        this.removeLocationInfluenceTotals();
+
+        if (!locationInfluenceTotals) {
+            return;
+        }
+
+        Object.keys(locationInfluenceTotals).forEach((locationName) => {
+            const totals = locationInfluenceTotals[locationName];
+            if (!totals || totals.length === 0) {
+                return;
+            }
+
+            const imageElement = this.getCityLocationElement(locationName);
+            if (!imageElement) return;
+
+            const id = locationName.replace(/[^a-zA-Z0-9]/g, '_');
+            dojo.place(this.format_block('jstpl_location_influence_list', { id }), imageElement, 'first');
+
+            const container = $(`location-influence-list-${id}`);
+            // WHY: &nbsp; (not ' ') so the gap survives even if CSS ever goes back to flex.
+            container.innerHTML = totals.map((entry) =>
+                `<span style="color:#${entry.playerColor}">${entry.influence}</span>`
+            ).join('&nbsp;');
+
+            this.addTippyTooltip(
+                `location-influence-list-${id}`,
+                `<div class='_7sfs-basic-tooltip'>${_('Current Player Influence Totals')}</div>`
+            );
+        });
+    },
+
+    removeLocationInfluenceTotals: function() {
+        dojo.query('._7sfs-location-influence-list').forEach(dojo.destroy);
+    },
+
     displaySirensScreamUsedList: function(cardId, usedList) {
         this.removeSirensScreamUsedList();
 

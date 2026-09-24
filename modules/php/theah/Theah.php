@@ -356,6 +356,12 @@ class Theah
             if ($event->runEventHubAfterCards)
                 $this->handleEvent($event);
 
+            // WHY: After hub+cards so Location/Engaged/Controller are final. Replaces
+            // turn-end refresh — labels track board as characters move in/out of city.
+            if ($this->game->eventAffectsLocationInfluenceTotals($event)) {
+                $this->game->notifyLocationInfluenceTotals();
+            }
+
             foreach ($this->cards as $card) {
             // If any cards were updated, update them in the database
                 if ($card->IsUpdated) {

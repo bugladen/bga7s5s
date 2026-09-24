@@ -18,6 +18,20 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01006;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02044;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
 
 trait UtilitiesTrait
 {
@@ -1095,5 +1109,138 @@ trait UtilitiesTrait
         }
 
         return in_array($lockedId, $performerIds, true) ? [$lockedId] : [];
+    }
+
+    /**
+     * Per city location: each player's Influence contribution as it would count
+     * toward a claim pressure. Uses getInfluencePressureValue (not raw
+     * ModifiedInfluence) so "during pressures" bonuses (Claude +1, Aníbal +2, …)
+     * match what pressureLocation sums for STAT_INFLUENCE.
+     *
+     * Also applies standing location auras that pressureLocation only sees via
+     * PRESSURE_TYPE flags mid-pressure (Solomonia Forum-adjacent +1, Constanzo
+     * +1 when a Thug is at the location). Does not apply reaction-chosen
+     * mid-pressure modifiers (Loyal, Pack Tactics, …).
+     *
+     * Ordered by turn_order for stable color order in the UI.
+     *
+     * @return array<string, list<array{playerId:int, playerColor:string, influence:int}>>
+     */
+    public function getLocationInfluenceTotalsData(): array
+    {
+        $this->theah->buildCity();
+
+        $players = $this->getCollectionFromDb("SELECT player_id FROM player ORDER BY turn_order");
+        $result = [];
+
+        // WHY: Solomonia's +1 is a standing Forum-adjacency aura, but pressureLocation
+        // only applies it when SOLOMONIA_PRESSURE_TYPE is set during EventPressureOccuring.
+        // Standing labels must recompute that condition from the board.
+        $solomoniaControllerId = null;
+        foreach ($this->theah->getCharactersAtLocation(Game::LOCATION_CITY_FORUM) as $character) {
+            if ($character instanceof _02044 && $character->isControlled()) {
+                $solomoniaControllerId = (int) $character->ControllerId;
+                break;
+            }
+        }
+        $solomoniaAdjacent = $solomoniaControllerId !== null
+            ? $this->theah->getAdjacentCityLocations(Game::LOCATION_CITY_FORUM, $includeHome = false)
+            : [];
+
+        // WHY: Same gap as Solomonia — CONSTANZO_PRESSURE_TYPE only during pressure.
+        // Text: during pressures, if you control a Thug at that location, +1 (per type;
+        // Influence-only label = +1 once).
+        $constanzoControllerIds = [];
+        foreach ($players as $playerId => $_) {
+            $leader = $this->theah->getLeaderByPlayerId((int) $playerId);
+            if ($leader instanceof _01006 && $leader->isControlled()) {
+                $constanzoControllerIds[] = (int) $playerId;
+            }
+        }
+
+        foreach ($this->theah->getCityLocations() as $location) {
+            $influenceByPlayer = [];
+            foreach ($players as $playerId => $_) {
+                $influenceByPlayer[(int) $playerId] = 0;
+            }
+
+            foreach ($this->theah->getCharactersAtLocation($location->Name) as $character) {
+                if (! $character->isControlled()) {
+                    continue;
+                }
+                $controllerId = (int) $character->ControllerId;
+                if (array_key_exists($controllerId, $influenceByPlayer)) {
+                    // WHY: Same hook pressureLocation uses for STAT_INFLUENCE — includes
+                    // standing "during pressures" Influence bonuses that would count on claim.
+                    $influenceByPlayer[$controllerId] += $character->getInfluencePressureValue(
+                        $this->theah,
+                        $location->Name
+                    );
+                }
+            }
+
+            if (
+                $solomoniaControllerId !== null
+                && in_array($location->Name, $solomoniaAdjacent, true)
+                && array_key_exists($solomoniaControllerId, $influenceByPlayer)
+            ) {
+                $influenceByPlayer[$solomoniaControllerId] += 1;
+            }
+
+            foreach ($constanzoControllerIds as $constanzoPlayerId) {
+                if (! array_key_exists($constanzoPlayerId, $influenceByPlayer)) {
+                    continue;
+                }
+                $hasThug = false;
+                foreach ($this->theah->getCharactersAtLocation($location->Name) as $character) {
+                    if ((int) $character->ControllerId === $constanzoPlayerId && $character->hasTrait("Thug")) {
+                        $hasThug = true;
+                        break;
+                    }
+                }
+                if ($hasThug) {
+                    $influenceByPlayer[$constanzoPlayerId] += 1;
+                }
+            }
+
+            $totals = [];
+            foreach ($influenceByPlayer as $playerId => $influence) {
+                $totals[] = [
+                    'playerId' => $playerId,
+                    'playerColor' => $this->getPlayerColorById($playerId),
+                    'influence' => $influence,
+                ];
+            }
+            $result[$location->Name] = $totals;
+        }
+
+        return $result;
+    }
+
+    public function notifyLocationInfluenceTotals(): void
+    {
+        $this->notify->all("locationInfluenceTotalsUpdated", '', [
+            'locationInfluenceTotals' => $this->getLocationInfluenceTotalsData(),
+        ]);
+    }
+
+    /**
+     * Events that change who is at a city location, Engaged state (pressure hooks),
+     * or controller — so the Influence label should refresh.
+     */
+    public function eventAffectsLocationInfluenceTotals($event): bool
+    {
+        return $event instanceof EventCardMoved
+            || $event instanceof EventCardEngaged
+            || $event instanceof EventCardEngarded
+            || $event instanceof EventCardMustered
+            || $event instanceof EventCharacterMustered
+            || $event instanceof EventCharacterRecruited
+            || $event instanceof EventCityCardAddedToLocation
+            || $event instanceof EventApproachCharacterPlayed
+            || $event instanceof EventCardDiscardedFromPlay
+            || $event instanceof EventCardRemovedFromPlay
+            || $event instanceof EventCharacterDestroyed
+            || $event instanceof EventCardSentToLocker;
     }
 }

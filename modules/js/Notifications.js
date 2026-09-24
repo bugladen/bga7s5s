@@ -70,6 +70,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['locationClaimed', 500],
             ['parleyInterveneListUpdated', 1],
             ['motionToDelayLabelUpdated', 1],
+            ['locationInfluenceTotalsUpdated', 1],
             ['sirensScreamUsedListUpdated', 1],
             ['crabsInABucketUsedListUpdated', 1],
             ['locationActionUsedListUpdated', 1],
@@ -3012,6 +3013,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         this.displayMotionToDelayLabel(args.locationName);
+    },
+
+    notif_locationInfluenceTotalsUpdated: function( notif )
+    {
+        debug( 'notif_locationInfluenceTotalsUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayLocationInfluenceTotals(args.locationInfluenceTotals);
     },
 
     notif_sirensScreamUsedListUpdated: function( notif )

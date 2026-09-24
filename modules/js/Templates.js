@@ -275,6 +275,10 @@
         <div id="motion-to-delay-label" class="_7sfs-forum-intervene-list"></div>
         `;
 
+        window.jstpl_location_influence_list = `
+        <div id="location-influence-list-\${id}" class="_7sfs-location-influence-list"></div>
+        `;
+
         window.jstpl_sirens_scream_used_list = `
         <div id="sirens-scream-used-list" class="_7sfs-card-player-list"></div>
         `;
