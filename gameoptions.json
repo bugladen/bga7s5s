@@ -14,7 +14,8 @@
                 "name": "City Deck Update 2026",
                 "description": "The City Deck will use the Blood and Salt City Deck Update 2026 build"
             }
-        }
+        },
+        "default": 2
     },
 
     "101": {
