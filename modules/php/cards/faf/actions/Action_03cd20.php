@@ -8,7 +8,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03cd20 extends EventCityAction
 {
@@ -18,23 +17,6 @@ class Action_03cd20 extends EventCityAction
 
         $this->Name = clienttranslate("Pressure with Finesse; add a city card and return this card to your Home");
         $this->RequiresPerformerSelected = true;
-    }
-
-    public function getPerformersForAction(int $playerId, Theah $theah): array
-    {
-        $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($performer) => !$performer->Engaged));
-        return $performers;
-    }
-
-    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
-    {
-        if (!parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
-        {
-            return false;
-        }
-
-        return count($this->getPerformersForAction($playerId, $theah)) > 0;
     }
 
     public function handleEvent(Event $event)
