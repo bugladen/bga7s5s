@@ -26,25 +26,7 @@ class Action_01136 extends RiskCityAction
             return false;
         }
 
-        $performers = [];
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        foreach ($characters as $character)
-        {
-            if ($character->Wounds == 0)
-            {
-                continue;
-            }
-
-            $otherCharacters = $theah->getCharactersAtLocationByPlayerId($character->Location, $playerId);
-            $otherCharacters = array_filter($otherCharacters, fn($c) => $character->Id !== $c->Id);
-            
-            if (count($otherCharacters) == 0)
-            {
-                $performers[] = $character;
-            }
-        }
-
-        return count($performers) > 0;
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
@@ -53,14 +35,11 @@ class Action_01136 extends RiskCityAction
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
         foreach ($characters as $character)
         {
-            if ($character->Wounds == 0)
-            {
-                continue;
-            }
-
+            // WHY: Wounds are not a cost — alone-at-location is the printed If gate.
+            // Heal is the effect; unwounded alone performers may still play.
             $otherCharacters = $theah->getCharactersAtLocationByPlayerId($character->Location, $playerId);
             $otherCharacters = array_filter($otherCharacters, fn($c) => $character->Id !== $c->Id);
-            
+
             if (count($otherCharacters) == 0)
             {
                 $performers[] = $character;
@@ -76,18 +55,19 @@ class Action_01136 extends RiskCityAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-
             $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCharacterById($performerId);
             $owner = $this->getOwningCard($event->theah);
 
-            $healEvent = EventFactory::createCharacterBeingHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-            $event->theah->queueEvent($healEvent);
-
-            $game = $event->theah->game;
+            // WHY: Heal is the effect, not a cost — no-op when already at 0 wounds.
+            if ($performer !== null && $performer->Wounds > 0)
+            {
+                $healEvent = EventFactory::createCharacterBeingHealedEvent($performerId, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $event->theah->queueEvent($healEvent);
+            }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
-
 }
