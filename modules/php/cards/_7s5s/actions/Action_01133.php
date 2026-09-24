@@ -62,9 +62,17 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
     {
         $discount = parent::getActionFromHandDiscount($theah, $performer, $action, $explanations);
         $owner = $this->getOwningCard($theah);
-        if ($owner instanceof _01133 && $owner->WillEngage)
+
+        // WHY: optional engage (pre-pay reaction) sets WillEngage — discount equals printed
+        // WealthCost ("ignore all costs"). Id gate so a sticky WillEngage cannot discount
+        // unrelated hand Actions.
+        if ($action->Id == $this->Id && $owner instanceof _01133 && $owner->WillEngage)
         {
             $discount += $owner->WealthCost;
+            $explanations[] = sprintf(
+                $theah->game->translate("%s: ignore all costs (performer engaged)."),
+                $owner->getInjectCode()
+            );
         }
 
         return $discount;
