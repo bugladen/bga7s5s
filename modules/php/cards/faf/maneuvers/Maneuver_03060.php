@@ -32,11 +32,13 @@ class Maneuver_03060 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        if ($actor === null || $actor->Wounds <= 0)
+        if ($actor === null)
         {
             return false;
         }
 
+        // WHY: Participant wounds are not a cost — only Gambling + Sorcerer-at-location.
+        // Resolve skips heal when actor has no wounds (heal of 0 is a no-op).
         // Player must control a Sorcerer at the duel's location (the actor's location).
         $characters = $theah->getCharactersAtLocation($actor->Location);
         foreach ($characters as $character)

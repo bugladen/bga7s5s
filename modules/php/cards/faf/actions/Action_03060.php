@@ -40,10 +40,12 @@ class Action_03060 extends RiskCityAction implements ISorcererAbility
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
 
+        // WHY: Wounds are not a cost to play. Sorcerer trait only — players may play
+        // for the Sorcerer ability itself (Elina / Path reactions, etc.) with nobody
+        // wounded. Heal targets are filtered at the chooser / empty-resolve path.
         return array_values(array_filter(
             $performers,
             fn(Character $performer) => $performer->hasTrait("Sorcerer")
-                && count($this->getValidHealCharacters($theah, $performer)) > 0
         ));
     }
 
@@ -125,6 +127,35 @@ class Action_03060 extends RiskCityAction implements ISorcererAbility
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
+            $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCharacterById($performerId);
+
+            // WHY: Wounds are not a cost — if no healable characters after pay, still
+            // fire Sorcerer start/played + ActionResolved (no soft-lock on empty chooser).
+            // Mirror Action_01134 / Action_02045 optional-tail.
+            if ($performer === null || count($this->getValidHealCharacters($event->theah, $performer)) == 0)
+            {
+                $sorcererAbilityStartedEvent = EventFactory::createSorcererAbilityStartEvent(
+                    $owner->ControllerId,
+                    $owner->Id,
+                    $this->Id,
+                    $performerId
+                );
+                $event->theah->queueEvent($sorcererAbilityStartedEvent);
+
+                $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent(
+                    $owner->ControllerId,
+                    $owner->Id,
+                    $this->Id,
+                    $performerId
+                );
+                $event->theah->queueEvent($sorcererAbilityPlayedEvent);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $event->theah->queueEvent($actionResolvedEvent);
+                return;
+            }
+
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "03060", $this->Id);
             $event->theah->queueEvent($transition);
         }
