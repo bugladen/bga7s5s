@@ -20,7 +20,7 @@ class Reaction_01006 extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose a character at Constanzo\'s Location to lose Brute: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may choose a character at Constanzo\'s Location to lose Brute (the character you are KEEPING): ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
