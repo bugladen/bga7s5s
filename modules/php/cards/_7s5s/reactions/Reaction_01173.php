@@ -15,6 +15,11 @@ class Reaction_01173 extends RiskReaction
 {
     private int $CharacterId = 0;
     private string $ToLocation = "";
+    // WHY: Destination must live on the reaction, not Game::REACTION_ID. When another
+    // reaction (e.g. Soline Reaction_01089) resolves between Sea Legs choice and pay,
+    // actReactionForState overwrites the shared global — pay then sees "pass" /
+    // "moveTo-…" and the adjacency check fails silently (paid, no move).
+    private string $ChosenLocation = "";
 
     public function __construct()
     {
@@ -64,7 +69,11 @@ class Reaction_01173 extends RiskReaction
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
-            $location = str_replace("moveAgain-", "", $event->reactionId);
+            // Prefer sticky ChosenLocation (saved at choice) over parsing reactionId —
+            // same pattern as Reaction_01137 FollowCharacterId / Reaction_04058 chosenTargetId.
+            $location = $this->ChosenLocation !== ""
+                ? $this->ChosenLocation
+                : str_replace("moveAgain-", "", $event->reactionId);
             $adjacentLocations = $event->theah->getAdjacentCityLocations($this->ToLocation, false);
             if ($event->theah->locationInCity($location) && in_array($location, $adjacentLocations))
             {
@@ -92,6 +101,9 @@ class Reaction_01173 extends RiskReaction
         if ($reactionId != 'decline')
         {
             $owner = $this->getOwningCard($game->theah);
+            $this->ChosenLocation = str_replace("moveAgain-", "", $reactionId);
+            $owner->IsUpdated = true;
+
             $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
             $game->theah->queueEvent($event);
 
