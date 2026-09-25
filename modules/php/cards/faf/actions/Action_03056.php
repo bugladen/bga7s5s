@@ -64,13 +64,8 @@ class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             return [false, $game->translate("Their controller already controls this location.")];
         }
 
-        // WHY: "and you move a Renown" — both halves fire together; no Renown means dead payoff.
-        $cityLocation = $game->theah->getCityLocation($character->Location);
-        if ($cityLocation === null || $cityLocation->Renown < 1)
-        {
-            return [false, $game->translate("There is no Renown at this location to move.")];
-        }
-
+        // WHY: Renown is right of the bullet (effect), not a targeting cost. No-Renown still
+        // allows claim; actFromActionWithId skips 03056_2 when there is nothing to move.
         return [true, ""];
     }
 
@@ -251,11 +246,6 @@ class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacte
     private function getValidTargets(Theah $theah, Character $performer): array
     {
         $opposing = $theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId);
-        $cityLocation = $theah->getCityLocation($performer->Location);
-        if ($cityLocation === null || $cityLocation->Renown < 1)
-        {
-            return [];
-        }
 
         return array_values(array_filter(
             $opposing,
