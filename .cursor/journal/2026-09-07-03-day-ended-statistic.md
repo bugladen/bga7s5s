@@ -6,6 +6,7 @@ First real BGA statistics for this game. Docs: https://en.doc.boardgamearena.com
 ## Stats
 - Table `day_ended` (id 10): day game ended
 - Table `victory_type` (id 18): how the game was won — labeled int
+- Table `city_deck` (id 22): which City Deck table option — labeled int (see 2026-09-25-04)
 - Player `renown_ended` (id 11): renown at end
 - Player `leader` (id 12): which Leader brought — labeled int
 - Player `characters_day_1`…`characters_day_5` (ids 13–17): controlled characters in play at that day's dusk end

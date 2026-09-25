@@ -22,8 +22,12 @@ trait DeckTrait
 
         // Load the city deck JSON
         $city_decks = json_decode(CityDecks::$decks);
-        $cityDeckChoice = $this->tableOptions->get(Game::OPTIONS_CITY_DECK);
+        $cityDeckChoice = (int) $this->tableOptions->get(Game::OPTIONS_CITY_DECK);
         $cityDeck = $city_decks->decks[$cityDeckChoice];
+
+        // WHY: Record when the chosen build is materialized (same moment as deck creation),
+        // not at end-of-game — option is fixed for the table once decks are built.
+        $this->bga->tableStats->set(Game::STAT_CITY_DECK, $cityDeckChoice);
 
         foreach ($cityDeck->cards as $cityCard)
             $card = $this->createCardInLocation($cityCard, Game::LOCATION_CITY_DECK, 0, 0);

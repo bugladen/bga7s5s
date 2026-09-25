@@ -47,12 +47,17 @@ class Game extends \Bga\GameFramework\Table
     //Table stats
     final const STAT_DAY_ENDED = "day_ended";    //The day that ended the game
     final const STAT_VICTORY_TYPE = "victory_type"; //How the game was won
+    final const STAT_CITY_DECK = "city_deck"; //Which City Deck table option was chosen
     // Victory type values for STAT_VICTORY_TYPE (must match stats.json value_labels id 18)
     final const VICTORY_NONE = 0;
     final const VICTORY_ASSASSINATION = 1;
     final const VICTORY_DOMINANCE = 2;
     final const VICTORY_ECONOMIC = 3;
     final const VICTORY_FIFTH_DAY = 4;
+    // City deck values for STAT_CITY_DECK (must match gameoptions.json option 100 / stats.json value_labels id 22)
+    final const CITY_DECK_CORE = 0;
+    final const CITY_DECK_UPDATE_2024 = 1;
+    final const CITY_DECK_UPDATE_2026 = 2;
     //Player stats
     final const STAT_RENOWN_ENDED = "renown_ended"; //The renown that the player ended the game with
     final const STAT_LEADER = "leader"; //Which Leader the player brought
@@ -597,6 +602,7 @@ class Game extends \Bga\GameFramework\Table
         // Init game statistics (names must match stats.json).
         $this->bga->tableStats->init(Game::STAT_DAY_ENDED, 0);
         $this->bga->tableStats->init(Game::STAT_VICTORY_TYPE, Game::VICTORY_NONE);
+        $this->bga->tableStats->init(Game::STAT_CITY_DECK, Game::CITY_DECK_CORE);
         $this->bga->playerStats->init([
             Game::STAT_RENOWN_ENDED,
             Game::STAT_LEADER,

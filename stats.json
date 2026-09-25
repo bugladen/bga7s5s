@@ -9,6 +9,11 @@
       "id": 18,
       "name": "What type of victory occurred?",
       "type": "int"
+    },
+    "city_deck": {
+      "id": 22,
+      "name": "Which City Deck was chosen for the game?",
+      "type": "int"
     }
   },
   "player": {
@@ -83,6 +88,11 @@
       "Dominance",
       "Economic",
       "Fifth Day"
+    ],
+    "22": [
+      "Core Set",
+      "City Deck Update 2024",
+      "City Deck Update 2026"
     ]
   }
 }
