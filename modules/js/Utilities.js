@@ -69,11 +69,11 @@ return declare('seventhseacityoffivesails.utilities', null, {
             theme: '7sfs',
             placement: 'auto',
             zIndex: 10000,
-            // 500ms is long enough to distinguish from a selection tap, short enough
+            // 1000ms is long enough to distinguish from a selection tap, short enough
             // that checking card text on mobile still feels intentional.
-            // WHY doubled from 250: mobile players were accidentally opening hover
+            // WHY quadrupled from 250: mobile players were accidentally opening hover
             // text while trying to select cards; longer hold reduces false triggers.
-            touch: ['hold', 500],
+            touch: ['hold', 1000],
             popperOptions: {
                 strategy: 'fixed',
                 modifiers: [
