@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
@@ -112,6 +113,17 @@ class Reaction_03007 extends AttachmentReaction implements ISorcererAbility
             $card = $event->theah->game->getCardObjectFromDb($event->characterId);
         }
         if (! ($card instanceof Character))
+        {
+            return;
+        }
+
+        // WHY: Card text is "sent to The Locker". Destroyed characters with the
+        // Brute keyword go to discard instead (rules + EventHub). Red Hand Thugs
+        // are the common case — they are Thug + Brute; discard is from Brute, not
+        // Thug. Match EventHub: instanceof Brute (trait-only Brute, e.g. Cirilo,
+        // still goes to locker). EventCharacterDestroyed is the destroy→locker
+        // signal because that path does not fire EventCardSentToLocker.
+        if ($card instanceof Brute)
         {
             return;
         }
