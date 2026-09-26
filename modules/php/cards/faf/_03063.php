@@ -78,12 +78,20 @@ class _03063 extends Scheme implements IHasActions
             return $discount;
         }
 
-        // WHY: Printed "When an opponent equips" means the equipping player — use the
-        // attachment's controller. Do NOT use $performer->ControllerId for this gate:
-        // CanEquipToOpponents (Shackles / Legion's Caress) sets CHOSEN_PERFORMER to the
-        // equip *target*, so a performer-based check falsely taxes you for equipping onto
-        // an opponent while your Scoundrel is at that location.
-        if ($attachment->ControllerId == $this->ControllerId || $attachment->ControllerId == 0)
+        // WHY: Printed "When an opponent equips" means the equipping player.
+        // Hand / owned attachments already have ControllerId = equipper. City-deck
+        // attachments sit at ControllerId 0 until EventAttachmentEquipped — do NOT treat
+        // 0 as "skip" (that exempted Object of Wonder and every other city attach).
+        // Fall back to $performer->ControllerId only when ControllerId is 0: city equip
+        // always picks your own character as CHOSEN_PERFORMER. Do NOT use performer alone
+        // when ControllerId is set — CanEquipToOpponents (Shackles / Legion's Caress)
+        // stores the equip *target* in CHOSEN_PERFORMER, so a performer-only check falsely
+        // taxes you for equipping onto an opponent while your Scoundrel is at that location.
+        $equippingPlayerId = $attachment->ControllerId > 0
+            ? $attachment->ControllerId
+            : $performer->ControllerId;
+
+        if ($equippingPlayerId == $this->ControllerId)
         {
             return $discount;
         }
