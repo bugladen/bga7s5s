@@ -19,12 +19,13 @@ class _01178 extends CityCharacter
         parent::__construct();
 
         $this->Name = clienttranslate('Carmella Vanessa Slavaggi');
+        $this->Title = clienttranslate('Lady V');
         $this->Image = '01178.jpg';
         $this->ExpansionName = '_7s5s';
         $this->ExpansionNumber = 1;
         $this->CardNumber = 178;
 
-        $this->Title = clienttranslate('Lady V');
+        $this->InPlayXImageOffset = -25;
 
         $this->Resolve = 4;
         $this->Combat = 3;
