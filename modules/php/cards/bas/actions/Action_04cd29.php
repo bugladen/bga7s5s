@@ -65,7 +65,15 @@ class Action_04cd29 extends CharacterAction implements IAbilityThatTargetsCharac
 
         $owner = $this->getOwningCharacter($theah);
 
-        // City Action: available while Tijani sits at a city location (unmustered or mustered).
+        // WHY: CardAction parent only rejects when controlled by someone else —
+        // uncontrolled city mercs pass for every player. Match Kaj/Penya/Giacinto:
+        // isControlled() blocks that leak; parent then restricts to the controller.
+        if (! $owner->isControlled())
+        {
+            return false;
+        }
+
+        // City Action: Tijani must be at a city location (not Home).
         if (! $theah->cardInCity($owner))
         {
             return false;

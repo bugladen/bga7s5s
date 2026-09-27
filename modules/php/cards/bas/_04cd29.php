@@ -24,7 +24,7 @@ class _04cd29 extends CityCharacter implements IHasActions
         $this->ExpansionNumber = 4;
         $this->CardNumber = 0;
 
-        $this->InPlayXImageOffset = -20;
+        $this->InPlayXImageOffset = -25;
 
         $this->CityCardNumber = 29;
 
