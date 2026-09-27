@@ -24,3 +24,5 @@ Each element contains an associative array as follows:
 4. "possibleactions" => An array of strings containing the names of the PHP methods that could be called from the Javascript-side when a player submits an action.
 5. "action" => If statetype=multipleactiveplayer, the name of the PHP function that will be called when all players have submitted their action. If statetype=game, the name of the PHP function that auto-runs when the state is transitioned to.
 6. "transitions" => An associative array of named transitions to other states.
+
+**Empty transition rule:** An empty transition key `""` may only exist if it is the **only** transition from that state. If the state has more than one transition (e.g. success + `"back"`), every key must be named (`"done"`, `"characterChosen"`, etc.) and callers must pass that name to `nextState(...)`. Bare `nextState()` is only valid when `""` is the sole transition.

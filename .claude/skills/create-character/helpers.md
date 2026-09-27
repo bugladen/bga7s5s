@@ -22,7 +22,13 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 - `$theah->getDuelRoundActor(): ?Character` / `getDuelRoundOpponent(): ?Character` — current round participants.
 - `$theah->getDuelChallengerId(): ?int` / `getDuelDefenderId(): int` / `getDuelOpponentId(int $actorId): int` — id-only accessors.
 - `$theah->getCombatCardsForCurrentRound(): array` — combat cards played in the current round.
+- `$theah->currentRoundCombatCardsHaveDashedRiposte(): bool` — true when every combat card this round has `DashedRiposte` (EventHub Technique Riposte strip). No cards → `false`. Use to hide / reject Technique Riposte options.
 - `$theah->getCurrentDuelThreat(int $characterId): int` — running threat against a participant.
 - `EventFactory::createGainLethalEvent(int $actorId, Theah $theah)` — produces a `ThreatModified` event marking the adversary's threat lethal.
 - `Game::IN_DUEL` / `Game::DUEL_GAMBLED` globals — round-scoped, see Pattern E.
+
+Pressure / Influence-label (Pattern A Covert and standing chips):
+- Mint a dedicated `Game::*_PRESSURE_TYPE` power-of-two + apply in `UtilitiesTrait::pressureLocation` outside the per-stat loop (Loyal / Solomonia shape). Do **not** reuse `PRESSURE_BONUS` for "any pressure type" auras.
+- `$game->getLocationInfluenceTotalsData()` / `notifyLocationInfluenceTotals()` — standing Influence chips. Covert-style bonuses that gate on uncontrolled must also recompute here.
+- `$game->eventAffectsLocationInfluenceTotals($event)` — must include `EventLocationClaimed` and `EventLocationBecomesUncontrolled` when uncontrolled-gated bonuses exist, or chips go stale after claim.
 

@@ -2019,6 +2019,29 @@ class Theah
         return $combatCards;
     }
 
+    /**
+     * True when every combat card this round has DashedRiposte (EventHub Technique
+     * Riposte strip). No combat cards → false (Riposte still meaningful).
+     */
+    public function currentRoundCombatCardsHaveDashedRiposte(): bool
+    {
+        $combatCards = $this->getCombatCardsForCurrentRound();
+        if (count($combatCards) === 0)
+        {
+            return false;
+        }
+
+        foreach ($combatCards as $combatCard)
+        {
+            if (! $combatCard->DashedRiposte)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function getCurrentDuelThreat($characterId) : int
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);

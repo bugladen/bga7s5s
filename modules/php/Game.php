@@ -206,10 +206,12 @@ class Game extends \Bga\GameFramework\Table
     final const SOLINE_PRESSURE_TYPE = 16384;
     final const VANTAGE_POINT_PRESSURE_TYPE = 32768;
     final const MEETING_OF_THE_MINDS_PRESSURE_TYPE = 65536;
+    final const VALERI_PRESSURE_TYPE = 131072;
     final const SOLOMONIA_ID = "solomoniaId";
     final const LOYAL_PLAYER_ID = "loyalPlayerId";
     final const VANTAGE_POINT_PLAYER_ID = "vantagePointPlayerId";
     final const MEETING_OF_THE_MINDS_PLAYER_ID = "meetingOfTheMindsPlayerId";
+    final const VALERI_ID = "valeriId";
 
     //Player action global variables
     //Delete these in stNextPlayer
@@ -280,6 +282,7 @@ class Game extends \Bga\GameFramework\Table
     final const STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
     final const CELERITY_CHALLENGE_TYPE = 30;
     final const HONORABLE_CHALLENGE_TYPE = 31;
+    final const VALERI_CHALLENGE_TYPE = 32;
 
     //Duel global variables
     //Duel Names

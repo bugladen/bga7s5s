@@ -571,6 +571,33 @@ Wire `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions`.
 
 Reference: `Technique_04033` (canonical modern); older sibling `Technique_01013`; HIGHEST_PRIORITY sibling `Technique_03049`.
 
+### Three-way Thrust / Riposte / Lethal choice (challenge + duel)
+
+For **"Technique: +1[Thrust], +1[Riposte], or gain Lethal"** (`Technique_05DabneyUS01` Valeri CAD) — extend the Iago dual-picker shape:
+
+1. On `EventResolveTechnique`: reset choice default + `createTechniqueTransitionEvent(..., "NNNNN", ...)` (HIGHEST_PRIORITY).
+2. **Two states** (same transition key, per-dispatcher routing — see "Technique usable in BOTH challenge and duel contexts"):
+   - `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_NNNNN` — **Thrust-only** button.
+   - `DUEL_CHOOSE_TECHNIQUE_NNNNN` — Thrust / Riposte / Lethal (ids match your convention; Valeri uses `0` Riposte, `1` Thrust, `2` Lethal).
+3. Apply on `EventDuelCalculateTechniqueValues` (Thrust / Riposte / `createGainLethalEvent`) and on `EventGenerateChallengeThreat` for challenge Thrust → +1 adversary threat.
+4. Clear choice on `EventTechniqueCanceled` / `EventDuelEnd`.
+
+**WHY challenge is Thrust-only:**
+- Riposte only matters on duel `EventDuelCalculateTechniqueValues` — no Calculate on challenge.
+- Lethal on challenge threat is a no-op: challenge threat is already capped at the challenge stat, so Restricted Hostilities never cuts it.
+
+**Dashed Riposte hides the Riposte option (duel only):**
+- EventHub zeroes Technique Riposte when every combat card this round has `DashedRiposte`.
+- Do not offer a no-op: `Theah::currentRoundCombatCardsHaveDashedRiposte()` (no combat cards → `false`, Riposte still offered).
+- Pass `riposteAvailable` from state `getArgs`; hide the Riposte button in `OnUpdateActionButtons`; server-reject Riposte in `actFromTechniqueWithId`; zombie → Thrust when dashed (default Choice is often Riposte).
+- Optional: dynamic `${technique_choices}` in `descriptionMyTurn` via args + `i18n`.
+
+**Empty transition + Back:**
+- An empty `""` transition may only exist if it is the **sole** transition from the state. If you add `"back"`, success must be a named key (`"done"`, …) and callers must `nextState("thatName")`.
+- Do **not** casually add Back on the challenge Technique resolve picker — cancelling a pending technique (Used / queued calc events) has unintended consequences. Bastien `01063` cancel-to-picker is a special case; Valeri's challenge Back was tried and **reverted**.
+
+Reference: `Technique_05DabneyUS01`; dual-picker sibling `Technique_04033`; EventHub dashed-Riposte strip; Bastien cancel `State_duelChooseTechnique_01063` (special case only).
+
 ### Deferred optional effect on adversary's next round
 
 For **"At the start of the adversary's next round, you may add a threat to <Owner>"** (Iago `_04033` — often paired with the Thrust/Parry choice above):
@@ -614,20 +641,22 @@ Both states live under `modules/php/States/<expansion>/` and extend `GameState`.
 "NNNNN" => States::DUEL_CHOOSE_TECHNIQUE_NNNNN,
 ```
 
-Both state classes use the default-`""` transition back to their dispatcher EVENTS state (it's the only exit), and both expose `actFromCardWithId` as their `#[PossibleAction]`. Their `getArgsFromTechnique`/`actFromTechniqueWithId` can share a single `if ($state == HIGH_DRAMA... || $state == DUEL_CHOOSE...)` branch since the args shape and act validation are identical — the only divergence is the swap mechanics (see above).
+Both state classes use the default-`""` transition back to their dispatcher EVENTS state (**only when `""` is the sole exit** — see empty-transition rule / checklist item 13), and both expose `actFromCardWithId` as their `#[PossibleAction]`. Their `getArgsFromTechnique`/`actFromTechniqueWithId` can share a single `if ($state == HIGH_DRAMA... || $state == DUEL_CHOOSE...)` branch when args/act validation match — **challenge vs duel button sets may still diverge** (e.g. Thrust-only on challenge for multi-choice Techniques — Valeri `05DabneyUS01`).
 
-JS handlers live in `modules/js/{OnEnteringState,OnUpdateActionButtons,OnLeavingState}.<expansion>.js`. Both states need their own keyed handler in each file — the args shape and Confirm button are identical to the existing `_01063` Bastien handlers; copy-paste and rename. The `_01063` versions live in the `*.7s5s.js` files; faf cards' versions live in `*.faf.js` files.
+JS handlers live in `modules/js/{OnEnteringState,OnUpdateActionButtons,OnLeavingState}.<expansion>.js`. Button-only choice states often need **only** `OnUpdateActionButtons` (Iago / Valeri). Swap/picker states that highlight characters need all three files — mirror `_01063` Bastien. The `_01063` versions live in the `*.7s5s.js` files; faf/bas/cad cards' versions live in `*.faf.js` / `*.bas.js` / `*.cad.js`.
 
 WHY `actFromCardWithId` and not `actFromTechniqueWithId` as the `#[PossibleAction]`: the GameState framework's `actFromCardWithId` delegates into `Game::actFromCardWithId`, which the technique framework routes back to the technique's own `actFromTechniqueWithId` via the per-state dispatch in `StatesTrait`. Don't expose `actFromTechniqueWithId` directly as the `#[PossibleAction]` — mirror the existing `_01063` state classes.
 
 ### Disambiguating same-name characters in state descriptions
 
-Some characters share a name across expansions (e.g., `_01036` "Daniella Dietrich" and `_03013` "Daniella Dietrich, Witch / Hunter"). The state's `descriptionMyTurn` is the only place this is user-visible; disambiguate by appending the `Title` in parens:
+Some characters share a name across expansions (e.g., `_01036` "Daniella Dietrich" and `_03013` "Daniella Dietrich, Witch / Hunter"). The state's `descriptionMyTurn` is the only place this is user-visible; disambiguate by appending the `Title` in parens **only when needed**:
 
 ```php
 descriptionMyTurn: clienttranslate('Daniella Dietrich (Witch, Hunter)')
                    . clienttranslate(': Wound and Swap with a Hunter or Zealot: ${you} must choose a Hunter or Zealot:'),
 ```
+
+Default: use the character **Name alone** (no Title) — CAD Valeri and most unique Leaders. Append Title only when another in-game card shares the same Name.
 
 The state classes' `name` field (used by JS) doesn't need disambiguation because state IDs already differ — `_01036`'s state is `duelChooseTechnique_01036`, `_03013`'s is `duelChooseTechnique_03013`.
 

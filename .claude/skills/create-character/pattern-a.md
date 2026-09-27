@@ -1150,6 +1150,20 @@ WHY `setUsed(false)` on a continuous Action: the parent `CardAction::handleEvent
 
 Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags opposing characters with "Sorcerer" on ability-start events and untags at `EventPlayerTurnEnd`. `Action_01090` (Yuri Pyetrovich) — Continuous Action that pre-activates a paired Reaction; opposite shape (user-triggered, but immediately flips `Used` back to false).
 
+### Covert pressure aura (+N at Owner's uncontrolled location)
+
+Printed: **`<i>Covert</i> - During pressures at <Owner>'s location, add +N to your total.`** plus parenthetical **`(Covert Abilities may only be used at uncontrolled locations.)`**.
+
+1. On `EventPressureOccuring` when Owner is controlled, at `$event->location`, City location **uncontrolled** (`getControllerForLocation == 0`): notify + `setGlobalFlag(PRESSURE_TYPE, *_PRESSURE_TYPE)` + stash Owner id in a dedicated global (e.g. `VALERI_ID`).
+2. In `UtilitiesTrait::pressureLocation`: when the flag is set, add +N to Owner's controller **outside** the per-stat loop (same placement as Loyal / Solomonia Forum adjacency — not inside `STAT_INFLUENCE` only).
+3. **Do not** reuse `Game::PRESSURE_BONUS` — that path is Pack Tactics / Influence-only mid-pressure picks.
+4. **Standing Influence chips** (`getLocationInfluenceTotalsData`): recompute +N when Owner is at that location and it is still uncontrolled — chips must match claim math even outside an active pressure.
+5. **Refresh chips on claim/uncontrol:** add `EventLocationClaimed` and `EventLocationBecomesUncontrolled` to `eventAffectsLocationInfluenceTotals` so `notifyLocationInfluenceTotals` fires. Math already drops +N when `$location->isControlled()`; without these events the chips stay stale after a successful claim.
+
+WHY a dedicated pressure-type bit: Covert applies to **any** pressure type at the location, not Influence-only. WHY uncontrolled gate on both set-flag and standing labels: Covert parenthetical is load-bearing — claimed locations must lose the +N immediately in UI and math.
+
+Reference: `_05DabneyUS01` Valeri (CAD); Loyal / Solomonia apply shape in `pressureLocation`; Influence totals sibling logic for Solomonia/Constanzo in `getLocationInfluenceTotalsData`.
+
 ### Phase / lifecycle events worth knowing
 
 | Event | When it fires | Typical use |
@@ -1166,7 +1180,7 @@ Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags op
 | `EventChallengeIssued` | A challenge was just issued (`$event->challengerId`, `$event->defenderId`); queued by `StatesTrait::stIssueChallenge` BEFORE the intervention dispatcher state advances | "After a challenge is issued at this location, **before choosing to intervene** …" — `_03027` Odette (pull adjacent Duelist before intervention). Use this (NOT `EventChallengeAccepted`) when the text says "before intervene" — accept fires AFTER the intervention window resolves. |
 | `EventChallengeAccepted` | A challenge was accepted (post-intervention) | "After a challenge is accepted at this location …" — existing Odette `_01062` move-adjacent-renown reaction. |
 | `EventCharacterIntervened` | An intervention character was selected during a challenge | "After X intervenes …" — `Reaction_01062`. |
-| `EventPressureOccuring` | A pressure is happening at a location | "When pressuring …", `_01006` Don Constanzo |
+| `EventPressureOccuring` | A pressure is happening at a location | "When pressuring …", `_01006` Don Constanzo; **Covert** location aura `_05DabneyUS01` |
 | `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089`. **`EventDuelEnd` fires BEFORE the dueling line is cleared** in `stDuelEnd` (the discard events are queued AFTER it), so a recount-based dueling-line effect must reset via direct inverse-event, not via re-reading the line. |
 | `EventCharacterCombatModified` / `EventCharacterInfluenceModified` | A character's modified stat changed (`$event->CharacterId`, `$event->OldCombat`/`NewCombat` or `OldInfluence`/`NewInfluence`) | Re-sync a "set [StatA] equal to [StatB]" link when the source stat changes, or re-apply the link when an external effect mutates the target stat during the override. EventHub applies the new stat **before** card `handleEvent` runs (`runEventHubAfterCards = false`). Reference: `_03028` Térence. |
 | `EventAttachmentEquipped` | An attachment was equipped (`$event->characterId`, `$event->attachmentId`; `$event->asAction` distinguishes action-equip vs passive) | "After a character equips an attachment at [location] …" City Reactions. Look up equipping character via `getCharacterById($event->characterId)` and compare `.Location` to the named city constant. Skip `$attachment->FakeAttachment`. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01039` (owner self-equip only). |

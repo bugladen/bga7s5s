@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01006;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05DabneyUS01;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02044;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
@@ -32,6 +33,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationBecomesUncontrolled;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 
 trait UtilitiesTrait
 {
@@ -525,6 +528,7 @@ trait UtilitiesTrait
             '02' => "tac",
             '03' => "faf",
             '04' => "bas",
+            '05' => "cad",
             default => "_7s5s",
         };
 
@@ -784,6 +788,17 @@ trait UtilitiesTrait
             if ($vantagePointPlayerId && isset($playerInfluences[$vantagePointPlayerId]))
             {
                 $playerInfluences[$vantagePointPlayerId]['influence'] -= 1;
+            }
+        }
+
+        // WHY: Valeri Covert — +2 to any pressure type at Valeri's uncontrolled location.
+        // Outside the per-stat loop (Loyal shape). Do not reuse PRESSURE_BONUS.
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::VALERI_PRESSURE_TYPE))
+        {
+            $dabney = $this->theah->getCardById($this->globals->get(Game::VALERI_ID));
+            if ($dabney !== null && isset($playerInfluences[$dabney->ControllerId]))
+            {
+                $playerInfluences[$dabney->ControllerId]['influence'] += 2;
             }
         }
 
@@ -1204,6 +1219,21 @@ trait UtilitiesTrait
                 }
             }
 
+            // WHY: Valeri Covert +2 only applies mid-pressure via VALERI_PRESSURE_TYPE.
+            // Standing Influence labels must recompute: Valeri at this location + uncontrolled.
+            foreach ($this->theah->getCharactersAtLocation($location->Name) as $character) {
+                if (! ($character instanceof _05DabneyUS01) || ! $character->isControlled()) {
+                    continue;
+                }
+                if ($location->isControlled()) {
+                    continue;
+                }
+                $controllerId = (int) $character->ControllerId;
+                if (array_key_exists($controllerId, $influenceByPlayer)) {
+                    $influenceByPlayer[$controllerId] += 2;
+                }
+            }
+
             $totals = [];
             foreach ($influenceByPlayer as $playerId => $influence) {
                 $totals[] = [
@@ -1227,7 +1257,8 @@ trait UtilitiesTrait
 
     /**
      * Events that change who is at a city location, Engaged state (pressure hooks),
-     * or controller — so the Influence label should refresh.
+     * controller, or whether the location is controlled — so the Influence label
+     * should refresh (Valeri Covert +2 gates on uncontrolled).
      */
     public function eventAffectsLocationInfluenceTotals($event): bool
     {
@@ -1242,6 +1273,8 @@ trait UtilitiesTrait
             || $event instanceof EventCardDiscardedFromPlay
             || $event instanceof EventCardRemovedFromPlay
             || $event instanceof EventCharacterDestroyed
-            || $event instanceof EventCardSentToLocker;
+            || $event instanceof EventCardSentToLocker
+            || $event instanceof EventLocationClaimed
+            || $event instanceof EventLocationBecomesUncontrolled;
     }
 }

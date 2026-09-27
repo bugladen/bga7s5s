@@ -164,6 +164,26 @@ Do **not** confuse with:
 
 Canonical single-step Engage + Finesse + no-intervene: `Action_04012` Raven (mirrors `Action_03002`/`Action_04002` picker shape; `STAT_FINESSE`; `"04012_2"` → challenge machine).
 
+### Unrefusable challenge
+
+For text like CAD Valeri `_05DabneyUS01`: the challenge this Action issues **cannot be refused**.
+
+Mint a dedicated `*_CHALLENGE_TYPE` (action-owned). Wire refuse like **Stand Your Ground** (`STAND_YOUR_GROUND_CHALLENGE_TYPE`):
+
+| Integration | What |
+|---|---|
+| `Game.php` + JS int | New constant (next free int). |
+| `FrameworkActionsTrait::actHighDramaChallengeActionReject` | Throw if type matches (server). |
+| `OnUpdateActionButtons.js::highDramaChallengeActionAcceptChallenge` | Disable Refuse for the type (UX). |
+| Zombie Accept path | Force Accept when refuse is blocked (same as SYG). |
+| Intervene / Jump In | **Skip** unless also printed (unrefusable ≠ no-intervene). |
+
+**Do not** reuse a sibling type that means something else. Base Valeri `VALERI_MIKHAILOV_CHALLENGE_TYPE` = **no intervene**, not unrefusable — CAD Valeri mints `VALERI_CHALLENGE_TYPE` separately.
+
+Engage follows the trichotomy independently. CAD Valeri Action text has **no Engage** → case (c): move `engage=false`, keep type **OFF** auto-engage list, no manual engage; Engaged Valeri is still eligible.
+
+Reference: `Action_05DabneyUS01`; refuse wiring sibling Stand Your Ground; contrast no-intervene `Action_01123` / Raven.
+
 ### Character-scoped refuse restriction (NOT a new challenge type)
 
 For text like Daichi `_03050`:
@@ -246,4 +266,5 @@ Always implement this interface on a challenge-issuing action — challenge targ
 | `Action_04002` (Danilo Danini) | Engage + Influence challenge + **intervene wound-or-draw choice**. `DANILO_CHALLENGE_TYPE` on auto-engage; `"04002_3"` on GENERATE_THREAT_EVENTS. |
 | `Action_04012` (Raven) | Engage + Finesse challenge + **other characters cannot intervene**. `RAVEN_CHALLENGE_TYPE` on auto-engage; empty interveners + `interventionCheck` + `Reaction_02058` skip. |
 | `Action_01123` (Valeri Mikhailov) | Move-to-adjacent + Combat challenge + no intervene (`VALERI_MIKHAILOV_CHALLENGE_TYPE`). Engage via move `$engage=true`, not auto-engage list. |
+| `Action_05DabneyUS01` (Valeri Mikhailov, CAD) | Move-to-adjacent + Combat + **unrefusable** (`VALERI_CHALLENGE_TYPE`). Trichotomy (c) never engages; do **not** reuse `VALERI_MIKHAILOV` (that type is no-intervene). |
 

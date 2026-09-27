@@ -452,6 +452,7 @@ onLeavingState: function( stateName )
     this.onLeavingState_tac( stateName );
     this.onLeavingState_faf( stateName );
     this.onLeavingState_bas( stateName );
+    this.onLeavingState_cad( stateName );
 
     this.selectedCityLocations = [];
     this.selectedCards = [];

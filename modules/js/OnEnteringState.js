@@ -732,6 +732,7 @@ onEnteringState: function( stateName, args )
     this.onEnteringState_tac( stateName, args );
     this.onEnteringState_faf( stateName, args );
     this.onEnteringState_bas( stateName, args );
+    this.onEnteringState_cad( stateName, args );
 },
 
 })

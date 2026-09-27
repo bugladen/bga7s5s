@@ -28,16 +28,19 @@ define([
    g_gamethemeurl + 'modules/js/OnEnteringState.tac.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.faf.js',
    g_gamethemeurl + 'modules/js/OnEnteringState.bas.js',
+   g_gamethemeurl + 'modules/js/OnEnteringState.cad.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.7s5s.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.tac.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.faf.js',
    g_gamethemeurl + 'modules/js/OnUpdateActionButtons.bas.js',
+   g_gamethemeurl + 'modules/js/OnUpdateActionButtons.cad.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.7s5s.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.tac.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.faf.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.bas.js',
+   g_gamethemeurl + 'modules/js/OnLeavingState.cad.js',
    g_gamethemeurl + 'modules/js/Setup.js',
    g_gamethemeurl + 'modules/js/Utilities.js',
    g_gamethemeurl + 'modules/js/Notifications.js',
@@ -73,16 +76,19 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         seventhseacityoffivesails.onenteringstate_tac,
         seventhseacityoffivesails.onenteringstate_faf,
         seventhseacityoffivesails.onenteringstate_bas,
+        seventhseacityoffivesails.onenteringstate_cad,
         seventhseacityoffivesails.onleavingstate,
         seventhseacityoffivesails.onleavingstate_7s5s,
         seventhseacityoffivesails.onleavingstate_tac,
         seventhseacityoffivesails.onleavingstate_faf,
         seventhseacityoffivesails.onleavingstate_bas,
+        seventhseacityoffivesails.onleavingstate_cad,
         seventhseacityoffivesails.onupdateactionbuttons,
         seventhseacityoffivesails.onupdateactionbuttons_7s5s,
         seventhseacityoffivesails.onupdateactionbuttons_tac,
         seventhseacityoffivesails.onupdateactionbuttons_faf,
         seventhseacityoffivesails.onupdateactionbuttons_bas,
+        seventhseacityoffivesails.onupdateactionbuttons_cad,
         seventhseacityoffivesails.setup,
         seventhseacityoffivesails.utilities,
         seventhseacityoffivesails.notifications,
@@ -150,6 +156,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
             this.CELERITY_CHALLENGE_TYPE = 30;
             this.HONORABLE_CHALLENGE_TYPE = 31;
+            this.VALERI_CHALLENGE_TYPE = 32;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;

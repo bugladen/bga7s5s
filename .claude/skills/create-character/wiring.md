@@ -15,7 +15,13 @@ Reusable client-side handlers:
 
 If your state reuses an existing client action (e.g. `onMusterCardSelected`), extend the action map in `modules/js/PlayerActions.js`.
 
-For new expansion JS files (`*.<expansion>.js`), make sure the chain to the master JS files exists — `faf`, `tac`, and `_7s5s` are already chained.
+For new expansion JS files (`*.<expansion>.js`), make sure the chain to the master JS files exists — `faf`, `tac`, `bas`, `cad`, and `_7s5s` are already chained. CAD cards use `OnEnteringState.cad.js` / `OnUpdateActionButtons.cad.js` / `OnLeavingState.cad.js`. Deck ids with prefix `05` resolve via `UtilitiesTrait::getCardClassName` (`'05' => 'cad'`).
+
+### Empty transition rule
+
+An empty transition key `""` may only exist if it is the **only** transition from that state. If the state also has `"back"` (or any other named transition), every key must be named (`"done"`, `"characterChosen"`, etc.) and callers must pass that name to `nextState(...)`. Bare `nextState()` is only valid when `""` is the sole transition.
+
+Do not casually add Back on challenge Technique resolve pickers — cancelling a pending technique leaves Used / queued calc events in a bad state unless you fully mirror Bastien `01063` cancel (and even then, product may reject it — Valeri CAD Back was reverted).
 
 ### City-location picker — full wiring (Technique example)
 

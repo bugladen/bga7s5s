@@ -1116,6 +1116,8 @@ $machinestates = [
                 "04cd15" => States::HIGH_DRAMA_PLAYER_TURN_04CD15,
                 "04cd29" => States::HIGH_DRAMA_PLAYER_TURN_04CD29,
                 "04cd15_3" => States::HIGH_DRAMA_PLAYER_TURN_04CD15_3,
+                "05DabneyUS01" => States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01,
+                "05DabneyUS01_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
@@ -1323,6 +1325,7 @@ $machinestates = [
                     // WHY: Iago Thrust/Parry choice before Accept — UseThrust must be set
                     // before GENERATE_THREAT reads it (01067 shape).
                     "04033" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04033,
+                    "05DabneyUS01" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05DABNEYUS01,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
@@ -2410,6 +2413,7 @@ $machinestates = [
                         "04017" => States::DUEL_CHOOSE_TECHNIQUE_04017,
                         "04021" => States::DUEL_CHOOSE_TECHNIQUE_04021,
                         "04033" => States::DUEL_CHOOSE_TECHNIQUE_04033,
+                        "05DabneyUS01" => States::DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral
