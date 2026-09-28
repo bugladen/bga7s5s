@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01130;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
@@ -2259,12 +2260,25 @@ trait EventHub
                 $handler = function ($theah, EventCardSentToLocker $event)
                 {
                     $card = $theah->getCardById($event->cardId);
+
+                    // WHY: Hub runs before card handlers on CardSentToLocker. End IW while
+                    // Location is still the city site so endEffect can unclaim. Crew-cap sink
+                    // and spend-to-locker use this path (not Destroy).
+                    if ($card instanceof Character
+                        && $card->hasCondition(Game::INDOMITABLE_WILL_CONDITION))
+                    {
+                        Action_01130::endEffect($theah->game, $card, $card->Location);
+                    }
+
                     $locker = $theah->game->getPlayerLockerName($event->playerId);
                     $theah->game->moveCard($event->cardId, $locker, 0, $card);
                     $card->IsUpdated = true;
 
                     // WHY: Destroy path does not fire CardSentToLocker; this covers Spend-to-Locker
-                    // characters (e.g. Deal with the Devil dusk, Action_03067). Schemes/attachments skip.
+                    // characters (e.g. Deal with the Devil dusk, Action_03067) and crew-cap sink.
+                    // Schemes/attachments skip. Do NOT recreate Characters here — hub runs
+                    // before card handlers; recreating would wipe conditions (Deal with the Devil)
+                    // before those handlers can clean up. Deal with the Devil recreates itself.
                     if ($card instanceof Character && $event->playerId) {
                         $theah->game->bga->playerStats->inc(Game::STAT_CHARACTERS_SENT_TO_LOCKER, 1, $event->playerId);
                     }

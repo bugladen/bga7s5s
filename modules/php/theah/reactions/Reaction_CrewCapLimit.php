@@ -47,9 +47,12 @@ class Reaction_CrewCapLimit extends GameReaction
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        //Get all non-leaders to sink
+        // Get non-leaders that count against Crew Cap (Brutes do not).
         $characters = $theah->getCharactersInPlayByPlayerId($theah->game->getActivePlayerId());
-        $characters = array_filter($characters, fn($character) => ! $character instanceof Leader);
+        $characters = array_filter(
+            $characters,
+            fn($character) => ! $character instanceof Leader && ! $character->hasTrait("Brute")
+        );
         foreach ($characters as $character)
         {
             $array[] = $this->createButtonProperty($theah->game, sprintf($theah->game->translate('Sink %s'), $character->Name), 'sinkCharacter_' . $character->Id);
@@ -74,7 +77,11 @@ class Reaction_CrewCapLimit extends GameReaction
 
         $character->unEquipAllAttachments($game->theah);
         $playerId = $game->getActivePlayerId();
-        $event = EventFactory::createCharacterDestroyedEvent($playerId, $character->Id, $game->translate('Chosen for The Locker for Crew Cap Limit'));
+
+        // WHY: Crew-cap overage is a forced sink to The Locker, not a destroy.
+        // Destroy triggers ("when a character is destroyed") must not fire.
+        // CardSentToLocker moves them without EventCharacterDestroyed.
+        $event = EventFactory::createCardSentToLockerEvent($playerId, $character->Id);
         $game->theah->queueEvent($event);
 
         // WHY: Only Planning — this reaction can also fire on High Drama recruit / Lost Brute.
@@ -82,7 +89,18 @@ class Reaction_CrewCapLimit extends GameReaction
             $game->bga->playerStats->inc(Game::STAT_CREW_CAP_OVERAGE_LOCKER, 1, $playerId);
         }
 
+        // WHY: Locker event is queued, not processed yet — subtract this sink from the live count.
+        // Re-prompt until at or under cap (e.g. LostBrute can put a player several over at once).
+        $count = $game->theah->getCharacterCountByPlayerId($playerId);
+        $leader = $game->theah->getLeaderByPlayerId($playerId);
+        $remaining = $character->hasTrait("Brute") ? $count : $count - 1;
+        if ($remaining > $leader->ModifiedCrewCap)
+        {
+            $transition = EventFactory::createReactionTransitionEvent($playerId, Game::THEAH_ID, $this->Id);
+            $game->theah->queueEvent($transition);
+        }
+
         $game->gamestate->nextState("done");
-}
+    }
 }
         
