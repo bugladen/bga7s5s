@@ -27,7 +27,7 @@ class Technique_05DabneyUS01 extends Technique
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("+1 Thrust, +1 Riposte, or gain Lethal");
+        $this->Name = "+1 Thrust, +1 Riposte, or gain Lethal";
         $this->Choice = self::CHOICE_RIPOSTE;
     }
 
@@ -98,7 +98,7 @@ class Technique_05DabneyUS01 extends Technique
                 {
                     $event->adversaryThreat += 1;
                     $event->explanations[] = sprintf(
-                        $event->theah->game->translate("%s: Technique [%s] adds 1 Threat."),
+                        "%s: Technique [%s] adds 1 Threat.",
                         $inject,
                         $this->Name
                     );
@@ -115,7 +115,7 @@ class Technique_05DabneyUS01 extends Technique
             {
                 $event->thrust += 1;
                 $event->explanations[] = sprintf(
-                    $event->theah->game->translate("%s: Technique [%s] adds +1 Thrust."),
+                    "%s: Technique [%s] adds +1 Thrust.",
                     $inject,
                     $this->Name
                 );
@@ -124,7 +124,7 @@ class Technique_05DabneyUS01 extends Technique
             {
                 $event->riposte += 1;
                 $event->explanations[] = sprintf(
-                    $event->theah->game->translate("%s: Technique [%s] adds +1 Riposte."),
+                    "%s: Technique [%s] adds +1 Riposte.",
                     $inject,
                     $this->Name
                 );
@@ -134,7 +134,7 @@ class Technique_05DabneyUS01 extends Technique
                 $lethalEvent = EventFactory::createGainLethalEvent($event->actorId, $event->theah);
                 $event->theah->queueEvent($lethalEvent);
                 $event->explanations[] = sprintf(
-                    $event->theah->game->translate("%s: Technique [%s] gains Lethal."),
+                    "%s: Technique [%s] gains Lethal.",
                     $inject,
                     $this->Name
                 );
@@ -176,7 +176,7 @@ class Technique_05DabneyUS01 extends Technique
 
             if ($id != self::CHOICE_RIPOSTE && $id != self::CHOICE_THRUST && $id != self::CHOICE_LETHAL)
             {
-                throw new \Bga\GameFramework\UserException($game->translate("Invalid Technique choice."));
+                throw new \Bga\GameFramework\UserException("Invalid Technique choice.");
             }
 
             // WHY: Challenge UI is Thrust-only — Riposte needs Calculate; Lethal is a no-op on
@@ -184,7 +184,7 @@ class Technique_05DabneyUS01 extends Technique
             if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05DABNEYUS01
                 && $id != self::CHOICE_THRUST)
             {
-                throw new \Bga\GameFramework\UserException($game->translate("Only +1 Thrust is available before a duel."));
+                throw new \Bga\GameFramework\UserException("Only +1 Thrust is available before a duel.");
             }
 
             // WHY: Same rule as EventHub Technique Riposte strip — dashed combat Riposte
@@ -193,7 +193,7 @@ class Technique_05DabneyUS01 extends Technique
                 && $id == self::CHOICE_RIPOSTE
                 && $game->theah->currentRoundCombatCardsHaveDashedRiposte())
             {
-                throw new \Bga\GameFramework\UserException($game->translate("Riposte is not available — the combat card has dashed Riposte."));
+                throw new \Bga\GameFramework\UserException("Riposte is not available — the combat card has dashed Riposte.");
             }
 
             $this->Choice = $id;
@@ -204,21 +204,21 @@ class Technique_05DabneyUS01 extends Technique
 
             if ($this->Choice == self::CHOICE_THRUST)
             {
-                $game->notify->all("message", clienttranslate('${player_name} chooses +1 Thrust for ${owner_inject_code}\'s Technique.'), [
+                $game->notify->all("message", '${player_name} chooses +1 Thrust for ${owner_inject_code}\'s Technique.', [
                     "player_name" => $game->getActivePlayerName(),
                     "owner_inject_code" => $owner !== null ? $owner->getInjectCode() : $this->Name,
                 ]);
             }
             else if ($this->Choice == self::CHOICE_RIPOSTE)
             {
-                $game->notify->all("message", clienttranslate('${player_name} chooses +1 Riposte for ${owner_inject_code}\'s Technique.'), [
+                $game->notify->all("message", '${player_name} chooses +1 Riposte for ${owner_inject_code}\'s Technique.', [
                     "player_name" => $game->getActivePlayerName(),
                     "owner_inject_code" => $owner !== null ? $owner->getInjectCode() : $this->Name,
                 ]);
             }
             else
             {
-                $game->notify->all("message", clienttranslate('${player_name} chooses Lethal for ${owner_inject_code}\'s Technique.'), [
+                $game->notify->all("message", '${player_name} chooses Lethal for ${owner_inject_code}\'s Technique.', [
                     "player_name" => $game->getActivePlayerName(),
                     "owner_inject_code" => $owner !== null ? $owner->getInjectCode() : $this->Name,
                 ]);

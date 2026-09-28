@@ -19,7 +19,7 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Move to Adjacent Location; Issue Unrefusable Combat Challenge");
+        $this->Name = "Move to Adjacent Location; Issue Unrefusable Combat Challenge";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -100,13 +100,13 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         $owner = $this->getOwningCharacter($game->theah);
         if ($character->ControllerId == $owner->ControllerId || $character->ControllerId == 0)
         {
-            return [false, $game->translate("Target must be controlled by an opponent.")];
+            return [false, "Target must be controlled by an opponent."];
         }
 
         $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
         if (! in_array($character->Location, $locations))
         {
-            return [false, $game->translate("Target character is not at an adjacent location")];
+            return [false, "Target character is not at an adjacent location"];
         }
 
         return [true, ""];
@@ -122,7 +122,7 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             $target = $game->theah->getCharacterById($id);
             if ($target == null)
             {
-                throw new UserException($game->translate("Character not found"));
+                throw new UserException("Character not found");
             }
 
             [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);

@@ -18,8 +18,8 @@ class _05DabneyUS01 extends Leader implements IHasActions
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Valeri Mikhailov");
-        $this->Title = clienttranslate("A Lonely Bad Boy");
+        $this->Name = "Valeri Mikhailov";
+        $this->Title = "A Lonely Bad Boy";
         $this->Image = "05DabneyUS01_0.3.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
@@ -34,17 +34,17 @@ class _05DabneyUS01 extends Leader implements IHasActions
         $this->Panache = 7;
 
         $this->Traits = [
-            clienttranslate("Leader"),
-            clienttranslate("Villain"),
-            clienttranslate("Duelist"),
-            clienttranslate("Scion"),
-            clienttranslate("Ussura")
+            "Leader",
+            "Villain",
+            "Duelist",
+            "Scion",
+            "Ussura"
         ];
 
-        $this->Text = clienttranslate("<p><i>Covert</i> - During pressures at Valeri's location, add +2 to your total.
+        $this->Text = "<p><i>Covert</i> - During pressures at Valeri's location, add +2 to your total.
 <br>(<i>Covert Abilities may only be used at uncontrolled locations.</i>)</p>
 <p><b>Action:</b> Move Valeri to an adjacent City location. He issues an unrefusable [Combat] challenge to target opposing character.</p>
-<p><b>Technique:</b> +1[Thrust], +1[Riposte], or gain Lethal</p>");
+<p><b>Technique:</b> +1[Thrust], +1[Riposte], or gain Lethal</p>";
 
         $this->resetCard();
 
@@ -93,7 +93,7 @@ class _05DabneyUS01 extends Leader implements IHasActions
             }
 
             $game = $event->theah->game;
-            $game->notify->all("message", clienttranslate('${card_inject_code} (Covert) will add +2 to ${player_name}\'s pressure total at this uncontrolled location.'), [
+            $game->notify->all("message", '${card_inject_code} (Covert) will add +2 to ${player_name}\'s pressure total at this uncontrolled location.', [
                 'card_inject_code' => $this->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($this->ControllerId),
             ]);
