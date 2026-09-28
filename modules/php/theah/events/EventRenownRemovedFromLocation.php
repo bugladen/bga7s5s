@@ -8,6 +8,8 @@ class EventRenownRemovedFromLocation extends Event
     public string $location;
     public int $amount;
     public string $source;
+    /** When true, EventHub removes whatever Renown is on the location at process time. */
+    public bool $removeAll;
 
     public function __construct()
     {
@@ -17,6 +19,7 @@ class EventRenownRemovedFromLocation extends Event
         $this->location = "";
         $this->amount = 0;
         $this->source = "";
-
+        $this->removeAll = false;
     }
+
 }

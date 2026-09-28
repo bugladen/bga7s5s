@@ -22,6 +22,7 @@ The base `Scheme` class has `hasWhenRevealedEffect()` returning `false`. The car
 
 - **City card filter**: `!$card->isControlled() && $card instanceof ICityDeckCard` works because `getAllCards()` only loads cards at city locations, player home, purgatory, dueling line, hand, and discard piles — NOT city deck or city discard. Uncontrolled ICityDeckCards in the collection can only be at city locations.
 - **Renown removal**: Iterates `getCityLocations()` and removes all Renown from each. "All locations" in card text means all city locations (Renown only exists at city locations).
+  - **UPDATE 2026-09-28:** Interleaved add+remove with a pre-reveal amount was wrong vs Blood in the Water — see `2026-09-28-01-shifting-tides-blood-renown.md`. Now: all city adds first, then `removeAll` at LOW priority (live amount), then player pick at LOWEST.
 - **"Different location" enforcement**: `$this->locations` tracks controller's choice AND all opponent choices. Each pick is validated against this list. Correct — "a different location" means different from all previously chosen.
 - **Turn order**: Opponents are queried `ORDER BY turn_order` for creating transition events, matching "during normal initiative order."
 - **Persistence**: `$this->locations` survives between requests because Card objects are PHP-serialized into DB. `IsUpdated = true` triggers auto-save in `runEvents()`.

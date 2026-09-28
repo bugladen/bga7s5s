@@ -1243,7 +1243,18 @@ trait EventHub
                 // WHY: Clamp at 0. Matches EventReknownRemovedFromCard. Prevents bugs where
                 // multiple opponents queue removes against the same location (e.g. _01150
                 // Parley Gone Wrong) from driving Renown negative.
-                $reknown = max(0, $this->game->getRenownForLocation($event->location) - $event->amount);
+                // WHY removeAll: Shifting Tides (_01151) must clear after city-card reveal
+                // Forced (e.g. Blood in the Water) have added Renown — amount is unknown
+                // at queue time, so read live Renown when this event processes.
+                $current = $this->game->getRenownForLocation($event->location);
+                // isset: older serialized events may lack removeAll (typed prop would throw).
+                $amount = (isset($event->removeAll) && $event->removeAll) ? $current : $event->amount;
+                if ($amount <= 0)
+                {
+                    break;
+                }
+
+                $reknown = max(0, $current - $amount);
                 $this->game->setReknownForLocation($event->location, $reknown);
 
                 $this->cityLocations[$event->location]->Renown = $reknown;
@@ -1252,7 +1263,7 @@ trait EventHub
                 $this->game->notify->all("renownRemovedFromLocation", clienttranslate('${amount} Renown REMOVED from ${location} ${source}.'), [
                     'i18n' => ['location'],
                     "location" => $event->location,
-                    "amount" => $event->amount,
+                    "amount" => $amount,
                     "source" => empty($event->source) ? "" : clienttranslate("by") . " " . $event->source
                 ]);
 

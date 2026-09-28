@@ -77,6 +77,14 @@ class _01151 extends Scheme
 
             $locations = $event->theah->getCityLocations();
             $game = $event->theah->game;
+
+            // WHY two passes + priorities: Card text is "Add a City Card to each City
+            // location. Then, discard all Renown…". Reveal Forced on the new city cards
+            // (Blood in the Water _04cd19) must add Renown *before* the clear. Interleaving
+            // add+remove per location queued removals with a pre-reveal amount, so Blood's
+            // Renown survived (or was never targeted if the location started at 0).
+            // Order: MEDIUM city adds (+ cascaded MEDIUM Forced Renown) → LOW removeAll
+            // clears → LOWEST player-pick transition.
             foreach ($locations as $location)
             {
                 $cityCard = $game->getCardsOnTopOfCityDeck(1)[0];
@@ -85,17 +93,19 @@ class _01151 extends Scheme
 
                 $cardEvent = EventFactory::createCityCardAddedToLocationEvent($cityCard['id'], $location->Name);
                 $event->theah->queueEvent($cardEvent);
+            }
 
-                if ($location->Renown > 0)
-                {
-                    $renownEvent = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $location->Name, $location->Renown, $this->getInjectCode());
-                    $event->theah->eventCheck($renownEvent);
-                    $event->theah->queueEvent($renownEvent);
-                }
+            foreach ($locations as $location)
+            {
+                $renownEvent = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $location->Name, 0, $this->getInjectCode());
+                $renownEvent->removeAll = true;
+                $renownEvent->priority = Event::LOW_PRIORITY;
+                $event->theah->eventCheck($renownEvent);
+                $event->theah->queueEvent($renownEvent);
             }
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, "01151");
-            $transition->priority = Event::MEDIUM_PRIORITY;
+            $transition->priority = Event::LOWEST_PRIORITY;
             $event->theah->queueEvent($transition);
         }
 
