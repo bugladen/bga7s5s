@@ -163,7 +163,12 @@ return declare('seventhseacityoffivesails.setup', null, {
             {
                 homeCards = homeCards.filter((card) => ! card.traits.includes('Leader'));
                 const divId = `${playerId}-${leader.id}`;
-                this.createCharacterCard(divId, playerInfo.color, leader, playerId + '-home-anchor', this.inDuel);
+                // WHY: do not pass this.inDuel — that flag is only for duel-table actor
+                // copies (placement 'first' into a cell). Board home cards must use
+                // default 'before' the home-anchor or they nest inside the 5px endcap
+                // and render outside the home container. Challenge-type chip skip
+                // already gates on this.inDuel inside createCharacterCard.
+                this.createCharacterCard(divId, playerInfo.color, leader, playerId + '-home-anchor');
             }
 
             //Display the rest of the cards
@@ -171,7 +176,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             {
                 const divId = this.createCardId(card, this.LOCATION_PLAYER_HOME);
                 const location = this.getTargetElementForLocation(this.LOCATION_PLAYER_HOME, playerId);
-                this.createCard(divId, card, location, this.inDuel);
+                this.createCard(divId, card, location);
             });
     
         }
