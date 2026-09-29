@@ -72,6 +72,10 @@ class _03cd21 extends CityAttachment
             if ($this->isOpponentRiskTargetingCharacters($event, $event->sourceId))
             {
                 $this->markAbilityUsed($event->theah->game);
+                // WHY: EventHub skips ChallengeIssued side-effects when canceled, but the
+                // challenge state machine only aborts if CHALLENGE_CANCELLED is set
+                // (stChallengeActionCheckCancelled). Same signal as 01088 / 01032 / Vittoria.
+                $event->theah->game->globals->set(Game::CHALLENGE_CANCELLED, true);
                 $event->canceled = true;
                 return;
             }
