@@ -25,12 +25,12 @@ class _01186 extends CityCharacter
         parent::__construct();
 
         $this->Name = clienttranslate("Maryam Benu Pleroma");
+        $this->Title = clienttranslate('Impervious Champion');
+
         $this->Image = "01186.jpg";
         $this->ExpansionName = "_7s5s";
         $this->ExpansionNumber = 1;
         $this->CardNumber = 186;
-
-        $this->Title = clienttranslate('Impervious Champion');
 
         $this->Resolve = 5;
         $this->Combat = 4;
@@ -119,6 +119,9 @@ class _01186 extends CityCharacter
                     $event->theah->deleteEventBatch($batchId);
                 }
 
+                // WHY: Same gap as Silver Spine — canceling EventChallengeIssued alone does
+                // not stop Accept/Refuse; stChallengeActionCheckCancelled needs this global.
+                $event->theah->game->globals->set(Game::CHALLENGE_CANCELLED, true);
                 $event->canceled = true;
                 return;
             }
