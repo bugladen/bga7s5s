@@ -37,13 +37,19 @@ class Reaction_01022 extends AttachmentReaction
     {
         parent::handleEvent($event);
 
+        // WHY: Printed cost is "engage this card • …" — already Engaged cannot pay.
         if ($event instanceof EventChallengeIssued && ! $this->Used && $this->ownerIsAttached($event->theah))
         {
+            $owner = $this->getOwningAttachment($event->theah);
+            if ($owner === null || $owner->Engaged)
+            {
+                return;
+            }
+
             $owningCharacter = $this->getOwningCharacter($event->theah);
             $challenger = $event->theah->getCharacterById($event->challengerId);
             if ($owningCharacter->Location == $challenger->Location)
             {
-                $owner = $this->getOwningAttachment($event->theah);
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);
             }
