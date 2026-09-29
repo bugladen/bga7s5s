@@ -31,23 +31,6 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
         $this->DuelLocation = "";
     }
 
-    public function isAvailableToPlayer(int $playerId, Theah $theah): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah))
-        {
-            return false;
-        }
-
-        $actor = $theah->getDuelRoundActor();
-        if ($actor === null)
-        {
-            return false;
-        }
-
-        $targets = $this->getValidTargets($theah, $actor->Location);
-        return count($targets) > 0;
-    }
-
     private function getResolutionLocation(Theah $theah): string
     {
         if ($this->DuelLocation !== "")
@@ -152,11 +135,8 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
             return [false, $game->translate("Character is not in play")];
         }
 
-        if (! $character->Engaged)
-        {
-            return [false, $game->translate("Character is already En Garded.")];
-        }
-
+        // WHY no Engaged check: En garde is the effect after •, not a target gate.
+        // Already En Garded is a no-op at resolve (see actFromManeuverWithId).
         return [true, ""];
     }
 
@@ -170,11 +150,11 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
             $targets = $this->getValidTargets($game->theah, $location);
             if (count($targets) > 0)
             {
-                throw new UserException($game->translate("There are engaged characters at this location — you must choose one to En Garde."));
+                throw new UserException($game->translate("There are characters at this location — you must choose one to En Garde."));
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $game->notify->all("message", clienttranslate('${maneuver_inject_code}: No engaged characters at this location to En Garde.'), [
+            $game->notify->all("message", clienttranslate('${maneuver_inject_code}: No characters at this location to En Garde.'), [
                 "maneuver_inject_code" => $owner->getInjectCode(),
             ]);
 
@@ -202,14 +182,25 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
 
             $owner = $this->getOwningCard($game->theah);
 
-            $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($engardeEvent);
+            // WHY skip if already En Garded: hub still notifies; re-engarde spam is noise.
+            if ($character->Engaged)
+            {
+                $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
+                $game->theah->queueEvent($engardeEvent);
 
-            $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${player_name} En Gardes ${character_inject_code}.'), [
-                "maneuver_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                "character_inject_code" => $character->getInjectCode(),
-            ]);
+                $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${player_name} En Gardes ${character_inject_code}.'), [
+                    "maneuver_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
+            }
+            else
+            {
+                $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${character_inject_code} is already En Garded.'), [
+                    "maneuver_inject_code" => $owner->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
+            }
 
             $game->gamestate->nextState();
         }
@@ -217,13 +208,11 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
 
     private function getValidTargets(Theah $theah, string $location): array
     {
+        // WHY no Engaged filter: Engaged is not a cost left of •. Any in-play character
+        // at the duel location is a legal En garde target (no-op if already En Garded).
         $characters = $theah->getCharactersAtLocation($location);
         return array_values(array_filter($characters, function($character) use ($theah) {
-            if ($theah->game->characterIsInDiscardOrLocker($character))
-            {
-                return false;
-            }
-            return $character->Engaged;
+            return ! $theah->game->characterIsInDiscardOrLocker($character);
         }));
     }
 }
