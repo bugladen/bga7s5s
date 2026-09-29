@@ -1912,6 +1912,10 @@ trait FrameworkActionsTrait
                 throw new \BgaUserException(clienttranslate("For the first round, you must either gamble or a combat card must be played."));
             }
         }
+
+        $this->notify->all("message", clienttranslate('${player_name} ends the round.'), [
+            "player_name" => $this->getPlayerNameById($this->getActivePlayerId()),
+        ]);
         
         $event = $this->theah->createEvent(Events::DuelActionsDone);
         if ($event instanceof EventDuelActionsDone)
