@@ -216,7 +216,46 @@ trait DeckTrait
             $this->shufflePlayerDiscardIntoPlayerFactionDeck($playerId);
         }
 
-        $cardInfo = $this->cards->pickCard($location, $playerId);
+        // WHY: Gamble peeks leave revealed cards in the faction deck until choose.
+        // Mid-reveal draws (e.g. Desideria 04003b after Unravel 04010's Sorcerer
+        // ability) must not pickCard the peeked tops — that stole the first revealed
+        // card into hand and left GAMBLE_REVEAL_COUNT pointing at the wrong set.
+        // Skip only while a top-of-deck reveal is in progress for this player
+        // (!DUEL_GAMBLED): count stays set until EOR after choose, and bottom reveals
+        // (Devil Jonah) are not on the draw edge. Mirror Ivy (02042): if nothing sits
+        // under the peek even after reshuffle, take from the reveal and shrink count.
+        $skipReveal = 0;
+        $revealCount = (int) $this->globals->get(Game::GAMBLE_REVEAL_COUNT, 0);
+        $fromBottom = (bool) $this->globals->get(Game::GAMBLE_REVEAL_FROM_BOTTOM, false);
+        $alreadyGambled = (bool) $this->globals->get(Game::DUEL_GAMBLED, false);
+        if ($revealCount > 0 && ! $fromBottom && ! $alreadyGambled && $this->globals->get(Game::IN_DUEL, false))
+        {
+            $actor = $this->theah->getDuelRoundActor();
+            if ($actor !== null && $actor->ControllerId == $playerId)
+            {
+                $skipReveal = $revealCount;
+            }
+        }
+
+        if ($skipReveal > 0)
+        {
+            $deckCards = array_values($this->getCardsOnTopOfPlayerFactionDeck($playerId, $skipReveal + 1));
+            if (count($deckCards) > $skipReveal)
+            {
+                $cardInfo = $deckCards[$skipReveal];
+                $this->cards->moveCard($cardInfo['id'], Game::LOCATION_HAND, $playerId);
+            }
+            else
+            {
+                $cardInfo = $this->cards->pickCard($location, $playerId);
+                $this->globals->set(Game::GAMBLE_REVEAL_COUNT, max(0, $revealCount - 1));
+            }
+        }
+        else
+        {
+            $cardInfo = $this->cards->pickCard($location, $playerId);
+        }
+
         $card = $this->getCardObjectFromDb($cardInfo['id']);
         $card->ControllerId = $playerId;
         $card->OwnerId = $playerId;
