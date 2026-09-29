@@ -90,37 +90,50 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $challengeType = $game->globals->get(Game::CHALLENGE_TYPE);
                 if ($inDuel && $challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE && ! $this->firstWoundOccured)
                 {
+                    // WHY: Card text is "first participant to wound their adversary" — self-wounds,
+                    // non-character sources, and wounds involving non-participants must not steal
+                    // Renown or consume the first-wound flag.
                     $woundedCharacter = $event->theah->getCharacterById($event->characterId);
-                    $woundedPlayerReknown = $game->getPlayerReknown($woundedCharacter->ControllerId);
                     $agressor = $event->theah->getCharacterById($event->sourceId);
 
-                    if ($woundedPlayerReknown > 0)
-                    {
-                        $stealEvent = EventFactory::createPlayerGainsReknownEvent($agressor->ControllerId, 1);
-                        $event->theah->queueEvent($stealEvent);
-                        
-                        $loseEvent = EventFactory::createPlayerLosesReknownEvent($woundedCharacter->ControllerId, 1);
-                        $event->theah->queueEvent($loseEvent);
-                        
-                        $owner = $this->getOwningCard($event->theah);
-                        $game->notify->all("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. They will steal 1 Renown from ${player_name}.'), [
-                            "action_inject_code" => $owner->getInjectCode(),
-                            "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
-                            "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),
-                        ]);
-                    }
-                    else
-                    {
-                        $owner = $this->getOwningCard($event->theah);
-                        $game->notify->all("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. However, ${player_name} has no Renown to steal.'), [
-                            "action_inject_code" => $owner->getInjectCode(),
-                            "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
-                            "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),
-                        ]);
-                    }
+                    $agressorIsParticipant = $agressor !== null
+                        && ($agressor->hasCondition(Game::DUEL_CHALLENGER) || $agressor->hasCondition(Game::DUEL_DEFENDER));
+                    $woundedIsAdversary = $agressorIsParticipant
+                        && $woundedCharacter !== null
+                        && $event->theah->getDuelOpponentId($agressor->Id) == $woundedCharacter->Id;
 
-                    $this->firstWoundOccured = true;
-                    $scheme->IsUpdated = true;
+                    if ($woundedIsAdversary)
+                    {
+                        $woundedPlayerReknown = $game->getPlayerReknown($woundedCharacter->ControllerId);
+
+                        if ($woundedPlayerReknown > 0)
+                        {
+                            $stealEvent = EventFactory::createPlayerGainsReknownEvent($agressor->ControllerId, 1);
+                            $event->theah->queueEvent($stealEvent);
+                            
+                            $loseEvent = EventFactory::createPlayerLosesReknownEvent($woundedCharacter->ControllerId, 1);
+                            $event->theah->queueEvent($loseEvent);
+                            
+                            $owner = $this->getOwningCard($event->theah);
+                            $game->notify->all("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. They will steal 1 Renown from ${player_name}.'), [
+                                "action_inject_code" => $owner->getInjectCode(),
+                                "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
+                                "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),
+                            ]);
+                        }
+                        else
+                        {
+                            $owner = $this->getOwningCard($event->theah);
+                            $game->notify->all("message", clienttranslate('${action_inject_code}: ${agressor_name} is the first player to wound in this duel. However, ${player_name} has no Renown to steal.'), [
+                                "action_inject_code" => $owner->getInjectCode(),
+                                "agressor_name" => $game->getPlayerNameById($agressor->ControllerId),
+                                "player_name" => $game->getPlayerNameById($woundedCharacter->ControllerId),
+                            ]);
+                        }
+
+                        $this->firstWoundOccured = true;
+                        $scheme->IsUpdated = true;
+                    }
                 }
             }
         }
