@@ -107,6 +107,13 @@ class Reaction_03007 extends AttachmentReaction implements ISorcererAbility
             return;
         }
 
+        // City Reaction: equipped Strega must be in the city.
+        $owningCharacter = $this->getOwningCharacter($event->theah);
+        if ($owningCharacter == null || ! $event->theah->cardInCity($owningCharacter))
+        {
+            return;
+        }
+
         $card = $event->theah->getCardById($event->characterId);
         if ($card == null)
         {
@@ -128,13 +135,22 @@ class Reaction_03007 extends AttachmentReaction implements ISorcererAbility
             return;
         }
 
-        if ($event->playerId == 0 || $event->playerId == $owner->ControllerId)
+        // WHY: "opposing" = different controller AND same location as the equipped
+        // Strega (feedback_opposing_definition / Reaction_04004 / Reaction_03019).
+        // Without the location gate, Shears fired on deaths anywhere in the city.
+        // Destroy-time Location is still readable here (runEventHubAfterCards).
+        if ($card->ControllerId == 0 || $card->ControllerId == $owningCharacter->ControllerId)
+        {
+            return;
+        }
+
+        if ($card->Location != $owningCharacter->Location)
         {
             return;
         }
 
         $this->stage = 'offer';
-        $this->opponentId = $event->playerId;
+        $this->opponentId = $card->ControllerId;
         $this->cardsSunk = 0;
         $owner->IsUpdated = true;
 
