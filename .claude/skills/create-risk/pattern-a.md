@@ -95,11 +95,12 @@ References: `Action_01083` (Leader-only intervention, custom challenge type), `A
 
 ### Custom challenge type when intervention/refusal differ OR carry side effects
 
-`Game::NORMAL_CHALLENGE_TYPE` is the default and works for any "target-only" restriction (the Influence gate in `_03008`, for example). Add a new challenge-type constant in `Game.php` when **any** of:
+Add a new challenge-type constant in `Game.php` when **any** of:
 
 1. **Intervention or refusal *gates* differ from normal** — "Only Leaders can intervene" (`LEGENDARY_REPUTATION_CHALLENGE_TYPE` in `_01083`), "Only characters with 3 Finesse or more may intervene **or refuse**" (`AJA_CHALLENGE_TYPE`), "Only characters with 3[Finesse] or more can **intervene**" (`CELERITY_CHALLENGE_TYPE` in `_04047` — **intervene only**; do **not** reuse AJA). The framework reads CHALLENGE_TYPE in `Theah::interventionCheck` to enforce intervene gates; refuse gates live separately in `FrameworkActionsTrait::actHighDramaChallengeActionReject` + JS Refuse disable.
 2. **Intervention or refusal carries a side effect attached to the issuing card** — "If they refuse, engage them" + "Wound any character that intervenes" (`CORNERED_CHALLENGE_TYPE` in `_03021`). The gates themselves stay normal (anyone can refuse or intervene), but the **Risk class needs a correlator** to tell "this challenge is mine" inside its `EventChallengeRejected` / `EventCharacterIntervened` handlers.
 3. **An irreversible cost was paid in a card-specific sub-state before the shared choose-target step** — attachment Engage before target pick (`NO_MORE_WORDS_CHALLENGE_TYPE` in `_04019`). `OnUpdateActionButtons.js` shows Back on `highDramaChallengeActionChooseTarget` **only** for `NORMAL_CHALLENGE_TYPE`; a custom type hides Back after the cost. If the paid cost was **attachment** Engage (not performer), still add the type **to** `stIssueChallenge`'s auto-engage list so the performer engages on issue. Also guard `FrameworkActionsTrait::actBack`. See Pattern B.6.
+4. **Print has no Engage cost and the Action must not auto-engage** (Sanjay trichotomy c) — "your performer issues a challenge" with no Engage / no En Garde heading (`ARROGANT_CHALLENGE_TYPE` in `_03008`, `COURAGEOUS_CHALLENGE_TYPE` in `_03058`). Mint a type **off** the auto-engage list; target-only filters (Influence gate, headcount If) live in `isValidTargetForAbility`, not in the type. Do **not** use `NORMAL` here — NORMAL auto-engages.
 
 See the existing list in `modules/php/Game.php` for the catalog.
 
@@ -133,7 +134,7 @@ Reference: `_03021` (Cornered) — `CORNERED_CHALLENGE_TYPE` is consumed for cor
 
 `stIssueChallenge` auto-engages the performer only for `NORMAL_CHALLENGE_TYPE`, `SERVO_SCARPA_CHALLENGE_TYPE`, `TORVO_ESPADA_CHALLENGE_TYPE`, and `AJA_CHALLENGE_TYPE`. When the Action pays the engage cost itself in `announceAction()` (printed "Engage your performer"), the fresh `CHALLENGE_TYPE` must stay **off** that list — otherwise the performer is engaged twice (second `EventCardEngaged` can re-trigger reactions). So the same constant often serves **both** correlator and "keep off auto-engage." Mirror `Action_03021` (Cornered), `Action_03042` (When Least Expected — Scheme, engage on Triggered OK), `Action_03057` (Censure).
 
-Contrast: `_03008` (Arrogant) uses `NORMAL_CHALLENGE_TYPE` because it does **not** engage the performer as a cost — the auto-engage *is* the challenge's engage.
+Contrast: `_03008` (Arrogant) / `_03058` (Courageous) mint custom types **off** auto-engage because print has no Engage — do **not** treat "issues a challenge" as basic Challenge / `NORMAL` auto-engage.
 
 #### Non-Combat challenge stats
 
@@ -296,13 +297,13 @@ Composition of Pattern A challenge + trait prefix + bullet-**If** as **target fi
    - Opposing (`ControllerId` ≠ performer, ≠ 0) at the performer's location.
    - **Headcount If:** `count(getCharactersAtLocationByPlayerId($location, $target->ControllerId)) > count(getCharactersAtLocationByPlayerId($location, $performer->ControllerId))` — strict `>` for "more … than". "You" = the acting player's characters at that location, not a global in-play count.
 4. **`EventActionTriggered`:** mint a card-named `CHALLENGE_TYPE` **off** `stIssueChallenge` auto-engage + `STAT_COMBAT` (or the printed bracket) + transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. No card-specific GameState. Add the constant to `Game.php` + matching JS int; skip intervene/Refuse wiring when there is no refuse/intervene side effect.
-5. **WHY custom type (not `NORMAL`):** print has **no Engage cost**. `NORMAL` is on the auto-engage list and would engage the performer. Same seat as Sanjay `_03037` / Stand Your Ground `_04045` trichotomy (c). Do **not** treat "your performer issues a challenge" as basic Challenge engage. Contrast A.5 / Cornered (Engage printed → pay engage yourself, type off auto-engage to avoid double-engage). Contrast Arrogant `_03008` (still uses `NORMAL` — do not copy that for no-Engage Risks unless Eddie confirms).
+5. **WHY custom type (not `NORMAL`):** print has **no Engage cost**. `NORMAL` is on the auto-engage list and would engage the performer. Same seat as Arrogant `_03008` / Sanjay `_03037` / Stand Your Ground `_04045` trichotomy (c). Do **not** treat "your performer issues a challenge" as basic Challenge engage. Contrast A.5 / Cornered (Engage printed → pay engage yourself, type off auto-engage to avoid double-engage).
 
 **Bullet-If discipline (shared with A.4):** when text is `Target … • If <condition>, <effect>`, treat the If as a **target-availability filter** so the Action is only offered when the effect can fire. Do not let the player target freely and then silently no-op the challenge. Same idea as Astute gating on "does not control this location" before claim.
 
 **Duelist is a trait gate, not Sorcerer** — `hasTrait("Duelist")` only; do not `implement ISorcererAbility`.
 
-References: `_03058` / `Action_03058`, Sanjay `Action_03037` (never-engage type), `Action_02061` (Duelist performer gate), A.4 (bullet-If as filter).
+References: `_03058` / `Action_03058`, Arrogant `Action_03008` (same never-engage type), Sanjay `Action_03037`, `Action_02061` (Duelist performer gate), A.4 (bullet-If as filter).
 
 ### Pattern A.7 — "You may engage your performer, if you do, ignore all costs" + effect
 

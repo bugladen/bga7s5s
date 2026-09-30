@@ -286,6 +286,8 @@ class Game extends \Bga\GameFramework\Table
     // WHY: Courageous (_03058) — no Engage printed; keep off stIssueChallenge auto-engage
     // (NORMAL would engage). Engaged Duelists remain eligible. Sanjay trichotomy (c).
     final const COURAGEOUS_CHALLENGE_TYPE = 33;
+    // WHY: Arrogant (_03008) — same never-engage seat as Courageous (no Engage printed).
+    final const ARROGANT_CHALLENGE_TYPE = 34;
 
     //Duel global variables
     //Duel Names

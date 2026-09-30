@@ -18,10 +18,10 @@ Print has no "Engage your performer" and no En Garde heading. Same seat as Sanja
 
 Dedicated card-named types even when they only exist to dodge NORMAL — same discipline as every other never-engage challenge. Avoids accidental Sanjay-keyed handlers later.
 
-## WHY leave Arrogant alone
+## Follow-up: Arrogant same fix
 
-Arrogant `_03008` has the same printed shape (no Engage) but still uses NORMAL. Eddie only corrected Courageous. A.6 docs now warn not to copy Arrogant's NORMAL for no-Engage Risks. Ask before changing Arrogant.
+Eddie asked to apply the same pattern to Arrogant `_03008`. Minted `ARROGANT_CHALLENGE_TYPE = 34` off auto-engage; `Action_03008` switched off NORMAL. Updated pattern-a custom-type reasons (item 4 = never-engage), pattern-b contrasts, references. "Leave Arrogant alone" above is obsolete.
 
 ## Feelings
 
-Pattern A.6 was written with the wrong half of the trichotomy — classic "your performer issues → NORMAL" trap that Sanjay's journal already warned about for characters. Risk skill lagged behind.
+Pattern A.6 was written with the wrong half of the trichotomy — classic "your performer issues → NORMAL" trap that Sanjay's journal already warned about for characters. Risk skill lagged behind. Good Eddie caught Arrogant as twin of Courageous rather than leaving the old "Arrogant is basic Challenge" myth in the docs.
