@@ -94,11 +94,18 @@ class _01145 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145)
         {
-            $fromLocation = $ids[0];
+            // WHY: Client can submit [] / [null] (empty confirm dialog, crafted request).
+            // Without this guard, getRenownForLocation / later string-typed events TypeError on null.
+            $fromLocation = $ids[0] ?? null;
+            $cityLocations = array_keys($game->theah->getCityLocations());
+            if (!is_string($fromLocation) || !in_array($fromLocation, $cityLocations, true))
+            {
+                throw new UserException($game->translate("Invalid city location."));
+            }
 
             if ($game->getRenownForLocation($fromLocation) == 0)
             {
-                throw new \BgaUserException(sprintf($game->translate("%s does not have any Renown to move."), $fromLocation));
+                throw new UserException(sprintf($game->translate("%s does not have any Renown to move."), $fromLocation));
             }
 
             $game->globals->set(Game::CHOSEN_LOCATION, $fromLocation);
@@ -108,8 +115,19 @@ class _01145 extends Scheme
 
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01145_2)
         {
+            // WHY: Same null/empty ids risk as step 1; createRenownMovingBetweenLocationsEvent
+            // requires string $toLocation. Also enforce destination ≠ source server-side.
             $fromLocation = $game->globals->get(Game::CHOSEN_LOCATION);
-            $toLocation = $ids[0];
+            $toLocation = $ids[0] ?? null;
+            $cityLocations = array_keys($game->theah->getCityLocations());
+            if (!is_string($fromLocation)
+                || !in_array($fromLocation, $cityLocations, true)
+                || !is_string($toLocation)
+                || !in_array($toLocation, $cityLocations, true)
+                || $toLocation === $fromLocation)
+            {
+                throw new UserException($game->translate("You must choose a different city location."));
+            }
 
             $playerId = $game->getActivePlayerId();
 
