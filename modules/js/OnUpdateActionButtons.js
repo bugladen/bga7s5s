@@ -422,6 +422,16 @@ onUpdateActionButtons: function( stateName, args )
             });
         },
 
+        'chooseNextReaction': () => {
+            args.reactions.forEach((r) => {
+                this.addActionButton(
+                    `actChooseNextReaction_${r.eventId}`,
+                    r.label,
+                    () => this.bgaPerformAction('actChooseNextReaction', { eventId: r.eventId })
+                );
+            });
+        },
+
         'duskPhaseDiscard': () => {
             this.addActionButton(`actChooseDiscardCards`, _('Confirm Selection'), () => this.onCardsChosenForDiscard());
             dojo.addClass('actChooseDiscardCards', 'disabled');

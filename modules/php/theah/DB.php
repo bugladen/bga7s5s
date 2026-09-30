@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 /** @disregard */
 class DB
@@ -63,6 +64,104 @@ class DB
 
         $event = $this->game->safeUnserialize($data['json']);
         return $event;
+    }
+
+    // WHY: First Player choose-order promotes a reaction via runImmediately; that row
+    // must dequeue ahead of FIFO siblings still at REACTION_PRIORITY.
+    public function getNextEventByRunImmediately(): ?Event
+    {
+        $sql = "SELECT event_id as id, event_serialized as json FROM events
+                WHERE event_serialized LIKE '%runImmediately\";b:1%'
+                ORDER BY event_priority, event_id LIMIT 1";
+        $data = $this->getObject($sql);
+
+        if (!$data) {
+            return null;
+        }
+
+        $sql = "DELETE FROM events WHERE event_id = {$data['id']}";
+        /** @disregard P1013 */
+        $this->game->DbQuery($sql);
+
+        return $this->game->safeUnserialize($data['json']);
+    }
+
+    public function peekNextEvent(): ?Event
+    {
+        $sql = "SELECT event_id as id, event_serialized as json FROM events ORDER BY event_priority, event_id LIMIT 1";
+        $data = $this->getObject($sql);
+
+        if (!$data) {
+            return null;
+        }
+
+        return $this->game->safeUnserialize($data['json']);
+    }
+
+    /**
+     * @return array<int, array{eventId: int, event: EventTransition}>
+     */
+    public function getQueuedReactionTransitionEvents(): array
+    {
+        $sql = "SELECT event_id, event_serialized FROM events
+                WHERE event_serialized LIKE '%EventTransition%'
+                  AND event_serialized LIKE '%s:8:\"reaction\"%'
+                ORDER BY event_priority, event_id";
+        $results = [];
+        foreach ($this->getCollection($sql) as $row)
+        {
+            $event = $this->game->safeUnserialize($row['event_serialized']);
+            if ($event instanceof EventTransition && $event->transition === 'reaction')
+            {
+                $results[] = [
+                    'eventId' => (int)$row['event_id'],
+                    'event' => $event,
+                ];
+            }
+        }
+        return $results;
+    }
+
+    public function setEventRunImmediately(int $eventId): void
+    {
+        $sql = "SELECT event_id, event_serialized FROM events WHERE event_id = {$eventId}";
+        $row = $this->getObject($sql);
+        if (!$row) {
+            return;
+        }
+
+        $event = $this->game->safeUnserialize($row['event_serialized']);
+        if (!($event instanceof Event)) {
+            return;
+        }
+
+        $event->runImmediately = true;
+        $serialized = addslashes(serialize($event));
+        $this->executeSql("UPDATE events SET event_serialized = '{$serialized}' WHERE event_id = {$eventId}");
+    }
+
+    // WHY: Chosen reaction queues EnteringPay (MEDIUM) + pay transition (REACTION_PRIORITY)
+    // after playerReaction. Sibling reaction transitions still at REACTION_PRIORITY with
+    // older event_ids would peek first — chooseNext again, never reaching pay. Demote
+    // siblings so pay (6) runs before them (7), then chooseNext can offer the rest.
+    public function deferOtherQueuedReactionTransitions(int $exceptEventId): void
+    {
+        $deferredPriority = Event::DEFERRED_REACTION_PRIORITY;
+        foreach ($this->getQueuedReactionTransitionEvents() as $entry)
+        {
+            if ((int)$entry['eventId'] === $exceptEventId)
+            {
+                continue;
+            }
+
+            $event = $entry['event'];
+            $event->priority = $deferredPriority;
+            $serialized = addslashes(serialize($event));
+            $eventId = (int)$entry['eventId'];
+            $this->executeSql(
+                "UPDATE events SET event_priority = {$deferredPriority}, event_serialized = '{$serialized}' WHERE event_id = {$eventId}"
+            );
+        }
     }
 
     public function deleteEventBatch(int $batchId)

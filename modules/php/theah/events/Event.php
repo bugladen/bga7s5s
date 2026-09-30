@@ -8,6 +8,10 @@ abstract class Event
     const CHANGE_ACTIVE_PLAYER_PRIORITY = 8;
     const TRANSITION_PRIORITY = 8;
     const REACTION_PRIORITY = 6;
+    // WHY: After First Player picks one reaction to resolve, siblings are demoted here so
+    // that reaction's pay transition (still REACTION_PRIORITY) drains before chooseNext
+    // offers the rest again.
+    const DEFERRED_REACTION_PRIORITY = 7;
     const LOWEST_PRIORITY = 5;
     const LOW_PRIORITY = 4;
     const MEDIUM_PRIORITY = 3;
@@ -21,6 +25,7 @@ abstract class Event
     /** @var bool */
     public bool $wasStacked;
     public ?int $batchId;
+    public bool $runImmediately;
 
     public function __construct()
     {
@@ -29,6 +34,7 @@ abstract class Event
         $this->canceled = false;
         $this->wasStacked = false;
         $this->batchId = null;
+        $this->runImmediately = false;
     }
 
     public function queueEvent(Event $event)

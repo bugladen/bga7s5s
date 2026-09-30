@@ -2331,4 +2331,32 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
+    public function actChooseNextReaction(int $eventId): void
+    {
+        $this->theah->buildCity();
+
+        $queued = $this->theah->getQueuedReactionTransitionEvents();
+        $valid = false;
+        foreach ($queued as $entry)
+        {
+            if ((int)$entry['eventId'] === $eventId)
+            {
+                $valid = true;
+                break;
+            }
+        }
+
+        if (!$valid)
+        {
+            throw new UserException(clienttranslate("Invalid reaction selection. Please try again."));
+        }
+
+        // WHY: Promote chosen reaction so stRunEvents on FOO_EVENTS drains it first
+        // via getNextEventByRunImmediately. Demote sibling reaction transitions so this
+        // reaction's pay transition (REACTION_PRIORITY) runs before chooseNext again.
+        $this->theah->setEventRunImmediately($eventId);
+        $this->theah->deferOtherQueuedReactionTransitions($eventId);
+        $this->gamestate->nextState("");
+    }
+
 }

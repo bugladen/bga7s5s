@@ -23,6 +23,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 
 trait ArgumentsTrait
 {
@@ -1155,6 +1157,79 @@ trait ArgumentsTrait
 
         return [
             "whenRevealedCards" => $whenRevealedCards,
+        ];
+    }
+
+    public function argsChooseNextReaction(): array
+    {
+        $this->theah->buildCity();
+
+        $firstPlayerId = (int)$this->globals->get(Game::FIRST_PLAYER, 0);
+        $queued = $this->theah->getQueuedReactionTransitionEvents();
+        $reactions = [];
+
+        foreach ($queued as $entry)
+        {
+            $event = $entry['event'];
+            $playerId = (int)$event->playerId;
+            $playerName = $this->getPlayerNameById($playerId);
+            $ability = null;
+            $owningCard = null;
+
+            if ($event->sourceId == Game::THEAH_ID)
+            {
+                $ability = $this->theah->getTheahReactionById($event->internalId);
+            }
+            else
+            {
+                $card = $this->theah->getCardById($event->sourceId);
+                if ($card instanceof IHasReactions)
+                {
+                    $ability = $card->getReactionById($event->internalId);
+                    $owningCard = $card;
+                }
+            }
+
+            // WHY: Opponent RiskReactions stay fogged — First Player must not learn
+            // which hand Risk is reacting when choosing order.
+            $isOpponentRisk = $ability instanceof RiskReaction
+                && $owningCard
+                && (int)$owningCard->ControllerId !== $firstPlayerId;
+
+            if ($isOpponentRisk)
+            {
+                $label = sprintf(
+                    $this->translate('%s - Risk Reaction'),
+                    $playerName
+                );
+            }
+            else
+            {
+                $abilityName = (is_object($ability) && property_exists($ability, 'Name') && $ability->Name !== '')
+                    ? $ability->Name
+                    : $this->translate('Reaction');
+                if ($owningCard)
+                {
+                    $where = $owningCard->Location === Game::LOCATION_HAND
+                        ? $this->translate('In-Hand')
+                        : $this->translate('In-Play');
+                    $label = sprintf('%s - %s - %s - %s', $playerName, $owningCard->Name, $where, $abilityName);
+                }
+                else
+                {
+                    // Framework reactions (Crew Cap / Name Gate) have no owning card.
+                    $label = sprintf('%s - %s', $playerName, $abilityName);
+                }
+            }
+
+            $reactions[] = [
+                'eventId' => (int)$entry['eventId'],
+                'label' => $label,
+            ];
+        }
+
+        return [
+            'reactions' => $reactions,
         ];
     }
 }

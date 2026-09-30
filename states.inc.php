@@ -61,6 +61,7 @@ $machinestates = [
         "type" => "game",
         "action" => "stRunEvents",
         "transitions" => [
+            "chooseNext" => States::SETUP_TABLE_CHOOSE_NEXT_ABILITY,
             "01006" => States::SETUP_TABLE_01006,
             "reaction" => States::SETUP_TABLE_REACTIONS,
             "pay" => States::SETUP_TABLE_PAY_FOR_REACTION,
@@ -96,6 +97,17 @@ $machinestates = [
             "paid" => States::SETUP_TABLE_EVENTS, 
         ]
     ],
+    States::SETUP_TABLE_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::SETUP_TABLE_EVENTS,
+        ],
+    ],
 
     States::DAWN_NEW_DAY => [
         "name" => "dawnNewDay",
@@ -111,6 +123,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::DAWN_NEW_DAY_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::DAWN_NEW_DAY_REACTIONS,
                 "pay" => States::DAWN_NEW_DAY_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_BEGINNING,
@@ -145,6 +158,17 @@ $machinestates = [
                 "paid" => States::DAWN_NEW_DAY_EVENTS, 
             ]
         ],
+    States::DAWN_NEW_DAY_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DAWN_NEW_DAY_EVENTS,
+        ],
+    ],
 
     States::DAWN_BEGINNING => [
         "name" => "dawnBeginning",
@@ -159,6 +183,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::DAWN_BEGINNING_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::DAWN_BEGINNING_REACTIONS,
                 "pay" => States::DAWN_BEGINNING_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_CITY_CARDS,
@@ -193,6 +218,17 @@ $machinestates = [
                 "paid" => States::DAWN_BEGINNING_EVENTS, 
             ]
         ],
+    States::DAWN_BEGINNING_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DAWN_BEGINNING_EVENTS,
+        ],
+    ],
 
     States::DAWN_CITY_CARDS => [
         "name" => "dawnCityCards",
@@ -207,6 +243,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::DAWN_CITY_CARDS_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::DAWN_CITY_CARDS_REACTIONS,
                 "pay" => States::DAWN_CITY_CARDS_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_ENDING,
@@ -241,6 +278,17 @@ $machinestates = [
                 "paid" => States::DAWN_CITY_CARDS_EVENTS, 
             ]
         ],
+    States::DAWN_CITY_CARDS_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DAWN_CITY_CARDS_EVENTS,
+        ],
+    ],
 
     States::DAWN_ENDING => [
         "name" => "dawnEnding",
@@ -255,6 +303,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::DAWN_ENDING_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::DAWN_ENDING_REACTIONS,
                 "pay" => States::DAWN_ENDING_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_BEGINNING,
@@ -289,6 +338,17 @@ $machinestates = [
                 "paid" => States::DAWN_ENDING_EVENTS, 
             ]
         ],
+    States::DAWN_ENDING_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DAWN_ENDING_EVENTS,
+        ],
+    ],
 
     States::PLANNING_PHASE_BEGINNING => [
         "name" => "planningPhaseBeginning",
@@ -303,6 +363,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_BEGINNING_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_BEGINNING_REACTIONS,
                 "pay" => States::PLANNING_PHASE_BEGINNING_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE,
@@ -337,6 +398,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_BEGINNING_EVENTS, 
             ]
         ],
+    States::PLANNING_PHASE_BEGINNING_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_BEGINNING_EVENTS,
+        ],
+    ],
 
     States::PLANNING_PHASE => [
         "name" => "planningPhase",
@@ -364,6 +436,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_REACTIONS,
                 "pay" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED,
@@ -398,6 +471,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS, 
             ]
         ],
+    States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_DETERMINE_FIRST_PLAYER_EVENTS,
+        ],
+    ],
 
     States::PLANNING_PHASE_APPROACH_CARDS_PLAYED => [
         "name" => "planningPhaseApproachCardsPlayed",
@@ -412,6 +496,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_REACTIONS,
                 "pay" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_PAY_FOR_REACTION,
                 "01200" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200,
@@ -447,6 +532,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS, 
             ]
         ],
+    States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS,
+        ],
+    ],
 
     States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS => [
         "name" => "planningPhaseResolveWhenRevealedCards",
@@ -464,6 +560,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHECK_REMAINING,
@@ -498,6 +595,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS,
             ]
         ],
+    States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_EVENTS,
+        ],
+    ],
 
         States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER => [
             "name" => "planningPhaseResolveWhenRevealedCardsChooseOrder",
@@ -531,6 +639,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHECK_REMAINING,
@@ -565,6 +674,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_EVENTS,
             ]
         ],
+    States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_EVENTS,
+        ],
+    ],
 
     States::PLANNING_PHASE_MUSTER
     => [
@@ -580,6 +700,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_MUSTER_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_MUSTER_REACTIONS,
                 "pay" => States::PLANNING_PHASE_MUSTER_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_SCHEMES,
@@ -614,6 +735,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_MUSTER_EVENTS, 
             ]
         ],
+    States::PLANNING_PHASE_MUSTER_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_MUSTER_EVENTS,
+        ],
+    ],
 
     States::PLANNING_PHASE_RESOLVE_SCHEMES => [
         "name" => "planningPhaseResolveSchemes",
@@ -629,6 +761,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_RESOLVE_SCHEMES_CHOOSE_NEXT_ABILITY,
                 "01016" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016,
                 "01071" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01071,
                 "01072" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01072,
@@ -712,6 +845,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS, 
             ]
         ],
+    States::PLANNING_PHASE_RESOLVE_SCHEMES_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
+        ],
+    ],
 
     States::PLANNING_PHASE_DRAW => [
         "name" => "planningPhaseDraw",
@@ -734,6 +878,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLANNING_PHASE_END_CHOOSE_NEXT_ABILITY,
                 "01098" => States::PLANNING_PHASE_END_01098,
                 "03041" => States::PLANNING_PHASE_END_03041,
                 "04025" => States::PLANNING_PHASE_END_04025,
@@ -773,6 +918,17 @@ $machinestates = [
                 "paid" => States::PLANNING_PHASE_END_EVENTS, 
             ]
         ],
+    States::PLANNING_PHASE_END_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLANNING_PHASE_END_EVENTS,
+        ],
+    ],
 
     States::HIGH_DRAMA_BEGINNING => [
         "name" => "highDramaBeginning",
@@ -787,6 +943,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_BEGINNING_CHOOSE_NEXT_ABILITY,
                 "01144" => States::HIGH_DRAMA_BEGINNING_01144,
                 "reaction" => States::HIGH_DRAMA_BEGINNING_REACTIONS,
                 "pay" => States::HIGH_DRAMA_BEGINNING_PAY_FOR_REACTION,
@@ -822,6 +979,17 @@ $machinestates = [
                 "paid" => States::HIGH_DRAMA_BEGINNING_EVENTS, 
             ]
         ],
+    States::HIGH_DRAMA_BEGINNING_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_BEGINNING_EVENTS,
+        ],
+    ],
 
     States::HIGH_DRAMA_PHASE => [
         "name" => "highDramaPhase",
@@ -869,6 +1037,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_PLAYER_TURN_CHOOSE_NEXT_ABILITY,
                 "01007" => States::HIGH_DRAMA_PLAYER_TURN_01007,
                 "01008" => States::HIGH_DRAMA_PLAYER_TURN_01008,
                 "01009" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY,
@@ -1155,6 +1324,17 @@ $machinestates = [
                 "paid" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
             ]
         ],
+    States::HIGH_DRAMA_PLAYER_TURN_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+        ],
+    ],
 
         States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER => [
             "name" => "highDramaChallengeActionChoosePerformer",
@@ -1223,6 +1403,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
@@ -1257,6 +1438,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS, 
                 ]
             ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS,
+        ],
+    ],
     
         States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE => [
             "name" => "highDramaChallengeActionSetupChallenge",
@@ -1271,6 +1463,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE,
@@ -1305,6 +1498,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS, 
                 ]
             ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE_EVENTS,
+        ],
+    ],
 
         States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE => [
             "name" => "highDramaChallengeActionResolveTechnique",
@@ -1319,6 +1523,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_CHOOSE_NEXT_ABILITY,
                     "01063" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01063,
                     "01067" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01067,
                     "03013" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_03013,
@@ -1360,6 +1565,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS, 
                 ]
             ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
+        ],
+    ],
 
         States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED => [
             "name" => "highChallengeActionCheckCancelled",
@@ -1403,6 +1619,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_PAY_FOR_REACTION,
                     // WHY: Lorenzo / Croc de Lion interactive effects deferred until
@@ -1447,6 +1664,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS, 
                 ]
             ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT_EVENTS,
+        ],
+    ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLUTION => [
             "name" => "highDramaChallengeActionResolution",
             "type" => "game",
@@ -1463,6 +1691,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_PAY_FOR_REACTION,
                     "endOfEvents" => States::NEXT_PLAYER,
@@ -1497,11 +1726,23 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS, 
                 ]
             ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_REJECT_EVENTS,
+        ],
+    ],
                 States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS => [
                 "name" => "highDramaChallengeActionAcceptEvents",
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUEL_STARTED,
@@ -1536,6 +1777,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS, 
                 ]
             ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_EVENTS,
+        ],
+    ],
 
         States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER => [
             "name" => "highDramaClaimActionChoosePerformer",
@@ -1557,6 +1809,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_REACTIONS,
                 "pay" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_PRESSURE_LOCATION,
@@ -1591,6 +1844,17 @@ $machinestates = [
                 "paid" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_EVENTS, 
             ]
         ],
+    States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CLAIM_ACTION_CHOOSE_PERFORMER_EVENTS,
+        ],
+    ],
 
         States::HIGH_DRAMA_PRESSURE_LOCATION => [
             "name" => "highDramaPressureLocation",
@@ -1657,6 +1921,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_REACTIONS,
                 "pay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND,
@@ -1691,6 +1956,17 @@ $machinestates = [
                 "paid" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_EVENTS, 
             ]
         ],
+    States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_HAND_EVENTS,
+        ],
+    ],
         
         States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_HAND => [
             "name" => "highDramaEquipActionPayForAttachmentFromHand",
@@ -1728,6 +2004,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_REACTIONS,
                 "pay" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY,
@@ -1762,6 +2039,17 @@ $machinestates = [
                 "paid" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_EVENTS, 
             ]
         ],
+    States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_EQUIP_ACTION_CHOOSE_ATTACHMENT_FROM_PLAY_EVENTS,
+        ],
+    ],
         States::HIGH_DRAMA_EQUIP_ACTION_PAY_FOR_ATTACHMENT_FROM_PLAY => [
             "name" => "highDramaEquipActionPayForAttachmentFromPlay",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -1871,6 +2159,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_REACTIONS,
                     "pay" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_RECRUIT_COMPUTE_DISCOUNT,
@@ -1905,6 +2194,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
                 ]
             ],
+    States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
+        ],
+    ],
             States::HIGH_DRAMA_RECRUIT_COMPUTE_DISCOUNT => [
                 "name" => "highDramaRecruitComputeDiscount",
                 "type" => "game",
@@ -1983,6 +2283,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_IN_PLAY_ACTION_CONFIRM_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::HIGH_DRAMA_IN_PLAY_ACTION_CONFIRM_REACTIONS,
                     "pay" => States::HIGH_DRAMA_IN_PLAY_ACTION_CONFIRM_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH,
@@ -2017,6 +2318,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_IN_PLAY_ACTION_CONFIRM_EVENTS,
                 ]
             ],
+    States::HIGH_DRAMA_IN_PLAY_ACTION_CONFIRM_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_IN_PLAY_ACTION_CONFIRM_EVENTS,
+        ],
+    ],
             States::HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH => [
                 "name" => "highDramaInPlayActionDispatch",
                 "type" => "game",
@@ -2077,6 +2389,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_NEXT_ABILITY,
                     "03060_2" => States::HIGH_DRAMA_PLAYER_TURN_03060_2,
                     "reaction" => States::HIGH_DRAMA_IN_HAND_ACTION_REACTIONS,
                     "pay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY_FOR_REACTION,
@@ -2112,6 +2425,17 @@ $machinestates = [
                     "paid" => States::HIGH_DRAMA_IN_HAND_ACTION_EVENTS, 
                 ]
             ],
+    States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_IN_HAND_ACTION_EVENTS,
+        ],
+    ],
 
             States::HIGH_DRAMA_IN_HAND_ACTION_PAY => [
                 "name" => "highDramaInHandActionPay",
@@ -2149,6 +2473,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_REACTIONS,
                 "pay" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_PAY_FOR_REACTION,
                 "endOfEvents" => States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE,
@@ -2183,6 +2508,17 @@ $machinestates = [
                 "paid" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
             ]
         ],
+    States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_BRUTE_ACTION_PLAY_BRUTE_EVENTS,
+        ],
+    ],
         States::HIGH_DRAMA_BRUTE_ACTION_PAY_FOR_BRUTE => [
             "name" => "highDramaBruteActionPayForBrute",
             "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -2212,6 +2548,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::DUEL_STARTED_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::DUEL_STARTED_REACTIONS,
                     "pay" => States::DUEL_STARTED_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUEL_NEW_ROUND,
@@ -2246,6 +2583,17 @@ $machinestates = [
                     "paid" => States::DUEL_STARTED_EVENTS, 
                 ]
             ],
+    States::DUEL_STARTED_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_STARTED_EVENTS,
+        ],
+    ],
         States::DUEL_NEW_ROUND => [
             "name" => "duelNewRound",
             "type" => "game",
@@ -2259,6 +2607,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::DUEL_NEW_ROUND_CHOOSE_NEXT_ABILITY,
                     "01127" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "01090" => States::DUEL_NEW_ROUND_01090,
                     "01090_2" => States::DUEL_APPLY_COMBAT_CARD_STATS,
@@ -2297,6 +2646,17 @@ $machinestates = [
                     "paid" => States::DUEL_NEW_ROUND_EVENTS, 
                 ]
             ],
+    States::DUEL_NEW_ROUND_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_NEW_ROUND_EVENTS,
+        ],
+    ],
         States::DUEL_CHOOSE_ACTION => [
             "name" => "duelChooseAction",
             "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
@@ -2327,6 +2687,7 @@ $machinestates = [
                 "type" => "game",
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::DUEL_COMBAT_CARD_CHOOSE_NEXT_ABILITY,
                     "01135" => States::DUEL_GAMBLE_SETUP,
                     "applyCombatCardStats" => States::DUEL_APPLY_COMBAT_CARD_STATS,
                     "reaction" => States::DUEL_COMBAT_CARD_REACTIONS,
@@ -2363,6 +2724,17 @@ $machinestates = [
                     "paid" => States::DUEL_COMBAT_CARD_EVENTS, 
                 ]
             ],
+    States::DUEL_COMBAT_CARD_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_COMBAT_CARD_EVENTS,
+        ],
+    ],
 
             States::DUEL_CHOOSE_TECHNIQUE => [
                 "name" => "duelChooseTechnique",
@@ -2385,6 +2757,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_CHOOSE_TECHNIQUE_CHOOSE_NEXT_ABILITY,
                         "reaction" => States::DUEL_CHOOSE_TECHNIQUE_REACTIONS,
                         "pay" => States::DUEL_CHOOSE_TECHNIQUE_PAY_FOR_REACTION,
                         "01010" => States::DUEL_CHOOSE_TECHNIQUE_01010,
@@ -2465,6 +2838,17 @@ $machinestates = [
                         "paid" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS, 
                     ]
                 ],
+    States::DUEL_CHOOSE_TECHNIQUE_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
+        ],
+    ],
             States::DUEL_USE_MANEUVER_FROM_COMBAT_CARD => [
                 "name" => "duelUseManeuverFromCombatCard",
                 "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
@@ -2493,6 +2877,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_CHOOSE_NEXT_ABILITY,
                         // WHY SETUP not REVEALED: May 2025 registered REVEALED as a crash
                         // stopgap; that skipped EventGambleSetup (Devil Jonah's Bones).
                         // Match combat-card / choose-gamble-card entry points.
@@ -2531,6 +2916,17 @@ $machinestates = [
                         "paid" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_EVENTS, 
                     ]
                 ],
+    States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_GET_MANEUVER_FROM_COMBAT_CARD_COST_EVENTS,
+        ],
+    ],
 
             States::DUEL_PAY_FOR_MANEUVER_FROM_COMBAT_CARD => [
                 "name" => "duelPayForManeuverFromCombatCard",
@@ -2564,6 +2960,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_RESOLVE_MANEUVER_CHOOSE_NEXT_ABILITY,
                         "01051" => States::DUEL_RESOLVE_MANEUVER_01051,
                         "01059" => States::DUEL_RESOLVE_MANEUVER_01059,
                         "01077" => States::DUEL_RESOLVE_MANEUVER_01077,
@@ -2627,6 +3024,17 @@ $machinestates = [
                         "paid" => States::DUEL_RESOLVE_MANEUVER_EVENTS, 
                     ]
                 ],
+    States::DUEL_RESOLVE_MANEUVER_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
+        ],
+    ],
             States::DUEL_APPLY_COMBAT_CARD_STATS => [
                 "name" => "duelApplyCombatCardStats",
                 "type" => "game",
@@ -2640,6 +3048,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_APPLY_COMBAT_CARD_STATS_CHOOSE_NEXT_ABILITY,
                         "01085" => States::DUEL_APPLY_COMBAT_CARD_STATS_01085,
                         "useManeuver" => States::DUEL_RESOLVE_MANEUVER,
                         "reaction" => States::DUEL_APPLY_COMBAT_CARD_STATS_REACTIONS,
@@ -2676,6 +3085,17 @@ $machinestates = [
                         "paid" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS, 
                     ]
                 ],
+    States::DUEL_APPLY_COMBAT_CARD_STATS_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS,
+        ],
+    ],
             States::DUEL_SET_NEXT_COMBAT_CARD => [
                 "name" => "duelSetNextCombatCard",
                 "type" => "game",
@@ -2703,6 +3123,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_GAMBLE_SETUP_CHOOSE_NEXT_ABILITY,
                         // WHY: Reaction_01135 may resolve while leftover announce-reactions
                         // are still draining inside setup (e.g. second Mireli in hand). Same
                         // gap class as May 2025 cost-events (5230) — without this entry,
@@ -2743,6 +3164,17 @@ $machinestates = [
                         "paid" => States::DUEL_GAMBLE_SETUP_EVENTS,
                     ]
                 ],
+    States::DUEL_GAMBLE_SETUP_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_GAMBLE_SETUP_EVENTS,
+        ],
+    ],
 
             States::DUEL_GAMBLE_REVEALED => [
                 "name" => "duelGambleRevealed",
@@ -2757,6 +3189,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_GAMBLE_REVEALED_CHOOSE_NEXT_ABILITY,
                         // WHY: Cost-events path used to jump straight to REVEALED; a second
                         // 01135 cancel queued behind that entry must re-enter full setup
                         // (EventGambleSetup / 03cd05), not crash here.
@@ -2797,6 +3230,17 @@ $machinestates = [
                         "paid" => States::DUEL_GAMBLE_REVEALED_EVENTS,
                     ]
                 ],
+    States::DUEL_GAMBLE_REVEALED_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_GAMBLE_REVEALED_EVENTS,
+        ],
+    ],
 
             States::DUEL_CHOOSE_GAMBLE_CARD =>[
                 "name" => "duelChooseGambleCard",
@@ -2818,6 +3262,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_CHOOSE_GAMBLE_CARD_CHOOSE_NEXT_ABILITY,
                         "01135" => States::DUEL_GAMBLE_SETUP,
                         "reaction" => States::DUEL_CHOOSE_GAMBLE_CARD_REACTIONS,
                         "pay" => States::DUEL_CHOOSE_GAMBLE_CARD_PAY_FOR_REACTION,
@@ -2853,6 +3298,17 @@ $machinestates = [
                         "paid" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS, 
                     ]
                 ],
+    States::DUEL_CHOOSE_GAMBLE_CARD_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_CHOOSE_GAMBLE_CARD_EVENTS,
+        ],
+    ],
             States::DUEL_END_OF_ROUND => [
                 "name" => "duelEndOfRound",
                 "type" => "game",
@@ -2866,6 +3322,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_END_OF_ROUND_CHOOSE_NEXT_ABILITY,
                         "01031" => States::DUEL_END_OF_ROUND_01031,
                         "01096" => States::DUEL_END_OF_ROUND_01096,
                         "01200" => States::DUEL_END_OF_ROUND_01200,
@@ -2904,6 +3361,17 @@ $machinestates = [
                         "paid" => States::DUEL_END_OF_ROUND_EVENTS, 
                     ]
                 ],
+    States::DUEL_END_OF_ROUND_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_END_OF_ROUND_EVENTS,
+        ],
+    ],
             States::DUEL_NEXT_PLAYER => [
                 "name" => "duelNextPlayer",
                 "type" => "game",
@@ -2927,6 +3395,7 @@ $machinestates = [
                     "type" => "game",
                     "action" => "stRunEvents",
                     "transitions" => [
+            "chooseNext" => States::DUEL_END_CHOOSE_NEXT_ABILITY,
                         "reaction" => States::DUEL_END_REACTIONS,
                         "pay" => States::DUEL_END_PAY_FOR_REACTION,
                         "endOfEvents" => States::NEXT_PLAYER,
@@ -2961,6 +3430,17 @@ $machinestates = [
                         "paid" => States::DUEL_END_EVENTS, 
                     ]
                 ],
+    States::DUEL_END_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUEL_END_EVENTS,
+        ],
+    ],
                 
     States::NEXT_PLAYER => [
         "name" => "nextPlayer",
@@ -2977,6 +3457,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::NEXT_PLAYER_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::NEXT_PLAYER_REACTIONS,
                 "pay" => States::NEXT_PLAYER_PAY_FOR_REACTION,
                 "endOfEvents" => States::NEXT_PLAYER_SET_CURRENT_PLAYER,
@@ -3011,6 +3492,17 @@ $machinestates = [
                 "paid" => States::NEXT_PLAYER_EVENTS, 
             ]
         ],
+    States::NEXT_PLAYER_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::NEXT_PLAYER_EVENTS,
+        ],
+    ],
     States::NEXT_PLAYER_SET_CURRENT_PLAYER => [
         "name" => "nextPlayerSetCurrentPlayer",
         "type" => "game",
@@ -3029,6 +3521,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::HIGH_DRAMA_END_CHOOSE_NEXT_ABILITY,
                 "03061" => States::HIGH_DRAMA_END_03061,
                 "reaction" => States::HIGH_DRAMA_END_REACTIONS,
                 "pay" => States::HIGH_DRAMA_END_PAY_FOR_REACTION,
@@ -3064,6 +3557,17 @@ $machinestates = [
                 "paid" => States::HIGH_DRAMA_END_EVENTS, 
             ]
         ],
+    States::HIGH_DRAMA_END_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_END_EVENTS,
+        ],
+    ],
 
     States::PLUNDER_PHASE_BEGIN => [
         "name" => "plunderPhaseBegin",
@@ -3076,6 +3580,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLUNDER_PHASE_BEGIN_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLUNDER_PHASE_BEGIN_REACTIONS,
                 "pay" => States::PLUNDER_PHASE_BEGIN_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLUNDER_CHECK_DOMINANCE_VICTORY,
@@ -3110,6 +3615,17 @@ $machinestates = [
                 "paid" => States::PLUNDER_PHASE_BEGIN_EVENTS, 
             ]
         ],
+    States::PLUNDER_PHASE_BEGIN_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLUNDER_PHASE_BEGIN_EVENTS,
+        ],
+    ],
 
     States::PLUNDER_CHECK_DOMINANCE_VICTORY => [
         "name" => "plunderCheckDominanceVictory",
@@ -3131,6 +3647,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLUNDER_GAIN_RENOWN_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLUNDER_GAIN_RENOWN_REACTIONS,
                 "pay" => States::PLUNDER_GAIN_RENOWN_PAY_FOR_REACTION,
                 "endOfEvents" => States::PLUNDER_CHECK_ECONOMIC_VICTORY,
@@ -3164,6 +3681,17 @@ $machinestates = [
                 "paid" => States::PLUNDER_GAIN_RENOWN_EVENTS, 
             ]
         ],
+    States::PLUNDER_GAIN_RENOWN_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLUNDER_GAIN_RENOWN_EVENTS,
+        ],
+    ],
 
     States::PLUNDER_CHECK_ECONOMIC_VICTORY => [
         "name" => "plunderCheckEconomicVictory",
@@ -3194,6 +3722,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::PLUNDER_PHASE_END_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLUNDER_PHASE_END_REACTIONS,
                 "pay" => States::PLUNDER_PHASE_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_BEGIN,
@@ -3228,6 +3757,17 @@ $machinestates = [
                 "paid" => States::PLUNDER_PHASE_END_EVENTS, 
             ]
         ],
+    States::PLUNDER_PHASE_END_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::PLUNDER_PHASE_END_EVENTS,
+        ],
+    ],
 
     States::DUSK_PHASE_BEGIN => [
         "name" => "duskPhaseBegin",
@@ -3240,6 +3780,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::DUSK_PHASE_BEGIN_CHOOSE_NEXT_ABILITY,
                 "01177" => States::DUSK_PHASE_BEGIN_01177,
                 "02024" => States::DUSK_PHASE_BEGIN_02024,
                 "02053" => States::DUSK_PHASE_BEGIN_02053,
@@ -3279,6 +3820,17 @@ $machinestates = [
                 "paid" => States::DUSK_PHASE_BEGIN_EVENTS, 
             ]
         ],
+    States::DUSK_PHASE_BEGIN_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUSK_PHASE_BEGIN_EVENTS,
+        ],
+    ],
 
     States::DUSK_PHASE_CLEANUP => [
         "name" => "duskPhaseCleanup",
@@ -3292,6 +3844,7 @@ $machinestates = [
                 "description" => clienttranslate("Dusk Phase: Cleaning up the City..."),
                 "action" => "stRunEvents",
                 "transitions" => [
+            "chooseNext" => States::DUSK_PHASE_CLEANUP_CHOOSE_NEXT_ABILITY,
                     "reaction" => States::DUSK_PHASE_CLEANUP_REACTIONS,
                     "pay" => States::DUSK_PHASE_CLEANUP_PAY_FOR_REACTION,
                     "endOfEvents" => States::DUSK_PHASE_DISCARD,
@@ -3326,6 +3879,17 @@ $machinestates = [
                 "paid" => States::DUSK_PHASE_CLEANUP_EVENTS, 
             ]
         ],
+    States::DUSK_PHASE_CLEANUP_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUSK_PHASE_CLEANUP_EVENTS,
+        ],
+    ],
 
     States::DUSK_PHASE_DISCARD => [
         "name" => "duskPhaseDiscard",
@@ -3344,6 +3908,7 @@ $machinestates = [
             "type" => "game",
             "action" => "stDuskPhaseDiscardEvents",
             "transitions" => [
+            "chooseNext" => States::DUSK_PHASE_DISCARD_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::DUSK_PHASE_DISCARD_REACTIONS,
                 "pay" => States::DUSK_PHASE_DISCARD_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_PHASE_END,
@@ -3378,6 +3943,17 @@ $machinestates = [
                 "paid" => States::DUSK_PHASE_DISCARD_EVENTS, 
             ]
         ],
+    States::DUSK_PHASE_DISCARD_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUSK_PHASE_DISCARD_EVENTS,
+        ],
+    ],
 
     States::DUSK_PHASE_END => [
         "name" => "duskPhaseEnd",
@@ -3391,6 +3967,7 @@ $machinestates = [
             "description" => clienttranslate("Dusk Phase: Ending the Day..."),
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::DUSK_PHASE_END_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::DUSK_PHASE_END_REACTIONS,
                 "pay" => States::DUSK_PHASE_END_PAY_FOR_REACTION,
                 "endOfEvents" => States::DUSK_END_OF_DAY,
@@ -3425,6 +4002,17 @@ $machinestates = [
                 "paid" => States::DUSK_PHASE_END_EVENTS, 
             ]
         ],
+    States::DUSK_PHASE_END_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUSK_PHASE_END_EVENTS,
+        ],
+    ],
 
     States::DUSK_END_OF_DAY => [
         "name" => "duskEndOfDay",
@@ -3438,6 +4026,7 @@ $machinestates = [
             "description" => clienttranslate("Dusk Phase: Ending the Day..."),
             "action" => "stRunEvents",
             "transitions" => [
+            "chooseNext" => States::DUSK_END_OF_DAY_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::DUSK_END_OF_DAY_REACTIONS,
                 "pay" => States::DUSK_END_OF_DAY_PAY_FOR_REACTION,
                 "endOfEvents" => States::DAWN_NEW_DAY,
@@ -3472,6 +4061,17 @@ $machinestates = [
                 "paid" => States::DUSK_END_OF_DAY_EVENTS, 
             ]
         ],
+    States::DUSK_END_OF_DAY_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction resolves next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::DUSK_END_OF_DAY_EVENTS,
+        ],
+    ],
                                         
     // Final state.
     // Please do not modify (and do not overload action/args methods).

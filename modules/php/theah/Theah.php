@@ -314,13 +314,34 @@ class Theah
 
     public function runEvents(bool $skipTransitions = false)
     {
-        while (true) {
-           
-            // Get the next event from the database
-            $event = $this->db->getNextEvent();
+        while (true) 
+        {
+            // WHY: First — promote First Player's chosen reaction (runImmediately) ahead of
+            // FIFO siblings and ahead of the multi-reaction chooseNext divert below.
+            $event = $this->db->getNextEventByRunImmediately();
+            if (!$event)
+            {
+                // WHY peek before diverting: higher-priority events must still drain first;
+                // only pause when a reaction transition is next and siblings exist.
+                if (!$skipTransitions)
+                {
+                    $peek = $this->db->peekNextEvent();
+                    if ($peek instanceof EventTransition && $peek->transition === 'reaction')
+                    {
+                        $reactions = $this->db->getQueuedReactionTransitionEvents();
+                        $firstPlayerId = (int)$this->game->globals->get(Game::FIRST_PLAYER, 0);
+                        if (count($reactions) > 1 && $firstPlayerId)
+                        {
+                            $this->game->gamestate->changeActivePlayer($firstPlayerId);
+                            $this->game->gamestate->nextState('chooseNext');
+                            return;
+                        }
+                    }
+                }
 
-            // Break if there are no more events
-            if (!$event) break;
+                $event = $this->db->getNextEvent();
+                if (!$event) break;
+            }
 
             $event->theah = $this;
 
@@ -1802,6 +1823,24 @@ class Theah
     public function deleteTransitionEventsBySourceId(int $sourceId)
     {
         $this->db->deleteTransitionEventsBySourceId($sourceId);
+    }
+
+    /**
+     * @return array<int, array{eventId: int, event: \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition}>
+     */
+    public function getQueuedReactionTransitionEvents(): array
+    {
+        return $this->db->getQueuedReactionTransitionEvents();
+    }
+
+    public function setEventRunImmediately(int $eventId): void
+    {
+        $this->db->setEventRunImmediately($eventId);
+    }
+
+    public function deferOtherQueuedReactionTransitions(int $exceptEventId): void
+    {
+        $this->db->deferOtherQueuedReactionTransitions($exceptEventId);
     }
 
     public function deleteEventsTargetingCard(int $cardId)
