@@ -122,7 +122,7 @@ This is the **invert** of Defending Honor `_01078` ("Target enemy character issu
    - `CHALLENGE_STAT` = printed bracket (`STAT_COMBAT`)
    - Mint a fresh `CHALLENGE_TYPE` and keep it **off** `stIssueChallenge` auto-engage list
    - Transition `"NNNNN_3"` → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE` (skip shared choose-target — defender is fixed)
-5. **WHY custom type off auto-engage:** forced *enemy* "issues a challenge" must not free-engage them for you. Same trichotomy seat as Defending Honor / Sanjay. Contrast Arrogant `_03008` / Courageous `_03058` where **your** performer issues → `NORMAL` auto-engage is correct. Do **not** add Engage unless printed.
+5. **WHY custom type off auto-engage:** forced *enemy* "issues a challenge" must not free-engage them for you. Same trichotomy seat as Defending Honor / Sanjay / Courageous `_03058`. Contrast Arrogant `_03008` (still `NORMAL` auto-engage — do not assume that for every "your performer issues"). Do **not** add Engage unless printed.
 6. **Optional "If your performer is a Duelist, their first combat card gains +X[Riposte]":** on confirm, if `$defender->hasTrait("Duelist")`, set sticky `$FirstCombatCardRiposteCharacterId = $defender->Id` on the Action (`IsUpdated`). On `EventDuelCalculateCombatCardStats` when `$event->actorId` matches, `addRiposte(X)` once and clear. Clear unused arm on `EventDuelEnd` and on `EventActionResolved` when `!IN_DUEL` (cancel/refuse — arm must not leak into a later duel; discard is in `buildCity` so the Action still receives events).
 7. **Pre-commit:** `// createActionResolvedEvent() is called when the challenge is resolved` comment (same as other challenge-issuing Actions).
 8. **Wire:** `"NNNNN"` / `"NNNNN_2"` → GameState classes; `"NNNNN_3"` → `HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. Matching JS int for the new `CHALLENGE_TYPE`. bas/faf JS trio: opponent buttons on step 1; character highlight+Confirm on step 2.
@@ -411,7 +411,7 @@ Composition of Leader-trait performer + En Garde precondition + character-count 
 8. **No Unique locker** unless text says "Send this card to The Locker" — Unique trait alone is deck-construction. Contrast A.8 Ambitious.
 9. **Wire** `"NNNNN"` → choose-stat GameState and `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. bas JS choose-stat trio mirrors `highDramaPhase03067`.
 
-**Contrast:** A.8 = Leader + fewer-**locations** + choose-stat **pressure** + locker. A.6 = Duelist City + location headcount If + fixed Combat (`NORMAL` auto-engage). B.6 = En Garde + attachment Engage + Combat (`NO_MORE_WORDS` **on** auto-engage). Arrogant `_03008` = no printed Engage but uses `NORMAL` so basic challenge engage applies — Honorable deliberately does **not**.
+**Contrast:** A.8 = Leader + fewer-**locations** + choose-stat **pressure** + locker. A.6 = Duelist City + location headcount If + fixed Combat (`COURAGEOUS` **off** auto-engage — no Engage printed). B.6 = En Garde + attachment Engage + Combat (`NO_MORE_WORDS` **on** auto-engage). Arrogant `_03008` = no printed Engage but still uses `NORMAL` so basic challenge engage applies — Honorable / Courageous deliberately do **not**.
 
 References: `_04057` / `Action_04057` / `State_highDramaPhase04057`; multi-Leader performer `Action_01072` / `Action_02014`; choose-stat UI `_03067`; off-auto-engage custom type `_04009` / `_04047`; character-count If shape A.8 / `Action_03067`.
 

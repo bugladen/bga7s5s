@@ -283,6 +283,9 @@ class Game extends \Bga\GameFramework\Table
     final const CELERITY_CHALLENGE_TYPE = 30;
     final const HONORABLE_CHALLENGE_TYPE = 31;
     final const VALERI_CHALLENGE_TYPE = 32;
+    // WHY: Courageous (_03058) — no Engage printed; keep off stIssueChallenge auto-engage
+    // (NORMAL would engage). Engaged Duelists remain eligible. Sanjay trichotomy (c).
+    final const COURAGEOUS_CHALLENGE_TYPE = 33;
 
     //Duel global variables
     //Duel Names

@@ -87,7 +87,11 @@ class Action_03058 extends RiskCityAction implements IAbilityThatTargetsCharacte
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
             $game = $event->theah->game;
-            $game->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+            // WHY COURAGEOUS_CHALLENGE_TYPE (off stIssueChallenge auto-engage): print has
+            // no Engage cost. NORMAL would auto-engage. Engaged Duelists stay eligible
+            // (canChallenge does not check Engaged; we never gate !Engaged). Sanjay
+            // trichotomy (c) — dedicated type solely to avoid NORMAL.
+            $game->globals->set(Game::CHALLENGE_TYPE, Game::COURAGEOUS_CHALLENGE_TYPE);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 
             $owner = $this->getOwningCard($event->theah);

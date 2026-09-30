@@ -284,25 +284,25 @@ Composition of Pattern A challenge + correlator side-effect (not a new chooser f
 
 References: `_03057` / `Action_03057`, correlator section above, `_03021` (engage + side-effect type), `Reaction_03005` (optional claim Reaction — different shape).
 
-### Pattern A.6 — Duelist (trait) City Action • headcount If • Combat challenge
+### Pattern A.6 — Duelist (trait) City Action • headcount If • Combat challenge (never engages)
 
 For City Actions like **"Duelist City Action: Target an opposing character • If their controller has more characters at this location than you, your performer issues a [Combat] challenge to that character."** — see `_03058` Courageous.
 
-Composition of Pattern A challenge + trait prefix + bullet-**If** as **target filter** (not a post-target branch):
+Composition of Pattern A challenge + trait prefix + bullet-**If** as **target filter** (not a post-target branch) + engagement trichotomy **(c) never engages**:
 
 1. **`RiskCityAction implements IAbilityThatTargetsCharacters`**, `RequiresPerformerSelected = true`. Mark the Risk with `IRiskThatTargetsCharacters`.
-2. **Performer filter:** `hasTrait("Duelist")` (or whatever trait the heading prints) **and** `canChallenge($theah)` **and** at least one valid target. No `! Engaged` unless the text also prints an engage cost (contrast A.5 / Cornered).
+2. **Performer filter:** `hasTrait("Duelist")` (or whatever trait the heading prints) **and** `canChallenge($theah)` **and** at least one valid target. **No `! Engaged`** — print has no Engage and no En Garde precondition; engaged Duelists remain eligible (`canChallenge` does not check Engaged).
 3. **Valid target** (gate availability and `isValidTargetForAbility` the same way):
    - Opposing (`ControllerId` ≠ performer, ≠ 0) at the performer's location.
    - **Headcount If:** `count(getCharactersAtLocationByPlayerId($location, $target->ControllerId)) > count(getCharactersAtLocationByPlayerId($location, $performer->ControllerId))` — strict `>` for "more … than". "You" = the acting player's characters at that location, not a global in-play count.
-4. **`EventActionTriggered`:** `NORMAL_CHALLENGE_TYPE` + `STAT_COMBAT` (or the printed bracket) + transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. No card-specific GameState / JS.
-5. **No custom `CHALLENGE_TYPE`** — there is no refuse/intervene side effect attached to this card. Auto-engage from `stIssueChallenge` is correct (no printed engage cost). Contrast A.5 / Cornered.
+4. **`EventActionTriggered`:** mint a card-named `CHALLENGE_TYPE` **off** `stIssueChallenge` auto-engage + `STAT_COMBAT` (or the printed bracket) + transition `"NNNNN"` → shared `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. No card-specific GameState. Add the constant to `Game.php` + matching JS int; skip intervene/Refuse wiring when there is no refuse/intervene side effect.
+5. **WHY custom type (not `NORMAL`):** print has **no Engage cost**. `NORMAL` is on the auto-engage list and would engage the performer. Same seat as Sanjay `_03037` / Stand Your Ground `_04045` trichotomy (c). Do **not** treat "your performer issues a challenge" as basic Challenge engage. Contrast A.5 / Cornered (Engage printed → pay engage yourself, type off auto-engage to avoid double-engage). Contrast Arrogant `_03008` (still uses `NORMAL` — do not copy that for no-Engage Risks unless Eddie confirms).
 
 **Bullet-If discipline (shared with A.4):** when text is `Target … • If <condition>, <effect>`, treat the If as a **target-availability filter** so the Action is only offered when the effect can fire. Do not let the player target freely and then silently no-op the challenge. Same idea as Astute gating on "does not control this location" before claim.
 
 **Duelist is a trait gate, not Sorcerer** — `hasTrait("Duelist")` only; do not `implement ISorcererAbility`.
 
-References: `_03058` / `Action_03058`, `Action_03008` (shared Combat challenge chooser), `Action_02061` (Duelist performer gate), A.4 (bullet-If as filter).
+References: `_03058` / `Action_03058`, Sanjay `Action_03037` (never-engage type), `Action_02061` (Duelist performer gate), A.4 (bullet-If as filter).
 
 ### Pattern A.7 — "You may engage your performer, if you do, ignore all costs" + effect
 
