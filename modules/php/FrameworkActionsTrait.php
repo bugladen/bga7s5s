@@ -1533,7 +1533,9 @@ trait FrameworkActionsTrait
     }
 
     /**
-     * Daniella (_03013): consider the duel adversary a Sorcerer until end of turn.
+     * Daniella (_03013): consider the duel adversary a Sorcerer until the turn ends
+     * or they leave her location. ChallengeIssued already happened, so this grant
+     * is not cleared by the challenge that is underway.
      * Stays on the duel hub so Technique/Maneuver can be chosen afterward.
      * Daniella need not be the actor — only at the actor's location (same controller).
      */

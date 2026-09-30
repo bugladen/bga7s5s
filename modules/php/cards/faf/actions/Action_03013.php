@@ -12,7 +12,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03013 extends CharacterAction
@@ -24,7 +26,7 @@ class Action_03013 extends CharacterAction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("(Continuous) Choose an opposing character at to gain Sorcerer Trait");
+        $this->Name = clienttranslate("(Continuous) Choose an opposing character at location to gain Sorcerer Trait");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -64,8 +66,12 @@ class Action_03013 extends CharacterAction
 
         $owner = $this->getOwningCharacter($event->theah);
 
-        // WHY location-scoped (not turn-scoped): printed text is opposing Daniella —
-        // co-location. Eddie: remove Sorcerer when the granted character leaves her location.
+        // WHY location still matters: leaving Daniella's location ends the grant immediately.
+        // WHY also turn-end and ChallengeIssued: a grant made in High Drama must not
+        // still be on the character when a challenge begins or after the turn ends.
+        // ChallengeIssued runs cards before the hub snapshot, so the duel never sees it.
+        // A grant from the duel hub happens after ChallengeIssued, so it lasts the duel
+        // and still drops on turn end or if someone leaves the location.
         if ($event instanceof EventCardMoved && $owner !== null)
         {
             if ($event->cardId === $owner->Id)
@@ -94,6 +100,11 @@ class Action_03013 extends CharacterAction
             {
                 $this->untagCharacter($event->theah, $event->characterId);
             }
+        }
+
+        if ($event instanceof EventChallengeIssued || $event instanceof EventPlayerTurnEnd)
+        {
+            $this->untagOpposingSorcerers($event->theah);
         }
     }
 
@@ -255,7 +266,7 @@ class Action_03013 extends CharacterAction
         $this->TaggedOpposingIds[] = $character->Id;
         $daniella->IsUpdated = true;
 
-        $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} grants ${character_inject_code} Sorcerer while at Daniella\'s location.'), [
+        $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} grants ${character_inject_code} Sorcerer until the turn ends, a challenge begins, or they leave Daniella\'s location.'), [
             "card_inject_code" => $daniella->getInjectCode(),
             "player_name" => $game->getPlayerNameById($daniella->ControllerId),
             "character_inject_code" => $character->getInjectCode(),

@@ -448,7 +448,7 @@
                     );
                     this.addTippyTooltip(
                         'btnConsiderAdversarySorcerer',
-                        `<div class='_7sfs-basic-tooltip'>${_("Grant the adversary Sorcerer while at Daniella's location")}</div>`
+                        `<div class='_7sfs-basic-tooltip'>${_("Grant the adversary Sorcerer until the turn ends or they leave Daniella's location")}</div>`
                     );
                 }
             },

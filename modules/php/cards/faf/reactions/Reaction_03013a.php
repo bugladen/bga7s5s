@@ -11,7 +11,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerTurnEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueActivated;
@@ -37,7 +39,7 @@ class Reaction_03013a extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may grant an opposing character Sorcerer while at Daniella\'s location: ');
+        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may grant an opposing character Sorcerer until the turn ends, a challenge begins, or they leave Daniella\'s location: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -198,7 +200,8 @@ class Reaction_03013a extends CardReaction
 
         $owner = $this->getOwningCharacter($event->theah);
 
-        // WHY location-scoped: same as Action_03013 — opposing Daniella = co-location.
+        // WHY same duration as Action_03013: leave location, turn end, or a challenge
+        // starting. A grant made before the challenge must not still be on during the duel.
         if ($event instanceof EventCardMoved && $owner !== null)
         {
             if ($event->cardId === $owner->Id)
@@ -222,6 +225,11 @@ class Reaction_03013a extends CardReaction
             {
                 $this->untagCharacter($event->theah, $event->characterId);
             }
+        }
+
+        if ($event instanceof EventChallengeIssued || $event instanceof EventPlayerTurnEnd)
+        {
+            $this->clearTaggedSorcerers($event->theah);
         }
 
         if (! $this->isAvailable())
@@ -294,7 +302,7 @@ class Reaction_03013a extends CardReaction
                 $this->TaggedCharacterIds[] = $character->Id;
                 $owner->IsUpdated = true;
 
-                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} grants ${character_inject_code} Sorcerer while at Daniella\'s location.'), [
+                $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} grants ${character_inject_code} Sorcerer until the turn ends, a challenge begins, or they leave Daniella\'s location.'), [
                     "reaction_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getPlayerNameById($owner->ControllerId),
                     "character_inject_code" => $character->getInjectCode(),
