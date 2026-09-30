@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -92,15 +93,26 @@ class Reaction_04043 extends CardReaction
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
-        parent::performReaction($game, $state, $internalId, $reactionId);
-
         $owner = $this->getOwningCharacter($game->theah);
+
+        // WHY before parent: keep Claim/Pass open; UserException rolls back so the player
+        // can Pass instead of silently closing the window after another claim resolved first.
+        if ($reactionId == 'claim'
+            && $this->location != ''
+            && $game->getControllerForLocation($this->location) != 0)
+        {
+            throw new UserException(sprintf(
+                $game->translate('%s is already claimed.'),
+                $game->translate($this->location)
+            ));
+        }
+
+        parent::performReaction($game, $state, $internalId, $reactionId);
 
         if ($reactionId == 'claim' && $this->location != '' && $owner !== null)
         {
-            // Re-check En Garde + uncontrolled + claimable (state may have changed).
+            // Re-check En Garde + claimable (state may have changed).
             if ($owner->Engaged
-                || $game->getControllerForLocation($this->location) != 0
                 || ! $game->theah->canLocationBeClaimedBy($owner->ControllerId, $this->location))
             {
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${location_name} cannot be claimed.'), [
