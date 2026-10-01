@@ -66,10 +66,12 @@ class Reaction_01023 extends RiskReaction
     {
         parent::handleEvent($event);
 
+        // WHY: Card text is "When a challenge is issued" — not "when you issue a challenge".
+        // Gate only on hand + available; any player's challenge can offer Ambush.
         if ($event instanceof EventChallengeIssued && $this->isAvailable())
         {
             $risk = $this->getOwningCard($event->theah);
-            if ($risk->Location == Game::LOCATION_HAND && $risk->ControllerId == $event->playerId)
+            if ($risk->Location == Game::LOCATION_HAND)
             {
                 $transition = EventFactory::createReactionTransitionEvent($risk->ControllerId, $risk->Id, $this->Id);
                 $event->theah->queueEvent($transition);
