@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 
 class _01067 extends Character 
@@ -67,6 +68,51 @@ class _01067 extends Character
                 $technique->setOwnerId($character->Id);
                 $character->addTechnique($technique, $event->theah->game);
                 $character->IsUpdated = true;
+            }
+        }
+
+        // WHY: Muster does not emit EventCardMoved. Same gap as Bastien (_01063) —
+        // without this, mustering Jean onto Musketeers (or mustering a Musketeer onto
+        // Jean) never grants the +1 Riposte aura.
+        if ($event instanceof EventCharacterMustered)
+        {
+            if ($event->characterId == $this->Id)
+            {
+                if ($event->location != Game::LOCATION_PLAYER_HOME)
+                {
+                    $characters = $event->theah->getCharactersAtLocation($event->location);
+                    $characters = array_filter($characters, fn($character) =>
+                        $character->Id != $this->Id &&
+                        $character->ControllerId == $this->ControllerId &&
+                        $character->hasTrait("Musketeer"));
+
+                    foreach ($characters as $character)
+                    {
+                        if ($character instanceof IHasTechniques)
+                        {
+                            $technique = new Technique_PlusOneRiposte();
+                            $technique->setId("Technique_01067");
+                            $technique->setOwnerId($character->Id);
+                            $character->addTechnique($technique, $event->theah->game);
+                            $character->IsUpdated = true;
+                        }
+                    }
+                }
+            }
+            else if ($event->location == $this->Location &&
+                $event->location != Game::LOCATION_PLAYER_HOME)
+            {
+                $character = $event->theah->getCharacterById($event->characterId);
+                if ($character->ControllerId == $this->ControllerId &&
+                    $character->hasTrait("Musketeer") &&
+                    $character instanceof IHasTechniques)
+                {
+                    $technique = new Technique_PlusOneRiposte();
+                    $technique->setId("Technique_01067");
+                    $technique->setOwnerId($character->Id);
+                    $character->addTechnique($technique, $event->theah->game);
+                    $character->IsUpdated = true;
+                }
             }
         }
 

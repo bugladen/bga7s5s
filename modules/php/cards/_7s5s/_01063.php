@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 
 class _01063 extends Character
@@ -61,6 +62,39 @@ class _01063 extends Character
                 $character->Location != Game::LOCATION_PLAYER_HOME)
             {
                 $this->addSwapTechnique($character, $event->theah->game);
+            }
+        }
+
+        // WHY: Muster does not emit EventCardMoved. Hub updates Location before cards
+        // handle EventCharacterMustered, so $this->Location / $event->location are
+        // authoritative here. Without this, mustering Bastien onto an occupied city
+        // location (e.g. Action_01072 with Odette already there) never grants the
+        // swap aura — EventCardMoved's "Bastien arrived" branch never runs.
+        if ($event instanceof EventCharacterMustered)
+        {
+            if ($event->characterId == $this->Id)
+            {
+                if ($event->location != Game::LOCATION_PLAYER_HOME)
+                {
+                    $characters = $event->theah->getCharactersAtLocation($event->location);
+                    $characters = array_filter($characters, fn($character) =>
+                        $character->Id != $this->Id &&
+                        $character->ControllerId == $this->ControllerId);
+
+                    foreach ($characters as $character)
+                    {
+                        $this->addSwapTechnique($character, $event->theah->game);
+                    }
+                }
+            }
+            else if ($event->location == $this->Location &&
+                $event->location != Game::LOCATION_PLAYER_HOME)
+            {
+                $character = $event->theah->getCharacterById($event->characterId);
+                if ($character->ControllerId == $this->ControllerId)
+                {
+                    $this->addSwapTechnique($character, $event->theah->game);
+                }
             }
         }
 
