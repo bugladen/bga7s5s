@@ -130,13 +130,17 @@ class Reaction_01109 extends RiskReaction implements ICancelReaction
         
         if ($event instanceof EventManeuverActivated && $this->isAvailable())
         {
-            $game = $event->theah->game;
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
             {
                 $maneuver = $event->theah->getManeuverById($event->maneuverId);
-                $risk = $maneuver->getOwningCard($event->theah);
-                if ($event->playerId != $owner->ControllerId
+                // WHY: Miyato/Ota (Technique_02043a) clones a Maneuver onto the Character.
+                // Owner is then _02043, not a Risk — effectsCannotBeCancelled() does not
+                // exist on Character and fatals. Card text is cancel a Risk; skip non-Risks.
+                // Mirror the EventActionActivated / EventRiskPlayed instanceof Risk gates.
+                $risk = $maneuver?->getOwningCard($event->theah);
+                if ($risk instanceof Risk
+                    && $event->playerId != $owner->ControllerId
                     && ! $risk->hasTrait("Sorcery")
                     && ! $risk->effectsCannotBeCancelled()
                     && ! $maneuver instanceof ISorcererAbility)
