@@ -1166,13 +1166,14 @@ trait ArgumentsTrait
 
         $firstPlayerId = (int)$this->globals->get(Game::FIRST_PLAYER, 0);
         $queued = $this->theah->getQueuedReactionTransitionEvents();
-        $reactions = [];
 
+        // First pass: group RiskReaction event ids by player for consolidation.
+        $riskEventIdsByPlayer = [];
+        $resolved = [];
         foreach ($queued as $entry)
         {
             $event = $entry['event'];
             $playerId = (int)$event->playerId;
-            $playerName = $this->getPlayerNameById($playerId);
             $ability = null;
             $owningCard = null;
 
@@ -1190,18 +1191,58 @@ trait ArgumentsTrait
                 }
             }
 
-            // WHY: Opponent RiskReactions stay fogged — First Player must not learn
-            // which hand Risk is reacting when choosing order.
-            $isOpponentRisk = $ability instanceof RiskReaction
+            $resolved[] = [
+                'eventId' => (int)$entry['eventId'],
+                'playerId' => $playerId,
+                'playerName' => $this->getPlayerNameById($playerId),
+                'ability' => $ability,
+                'owningCard' => $owningCard,
+                'isRisk' => $ability instanceof RiskReaction,
+            ];
+
+            if ($ability instanceof RiskReaction)
+            {
+                $riskEventIdsByPlayer[$playerId][] = (int)$entry['eventId'];
+            }
+        }
+
+        $reactions = [];
+        $emittedRiskPlayers = [];
+        foreach ($resolved as $item)
+        {
+            $playerId = $item['playerId'];
+            $playerName = $item['playerName'];
+            $ability = $item['ability'];
+            $owningCard = $item['owningCard'];
+
+            // WHY: Only consolidate non-FP RiskReactions — First Player can see and
+            // order their own hand Risks individually; opponents stay fogged as one button.
+            $consolidateRisks = $item['isRisk']
+                && $playerId !== $firstPlayerId
+                && count($riskEventIdsByPlayer[$playerId]) > 1;
+
+            if ($consolidateRisks)
+            {
+                if (isset($emittedRiskPlayers[$playerId]))
+                {
+                    continue;
+                }
+                $emittedRiskPlayers[$playerId] = true;
+                $reactions[] = [
+                    'eventIds' => $riskEventIdsByPlayer[$playerId],
+                    'label' => sprintf($this->translate('%s - Risk Reaction'), $playerName),
+                ];
+                continue;
+            }
+
+            // Single RiskReaction, FP's own Risks, or non-Risk: per-ability labeling.
+            $isOpponentRisk = $item['isRisk']
                 && $owningCard
                 && (int)$owningCard->ControllerId !== $firstPlayerId;
 
             if ($isOpponentRisk)
             {
-                $label = sprintf(
-                    $this->translate('%s - Risk Reaction'),
-                    $playerName
-                );
+                $label = sprintf($this->translate('%s - Risk Reaction'), $playerName);
             }
             else
             {
@@ -1217,13 +1258,12 @@ trait ArgumentsTrait
                 }
                 else
                 {
-                    // Framework reactions (Crew Cap / Name Gate) have no owning card.
                     $label = sprintf('%s - %s', $playerName, $abilityName);
                 }
             }
 
             $reactions[] = [
-                'eventId' => (int)$entry['eventId'],
+                'eventIds' => [$item['eventId']],
                 'label' => $label,
             ];
         }

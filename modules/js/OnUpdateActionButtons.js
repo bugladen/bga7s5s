@@ -424,10 +424,11 @@ onUpdateActionButtons: function( stateName, args )
 
         'chooseNextReaction': () => {
             args.reactions.forEach((r) => {
+                const idsKey = r.eventIds.join('_');
                 this.addActionButton(
-                    `actChooseNextReaction_${r.eventId}`,
+                    `actChooseNextReaction_${idsKey}`,
                     r.label,
-                    () => this.bgaPerformAction('actChooseNextReaction', { eventId: r.eventId })
+                    () => this.bgaPerformAction('actChooseNextReaction', { eventIds: JSON.stringify(r.eventIds) })
                 );
             });
         },

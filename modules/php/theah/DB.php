@@ -144,12 +144,22 @@ class DB
     // after playerReaction. Sibling reaction transitions still at REACTION_PRIORITY with
     // older event_ids would peek first — chooseNext again, never reaching pay. Demote
     // siblings so pay (6) runs before them (7), then chooseNext can offer the rest.
-    public function deferOtherQueuedReactionTransitions(int $exceptEventId): void
+    /**
+     * @param int[] $exceptEventIds
+     */
+    public function deferOtherQueuedReactionTransitions(array $exceptEventIds): void
     {
+        $except = [];
+        foreach ($exceptEventIds as $id)
+        {
+            $except[(int)$id] = true;
+        }
+
         $deferredPriority = Event::DEFERRED_REACTION_PRIORITY;
         foreach ($this->getQueuedReactionTransitionEvents() as $entry)
         {
-            if ((int)$entry['eventId'] === $exceptEventId)
+            $eventId = (int)$entry['eventId'];
+            if (isset($except[$eventId]))
             {
                 continue;
             }
@@ -157,7 +167,6 @@ class DB
             $event = $entry['event'];
             $event->priority = $deferredPriority;
             $serialized = addslashes(serialize($event));
-            $eventId = (int)$entry['eventId'];
             $this->executeSql(
                 "UPDATE events SET event_priority = {$deferredPriority}, event_serialized = '{$serialized}' WHERE event_id = {$eventId}"
             );

@@ -22,8 +22,12 @@ Empty-transition rule + ownership: EVENTS already owns `"reaction"`/`"pay"`/`"en
 ### Merge immediate into full process path
 An earlier stub did `handleEvent` + `continue` only. That never hits the `EventTransition` → `nextState($transition)` block at the bottom of `runEvents`, so the chosen reaction would never open `playerReaction`. Immediate events fall through the same hub/cards/transition path as normal dequeues.
 
-### RiskReaction fog label only for non-FP owners
-Opponent hand Risks: button is `"{Player} - Risk Reaction"` so FP doesn’t learn which Risk is reacting when choosing order. FP’s own RiskReactions and other card abilities use `"{Player} - {Card Name} - {In-Hand|In-Play} - {Ability Name}"` (`Location === LOCATION_HAND` → In-Hand, else In-Play). Framework reactions (no card) use `"{Player} - {Ability Name}"`. Ownership = owning card `ControllerId !== FIRST_PLAYER`.
+### RiskReaction fog / consolidation
+- Opponent single RiskReaction: `"{Player} - Risk Reaction"`.
+- Multiple RiskReactions for a **non–First Player**: one button `"{Player} - Risk Reaction"`; click marks all that player's Risk transition events `runImmediately`.
+- First Player's own RiskReactions are never consolidated — each shows the full card/ability label so FP can order them individually.
+- Other card abilities: `"{Player} - {Card Name} - {In-Hand|In-Play} - {Ability Name}"`.
+- Framework reactions: `"{Player} - {Ability Name}"`.
 
 ### Skip divert if FIRST_PLAYER unset
 Setup / early dawn can queue reactions before First Player is determined. Fall back to FIFO rather than `changeActivePlayer(0)`.

@@ -1838,9 +1838,9 @@ class Theah
         $this->db->setEventRunImmediately($eventId);
     }
 
-    public function deferOtherQueuedReactionTransitions(int $exceptEventId): void
+    public function deferOtherQueuedReactionTransitions(array $exceptEventIds): void
     {
-        $this->db->deferOtherQueuedReactionTransitions($exceptEventId);
+        $this->db->deferOtherQueuedReactionTransitions($exceptEventIds);
     }
 
     public function deleteEventsTargetingCard(int $cardId)

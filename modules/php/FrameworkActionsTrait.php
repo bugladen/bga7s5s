@@ -2333,31 +2333,41 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("");
     }
 
-    public function actChooseNextReaction(int $eventId): void
+    public function actChooseNextReaction(string $eventIds): void
     {
         $this->theah->buildCity();
 
-        $queued = $this->theah->getQueuedReactionTransitionEvents();
-        $valid = false;
-        foreach ($queued as $entry)
-        {
-            if ((int)$entry['eventId'] === $eventId)
-            {
-                $valid = true;
-                break;
-            }
-        }
-
-        if (!$valid)
+        $chosenIds = json_decode($eventIds, true);
+        if (!is_array($chosenIds) || count($chosenIds) === 0)
         {
             throw new UserException(clienttranslate("Invalid reaction selection. Please try again."));
         }
 
-        // WHY: Promote chosen reaction so stRunEvents on FOO_EVENTS drains it first
-        // via getNextEventByRunImmediately. Demote sibling reaction transitions so this
-        // reaction's pay transition (REACTION_PRIORITY) runs before chooseNext again.
-        $this->theah->setEventRunImmediately($eventId);
-        $this->theah->deferOtherQueuedReactionTransitions($eventId);
+        $chosenIds = array_map('intval', $chosenIds);
+        $queued = $this->theah->getQueuedReactionTransitionEvents();
+        $queuedIds = [];
+        foreach ($queued as $entry)
+        {
+            $queuedIds[(int)$entry['eventId']] = true;
+        }
+
+        foreach ($chosenIds as $eventId)
+        {
+            if (!isset($queuedIds[$eventId]))
+            {
+                throw new UserException(clienttranslate("Invalid reaction selection. Please try again."));
+            }
+        }
+
+        // WHY: Promote chosen reaction(s) so stRunEvents drains them first via
+        // getNextEventByRunImmediately. Multiple RiskReactions for one player share
+        // one button — all their transition events are marked immediate together.
+        // Demote siblings so pay (REACTION_PRIORITY) runs before chooseNext again.
+        foreach ($chosenIds as $eventId)
+        {
+            $this->theah->setEventRunImmediately($eventId);
+        }
+        $this->theah->deferOtherQueuedReactionTransitions($chosenIds);
         $this->gamestate->nextState("");
     }
 
