@@ -30,6 +30,10 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         }
 
         $owner = $this->getOwningCharacter($theah);
+        if (! $theah->cardInCity($owner))
+        {
+            return false;
+        }
 
         // WHY: No Engage / En Garde printed — engaged Valeri remains eligible (trichotomy c).
         if (! $owner->canChallenge($theah))
@@ -37,9 +41,6 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             return false;
         }
 
-        // WHY: No cardInCity gate — Home is adjacent to every city location
-        // (getAdjacentCityLocations(PLAYER_HOME) returns all city spaces). Match base
-        // Valeri Action_01123 so he can move+challenge from Home.
         $adjacentLocations = $theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
         foreach ($adjacentLocations as $adjacentLocation)
         {
