@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -63,6 +64,47 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         {
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05DabneyUS01", $this->Id);
+            $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Come Hither (01162) pattern — gate move+challenge on EventCharacterTargeted
+        // surviving. Vittoria / Unyielding Loyalty / Maryam cancel during targeting; queuing
+        // move beside the targeting event lets the challenge proceed before the reaction
+        // resolves (journal 2026-09-13-12). Also fires "when targeted" *before* technique
+        // activation overwrites TRANSITION_INTERNAL_ID (Premonition journal 2026-09-05-07),
+        // so Vittoria can react with a Thug still in hand at pick time.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($target == null)
+            {
+                return;
+            }
+
+            // Sync after Vittoria/DI redirect so move destination and challenge defender match.
+            $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
+            $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+            $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+            // WHY: Dedicated type — unrefusable. Do not reuse VALERI_MIKHAILOV (no-intervene) or
+            // STAND_YOUR_GROUND (scheme-owned). Keep OFF stIssueChallenge auto-engage list (no Engage printed).
+            $game->globals->set(Game::CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE);
+
+            // WHY: Engage not printed — move without engaging (contrast base Valeri 01123 engage=true).
+            $moveEvent = EventFactory::createCardMovingEvent(
+                $owner->ControllerId,
+                $owner->Id,
+                $owner->Location,
+                $target->Location,
+                false,
+                $owner->Id,
+                $this->Id
+            );
+            $event->theah->eventCheck($moveEvent);
+            $event->theah->queueEvent($moveEvent);
+
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05DabneyUS01_2", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }
@@ -131,28 +173,12 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
                 throw new UserException($errorMessage);
             }
 
-            // WHY: Engage not printed — move without engaging (contrast base Valeri 01123 engage=true).
-            $moveEvent = EventFactory::createCardMovingEvent(
-                $owner->ControllerId,
-                $owner->Id,
-                $owner->Location,
-                $target->Location,
-                false,
-                $owner->Id,
-                $this->Id
-            );
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
-
-            $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
-            $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
-            // WHY: Dedicated type — unrefusable. Do not reuse VALERI_MIKHAILOV (no-intervene) or
-            // STAND_YOUR_GROUND (scheme-owned). Keep OFF stIssueChallenge auto-engage list (no Engage printed).
-            $game->globals->set(Game::CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE);
 
-            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05DabneyUS01_2", $this->Id);
-            $game->theah->queueEvent($transition);
+            // WHY: Fire targeting alone here. Move + challenge transition are queued from
+            // handleEvent only when EventCharacterTargeted is not canceled (see above).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $game->theah->queueEvent($targetedEvent);
 
             // createActionResolvedEvent() is queued by the challenge resolution flow.
 

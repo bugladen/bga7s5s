@@ -409,8 +409,13 @@ class Reaction_01014 extends CardReaction
             $owner = $this->getOwningCharacter($event->theah);
             $source = $event->theah->getCardById($event->sourceId);
             $initiatingControllerId = $source ? $source->ControllerId : $event->playerId;
-            if (($owner->Id == $event->challengerId || $owner->Id == $event->defenderId) && $owner->ControllerId != $initiatingControllerId && 
-                $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId))
+            // WHY: Do not gate on shouldReactToEvent / IAbilityThatTargetsCharacters.
+            // Challenges always choose a defender. actHighDramaChallengeActionTechniqueActivated
+            // overwrites TRANSITION_INTERNAL_ID with the Technique id before stIssueChallenge,
+            // so abilityId is often no longer BasicChallenge / the issuing Action — same bug
+            // Premonition fixed in journal 2026-09-05-07. Challenge redirects skip
+            // isValidTargetForAbility (see performReaction), so no ability-id capture needed.
+            if (($owner->Id == $event->challengerId || $owner->Id == $event->defenderId) && $owner->ControllerId != $initiatingControllerId)
             {
                 if ($this->skipNextEvent)
                 {
@@ -620,31 +625,45 @@ class Reaction_01014 extends CardReaction
                 ]);
 
                 $thugWasTargeted = false;
-                $ability = $this->loadAbility($game->theah);
-                if ($ability)
-                {
-                    [$isValid, ] = $ability->isValidTargetForAbility($game, $character);
-                    if ($isValid)
-                    {
-                        $this->releaseEvent($game, $characterId);
-                        $thugWasTargeted = true;
-                    }
-                    else
-                    {
-                        $game->notify->all("message", clienttranslate('${character_inject_code} is not a valid target for the ability. The ability has been canceled.'), [
-                            "character_inject_code" => $character->getInjectCode(),
-                        ]);
-                        $this->cancelEvents($game);
-                    }
-                }
-                else if ($this->characterIntervenedEvent)
+                // WHY: Challenge redirects skip isValidTargetForAbility. (1) Technique
+                // activation often leaves abilityId as a Technique so loadAbility is null.
+                // (2) Move-then-challenge Actions (Valeri) validate adjacent (pre-move), but
+                // by EventChallengeIssued the challenger is already at the defender's
+                // location — adjacent check would falsely reject the Thug. inPlayThug
+                // buttons already restrict to Thugs at Vittoria's location.
+                if ($this->challengeIssuedEvent)
                 {
                     $this->releaseEvent($game, $characterId);
                     $thugWasTargeted = true;
                 }
                 else
                 {
-                    $this->cancelEvents($game);
+                    $ability = $this->loadAbility($game->theah);
+                    if ($ability)
+                    {
+                        [$isValid, ] = $ability->isValidTargetForAbility($game, $character);
+                        if ($isValid)
+                        {
+                            $this->releaseEvent($game, $characterId);
+                            $thugWasTargeted = true;
+                        }
+                        else
+                        {
+                            $game->notify->all("message", clienttranslate('${character_inject_code} is not a valid target for the ability. The ability has been canceled.'), [
+                                "character_inject_code" => $character->getInjectCode(),
+                            ]);
+                            $this->cancelEvents($game);
+                        }
+                    }
+                    else if ($this->characterIntervenedEvent)
+                    {
+                        $this->releaseEvent($game, $characterId);
+                        $thugWasTargeted = true;
+                    }
+                    else
+                    {
+                        $this->cancelEvents($game);
+                    }
                 }
 
                 $this->inPlayThug = false;
