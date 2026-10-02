@@ -676,9 +676,11 @@ For Axelle `_04022`: **"Reaction: During a duel, after an opposing adversary ann
 2. `Game::IN_DUEL`
 3. Owner in play (ControllerId ≠ 0, not discard/locker)
 4. `$event->playerId != $owner->ControllerId` (adversary announces, not you)
-5. Owner's controller has a duel participant (`getDuelChallengerId` / `getDuelDefenderId` ControllerId match) — else no "your participant"
+5. **`cardInCity($owner)`** — "opposing" is location-scoped; Home shares `LOCATION_PLAYER_HOME` so opposing-at-location is meaningless there
+6. **Owner at duel location** — `$owner->Location == $challenger->Location || $owner->Location == $defender->Location` (same check as Andare `Reaction_04031`). Re-check in `performReaction`.
+7. Owner's controller has a duel participant (`getDuelChallengerId` / `getDuelDefenderId` ControllerId match) — else no "your participant"
 
-**Effect:** `createThreatModifiedEvent($challengerThreat, $defenderThreat)`. Map "your participant" to the side whose participant `ControllerId == owner.ControllerId`. **En Garde rider** = `!$owner->Engaged` — also +1 the other side. Not an Engage cost; Owner need not be the duel participant.
+**Effect:** `createThreatModifiedEvent($challengerThreat, $defenderThreat)`. Map "your participant" to the side whose participant `ControllerId == owner.ControllerId`. **En Garde rider** = `!$owner->Engaged` — also +1 the other side. Not an Engage cost; Owner need not be the duel participant, but must be **at the duel location** opposing the adversary.
 
 **UX:** Accept/Pass buttons; description can mention the en garde rider when `!$Engaged`. `setUsed(true)` on Accept. No state / no JS.
 

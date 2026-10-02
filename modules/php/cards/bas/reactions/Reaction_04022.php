@@ -122,6 +122,28 @@ class Reaction_04022 extends CardReaction
                 return;
             }
 
+            // WHY: "opposing adversary" is location-scoped. Home shares LOCATION_PLAYER_HOME
+            // across players so opposing-at-location is meaningless there — require City.
+            if (! $event->theah->cardInCity($owner))
+            {
+                return;
+            }
+
+            $challengerId = $event->theah->getDuelChallengerId();
+            $defenderId = $event->theah->getDuelDefenderId();
+            $challenger = $challengerId !== null ? $event->theah->getCharacterById($challengerId) : null;
+            $defender = $defenderId !== null ? $event->theah->getCharacterById($defenderId) : null;
+            if ($challenger === null || $defender === null)
+            {
+                return;
+            }
+
+            // Adversary must be at Axelle's location (duel participants share that location).
+            if ($owner->Location != $challenger->Location && $owner->Location != $defender->Location)
+            {
+                return;
+            }
+
             $deltas = $this->threatDeltas($event->theah, $owner->ControllerId, false);
             if ($deltas === null)
             {
@@ -141,7 +163,18 @@ class Reaction_04022 extends CardReaction
         if ($reactionId == 'addThreat')
         {
             $owner = $this->getOwningCard($game->theah);
-            if ($owner === null || ! $this->isAvailable())
+            if ($owner === null || ! $this->isAvailable() || ! $game->theah->cardInCity($owner))
+            {
+                $game->gamestate->nextState("done");
+                return;
+            }
+
+            $challengerId = $game->theah->getDuelChallengerId();
+            $defenderId = $game->theah->getDuelDefenderId();
+            $challenger = $challengerId !== null ? $game->theah->getCharacterById($challengerId) : null;
+            $defender = $defenderId !== null ? $game->theah->getCharacterById($defenderId) : null;
+            if ($challenger === null || $defender === null
+                || ($owner->Location != $challenger->Location && $owner->Location != $defender->Location))
             {
                 $game->gamestate->nextState("done");
                 return;
