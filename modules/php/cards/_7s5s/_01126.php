@@ -57,20 +57,27 @@ class _01126 extends Scheme
     {
         parent::eventCheck($event);
 
+        // WHY Location === ChosenLocation: printed lock starts when Leshiye is on the
+        // site. ChosenLocation alone is set in step 1 while the scheme is still Home —
+        // arming locks then made placement discard / step-2 confirm fight this card.
+        if ($this->ChosenLocation === '' || $this->Location !== $this->ChosenLocation) {
+            return;
+        }
+
         if ($event instanceof EventRenownAddedToLocation && $event->location == $this->ChosenLocation)
         {
             throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be placed at its location.")));
         }
 
-        //We have to allow the reknown to be removed by the scheme itself
-        if ($event instanceof EventRenownRemovedFromLocation && $event->location == $this->ChosenLocation && $event->source != $this->getInjectCode()) 
+        // WHY source exemption: Leshiye's own placement discard uses getInjectCode().
+        if ($event instanceof EventRenownRemovedFromLocation && $event->location == $this->ChosenLocation && $event->source != $this->getInjectCode())
         {
-            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be removed from its location.")));    
+            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow Renown to be removed from its location.")));
         }
 
         if ($event instanceof EventLocationClaimed && $event->location == $this->ChosenLocation)
         {
-            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow locations to be claimed at its location.")));    
+            throw new UserException($event->theah->game->translate(("Leshiye of the Wood does not allow locations to be claimed at its location.")));
         }
     }
 
@@ -99,7 +106,9 @@ class _01126 extends Scheme
             $event->theah->queueEvent($transition);
         }
 
-        if ($event instanceof EventSchemeMovedToCity && $event->scheme == $this)
+        // WHY Id not ==: SchemeMovedToCity embeds a serialized scheme copy. Property
+        // equality can fail after Location / IsUpdated drift; Id is the stable key.
+        if ($event instanceof EventSchemeMovedToCity && $event->scheme->Id == $this->Id)
         {
             $playerId = $event->theah->game->getActivePlayerId();
 
@@ -134,13 +143,9 @@ class _01126 extends Scheme
                 }
             }
 
-            //Discard all reknown at chosen location
-            $location = $event->theah->getCityLocation($this->ChosenLocation);
-            if ($location->Renown > 0)
-            {
-                $reknown = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $this->ChosenLocation, $location->Renown, $this->getInjectCode());
-                $event->theah->queueEvent($reknown);
-            }
+            // WHY Renown discard is NOT here: EventHub sets Location = ChosenLocation
+            // before this handler, which arms eventCheck's remove lock. Discard is
+            // queued in resolveLeshiyeWithRenownLocations while Location is still Home.
         }
     }
 
@@ -312,6 +317,19 @@ class _01126 extends Scheme
                 $this->getInjectCode()
             );
             $game->theah->queueEvent($reknownEvent);
+        }
+
+        // WHY queue remove before SchemeMovedToCity: EventHub arms Location===ChosenLocation
+        // locks before the card handler runs. While still Home, eventCheck does not block.
+        $cityLocation = $game->theah->getCityLocation($this->ChosenLocation);
+        if ($cityLocation->Renown > 0) {
+            $renownRemoved = EventFactory::createRenownRemovedFromLocationEvent(
+                $playerId,
+                $this->ChosenLocation,
+                $cityLocation->Renown,
+                $this->getInjectCode()
+            );
+            $game->theah->queueEvent($renownRemoved);
         }
 
         $game->theah->queueEvent($schemeMoveEvent);

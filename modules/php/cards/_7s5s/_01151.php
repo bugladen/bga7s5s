@@ -100,8 +100,14 @@ class _01151 extends Scheme
                 $renownEvent = EventFactory::createRenownRemovedFromLocationEvent($this->ControllerId, $location->Name, 0, $this->getInjectCode());
                 $renownEvent->removeAll = true;
                 $renownEvent->priority = Event::LOW_PRIORITY;
-                $event->theah->eventCheck($renownEvent);
-                $event->theah->queueEvent($renownEvent);
+                // WHY catch per location: a hard eventCheck throw (e.g. Leshiye on-site)
+                // used to abort the whole clear loop. Skip blocked locs; clear the rest.
+                try {
+                    $event->theah->eventCheck($renownEvent);
+                    $event->theah->queueEvent($renownEvent);
+                } catch (UserException $e) {
+                    $event->theah->game->notify->all('message', $e->getMessage(), []);
+                }
             }
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->Id, "01151");
