@@ -1160,10 +1160,16 @@ trait ArgumentsTrait
         ];
     }
 
-    public function argsChooseNextReaction(): array
+    /**
+     * Labels/buttons for First Player reaction-order choose.
+     *
+     * @param bool $fogAllRiskNames WHY: public log must hide every Risk card name
+     *   (including FP's). Buttons keep FP's own Risk names so they can tell multiples
+     *   apart; opponent Risks stay fogged on buttons either way.
+     * @return array<int, array{eventIds: int[], label: string}>
+     */
+    public function buildChooseNextReactionChoices(bool $fogAllRiskNames = false): array
     {
-        $this->theah->buildCity();
-
         $firstPlayerId = (int)$this->globals->get(Game::FIRST_PLAYER, 0);
         $queued = $this->theah->getQueuedReactionTransitionEvents();
 
@@ -1235,12 +1241,13 @@ trait ArgumentsTrait
                 continue;
             }
 
-            // Single RiskReaction, FP's own Risks, or non-Risk: per-ability labeling.
-            $isOpponentRisk = $item['isRisk']
-                && $owningCard
-                && (int)$owningCard->ControllerId !== $firstPlayerId;
+            // Fog opponent Risks on buttons; fog ALL Risks when building the public log.
+            $fogRiskName = $item['isRisk'] && (
+                $fogAllRiskNames
+                || ($owningCard && (int)$owningCard->ControllerId !== $firstPlayerId)
+            );
 
-            if ($isOpponentRisk)
+            if ($fogRiskName)
             {
                 $label = sprintf($this->translate('%s - Risk Reaction'), $playerName);
             }
@@ -1268,8 +1275,37 @@ trait ArgumentsTrait
             ];
         }
 
+        return $reactions;
+    }
+
+    public function argsChooseNextReaction(): array
+    {
+        $this->theah->buildCity();
+
         return [
-            'reactions' => $reactions,
+            'reactions' => $this->buildChooseNextReactionChoices(),
         ];
+    }
+
+    // WHY: Log at divert (not in args) — args re-fire on refresh and would spam the log.
+    public function notifyAvailableReactionsForChooseNext(): void
+    {
+        $this->theah->buildCity();
+        // WHY fogAllRiskNames: public log must never reveal a Risk card name, even FP's.
+        $reactions = $this->buildChooseNextReactionChoices(fogAllRiskNames: true);
+        if (count($reactions) === 0)
+        {
+            return;
+        }
+
+        $labels = [];
+        foreach ($reactions as $reaction)
+        {
+            $labels[] = '&bull; ' . $reaction['label'];
+        }
+
+        $this->notify->all("message", clienttranslate('The First Player is choosing the order of reactions:<br>${reactions_list}'), [
+            'reactions_list' => implode('<br>', $labels),
+        ]);
     }
 }

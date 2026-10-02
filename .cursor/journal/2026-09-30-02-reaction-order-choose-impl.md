@@ -23,9 +23,10 @@ Empty-transition rule + ownership: EVENTS already owns `"reaction"`/`"pay"`/`"en
 An earlier stub did `handleEvent` + `continue` only. That never hits the `EventTransition` → `nextState($transition)` block at the bottom of `runEvents`, so the chosen reaction would never open `playerReaction`. Immediate events fall through the same hub/cards/transition path as normal dequeues.
 
 ### RiskReaction fog / consolidation
-- Opponent single RiskReaction: `"{Player} - Risk Reaction"`.
+- Opponent single RiskReaction (buttons): `"{Player} - Risk Reaction"`.
 - Multiple RiskReactions for a **non–First Player**: one button `"{Player} - Risk Reaction"`; click marks all that player's Risk transition events `runImmediately`.
-- First Player's own RiskReactions are never consolidated — each shows the full card/ability label so FP can order them individually.
+- First Player's own RiskReactions are never consolidated — each button shows the full card/ability label so FP can order them individually.
+- **Public choose-order log** (2026-10-02): fog **all** Risk names including FP's — see `2026-10-02-02-choose-next-reaction-log.md` (`fogAllRiskNames`).
 - Other card abilities: `"{Player} - {Card Name} - {In-Hand|In-Play} - {Ability Name}"`.
 - Framework reactions: `"{Player} - {Ability Name}"`.
 

@@ -333,6 +333,9 @@ class Theah
                         if (count($reactions) > 1 && $firstPlayerId)
                         {
                             $this->game->gamestate->changeActivePlayer($firstPlayerId);
+                            // WHY: Opponents only see the status bar; log the same fogged
+                            // button labels so everyone knows what is on the table.
+                            $this->game->notifyAvailableReactionsForChooseNext();
                             $this->game->gamestate->nextState('chooseNext');
                             return;
                         }
