@@ -860,7 +860,11 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
     onCityLocationClicked: function( event )
     {
-        const location = event.target.id;
+        // WHY: Renown / control / influence overlays are children of the city image.
+        // event.target is whichever child was clicked; currentTarget is the location
+        // the selectable handler was attached to. Using target stored chip ids like
+        // "dock-reknown", which have no data-location — Confirm enabled, submit sent nulls.
+        const location = event.currentTarget.id;
         //Check to see if we are selecting or deselecting
         if (dojo.hasClass(location, '_7sfs-selected')) 
         {
