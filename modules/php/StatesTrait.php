@@ -522,11 +522,15 @@ trait StatesTrait
             $panache = $leader->ModifiedPanache;
 
             $cards = [];
+            // WHY: One factionDeckCount after the full panache draw (nested-safe with
+            // reshuffle batches inside playerDrawCard).
+            $this->beginFactionDeckCountBatch();
             for ($i = 0; $i < $panache; $i++) {
                 $card = $this->playerDrawCard($playerId);
                 $cards[] = $card->getPropertyArray($this);
                 unset($card);
             }
+            $this->endFactionDeckCountBatch();
 
             $cardList = implode(", ", array_map(function($card) { return clienttranslate($card['name']); }, $cards));
             $this->notifyPlayer($playerId, "factionResolveCardDraw", 

@@ -623,6 +623,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             id: playerId,
             faction: leader.faction.toLowerCase(),
             crewcap: leader.modifiedCrewCap,
+            deckcount: this.gamedatas.players[playerId]?.deckCount ?? '',
             panache: leader.modifiedPanache,
             player_color: playerColor,
         }),
@@ -630,9 +631,21 @@ return declare('seventhseacityoffivesails.utilities', null, {
         playerId == this.player_id ? 'first' : 'before' );
 
         this.addTippyTooltip( `${playerId}-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Capacity')}</div>` );
+        this.addTippyTooltip( `${playerId}-deck-count`, `<div class='_7sfs-basic-tooltip'>${_('Cards remaining in Faction Deck')}</div>` );
         this.addTippyTooltip( `${playerId}-discard`, `<div class='_7sfs-basic-tooltip'>${_('Faction Deck Discard Pile')}</div>` );
         this.addTippyTooltip( `${playerId}-locker`, `<div class='_7sfs-basic-tooltip'>${_('Player Locker')}</div>` );
         this.addTippyTooltip( `${playerId}-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
+    },
+
+    updateFactionDeckCountDisplay: function( playerId, deckCount )
+    {
+        if (this.gamedatas.players[playerId]) {
+            this.gamedatas.players[playerId].deckCount = deckCount;
+        }
+        const el = $(`${playerId}-deck-count`);
+        if (el) {
+            el.innerHTML = deckCount;
+        }
     },
 
     getCardPropertiesByDivId: function( divId )

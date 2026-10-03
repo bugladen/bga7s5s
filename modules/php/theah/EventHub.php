@@ -411,8 +411,8 @@ trait EventHub
                     $card->Location = $deckName;
                     $card->IsUpdated = true;
 
-                    $deck = $theah->game->getGameDeckObject();
-                    $deck->insertCardOnExtremePosition($event->cardId, $deckName, $event->onTop);
+                    // WHY: Helper inserts + fires factionDeckCount (raw insert would not).
+                    $theah->game->insertCardOnPlayerFactionDeckExtreme($event->cardId, $event->playerId, $event->onTop);
 
                     $message = $event->onTop 
                         ? clienttranslate('${player_name} added ${card_inject_code} to the top of their Faction Deck.') 

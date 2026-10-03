@@ -16,6 +16,99 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 
 trait DeckTrait
 {
+    /** @var array<int> Player ids awaiting a batched faction-deck count notif */
+    private array $factionDeckCountBatch = [];
+
+    /** @var int Nesting depth — planning draws can reshuffle inside an outer batch */
+    private int $factionDeckCountBatchDepth = 0;
+
+    /**
+     * Push the absolute faction-deck size to all clients.
+     * WHY: Absolute count (not delta) so any path can refresh safely; batching
+     * collapses N moves (discard reshuffle / panache draw) into one notif.
+     */
+    public function notifyFactionDeckCount(int $playerId): void
+    {
+        if ($this->factionDeckCountBatchDepth > 0)
+        {
+            $this->factionDeckCountBatch[] = $playerId;
+            return;
+        }
+
+        $this->notifyFactionDeckCountNow($playerId);
+    }
+
+    private function notifyFactionDeckCountNow(int $playerId): void
+    {
+        $deckCount = (int) $this->cards->countCardsInLocation($this->getPlayerFactionDeckName($playerId));
+        $this->notify->all("factionDeckCount", '', [
+            "playerId" => $playerId,
+            "deckCount" => $deckCount,
+        ]);
+    }
+
+    public function beginFactionDeckCountBatch(): void
+    {
+        if ($this->factionDeckCountBatchDepth === 0)
+        {
+            $this->factionDeckCountBatch = [];
+        }
+        $this->factionDeckCountBatchDepth++;
+    }
+
+    public function endFactionDeckCountBatch(): void
+    {
+        if ($this->factionDeckCountBatchDepth === 0)
+        {
+            return;
+        }
+
+        $this->factionDeckCountBatchDepth--;
+        if ($this->factionDeckCountBatchDepth > 0)
+        {
+            return;
+        }
+
+        $playerIds = array_unique($this->factionDeckCountBatch);
+        $this->factionDeckCountBatch = [];
+        foreach ($playerIds as $playerId)
+        {
+            $this->notifyFactionDeckCountNow((int) $playerId);
+        }
+    }
+
+    private function maybeNotifyFactionDeckCounts(string $oldLocation, string $newLocation): void
+    {
+        $playerIds = [];
+        if (str_starts_with($oldLocation, 'Faction-'))
+        {
+            $playerIds[] = (int) substr($oldLocation, strlen('Faction-'));
+        }
+        if (str_starts_with($newLocation, 'Faction-'))
+        {
+            $playerIds[] = (int) substr($newLocation, strlen('Faction-'));
+        }
+        foreach (array_unique($playerIds) as $playerId)
+        {
+            if ($playerId > 0)
+            {
+                $this->notifyFactionDeckCount($playerId);
+            }
+        }
+    }
+
+    /**
+     * Insert on top/bottom of a player's faction deck and refresh the deck-count UI.
+     * Does not sync Card->Location — callers that need that still set it themselves
+     * (see Reaction_03006 / gamble confirm notes about Location lag).
+     */
+    public function insertCardOnPlayerFactionDeckExtreme(int $cardId, int $playerId, bool $onTop): void
+    {
+        $deckName = $this->getPlayerFactionDeckName($playerId);
+        $this->cards->insertCardOnExtremePosition($cardId, $deckName, $onTop);
+        $this->notifyFactionDeckCount($playerId);
+    }
+
     public function buildDecks() {
 
         // *** Create the city deck ***
@@ -57,6 +150,13 @@ trait DeckTrait
             $sql = "UPDATE player SET leader_card_id = $card->Id WHERE player_id = $playerId";
             $this->DbQuery($sql);
 
+            // WHY: playLeader fires before faction cards are inserted; compute from
+            // the deck definition so the home deck-count icon is correct immediately.
+            $deckCount = 0;
+            foreach ($deck->faction_deck as $factionCard) {
+                $deckCount += $factionCard->count;
+            }
+
             //Notify players about the leaders
             $this->notifyAllPlayers("playLeader", clienttranslate('${player_name} is playing <strong>${player_faction} Faction</strong> and ${leader_inject_code} as their leader.'), [
                 "player_name" => $player['player_name'],
@@ -65,6 +165,7 @@ trait DeckTrait
                 "player_id" => $playerId,
                 "player_color" => $player['player_color'],
                 "leader" => $card->getPropertyArray($this),
+                "deckCount" => $deckCount,
             ]);
 
             // WHY: Set when decks materialize (covers manual, random, and tournament), not at pick time.
@@ -148,6 +249,9 @@ trait DeckTrait
      */
     public function moveCard(int $cardId, string $location, $locationArg = 0, ?Card $card = null): Card
     {
+        $before = $this->cards->getCard($cardId);
+        $oldLocation = is_array($before) ? (string) ($before['location'] ?? '') : '';
+
         $this->cards->moveCard($cardId, $location, $locationArg);
 
         if ($card === null) {
@@ -160,6 +264,7 @@ trait DeckTrait
 
         $card->Location = $location;
         $this->updateCardObjectInDb($card);
+        $this->maybeNotifyFactionDeckCounts($oldLocation, $location);
         return $card;
     }
 
@@ -174,7 +279,10 @@ trait DeckTrait
      */
     public function moveCardInDeck(int $cardId, string $location, $locationArg = 0): void
     {
+        $before = $this->cards->getCard($cardId);
+        $oldLocation = is_array($before) ? (string) ($before['location'] ?? '') : '';
         $this->cards->moveCard($cardId, $location, $locationArg);
+        $this->maybeNotifyFactionDeckCounts($oldLocation, $location);
     }
 
     /**
@@ -208,6 +316,10 @@ trait DeckTrait
 
     public function playerDrawCard($playerId): Card
     {
+        // WHY: Nest with shuffle's batch so reshuffle+draw is one factionDeckCount
+        // (final size after the pick), not a flash of the full reshuffled deck.
+        $this->beginFactionDeckCountBatch();
+
         $location = $this->getPlayerFactionDeckName($playerId);
 
         //If faction deck is empty move cards from player discard to faction deck
@@ -261,6 +373,11 @@ trait DeckTrait
         $card->OwnerId = $playerId;
         $card->Location = Game::LOCATION_HAND;
         $this->updateCardObjectInDb($card);
+
+        // WHY: pickCard/cards->moveCard bypass Game::moveCard, so the faction-deck
+        // hook never fires — refresh here after every draw.
+        $this->notifyFactionDeckCount($playerId);
+        $this->endFactionDeckCountBatch();
 
         return $card;
     }
@@ -346,12 +463,15 @@ trait DeckTrait
     {
         $location = $this->getPlayerFactionDeckName($playerId);
         $discardLocation = $this->getPlayerDiscardDeckName($playerId);
+        // WHY: Each discard→faction moveCard would otherwise spam factionDeckCount.
+        $this->beginFactionDeckCountBatch();
         while($this->cards->countCardsInLocation($discardLocation) > 0)
         {
             $cardInfo = $this->cards->getCardOnTop($discardLocation);
             $this->moveCard((int)$cardInfo['id'], $location);
         }
         $this->cards->shuffle($location);
+        $this->endFactionDeckCountBatch();
 
         $this->notifyAllPlayers("playerDiscardShuffled", clienttranslate('The Discard Pile of ${player_name} has been shuffled into their Faction Deck.'), [
             'player_name' => $this->getPlayerNameById($playerId),

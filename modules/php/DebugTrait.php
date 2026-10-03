@@ -61,7 +61,7 @@ trait DebugTrait
         {
             $deckName = $this->getPlayerFactionDeckName($playerId);
             $card = $this->createCardInLocation($className, $deckName, $playerId, $playerId);
-            $this->cards->insertCardOnExtremePosition($card->Id, $deckName, true);
+            $this->insertCardOnPlayerFactionDeckExtreme($card->Id, $playerId, true);
         }
     }
 

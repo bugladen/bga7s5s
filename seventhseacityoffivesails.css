@@ -696,8 +696,32 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     display: inline-block;
 }
 ._7sfs-home-crew-cap {
-    margin-left: 10px;
+    margin-left: 5px;
     float: left;
+}
+
+/* WHY: Deck count sits between crew-cap and discard. Sprite offset scales
+   with background-size (native x 684 → css -390 at 0.57). Width/height
+   track the ink bounds at that scale so we don't reintroduce the white
+   sprite strip; height is slightly cropped vs full glyph (~35px) to stay
+   near the home icon row. */
+._7sfs-home-deck-count {
+    background-image: url('img/boardResources.png');
+    background-size: calc(var(--png-board-resource-width) * .57) calc(var(--png-board-resource-height) * .57);
+    background-position: -390px 0px;
+    width: 32px;
+    height: 28px;
+    float: left;
+    /* WHY: Was 5px like discard; user wanted ~5px less gap after crew-cap. */
+    margin-left: 0;
+    /* WHY: Isometric deck top face sits right of the box center; pad so
+       text-align:center lands on the black top, not the geometric midpoint. */
+    box-sizing: border-box;
+    padding-left: 4px;
+    text-align: center;
+    line-height: 28px;
+    font-size: 12pt;
+    color: white;
 }
 
 ._7sfs-home-discard {
@@ -707,7 +731,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     width: 36px;
     height: 24px;
     float: left;
-    margin-left: 5px;
+    margin-left: 3px;
 }
 
 ._7sfs-home-locker {
@@ -717,7 +741,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     float: right;
     height: 23px;
     width: 25px;
-    margin-right: 5px;
+    margin-right: 2px;
 }
 
 ._7sfs-panache {
@@ -736,7 +760,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     display: inline-block;
 }
 ._7sfs-home-panache {
-    margin-right: -2px;
+    margin-right: -5px;
     float: right;
 }
 

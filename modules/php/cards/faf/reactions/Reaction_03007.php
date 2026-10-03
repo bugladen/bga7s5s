@@ -312,8 +312,9 @@ class Reaction_03007 extends AttachmentReaction implements ISorcererAbility
 
         // WHY: Must update Card->Location too — insertCard alone leaves Location=Hand
         // while card_location becomes Faction-*. Gamble confirm (and similar) then
-        // reject a card the UI offered from the deck tops.
-        $deck->insertCardOnExtremePosition($cardId, $deckName, false);
+        // reject a card the UI offered from the deck tops. Helper also refreshes
+        // the home deck-count icon.
+        $game->insertCardOnPlayerFactionDeckExtreme($cardId, $this->opponentId, false);
         $card->Location = $deckName;
         $game->updateCardObjectInDb($card);
 

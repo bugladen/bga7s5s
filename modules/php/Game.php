@@ -444,6 +444,7 @@ class Game extends \Bga\GameFramework\Table
             $player['locker'] = $this->getCardPropertiesInLocation($location);
 
             $player['handCount'] = count($this->cards->getPlayerHand($player_id));
+            $player['deckCount'] = (int) $this->cards->countCardsInLocation($this->getPlayerFactionDeckName($player_id));
 
             //Set updated player data back into the array
             $players[$player_id] = $player;

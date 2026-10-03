@@ -65,6 +65,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['duelEnd', 500],
             ['duelStarted', 500],
             ['duelStatChanged', 500],
+            ['factionDeckCount', 1],
             ['factionResolveCardDraw', 500],
             ['factionResolveCardDrawPublic', 500],
             ['firstPlayer', 1000],
@@ -151,6 +152,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         this.gamedatas.players[args.player_id].leader = args.leader;
+        this.gamedatas.players[args.player_id].deckCount = args.deckCount;
 
         this.createHome(
             args.player_id, 
@@ -848,6 +850,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const element = $(`${notif.args.playerId}-score-hand-count`);
         const handCount = parseInt(element.innerHTML);
         element.innerHTML = handCount + notif.args.count;
+    },
+
+    notif_factionDeckCount: function( notif )
+    {
+        debug( 'notif_factionDeckCount' );
+        debug( notif );
+
+        const args = notif.args;
+        this.updateFactionDeckCountDisplay(args.playerId, args.deckCount);
     },
 
     notif_cardAddedToHand: function( notif )

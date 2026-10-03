@@ -142,6 +142,7 @@
         <div id="\${id}" class="_7sfs-home-container _7sfs-home-\${faction}">
             <div class="_7sfs-home-panel">
                 <div id="\${id}-crewcap" class="_7sfs-crew-cap _7sfs-home-crew-cap">\${crewcap}</div>
+                <div id="\${id}-deck-count" class="_7sfs-home-deck-count">\${deckcount}</div>
                 <div id="\${id}-discard" data-player-id="\${id}" class="_7sfs-home-discard"></div>
                 <div id="\${id}-panache" class="_7sfs-panache _7sfs-home-panache">\${panache}</div>
                 <div id="\${id}-locker" data-player-id="\${id}" class="_7sfs-home-locker"></div>
