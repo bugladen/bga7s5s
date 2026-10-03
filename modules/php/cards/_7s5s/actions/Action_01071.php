@@ -90,11 +90,46 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $challengeType = $game->globals->get(Game::CHALLENGE_TYPE);
                 if ($inDuel && $challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE && ! $this->firstWoundOccured)
                 {
-                    // WHY: Card text is "first participant to wound their adversary" — self-wounds,
-                    // non-character sources, and wounds involving non-participants must not steal
-                    // Renown or consume the first-wound flag.
+                    // WHY: Card text is "first participant to wound their adversary" — self-wounds
+                    // and wounds involving non-participants must not steal Renown or consume the
+                    // first-wound flag. Maneuvers and techniques often pass a Risk/Attachment as
+                    // sourceId (not the actor). Resolve via abilityId → owning character when
+                    // possible; else map the source card's ControllerId to the current
+                    // challenger/defender. True non-participant sources still ignore and leave
+                    // firstWoundOccured unset.
                     $woundedCharacter = $event->theah->getCharacterById($event->characterId);
                     $agressor = $event->theah->getCharacterById($event->sourceId);
+                    if ($agressor === null && $event->abilityId !== '')
+                    {
+                        $ability = $event->theah->getTechniqueById($event->abilityId);
+                        if ($ability === null)
+                        {
+                            $ability = $event->theah->getManeuverById($event->abilityId);
+                        }
+                        if ($ability !== null)
+                        {
+                            $agressor = $ability->getOwningCharacter($event->theah);
+                        }
+                    }
+                    if ($agressor === null)
+                    {
+                        // WHY: Risk combat cards (e.g. Maneuver_01135) have no owning Character —
+                        // attribute via controller's duel participant instead.
+                        $sourceCard = $event->theah->getCardById($event->sourceId);
+                        if ($sourceCard !== null && $sourceCard->ControllerId)
+                        {
+                            $challenger = $event->theah->getCharacterById($event->theah->getDuelChallengerId());
+                            $defender = $event->theah->getCharacterById($event->theah->getDuelDefenderId());
+                            if ($challenger !== null && $challenger->ControllerId == $sourceCard->ControllerId)
+                            {
+                                $agressor = $challenger;
+                            }
+                            else if ($defender !== null && $defender->ControllerId == $sourceCard->ControllerId)
+                            {
+                                $agressor = $defender;
+                            }
+                        }
+                    }
 
                     $agressorIsParticipant = $agressor !== null
                         && ($agressor->hasCondition(Game::DUEL_CHALLENGER) || $agressor->hasCondition(Game::DUEL_DEFENDER));
