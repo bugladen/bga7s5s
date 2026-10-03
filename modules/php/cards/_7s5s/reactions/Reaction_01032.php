@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -19,7 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Reaction_01032 extends RiskReaction
+class Reaction_01032 extends RiskReaction implements ICancelReaction
 {
     private ?EventCardEngaged $engagedEvent = null;
     private ?EventCardEngarded $engardedEvent = null;
@@ -189,8 +190,11 @@ class Reaction_01032 extends RiskReaction
             $event->theah->deleteEventBatch($event->batchId);
         }
 
+        // WHY: stackEvent (not queueEvent) — same cancel speed as Night of Drinking /
+        // Stubborn. Offer must pre-empt remaining MEDIUM/HIGH siblings of the
+        // cancelled ability batch. ICancelReaction also stacks post-pay Triggered.
         $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-        $event->theah->queueEvent($reactionTransitionEvent);
+        $event->theah->stackEvent($reactionTransitionEvent);
     }
 
     public function handleEvent(Event $event)
@@ -339,8 +343,10 @@ class Reaction_01032 extends RiskReaction
         $this->stage = 'cost';
         $owner->IsUpdated = true;
 
+        // WHY: stackEvent so the Red Hand / Thug choice runs immediately after
+        // post-pay EventRiskReactionTriggered (itself stacked via ICancelReaction).
         $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-        $theah->queueEvent($transition);
+        $theah->stackEvent($transition);
     }
 
     private function payCost(Game $game, string $reactionId): void
@@ -498,11 +504,17 @@ class Reaction_01032 extends RiskReaction
 
         if ($reactionId == 'use')
         {
-            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
-            $game->theah->queueEvent($event);
-
+            // WHY: Match Night of Drinking (01109) / Stubborn (01140) pay speed —
+            // ReactionPay then EnteringPay, both stacked. LIFO dequeues pay state
+            // first. ICancelReaction then stacks EventRiskReactionTriggered so
+            // beginCostChoice is not stuck behind other MEDIUM events.
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
+            $event->priority = Event::HIGHEST_PRIORITY;
+            $game->theah->stackEvent($event);
+
+            $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
+            $event->priority = Event::HIGHEST_PRIORITY;
+            $game->theah->stackEvent($event);
         }
 
         if ($reactionId == 'pass')
