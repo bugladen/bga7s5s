@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01104 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -91,6 +92,53 @@ class Action_01104 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01104", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
+
+        // WHY: Do not queue engage/Home beside the cancel hook. Unyielding Loyalty
+        // stores only the event it intercepts and deleteEventBatchs the rest. When Night
+        // of Drinking (01109) reverts UL, releaseEvent restored a single Beta engage —
+        // Alpha never engaged/moved, Beta stayed at the location, Blood in the Water
+        // wounded them. Gate effects on EventCharacterTargeted (Giacinto Action_01205 /
+        // Come Hither Action_01162): UL holds the targeting event; Pass / NoD re-queue
+        // it and this handler emits the full Amour package again.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+
+            $character = $event->theah->getCharacterById($event->targetId);
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCharacterById($performerId);
+
+            if ($character === null || $performer === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            // WHY: Engage and go Home are separate clauses — queue Engage first, then move
+            // with engage=false (Action_03cd01 / Reaction_02058 pattern). Lodestone blocks
+            // opponent Home moves but the Engage clause still applies; tying engage to
+            // CardMoved left Lodestone targets en garde when the move was swallowed.
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $event->theah->queueEvent($engageEvent);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $event->theah->queueEvent($engageEvent);
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
+            $event->theah->queueEvent($moveEvent);
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $performer->Id, $performer->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
+            $event->theah->queueEvent($moveEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -131,32 +179,10 @@ class Action_01104 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $owner = $this->getOwningCard($game->theah);
 
             $batchId = $game->getNextEventBatchId();
-
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
-            // WHY: Engage and go Home are separate clauses — queue Engage first, then move
-            // with engage=false (Action_03cd01 / Reaction_02058 pattern). Lodestone blocks
-            // opponent Home moves but the Engage clause still applies; tying engage to
-            // CardMoved left Lodestone targets en garde when the move was swallowed.
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
-            $engageEvent->batchId = $batchId;
-            $game->theah->queueEvent($engageEvent);
-
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
-            $engageEvent->batchId = $batchId;
-            $game->theah->queueEvent($engageEvent);
-
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
-            $moveEvent->batchId = $batchId;
-            $game->theah->queueEvent($moveEvent);
-
-            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $performer->Id, $performer->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
-            $moveEvent->batchId = $batchId;
-            $game->theah->queueEvent($moveEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

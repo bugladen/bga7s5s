@@ -35,6 +35,12 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
     private bool $inPlayRedHand = false;
     private bool $inHandThug = false;
     private bool $skipNextEvent = false;
+    // WHY: Pass only skipped the immediate re-queued event. Amour (01104) / Giacinto
+    // gate on EventCharacterTargeted then queue engage+move with the same batchId —
+    // after Pass, Beta's engage offered UL again; a second Pass deleteEventBatch'd the
+    // rest of the package (Alpha engage + Homes). Remember the declined batch so later
+    // siblings from that ability resolution do not re-offer.
+    private ?int $declinedBatchId = null;
 
     public function __construct()
     {
@@ -157,6 +163,27 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
     // is a second playerReaction after EventRiskReactionTriggered. Do not setUsed
     // before that second transition — Theah skips reaction transitions when
     // ! isAvailable().
+    private function getHeldEventBatchId(): ?int
+    {
+        foreach ([
+            $this->engagedEvent,
+            $this->engardedEvent,
+            $this->cardMovingEvent,
+            $this->characterWoundedEvent,
+            $this->characterHealedEvent,
+            $this->characterTargetedEvent,
+            $this->challengeIssuedEvent,
+        ] as $held)
+        {
+            if ($held !== null && $held->batchId !== null)
+            {
+                return $held->batchId;
+            }
+        }
+
+        return null;
+    }
+
     private function interceptEvent(Event $event, string $property): void
     {
         $owner = $this->getOwningCard($event->theah);
@@ -165,6 +192,11 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         {
             $this->skipNextEvent = false;
             $owner->IsUpdated = true;
+            return;
+        }
+
+        if ($this->declinedBatchId !== null && $event->batchId === $this->declinedBatchId)
+        {
             return;
         }
 
@@ -418,6 +450,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         $this->stage = '';
         $this->inHandThug = false;
         $this->inPlayRedHand = false;
+        $this->declinedBatchId = null;
 
         $owner = $this->getOwningCard($theah);
         if ($owner !== null)
@@ -519,6 +552,10 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
 
         if ($reactionId == 'pass')
         {
+            // WHY: Capture before releaseEvent nulls the held clone. skipNextEvent covers
+            // the re-queued hook; declinedBatchId covers engage/move/wound siblings the
+            // ability queues after the hook survives (Amour / Giacinto).
+            $this->declinedBatchId = $this->getHeldEventBatchId();
             $this->releaseEvent($game);
             $this->skipNextEvent = true;
             $this->stage = '';
