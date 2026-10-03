@@ -98,6 +98,12 @@
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
                 this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
+                // WHY: Button is created here. Disable Pass when server listed any enemy characters.
+                // onUpdateActionButtons args nest at args.args.* (not args.args.args.*).
+                const characterIds = (args && args.args && args.args.characterIds) || [];
+                if (characterIds.length > 0) {
+                    dojo.addClass('actPass', 'disabled');
+                }
             },
     
             'planningPhaseResolveSchemes_01126': () => {

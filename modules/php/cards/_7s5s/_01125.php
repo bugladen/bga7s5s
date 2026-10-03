@@ -110,6 +110,20 @@ class _01125 extends Scheme
             $args["location"] = $game->globals->get(GAME::CHOSEN_LOCATION);
         }
 
+        // WHY: "Enemy character" = controlled by an opponent (isNotControlledByPlayer).
+        // Available mercenaries (ControllerId 0) are not enemies. Drive the chooser from
+        // server IDs so the client cannot highlight uncontrolled city mercs via stale
+        // cardProperties / null-divId dojo.query fallthrough.
+        if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01125_4)
+        {
+            $playerId = $game->getActivePlayerId();
+            $enemies = array_filter(
+                $game->theah->getCharactersInPlay(),
+                fn($character) => $character->isNotControlledByPlayer($playerId)
+            );
+            $args["characterIds"] = array_values(array_map(fn($character) => $character->Id, $enemies));
+        }
+
         return $args;
     }
 
@@ -206,9 +220,11 @@ class _01125 extends Scheme
         {
             $character = $game->getCardObjectFromDb($id);
             $activePlayerId = $game->getActivePlayerId();
+            // WHY: Mirror args filter — controlled opponent in play only. Available
+            // mercenaries (ControllerId 0) and out-of-play cards are not legal.
             if (!($character instanceof Character)
-                || $character->ControllerId === 0
-                || $character->ControllerId === $activePlayerId)
+                || ! $character->isNotControlledByPlayer($activePlayerId)
+                || ! ($game->theah->cardInCity($character) || $character->Location == Game::LOCATION_PLAYER_HOME))
             {
                 throw new UserException($game->translate("You must choose an enemy character."));
             }

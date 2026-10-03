@@ -169,7 +169,7 @@ $machinestates += [
                 "description" => clienttranslate('The Boar\'s Guile: ${actplayer} must choose an enemy Character.'),
                 "descriptionmyturn" => clienttranslate('The Boar\'s Guile: ${you} must choose an enemy Character:'),
                 "type" => "activeplayer",
-                "args" => "argsEmpty",
+                "args" => "argsForState",
                 "possibleactions" => [
                     "actFromCardWithId",
                     "actPass"

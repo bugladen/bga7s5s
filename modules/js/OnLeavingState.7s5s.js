@@ -81,15 +81,8 @@
             },
     
             'planningPhaseResolveSchemes_01125_4': () => {
-                if (this.isCurrentPlayerActive()) 
-                {
-                    for( const cardId in this.cardProperties ) {
-                        card = this.cardProperties[cardId];
-                        if (card.type === 'Character' && card.controllerId && card.controllerId != this.getActivePlayerId() && this.isCardInPlay(card.id)) {
-                            const image = dojo.query('._7sfs-card', card.divId)[0];
-                            this.clearCardAsSelectable(image);
-                        }
-                    }
+                if (this.isCurrentPlayerActive() && this.clientStateArgs.characterIds) {
+                    this.unhighlightCards(this.clientStateArgs.characterIds);
                 }
             },
     

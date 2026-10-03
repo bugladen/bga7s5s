@@ -198,19 +198,14 @@
     
             'planningPhaseResolveSchemes_01125_4': () => {
                 if (this.isCurrentPlayerActive()) {
+                    // WHY: Server characterIds are in-play enemies only (isNotControlledByPlayer).
+                    // Do not scan cardProperties — out-of-play entries with null divId make
+                    // dojo.query('._7sfs-card', null) return the first city card (e.g. available Tijani).
                     this.numberOfCardsSelectable = 1;
-                    let count = 0;
-                    for( const cardId in this.cardProperties ) {
-                        card = this.cardProperties[cardId];
-                        if (card.type === 'Character' && card.controllerId && card.controllerId != 0 &&card.controllerId != this.getActivePlayerId()) {
-                            //Get the element that is a child of card.divId with the class 'card'
-                            const image = dojo.query('._7sfs-card', card.divId)[0];
-                            this.makeCardSelectable(image);
-    
-                            count++;
-                        }
-                    }
-                    if (count > 0) {
+                    const characterIds = args.args.args.characterIds || [];
+                    this.highlightCardsAsSelectable(characterIds);
+                    this.clientStateArgs.characterIds = characterIds;
+                    if (characterIds.length > 0) {
                         dojo.addClass('actPass', 'disabled');
                     }
                 }
