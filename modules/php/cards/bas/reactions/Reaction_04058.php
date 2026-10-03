@@ -110,6 +110,16 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
 
     private function isOpponentAbility(Theah $theah, int $sourceId, string $abilityId, int $ownerPlayerId): bool
     {
+        // WHY: Duel leftover-threat conversion queues EventCharacterBeingWounded with
+        // sourceId = adversary character and abilityId = '' (StatesTrait stDuelEndOfRound).
+        // Controller-only checks treat that as "opponent's ability" and wrongly offer this
+        // Reaction. Empty abilityId = framework/threat wound, not an ability (same gate as
+        // Cascade Reaction_02059 / Leather Spaulders Reaction_04053 / Kaspar _03014).
+        if ($abilityId === '')
+        {
+            return false;
+        }
+
         $source = $theah->getCardById($sourceId);
         if ($source)
         {
