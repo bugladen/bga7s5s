@@ -2344,7 +2344,11 @@ trait FrameworkActionsTrait
         }
 
         $chosenIds = array_map('intval', $chosenIds);
-        $queued = $this->theah->getQueuedReactionTransitionEvents();
+        // WHY: Only events at the current highest priority tier are choosable.
+        $highestPriority = $this->theah->getHighestQueuedEventPriority();
+        $queued = $highestPriority === null
+            ? []
+            : $this->theah->getQueuedReactionTransitionEvents($highestPriority);
         $queuedIds = [];
         foreach ($queued as $entry)
         {

@@ -1171,7 +1171,12 @@ trait ArgumentsTrait
     public function buildChooseNextReactionChoices(bool $fogAllRiskNames = false): array
     {
         $firstPlayerId = (int)$this->globals->get(Game::FIRST_PLAYER, 0);
-        $queued = $this->theah->getQueuedReactionTransitionEvents();
+        // WHY: Only offer reactions at the current highest priority tier — deferred
+        // siblings (after a prior choose) must not appear until that tier drains.
+        $highestPriority = $this->theah->getHighestQueuedEventPriority();
+        $queued = $highestPriority === null
+            ? []
+            : $this->theah->getQueuedReactionTransitionEvents($highestPriority);
 
         // First pass: group RiskReaction event ids by player for consolidation.
         $riskEventIdsByPlayer = [];

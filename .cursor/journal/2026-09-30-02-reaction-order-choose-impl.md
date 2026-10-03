@@ -36,6 +36,9 @@ Setup / early dawn can queue reactions before First Player is determined. Fall b
 ## ID scheme notes
 Prefer `EVENTS_id + 3` (x0/x1/x2/x3). Collisions used next free after PAY (e.g. WHEN_REVEALED 248/249, IN_PLAY 467, IN_HAND 476, ACCEPT/REJECT 4596/4597, RECRUIT 4236, DUEL_COMBAT_CARD 5203).
 
+### Peek / divert only at highest priority tier
+`runEvents` takes `MIN(event_priority)` first, then counts reaction transitions **at that priority only**. chooseNext only if that count &gt; 1. Deferred siblings (priority 7) no longer re-open choose while pay/work at 6 drains. Args/act/notify use the same tier filter.
+
 ## Ambush pay interrupted by chooseNext (2026-09-30)
 
 Bug: FP picks Ambush (01023) → Prevent Intervention → back at chooseNext instead of pay.

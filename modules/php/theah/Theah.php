@@ -321,29 +321,30 @@ class Theah
             $event = $this->db->getNextEventByRunImmediately();
             if (!$event)
             {
-                // WHY peek before diverting: higher-priority events must still drain first;
-                // only pause when a reaction transition is next and siblings exist.
-                if (!$skipTransitions)
+            // WHY: Only divert when the *next* priority tier has ≥2 reaction transitions.
+            // Deferred siblings (DEFERRED_REACTION_PRIORITY) must not re-open chooseNext
+            // while pay / higher-priority work still drains.
+            if (!$skipTransitions)
+            {
+                $highestPriority = $this->db->getHighestQueuedEventPriority();
+                if ($highestPriority !== null)
                 {
-                    $peek = $this->db->peekNextEvent();
-                    if ($peek instanceof EventTransition && $peek->transition === 'reaction')
+                    $reactions = $this->db->getQueuedReactionTransitionEvents($highestPriority);
+                    $firstPlayerId = (int)$this->game->globals->get(Game::FIRST_PLAYER, 0);
+                    if (count($reactions) > 1 && $firstPlayerId)
                     {
-                        $reactions = $this->db->getQueuedReactionTransitionEvents();
-                        $firstPlayerId = (int)$this->game->globals->get(Game::FIRST_PLAYER, 0);
-                        if (count($reactions) > 1 && $firstPlayerId)
-                        {
-                            $this->game->gamestate->changeActivePlayer($firstPlayerId);
-                            // WHY: Opponents only see the status bar; log the same fogged
-                            // button labels so everyone knows what is on the table.
-                            $this->game->notifyAvailableReactionsForChooseNext();
-                            $this->game->gamestate->nextState('chooseNext');
-                            return;
-                        }
+                        $this->game->gamestate->changeActivePlayer($firstPlayerId);
+                        // WHY: Opponents only see the status bar; log the same fogged
+                        // button labels so everyone knows what is on the table.
+                        $this->game->notifyAvailableReactionsForChooseNext();
+                        $this->game->gamestate->nextState('chooseNext');
+                        return;
                     }
                 }
+            }
 
-                $event = $this->db->getNextEvent();
-                if (!$event) break;
+            $event = $this->db->getNextEvent();
+            if (!$event) break;
             }
 
             $event->theah = $this;
@@ -1831,9 +1832,14 @@ class Theah
     /**
      * @return array<int, array{eventId: int, event: \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition}>
      */
-    public function getQueuedReactionTransitionEvents(): array
+    public function getQueuedReactionTransitionEvents(?int $priority = null): array
     {
-        return $this->db->getQueuedReactionTransitionEvents();
+        return $this->db->getQueuedReactionTransitionEvents($priority);
+    }
+
+    public function getHighestQueuedEventPriority(): ?int
+    {
+        return $this->db->getHighestQueuedEventPriority();
     }
 
     public function setEventRunImmediately(int $eventId): void

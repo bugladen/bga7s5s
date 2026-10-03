@@ -98,15 +98,30 @@ class DB
         return $this->game->safeUnserialize($data['json']);
     }
 
+    // WHY: Lower event_priority number = higher priority (HIGHEST=1). Used so chooseNext
+    // only considers reaction transitions that are actually next to drain — not deferred
+    // siblings still sitting at DEFERRED_REACTION_PRIORITY.
+    public function getHighestQueuedEventPriority(): ?int
+    {
+        $sql = "SELECT MIN(event_priority) FROM events";
+        $result = $this->getUniqueValue($sql);
+        return $result === null ? null : (int)$result;
+    }
+
     /**
      * @return array<int, array{eventId: int, event: EventTransition}>
      */
-    public function getQueuedReactionTransitionEvents(): array
+    public function getQueuedReactionTransitionEvents(?int $priority = null): array
     {
-        $sql = "SELECT event_id, event_serialized FROM events
+        $sql = "SELECT event_id, event_priority, event_serialized FROM events
                 WHERE event_serialized LIKE '%EventTransition%'
-                  AND event_serialized LIKE '%s:8:\"reaction\"%'
-                ORDER BY event_priority, event_id";
+                  AND event_serialized LIKE '%s:8:\"reaction\"%'";
+        if ($priority !== null)
+        {
+            $sql .= " AND event_priority = {$priority}";
+        }
+        $sql .= " ORDER BY event_priority, event_id";
+
         $results = [];
         foreach ($this->getCollection($sql) as $row)
         {
