@@ -73,11 +73,16 @@ abstract class CardAction extends Action implements ICardAbility
     public function announceAction(Game $game): void
     {
         $owner = $this->getOwningCard($game->theah);
+        // WHY card: in-hand Risks are private — opponents never have them in
+        // cardProperties. format_string_recursive_with_injection seeds logCardCache
+        // from notify args (objects with id+type) so announce log hover hydrates
+        // for everyone. Same pattern as EventCombatCardAnnounced / Risk-play notify.
         $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} announced the [${action}] Action.'), [
             'i18n' => ['action'],
             'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
             'action' => $this->Name,
             'owner_inject_code' => $owner->getInjectCode(),
+            'card' => $owner->getPropertyArray($game),
         ]);
 
         $activatedEvent = EventFactory::createActionActivatedEvent(
