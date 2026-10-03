@@ -241,7 +241,7 @@ class Action_04018 extends RiskAction implements IAbilityThatTargetsCharacters
             $game->theah->eventCheck($moveEvent);
             $game->theah->queueEvent($moveEvent);
 
-            // WHY: ActionResolved (priority 3) before Transition (priority 8) — same as
+            // WHY: ActionResolved (priority 8) before Transition (priority 9) — same as
             // Action_04005 / Action_01095b. HD action wraps; discard is a trailing multi-player effect.
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

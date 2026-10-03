@@ -5,13 +5,21 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 abstract class Event
 {
-    const CHANGE_ACTIVE_PLAYER_PRIORITY = 8;
-    const TRANSITION_PRIORITY = 8;
+    // WHY: Transitions / active-player changes must run after ActionResolved so trailing
+    // multi-player effects (e.g. 04005 discard) still see HD wrap first. Distinct from
+    // ACTION_RESOLVED — MySQL ORDER BY priority alone has no event_id tiebreak
+    // (Corpse Speak 2026-06-05-01).
+    const CHANGE_ACTIVE_PLAYER_PRIORITY = 9;
+    const TRANSITION_PRIORITY = 9;
+    // WHY: After CardMoved-window reactions (6) and deferred siblings (7) drain, then signal
+    // action completion. Formerly LOWEST=5, which ran *before* reaction UIs and let Soline
+    // (EventActionResolved) join Rosa (EventCardMoved) in the same chooseNext tier.
+    const ACTION_RESOLVED_PRIORITY = 8;
+    const DEFERRED_REACTION_PRIORITY = 7;
     const REACTION_PRIORITY = 6;
     // WHY: After First Player picks one reaction to resolve, siblings are demoted here so
     // that reaction's pay transition (still REACTION_PRIORITY) drains before chooseNext
     // offers the rest again.
-    const DEFERRED_REACTION_PRIORITY = 7;
     const LOWEST_PRIORITY = 5;
     const LOW_PRIORITY = 4;
     const MEDIUM_PRIORITY = 3;

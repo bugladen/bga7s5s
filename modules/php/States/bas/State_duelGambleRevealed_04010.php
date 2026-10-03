@@ -10,7 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
 /**
  * WHY: Unravel the Thread — show revealed gamble cards in chooseList, then Use/Pass.
- * Runs after Ivy-style pre-choose reactions (transition priority 8 > reaction 6).
+ * Runs after Ivy-style pre-choose reactions (TRANSITION_PRIORITY > REACTION_PRIORITY).
  */
 class State_duelGambleRevealed_04010 extends GameState
 {

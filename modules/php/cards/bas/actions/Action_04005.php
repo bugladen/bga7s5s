@@ -200,7 +200,7 @@ class Action_04005 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 ]);
             }
 
-            // WHY: ActionResolved (priority 3) before Transition (priority 8) — same as
+            // WHY: ActionResolved (priority 8) before Transition (priority 9) — same as
             // Action_01095b. HD action wraps; discard is a trailing multi-player effect.
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

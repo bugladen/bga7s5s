@@ -49,7 +49,7 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
                 return;
             }
 
-            // WHY: Transition (priority 8), not reaction (priority 6). Ivy-style pre-choose
+            // WHY: Transition (TRANSITION_PRIORITY), not reaction (REACTION_PRIORITY). Ivy-style pre-choose
             // reactions run first; then this state shows the revealed cards in chooseList
             // BEFORE Use/Pass so the player can see Unravel among them.
             $transition = EventFactory::createTransitionEvent(
