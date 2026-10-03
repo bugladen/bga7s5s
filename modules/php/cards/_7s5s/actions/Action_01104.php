@@ -19,7 +19,7 @@ class Action_01104 extends RiskCityAction implements IAbilityThatTargetsCharacte
     {
         parent::__construct();
 
-        $this->Name = clienttranslate('Go Home with Opposing Character');
+        $this->Name = clienttranslate('Engage and Go Home with Opposing Character');
         $this->RequiresPerformerSelected = true;
     }
 
