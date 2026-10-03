@@ -108,13 +108,22 @@ class Action_02061 extends RiskCityAction implements IAbilityThatTargetsCharacte
 
         if ($event instanceof EventGenerateChallengeThreat)
         {
-            $challengeType = $event->theah->game->globals->get(Game::CHALLENGE_TYPE);
-            if ($challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE)
+            $game = $event->theah->game;
+            $challengeType = $game->globals->get(Game::CHALLENGE_TYPE);
+            // WHY: CHALLENGE_TYPE is table-global. Starter decks ship 2 copies; hand+discard
+            // are both in $theah->cards, so every Action_02061 would +1/+1 without an issuer
+            // gate (including the opponent's spare copy). Gate on CHOSEN_ACTION — it identifies
+            // this card instance and survives technique activation (overwrites
+            // TRANSITION_INTERNAL_ID) and technique Resolve transitions (can overwrite
+            // TRANSITION_SOURCE_ID). Cleared only in stNextPlayer. Do not use a persisted
+            // Action flag: EventActionResolved can fire before GenerateThreat (see Action_04045).
+            if ($challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE
+                && $this->Id == $game->globals->get(Game::CHOSEN_ACTION))
             {
                 $owner = $this->getOwningCard($event->theah);
                 $event->actorThreat += 1;
                 $event->adversaryThreat += 1;
-                $event->explanations[] = sprintf($event->theah->game->translate("%s: Adds 1 Threat to both participants."), $owner->getInjectCode());
+                $event->explanations[] = sprintf($game->translate("%s: Adds 1 Threat to both participants."), $owner->getInjectCode());
             }
         }
     }
