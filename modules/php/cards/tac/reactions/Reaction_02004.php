@@ -6,7 +6,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressured;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -86,13 +86,17 @@ class Reaction_02004 extends CardReaction
             }
         }
 
-        if ($event instanceof EventLocationPressured && $this->location != '')
+        // WHY: LocationPressureResult, not LocationPressured — Objection (_01027) and
+        // similar cancel reactions delete/replace the Result after Pressured fires.
+        // Drawing on Pressured awarded the card before the pressure could be failed.
+        if ($event instanceof EventLocationPressureResult && $this->location != '')
         {
             $owner = $this->getOwningCard($event->theah);
+            $location = $this->location;
             $this->location = '';
             $owner->IsUpdated = true;
 
-            if ($event->success)
+            if ($event->success && $event->location == $location)
             {
                 $drawEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
                 $event->theah->queueEvent($drawEvent);
