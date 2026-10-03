@@ -67,6 +67,13 @@ class _04cd19 extends CityEventCard
         // WHY: EventCardEngaged covers characters (and attachments); filter to Character
         // at this location. Mirror Legion's Caress (_01021) wound queue. Check canceled
         // so impervious cancelers (e.g. Maryam) that ran earlier in the same pass skip us.
+        // WHY batchId on the wound: cards run before Hub for EventCardEngaged. If this
+        // Forced queues the wound and a later canceler in the same foreach (Unyielding
+        // Loyalty, Maryam) sets canceled + deleteEventBatch, an unbatched wound still
+        // fires — Action_01104 + Reaction_01032 wounding after a successful cancel.
+        // Share the engage's batch (mint one onto the in-flight event if missing) so
+        // deleteEventBatch sweeps the wound too. !$canceled still covers cancelers that
+        // already ran before us.
         if ($event instanceof EventCardEngaged
             && ! $event->canceled
             && $event->theah->cardInCity($this))
@@ -79,10 +86,15 @@ class _04cd19 extends CityEventCard
 
             $game = $event->theah->game;
             $game->notify->all("message", clienttranslate(
-                '${card_inject_code}: ${character_inject_code} becomes engaged and is wounded.'), [
+                '${card_inject_code}: ${character_inject_code} becomes engaged and will be wounded.'), [
                 'card_inject_code' => $this->getInjectCode(),
                 'character_inject_code' => $character->getInjectCode(),
             ]);
+
+            if ($event->batchId === null)
+            {
+                $event->batchId = $game->getNextEventBatchId();
+            }
 
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
                 $character->Id,
@@ -90,6 +102,7 @@ class _04cd19 extends CityEventCard
                 1,
                 $this->getInjectCode()
             );
+            $woundEvent->batchId = $event->batchId;
             $event->theah->queueEvent($woundEvent);
         }
     }

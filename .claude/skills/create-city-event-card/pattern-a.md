@@ -83,7 +83,7 @@ WHY not treat as Reaction: Reaction is optional ("you may"). Forced-with-choice 
 
 For events with `runEventHubAfterCards = false` (the default), EventHub processes the event first, then every card's `handleEvent` fires. This means you can queue `createCardRemovedFromPlayEvent` and have another `handleEvent` branch on this same card listen for the resulting `EventCardRemovedFromPlay` to do follow-up work (e.g., Penya shuffling the city deck after moving into it).
 
-For events with `runEventHubAfterCards = true` (notably **`EventCardEngaged`** / **`EventCardEngarded`**), cards run **before** EventHub. Cancelers (Maryam impervious, etc.) set `$event->canceled = true` during that card pass; EventHub then no-ops. Forced "After … becomes engaged" should gate on `!$event->canceled`. Residual race if this card's `handleEvent` runs *before* the canceler in the same foreach — same limitation as other engage listeners; do not invent a post-hub engage-done event.
+For events with `runEventHubAfterCards = true` (notably **`EventCardEngaged`** / **`EventCardEngarded`**), cards run **before** EventHub. Cancelers (Maryam impervious, Unyielding Loyalty, etc.) set `$event->canceled = true` during that card pass; EventHub then no-ops. Forced "After … becomes engaged" should gate on `!$event->canceled`. If this Forced *queues* a follow-up (e.g. wound) and a later canceler in the same foreach calls `deleteEventBatch`, put that follow-up on the engage's `batchId` (mint one onto the in-flight event if null) — see `bas/_04cd19`. Do not invent a post-hub engage-done event.
 
 ### Pressure-modifying Forced (very common)
 

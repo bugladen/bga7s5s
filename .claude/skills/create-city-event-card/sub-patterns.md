@@ -181,6 +181,7 @@ WHY details that are easy to get wrong:
 
 - **`getCharacterById` is required.** `EventCardEngaged` fires for attachments too (e.g. Syrneth Puzzle Box engages itself). Text that says "a character" must not wound attachments — null from `getCharacterById` means skip.
 - **`!$event->canceled`.** `EventCardEngaged` sets `runEventHubAfterCards = true`, so cards handle before Hub applies `Engaged = true`. Impervious cancelers (Maryam) set `canceled` in that pass; EventHub then no-ops. "After becomes engaged" should not fire on a canceled engage. Legion's Caress (`_01021`) omits this check — prefer the canceled gate for city-event "After" wording.
+- **`batchId` on queued follow-ups.** If this Forced queues a wound (or similar) and a *later* canceler in the same foreach (Unyielding Loyalty `Reaction_01032`, Maryam) calls `deleteEventBatch`, an unbatched follow-up still fires. Set `$woundEvent->batchId = $event->batchId`, minting `$event->batchId = $game->getNextEventBatchId()` first when null so later cancelers have something to delete. Canonical: `bas/_04cd19`.
 - **Location match on the character**, not on `$event` (engage events have no location field): `$character->Location == $this->Location`.
 - There is **no** separate post-hub "engage done" event — peers all listen on `EventCardEngaged` itself.
 
