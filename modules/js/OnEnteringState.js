@@ -553,23 +553,25 @@ onEnteringState: function( stateName, args )
                 });
 
                 this.numberOfCardsSelectable = 1;
+                // WHY: Stiletto may have sent performer/target to locker — cardProperties
+                // entry remains with divId=null; skip chosen highlight, do not touch DOM.
                 card = this.cardProperties[args.args.performerId];
-                if (card) {
+                if (card?.divId) {
                     image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    dojo.addClass(image, '_7sfs-chosen');
+                    if (image) dojo.addClass(image, '_7sfs-chosen');
                 }
 
                 card = this.cardProperties[args.args.targetId];
-                if (card) {
+                if (card?.divId) {
                     image = $(`${card.divId}_image`);
                     this.clearCardAsSelectable(image);
-                    dojo.addClass(image, '_7sfs-chosen');
+                    if (image) dojo.addClass(image, '_7sfs-chosen');
                 }
 
                 args.args.ids.forEach((cardId) => {
                     card = this.cardProperties[cardId];
-                    if (card) {
+                    if (card?.divId) {
                         const image = $(`${card.divId}_image`);
                         this.clearCardAsSelectable(image);
                         this.makeCardSelectable(image);

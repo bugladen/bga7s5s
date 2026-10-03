@@ -1685,6 +1685,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
     
     makeCardSelectable: function(image) {
+        // WHY: Stiletto can destroy the challenger before Accept — cardProperties still
+        // holds the card with divId=null; $(null_image) is null.
+        if (!image) return;
         dojo.addClass(image, '_7sfs-selectable');
         dojo.style(image, 'cursor', 'pointer');
         const handle = dojo.connect(image, 'onclick', this, 'onCardInPlayClicked');
@@ -1708,6 +1711,8 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
     
     clearCardAsSelectable: function(image) {
+        // WHY: Same as makeCardSelectable — destroyed participants leave null DOM nodes.
+        if (!image) return;
         dojo.removeClass(image, '_7sfs-selectable');
         dojo.removeClass(image, '_7sfs-selected');
         dojo.removeClass(image, '_7sfs-chosen');
@@ -1814,6 +1819,37 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const chipId = `${divId}_challenge_stat`;
         if ($(chipId)) {
             dojo.destroy(chipId);
+        }
+    },
+
+    // WHY: Shared by duelEnd / reject / cancel / challengeMarkersCleared (Stiletto kills
+    // a challenge participant while !IN_DUEL — survivor still has Defender chips).
+    clearChallengeParticipantChips: function(challengerId, defenderId) {
+        this.challengeStat = null;
+        if (this.gamedatas) {
+            this.gamedatas.challengeStat = null;
+        }
+
+        const challenger = this.cardProperties[challengerId];
+        if (challenger)
+        {
+            challenger.conditions = (challenger.conditions || []).filter(condition => condition !== this.CHALLENGER);
+            if (challenger.divId) {
+                dojo.destroy(`${challenger.divId}_challenger`);
+                this.removeChallengeStatChip(challenger.divId);
+            }
+            this.refreshTooltipForCard(challenger);
+        }
+
+        const defender = this.cardProperties[defenderId];
+        if (defender)
+        {
+            defender.conditions = (defender.conditions || []).filter(condition => condition !== this.DEFENDER);
+            if (defender.divId) {
+                dojo.destroy(`${defender.divId}_defender`);
+                this.removeChallengeStatChip(defender.divId);
+            }
+            this.refreshTooltipForCard(defender);
         }
     },
 

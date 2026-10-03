@@ -1062,6 +1062,45 @@ trait UtilitiesTrait
         $this->globals->delete(Game::CHALLENGE_LAST_KNOWN_DEFENDER);
     }
 
+    /**
+     * Strip Challenger/Defender conditions and client chips for a challenge that is
+     * ending or whose participant was destroyed during the challenge step.
+     *
+     * WHY: Stiletto (and similar) can destroy the challenger while !IN_DUEL. Destroy
+     * recreates the corpse without conditions and removes its DOM, but the survivor
+     * (e.g. Mourad after intervene) keeps DUEL_DEFENDER + challenge-stat chips.
+     * EventDuelEnd / challengeCancelled are not always on that path (fizzle skips
+     * duelEnd; destroy does not cancel the challenge). Clear both ids here.
+     * Does not set CHALLENGE_CANCELLED — short-duel ruling for dead challenger stays.
+     */
+    public function clearChallengeParticipantMarkers(?int $challengerId, ?int $defenderId): void
+    {
+        if ($challengerId)
+        {
+            $challenger = $this->theah->getCardById($challengerId);
+            if ($challenger !== null)
+            {
+                $challenger->removeCondition(Game::DUEL_CHALLENGER);
+                $this->updateCardObjectInDb($challenger);
+            }
+        }
+
+        if ($defenderId)
+        {
+            $defender = $this->theah->getCardById($defenderId);
+            if ($defender !== null)
+            {
+                $defender->removeCondition(Game::DUEL_DEFENDER);
+                $this->updateCardObjectInDb($defender);
+            }
+        }
+
+        $this->notifyAllPlayers("challengeMarkersCleared", '', [
+            "challengerId" => $challengerId ?? 0,
+            "defenderId" => $defenderId ?? 0,
+        ]);
+    }
+
     public function getNextEventBatchId(): int
     {
         $batchId = $this->globals->get(Game::EVENT_BATCH_ID, 0) + 1;

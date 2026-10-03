@@ -895,18 +895,20 @@ trait StatesTrait
         {
             $challengerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
             $challenger = $this->theah->getCardById($challengerId);
+            $defenderId = $this->globals->get(GAME::CHOSEN_TARGET);
+            $defender = $this->theah->getCardById($defenderId);
+
+            // WHY: Shared marker clear (conditions + chips). challengeCancelled keeps the
+            // log line; clearChallengeParticipantMarkers would duplicate chip notifs.
             if ($challenger !== null)
             {
                 $challenger->removeCondition(GAME::DUEL_CHALLENGER);
-                $this->theah->game->updateCardObjectInDb($challenger);
+                $this->updateCardObjectInDb($challenger);
             }
-            
-            $defenderId = $this->globals->get(GAME::CHOSEN_TARGET);
-            $defender = $this->theah->getCardById($defenderId);
             if ($defender !== null)
             {
                 $defender->removeCondition(GAME::DUEL_DEFENDER);
-                $this->theah->game->updateCardObjectInDb($defender);
+                $this->updateCardObjectInDb($defender);
             }
 
             $this->globals->set(Game::PASS_COUNT, 0);
@@ -1007,6 +1009,11 @@ trait StatesTrait
             if ($target === null || $this->characterIsInDiscardOrLocker($target))
             {
                 $this->notifyAllPlayers("message", clienttranslate('The Challenge ends: the challenged character is no longer present. Threat fizzles.'), []);
+
+                // WHY: Fizzle skips stDuelEnd / challengeCancelled — living challenger would
+                // keep Challenger + challenge-stat chips (symmetric to Stiletto-killed
+                // challenger leaving Mourad's Defender markers).
+                $this->clearChallengeParticipantMarkers($performerId, $targetId);
 
                 $resolvedPlayerId = $performer !== null
                     ? $performer->ControllerId

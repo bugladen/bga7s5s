@@ -42,6 +42,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['challengeIssued', 500],
             ['challengeRejected', 500],
             ['challengeCancelled', 500],
+            ['challengeMarkersCleared', 1],
             ['challengerSwapped', 500],
             ['characterDestroyed', 1000],
             ['characterHealed', 1000],
@@ -2877,30 +2878,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        this.challengeStat = null;
-        if (this.gamedatas) {
-            this.gamedatas.challengeStat = null;
-        }
-
-        const challenger = this.cardProperties[args.challengerId];
-        if (challenger)
-        {
-            challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
-            const challengerChipId = `${challenger.divId}_challenger`;
-            dojo.destroy(challengerChipId);
-            this.removeChallengeStatChip(challenger.divId);
-            this.refreshTooltipForCard(challenger);
-        }
-
-        const defender = this.cardProperties[args.defenderId];
-        if (defender)
-        {
-            defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
-            const defenderChipId = `${defender.divId}_defender`;
-            dojo.destroy(defenderChipId);
-            this.removeChallengeStatChip(defender.divId);
-            this.refreshTooltipForCard(defender);
-        }
+        this.clearChallengeParticipantChips(args.challengerId, args.defenderId);
     },
 
     notif_challengeCancelled: function( notif )
@@ -2909,30 +2887,18 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        this.challengeStat = null;
-        if (this.gamedatas) {
-            this.gamedatas.challengeStat = null;
-        }
+        this.clearChallengeParticipantChips(args.challengerId, args.defenderId);
+    },
 
-        const challenger = this.cardProperties[args.challengerId];
-        if (challenger)
-        {
-            challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
-            const challengerChipId = `${challenger.divId}_challenger`;
-            dojo.destroy(challengerChipId);
-            this.removeChallengeStatChip(challenger.divId);
-            this.refreshTooltipForCard(challenger);
-        }
+    // WHY: Challenge-step destroy (Stiletto) clears survivor markers without cancelling
+    // the challenge (dead-challenger short duel may still run).
+    notif_challengeMarkersCleared: function( notif )
+    {
+        debug( 'notif_challengeMarkersCleared' );
+        debug( notif );
 
-        const defender = this.cardProperties[args.defenderId];
-        if (defender)
-        {
-            defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
-            const defenderChipId = `${defender.divId}_defender`;
-            dojo.destroy(defenderChipId);
-            this.removeChallengeStatChip(defender.divId);
-            this.refreshTooltipForCard(defender);
-        }
+        const args = notif.args;
+        this.clearChallengeParticipantChips(args.challengerId, args.defenderId);
     },
 
     notif_duelEnd: function( notif )
@@ -2943,31 +2909,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
 
         this.inDuel = false;
-        this.challengeStat = null;
-        if (this.gamedatas) {
-            this.gamedatas.challengeStat = null;
-        }
         dojo.destroy('duel_wrapper');
-
-        const challenger = this.cardProperties[args.challengerId];
-        if (challenger)
-        {
-            challenger.conditions = challenger.conditions.filter(condition => condition !== this.CHALLENGER);
-            const challengerChipId = `${challenger.divId}_challenger`;
-            dojo.destroy(challengerChipId);
-            this.removeChallengeStatChip(challenger.divId);
-            this.refreshTooltipForCard(challenger);
-        }
-
-        const defender = this.cardProperties[args.defenderId];
-        if (defender)
-        {
-            defender.conditions = defender.conditions.filter(condition => condition !== this.DEFENDER);
-            const defenderChipId = `${defender.divId}_defender`;
-            dojo.destroy(defenderChipId);
-            this.removeChallengeStatChip(defender.divId);
-            this.refreshTooltipForCard(defender);
-        }
+        this.clearChallengeParticipantChips(args.challengerId, args.defenderId);
 
         // Move faction hand placeholder back to top of page (after choose_container)
         if (!this.isSpectator)

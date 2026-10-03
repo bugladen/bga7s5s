@@ -2096,15 +2096,22 @@ trait EventHub
             case $event instanceof EventDuelEnd:
                 $handler = function (Theah $theah, EventDuelEnd $event)
                 {
-                    //Cards are going to be read from the database, as they may be in the locker and not available to Theah
-                    
+                    // WHY null-safe: Stiletto can leave a participant in Locker; getCardById
+                    // usually finds them, but a missing id must not skip the survivor's clear
+                    // or the duelEnd notify (Mourad kept Defender chips when challenger died).
                     $challenger = $theah->getCardById($event->challengerId);
-                    $challenger->removeCondition(GAME::DUEL_CHALLENGER);
-                    $theah->game->updateCardObjectInDb($challenger);
+                    if ($challenger !== null)
+                    {
+                        $challenger->removeCondition(GAME::DUEL_CHALLENGER);
+                        $theah->game->updateCardObjectInDb($challenger);
+                    }
                     
                     $defender = $theah->getCardById($event->defenderId);
-                    $defender->removeCondition(GAME::DUEL_DEFENDER);
-                    $theah->game->updateCardObjectInDb($defender);
+                    if ($defender !== null)
+                    {
+                        $defender->removeCondition(GAME::DUEL_DEFENDER);
+                        $theah->game->updateCardObjectInDb($defender);
+                    }
 
                     $theah->game->notify->all("duelEnd", clienttranslate('The Duel has ended.'), [
                         "challengerId" => $event->challengerId,
@@ -2206,6 +2213,14 @@ trait EventHub
                     $locker = $theah->game->getPlayerLockerName($character->ControllerId);
                     $location = $locker;
 
+                    // WHY: Capture before recreate wipes Conditions. Challenge-step Stiletto
+                    // (etc.) destroys a participant while !IN_DUEL — survivor still wears
+                    // Challenger/Defender + challenge-stat chips (Mourad after intervene).
+                    $wasChallengeParticipant = $character instanceof Character
+                        && ($character->hasCondition(Game::DUEL_CHALLENGER)
+                            || $character->hasCondition(Game::DUEL_DEFENDER));
+                    $inDuel = (bool) $theah->game->globals->get(Game::IN_DUEL, false);
+
                     if ($character instanceof Brute)
                     {
                         $discardPileName = $theah->game->getPlayerDiscardDeckName($character->ControllerId);
@@ -2252,6 +2267,14 @@ trait EventHub
                     $character->Location = $location;
                     $character->IsUpdated = true;
                     $theah->addCardToWorld($character);
+
+                    if ($wasChallengeParticipant && ! $inDuel)
+                    {
+                        $theah->game->clearChallengeParticipantMarkers(
+                            (int) $theah->game->globals->get(Game::CHOSEN_PERFORMER, 0),
+                            (int) $theah->game->globals->get(Game::CHOSEN_TARGET, 0)
+                        );
+                    }
                 };
                 $handler($this, $event);
                 break;
