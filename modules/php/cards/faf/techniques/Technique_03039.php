@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
@@ -17,6 +18,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Technique_03039 extends Technique
 {
     private bool $MoveHome = false;
+
+    // WHY: Printed "Then, if they have more…" means compare AFTER the adversary discard
+    // lands — not when the picker confirms. Flag so EventCardDiscardedFromHand does the
+    // hand-size En Garde gate; Move Home stays separate (flagged on resolve).
+    private bool $PendingEnGardeCheck = false;
 
     public function __construct()
     {
@@ -61,8 +67,8 @@ class Technique_03039 extends Technique
             $owner = $this->getOwningCharacter($event->theah);
             $adversary = $event->theah->getDuelRoundOpponent();
 
-            // WHY: Move Home is unconditional once the technique resolves — only the En Garde
-            // clause is gated on post-discard hand sizes. Flag here so EndOfRound always fires.
+            // WHY: Move Home is unconditional once the technique resolves — not gated on
+            // whether the adversary had a card to discard or on the En Garde hand check.
             $this->MoveHome = true;
             $owner->IsUpdated = true;
 
@@ -70,6 +76,7 @@ class Technique_03039 extends Technique
             if (count($hand) > 0)
             {
                 // Adversary chooses which card to discard (Maya Technique_01093 pattern).
+                // En Garde check waits for EventCardDiscardedFromHand (PendingEnGardeCheck).
                 $transition = EventFactory::createTransitionEvent($adversary->ControllerId, $owner->Id, "03039", $this->Id);
                 $event->theah->queueEvent($transition);
             }
@@ -80,6 +87,36 @@ class Technique_03039 extends Technique
             }
 
             $this->setUsed($event->theah, true);
+        }
+
+        // WHY: Discard uses runEventHubAfterCards — card handlers see the card still in
+        // hand. Exclude event->cardId so the compare is post-discard (InigoHand <
+        // adversaryHandAfter). Engarde event is queued and runs after this discard finishes.
+        if (
+            $event instanceof EventCardDiscardedFromHand
+            && $this->PendingEnGardeCheck
+            && ! $event->canceled
+            && $event->asEffect
+        )
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner !== null && $event->sourceId == $owner->Id)
+            {
+                $this->PendingEnGardeCheck = false;
+                $owner->IsUpdated = true;
+
+                $adversary = $event->theah->getDuelRoundOpponent();
+                $hand = $event->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $adversary->ControllerId);
+                $adversaryHandAfter = 0;
+                foreach ($hand as $handCard)
+                {
+                    if ($handCard->Id != $event->cardId)
+                    {
+                        $adversaryHandAfter++;
+                    }
+                }
+                $this->maybeEnGardeInigo($event->theah, $owner, $adversaryHandAfter);
+            }
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
@@ -96,6 +133,7 @@ class Technique_03039 extends Technique
         if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
         {
             $this->MoveHome = false;
+            $this->PendingEnGardeCheck = false;
             $owner = $this->getOwningCharacter($event->theah);
             $owner->IsUpdated = true;
         }
@@ -104,6 +142,7 @@ class Technique_03039 extends Technique
         {
             $owner = $this->getOwningCharacter($event->theah);
             $this->MoveHome = false;
+            $this->PendingEnGardeCheck = false;
             $owner->IsUpdated = true;
 
             if (
@@ -131,9 +170,10 @@ class Technique_03039 extends Technique
             }
         }
 
-        if ($event instanceof EventDuelEnd && $this->MoveHome)
+        if ($event instanceof EventDuelEnd && ($this->MoveHome || $this->PendingEnGardeCheck))
         {
             $this->MoveHome = false;
+            $this->PendingEnGardeCheck = false;
             $owner = $this->getOwningCharacter($event->theah);
             $owner->IsUpdated = true;
         }
@@ -165,7 +205,13 @@ class Technique_03039 extends Technique
             }
 
             $owner = $this->getOwningCharacter($game->theah);
-            $adversary = $game->theah->getDuelRoundOpponent();
+
+            // WHY: Arm the post-discard En Garde check before queueing discard. Do not
+            // compare hands here — discard is not flushed yet; handleEvent on
+            // EventCardDiscardedFromHand owns the "Then…" gate.
+            $this->PendingEnGardeCheck = true;
+            $owner->IsUpdated = true;
+            $game->updateCardObjectInDb($owner);
 
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent(
                 $card->OwnerId,
@@ -177,17 +223,14 @@ class Technique_03039 extends Technique
             );
             $game->theah->queueEvent($discardEvent);
 
-            // WHY: Discard is queued, not flushed yet — compute post-discard hand size as count-1
-            // so the printed "Then, if they have more cards…" gate sees the correct totals.
-            $adversaryHandAfter = count($game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $adversary->ControllerId)) - 1;
-            $this->maybeEnGardeInigo($game->theah, $owner, $adversaryHandAfter);
-
             $game->gamestate->nextState();
         }
     }
 
     private function maybeEnGardeInigo(Theah $theah, $owner, int $adversaryHandCount): void
     {
+        // WHY: "if they have more cards in hand than you" = adversaryHand > InigoHand
+        // (same as InigoHand < adversaryHand). Mandatory when true — printed effect, not a chooser.
         $ownerHandCount = count($theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId));
         if ($adversaryHandCount > $ownerHandCount)
         {
