@@ -185,7 +185,7 @@ When the scheme says **"Add a Renown to [The City Docks] or [The Grand Bazaar]"*
 
 1. `argsFromCard` / `locationIds` = those two names that exist in `getCityLocations()` (both are always in play, including 2p).
 2. `actFromCardWithLocations` / `actFromCardWithIds`. Re-validate membership.
-3. Do **not** use `actCityLocationsForReknownSelected` (that helper is N free city picks).
+3. Do **not** use `actCityLocationsForRenownSelected` (that helper is N free city picks).
 4. JS: same as `_04014` (`locationIds` + Confirm Location).
 
 Reference: `_04045`.
@@ -197,7 +197,7 @@ When the scheme says **"Add a Renown to [City Docks] and another location"** (on
 1. Queue `createRenownAddedToLocationEvent` for the **fixed** location first.
 2. Queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` into a single planning resolve state.
 3. `argsFromCard` / `locationIds` = city location names **excluding** the fixed one. Re-validate on `actFromCardWithIds`.
-4. Do **not** use `actCityLocationsForReknownSelected` / `numberOfCityLocationsSelectable = 2` — that helper assumes both picks are free and has no fixed destination. Confirm still goes through `onCityLocationsSelected` → default `actFromCardWithLocations` (no `PlayerActions.js` `actionMap` entry needed).
+4. Do **not** use `actCityLocationsForRenownSelected` / `numberOfCityLocationsSelectable = 2` — that helper assumes both picks are free and has no fixed destination. Confirm still goes through `onCityLocationsSelected` → default `actFromCardWithLocations` (no `PlayerActions.js` `actionMap` entry needed).
 5. JS: enter with `locationIds` from args + Confirm Location; leave `resetCityLocations`.
 
 Contrast Winter's Wind `_02046` (two sequential free picks, second optional Pass) and Blood Money `_04004` (two *fixed* Renown adds, no location pick for Renown).

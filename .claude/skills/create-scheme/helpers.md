@@ -37,7 +37,7 @@
 - **Mirror-match scheme challenge payoffs:** `CHALLENGE_TYPE` is table-global. Gate on **this scheme's owner controlling the challenger** (this action always issues as challenger). Destroy payoff is the **defender** only. Do **not** persist `$IssuedThisChallenge` — `EventActionResolved` `!IN_DUEL` in the challenge pipeline wipes it before `EventGenerateChallengeThreat`. Reference: `_04045`.
 - **En Garde on a scheme Action:** `!$Engaged` precondition, **not** an Engage cost. Custom `CHALLENGE_TYPE` off auto-engage and off Unsanctioned `stSetupChallenge` engage. Performer stays En Garde. Reference: `_04045`.
 - **"Gain a Renown"** with no location named is player score (`createPlayerGainsReknownEvent`), same family as "Spend a Renown" → `createPlayerLosesReknownEvent`.
-- **Two-location resolve JS:** faf/tac/_7s5s triple is not enough — `PlayerActions.js` `actionMap` must map `planningPhaseResolveSchemes_<NNNNN>` → `'actCityLocationsForReknownSelected'`. Without it Confirm falls through to `actFromCardWithLocations` and breaks.
+- **Two-location resolve JS:** faf/tac/_7s5s triple is not enough — `PlayerActions.js` `actionMap` must map `planningPhaseResolveSchemes_<NNNNN>` → `'actCityLocationsForRenownSelected'`. Without it Confirm falls through to `actFromCardWithLocations` and breaks.
 - **"Spend a Renown"** without a named location is always player score (`createPlayerLosesReknownEvent`), never a location token.
 - **"Unequipped"** = `count($character->Attachments) == 0` (not a trait). Re-check on trigger; JS can be ignored.
 - **Ability pressure must `createActionResolvedEvent` on failure** (and on success with no legal payoff). Hub auto-resolve is only for `highDramaBasicAction`. Mirror `Action_03040` / `Action_03cd20` / `Action_03054`, not the incomplete failure path on `Action_01105`.
@@ -48,7 +48,7 @@
 - **Direct `createCharacterDestroyedEvent`:** always `$character->unEquipAllAttachments($theah)` first — destroy recreates the card and skips auto-unequip (`Action_01018`, `Action_04005`).
 - **State classes reading hands:** use `$game->getGameDeckObject()`, not `$game->cards` (private on Game).
 - **Traits scaffolds invent:** `_04004` Assassination, `_04005` Purge — always check `TraitNames::$TraitsJson` before shipping.
-- **"Fixed location + another":** exclude the fixed name from `locationIds`; do not reach for `actCityLocationsForReknownSelected` (that is N free picks). Reference: `_04014`.
+- **"Fixed location + another":** exclude the fixed name from `locationIds`; do not reach for `actCityLocationsForRenownSelected` (that is N free picks). Reference: `_04014`.
 - **Temporary Finesse for "duration of the action":** stamp a named `Game::…_CONDITION` + Started/Ended notifs so the tooltip attributes the mod (Soline `_01089` / Harpoon). Clear on `EventActionResolved` gated `!IN_DUEL` — mid-duel ActionResolved must not wipe Finesse needed for gambling (`Action_04009`). Reference: `Reaction_04014` / `FORGED_FOR_BATTLE_CONDITION`.
 - **Continuous scheme Reaction:** unlabelled "you may" / "any number of times per day" → no runtime `setUsed(true)`; put `$this->setUsed(` in a comment for pre-commit. Reference: `Reaction_04014`.
 - **Engage Weapon/Armor pickers:** skip `$attachment->FakeAttachment` (Fate's Silence and siblings are not real gear).

@@ -56,15 +56,15 @@ return declare('seventhseacityoffivesails.actions', null, {
         }
 
         const actionMap = {
-            'planningPhaseResolveSchemes_01016': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01071': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_01098': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_03006': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_03017': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_03030': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_03053': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_04015': 'actCityLocationsForReknownSelected',
-            'planningPhaseResolveSchemes_04044': 'actCityLocationsForReknownSelected',
+            'planningPhaseResolveSchemes_01016': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_01071': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_01098': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_03006': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_03017': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_03030': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_03053': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_04015': 'actCityLocationsForRenownSelected',
+            'planningPhaseResolveSchemes_04044': 'actCityLocationsForRenownSelected',
             'highDramaMoveActionChooseLocation': 'actHighDramaMoveActionDestinationChosen',
         };
 

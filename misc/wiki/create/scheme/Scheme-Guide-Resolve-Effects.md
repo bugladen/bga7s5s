@@ -74,7 +74,7 @@ You will also need a GameState class + JS — see [[09 — Wiring|Scheme Guide W
 ### Two different city locations
 
 - JS: `numberOfCityLocationsSelectable = 2`.
-- Also map the state in `PlayerActions.js` `actionMap` → `'actCityLocationsForReknownSelected'`.
+- Also map the state in `PlayerActions.js` `actionMap` → `'actCityLocationsForRenownSelected'`.
 - Server validates distinctness.
 - Reference: `_03005`-era peers `_03006`, `_03030`, `_03053`.
 

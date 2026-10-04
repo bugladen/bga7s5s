@@ -125,7 +125,7 @@ Confirm → `onCityLocationsSelected()`. Leave → `resetCityLocations()`.
 **Two-location Renown resolve also needs** `PlayerActions.js` `actionMap`:
 
 ```js
-'planningPhaseResolveSchemes_<NNNNN>': 'actCityLocationsForReknownSelected',
+'planningPhaseResolveSchemes_<NNNNN>': 'actCityLocationsForRenownSelected',
 ```
 
 Without that map entry, Confirm falls through to the wrong action.

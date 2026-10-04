@@ -50,7 +50,7 @@ Card text:
 > **Diplomat City Action:** Engage your performer • Your **Duelist** at this location issues a [Combat] challenge to target opposing character. Only **Duelists** may intervene. If the challenge is accepted, add a threat to your participant.
 
 1. **Constructor.** `initializeFaction('Montaigne')`, `Initiative = 36`, `PanacheModifier = 0`, Traits = Oathsworn + Challenge. Register `IHasActions` + `ActionTrait` + `new Action_03030()`.
-2. **Resolve.** Same as `_03006`: `EventResolveScheme` notifies, then `createTransitionEvent($playerId, $this->Id, "03030")` with `MEDIUM_PRIORITY`. Planning state uses `actCityLocationsForReknownSelected` + `numberOfCityLocationsSelectable = 2` in JS. Transition key `"03030"` lives under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` — distinct from the HD action's `"03030"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` (same card number, different maps).
+2. **Resolve.** Same as `_03006`: `EventResolveScheme` notifies, then `createTransitionEvent($playerId, $this->Id, "03030")` with `MEDIUM_PRIORITY`. Planning state uses `actCityLocationsForRenownSelected` + `numberOfCityLocationsSelectable = 2` in JS. Transition key `"03030"` lives under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` — distinct from the HD action's `"03030"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS` (same card number, different maps).
 3. **Action class.** `Action_03030 extends SchemeCityAction implements IAbilityThatTargetsCharacters`. `RequiresPerformerSelected = true`.
 4. **`getPerformersForAction`.** Filter Diplomats who are `!Engaged`, have ≥1 eligible Duelist at their location (`hasTrait("Duelist") && canChallenge`), AND have ≥1 opposing character at that location. `isAvailableToPlayer` = `count(getPerformersForAction) > 0`.
 5. **`EventActionTriggered`.** Engage Diplomat → `CHOSEN_CARD = $diplomatId` → transition `"03030"`.
@@ -106,7 +106,7 @@ Card text:
 > **City Action:** Spend a Renown • Claim your performer's location. Each opponent draws a card.
 
 1. **Constructor.** `initializeFaction('Ussura')`, `Initiative = 49`, `PanacheModifier = 0`, Traits = Trade + Bureaucracy (verify spelling against art / `TraitNames` — scaffold had `Beauracracy`). Register `IHasActions` + `ActionTrait` + `new Action_03053()`.
-2. **Resolve.** Same as `_03006` / `_03030`: notify + `createTransitionEvent(..., "03053")` with `MEDIUM_PRIORITY`. State uses `actCityLocationsForReknownSelected` + `numberOfCityLocationsSelectable = 2`. Wire JS triple **and** `PlayerActions.js` `actionMap`.
+2. **Resolve.** Same as `_03006` / `_03030`: notify + `createTransitionEvent(..., "03053")` with `MEDIUM_PRIORITY`. State uses `actCityLocationsForRenownSelected` + `numberOfCityLocationsSelectable = 2`. Wire JS triple **and** `PlayerActions.js` `actionMap`.
 3. **State constant.** `PLANNING_PHASE_RESOLVE_SCHEMES_03053 = 2603053`. Transition `"03053"` under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` only — no HD map entry.
 4. **Action (Pattern H).** `SchemeCityAction`. No HD GameState. Gate score Renown + claimable city performers. On `EventActionTriggered`: `createPlayerLosesReknownEvent` → claim (or notify) → each opponent `createCardDrawnEvent` → `createActionResolvedEvent`.
 5. **Pre-commit.** `createActionResolvedEvent()` present. No `ISorcererAbility` / reaction hooks.
@@ -208,7 +208,7 @@ Card text:
 > *(Can be used any number of times per day, and once per challenge or intervention.)*
 
 1. **Constructor.** Eisen, Init 45 / Panache 0 (match art). Traits Zeal + Prepared (already in `TraitNames`). Register `IHasReactions` + `Reaction_04014`.
-2. **Resolve.** Queue Renown to Docks. `createTransitionEvent(..., "04014")` at `MEDIUM_PRIORITY` into one pick state. `locationIds` = city names **except** Docks. Do **not** use `actCityLocationsForReknownSelected`.
+2. **Resolve.** Queue Renown to Docks. `createTransitionEvent(..., "04014")` at `MEDIUM_PRIORITY` into one pick state. `locationIds` = city names **except** Docks. Do **not** use `actCityLocationsForRenownSelected`.
 3. **Planning state.** `PLANNING_PHASE_RESOLVE_SCHEMES_04014 = 2604014`. `actFromCardWithLocations` → scheme `actFromCardWithIds`. Single `""` transition back to EVENTS.
 4. **Reaction (Continuous).** Listen on `EventChallengeIssued` (your challenger) and `EventCharacterIntervened` (your intervener). Offer only if ≥1 unengaged non-Fake Weapon/Armor. Buttons per attachment + Pass. Engage + Finesse +1 + stamp `FORGED_FOR_BATTLE_CONDITION` (Soline Started/Ended notifs + JS constant). Track `$buffedCharacterId`.
 5. **Clear buff.** `EventActionResolved` when `!IN_DUEL` (WHY: mid-duel ActionResolved must not wipe gambling Finesse — `Action_04009`). Dusk safety. Destroy of buffed id drops tracker only.
@@ -226,7 +226,7 @@ Card text:
 > *(You must complete as much of an effect as possible.)*
 
 1. **Constructor.** Eisen, Init 4 / Panache +1 (match art). Traits Camaraderie + Duty (already in `TraitNames`). Register `IHasActions` + `Action_04015`.
-2. **Resolve.** Two-different-locations pick — `actCityLocationsForReknownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap** entry. Planning state `2604015`.
+2. **Resolve.** Two-different-locations pick — `actCityLocationsForRenownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap** entry. Planning state `2604015`.
 3. **Action base.** Printed keyword is **Action:** not City Action → `SchemeAction`, `RequiresPerformerSelected = false`. Do **not** extend `SchemeCityAction` (city-character availability gate).
 4. **Availability.** ≥1 controlled character whose `Name` is Kaspar or Daniella Dietrich **and** ≥1 city location with `Controller == 0`.
 5. **Name matching.** Kaspar exists as `_01035` and `_03014`; Daniella as `_01036` and `_03013`. Match `Name === clienttranslate('…')`, not CardNumber.
@@ -245,7 +245,7 @@ Card text:
 > **Leader Reaction:** When your performer issues a challenge • Their location becomes uncontrolled.
 
 1. **Constructor.** Ussura, Init 65 / Panache 0 (match art). Traits Brawl + Relentless. **Fix Name from art** — scaffold said "Shallow Harbor"; title band is Adrift in the Wind. Register `IHasReactions` + `Reaction_04044`.
-2. **Resolve.** Same as `_04015`: notify + `createTransitionEvent(..., "04044")` + `actCityLocationsForReknownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap**. Constant `2604044`.
+2. **Resolve.** Same as `_04015`: notify + `createTransitionEvent(..., "04044")` + `actCityLocationsForRenownSelected` + JS `numberOfCityLocationsSelectable = 2` + **`PlayerActions.js` actionMap**. Constant `2604044`.
 3. **Passive (on the scheme).** `isSchemeInPlay` = `LOCATION_PLAYER_HOME`. Uncontrolled = `locationInCity` + `Controller == 0` (Home never). Recompute on ResolveScheme (scheme already Home from Approach), Leader `EventCardMoved` (**`$event->toLocation`** — Location still old), Claim/Uncontrolled at Leader's location (hub-first — Controller already updated). Clear on scheme `EventCardSentToLocker`. `createCharacterFinesseModifedEvent` ±1 + `ADRIFT_IN_THE_WIND_CONDITION` + Started/Ended notifs (`hasCondition` idempotent). Wire `Game.php` / `seventhseacityoffivesails.js` / `Notifications.js`.
 4. **Reaction.** `EventChallengeIssued` + challenger owned + `hasTrait("Leader")` + `Controller != 0` + `canLocationBecomeUncontrolledBy`. Capture location; Use/Pass; Pass without `setUsed`. Resolve → `createLocationBecomesUncontrolledEvent`. Synergy with the passive is intentional.
 

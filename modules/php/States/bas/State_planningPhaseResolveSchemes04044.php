@@ -35,9 +35,9 @@ class State_planningPhaseResolveSchemes04044 extends GameState
     }
 
     #[PossibleAction]
-    public function actCityLocationsForReknownSelected(string $locations): void
+    public function actCityLocationsForRenownSelected(string $locations): void
     {
-        $this->game->actCityLocationsForReknownSelected($locations);
+        $this->game->actCityLocationsForRenownSelected($locations);
     }
 
     public function zombie(int $playerId): void

@@ -190,7 +190,7 @@ trait FrameworkActionsTrait
         $this->gamestate->setPlayerNonMultiactive($playerId, 'dayPlanned'); // deactivate player; if none left, transition to 'dayPlanned' state
     }
 
-    public function actCityLocationsForReknownSelected(string $locations)
+    public function actCityLocationsForRenownSelected(string $locations)
     {
         $locations = json_decode($locations, true);
 

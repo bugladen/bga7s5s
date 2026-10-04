@@ -7,7 +7,7 @@
 | `modules/php/cards/Scheme.php` | Base class. `$Initiative` + `$PanacheModifier`, `hasWhenRevealedEffect()` default. |
 | `modules/php/cards/_7s5s/_01044.php` (Armed and Marshaled) | **Resolve = Renown adds + pick attachment from discard.** Old inline-state pattern with `actFromCardWithId` / `actFromCardPass`. Plus a City Action. |
 | `modules/php/cards/_7s5s/_01045.php` (The Song of Eisen) | Pick a Mercenary from the **city** discard pile. Same inline-state pattern as `_01044`. |
-| `modules/php/cards/_7s5s/_01071.php` (Épée Sanglante) | Add Renown to a player-chosen city location. `actCityLocationsForReknownSelected`. |
+| `modules/php/cards/_7s5s/_01071.php` (Épée Sanglante) | Add Renown to a player-chosen city location. `actCityLocationsForRenownSelected`. |
 | `modules/php/cards/_7s5s/_01072.php` (Réputation Méritée) | Pick a location that has no Renown. Pass guard if no such location exists. |
 | `modules/php/cards/_7s5s/_01151.php` (Shifting Tides) | **When-Revealed effect** + **multi-player sequential loop.** First state is the owner's pick, second state is each opponent's pick queued per-player in turn order. |
 | `modules/php/cards/_7s5s/_01098.php` (The Cat's Embargo) | **Forced at Planning End** (opponent pick → random reveal) + two-location resolve. Canonical `EventPhasePlanningEnd` + `LOCATION_PLAYER_HOME` gate; transitions under `PLANNING_PHASE_END_EVENTS`. |
@@ -20,7 +20,7 @@
 | `modules/php/cards/tac/_02046.php` (Winter's Wind) | **New GameState-class pattern** for the resolve sub-state. Location picker. |
 | `modules/php/cards/tac/_02052.php` (Gutter Full of Roses) | **New GameState-class pattern** with a move-renown source pick. Plus a Forced ability on `EventCharacterDestroyed`. |
 | `modules/php/cards/faf/_03005.php` (No Mercy) | **Renown adds + trait-filtered discard pick + Reaction.** New GameState-class pattern. Reaction on `EventChallengeRejected` with captured location and `createLocationClaimedEvent`. |
-| `modules/php/cards/faf/_03006.php` (Premonition) | **Two-different-locations resolve via `actCityLocationsForReknownSelected` + multi-stage Strega Reaction.** Single state with `numberOfCityLocationsSelectable = 2`. Reaction is a trait-prefixed gate (Strega), NOT a Sorcerer ability. Multi-stage `$stage` flow: `'offer'` → `'pick1'` → `'pick2'` with cross-player `createReactionTransitionEvent` swapping active player from owner to triggering opponent. Listens to the full `IAbilityThatTargetsCharacters` event set. |
+| `modules/php/cards/faf/_03006.php` (Premonition) | **Two-different-locations resolve via `actCityLocationsForRenownSelected` + multi-stage Strega Reaction.** Single state with `numberOfCityLocationsSelectable = 2`. Reaction is a trait-prefixed gate (Strega), NOT a Sorcerer ability. Multi-stage `$stage` flow: `'offer'` → `'pick1'` → `'pick2'` with cross-player `createReactionTransitionEvent` swapping active player from owner to triggering opponent. Listens to the full `IAbilityThatTargetsCharacters` event set. |
 | `modules/php/cards/faf/_03017.php` (Noble Sacrifice) | **Two-different-locations resolve + after-your-character-destroyed Reaction.** Reaction listens on `EventCharacterDestroyed` gated by `locationInCity($destroyed->Location)` and friendly controller, captures `$location` + `$destroyedWasZealot` + `$destroyedName` because the destroyed character has been moved to the locker by the time the player clicks. Single button bundles all sub-effects (wound opposing chars at location + heal own chars at location + conditional draw) — no internal "may", so resolution is atomic. |
 | `modules/php/cards/faf/reactions/Reaction_03017.php` | Bundled-effect scheme Reaction. Snapshots destroy-time location and trait at trigger time, queries `getCharactersAtLocation` at resolve time (so movement between trigger and click is reflected). Pass does not consume `setUsed`. |
 | `modules/php/cards/faf/reactions/Reaction_03005.php` | Scheme reaction with `$location` capture, button-based Claim/Pass, `setUsed`/`isAvailable` discipline. |
@@ -78,7 +78,7 @@
 | `modules/php/cards/_7s5s/reactions/Reaction_01040.php` (Rena) | Character Continuous engage-Weapon-instead on intervene — sibling of `_04014` Continuous discipline. |
 | `modules/php/cards/bas/_04015.php` (Through Thick and Thin) | **Two-different-locations Renown resolve + Pattern M Scheme Action** (no performer): uncontrolled city → name-matched Kaspar/Daniella move+heal → optional available City Card discard. Initiative 4 / Panache +1 / Camaraderie+Duty verified against art. |
 | `modules/php/cards/bas/actions/Action_04015.php` | `SchemeAction`; Name match not CardNumber; `Controller == 0`; optional discard Pass; ActionResolved after discard/pass. |
-| `modules/php/States/bas/State_planningPhaseResolveSchemes04015.php` | Two-location planning resolve (`actCityLocationsForReknownSelected` — needs `PlayerActions.js` actionMap). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04015.php` | Two-location planning resolve (`actCityLocationsForRenownSelected` — needs `PlayerActions.js` actionMap). |
 | `modules/php/States/bas/State_highDramaPhase04015.php` | HD uncontrolled location pick (`locationChosen` + `zombie`). |
 | `modules/php/States/bas/State_highDramaPhase04015_2.php` | Optional discard + Pass (`cardDiscarded` / `pass` / `zombie`). |
 | `modules/php/cards/_7s5s/actions/Action_01112b.php` | Available City Card discard filter sibling (`ICityDeckCard` + uncontrolled + `canBeDiscardedFromCity`). |
@@ -108,7 +108,7 @@
 | `modules/php/cards/_7s5s/maneuvers/Maneuver_01110.php` | Wound vs location-uncontrolled button choice sibling. |
 | `modules/php/cards/bas/_04044.php` (Adrift in the Wind) | **Two-different-locations Renown + Leader-at-uncontrolled +1 Finesse passive + Leader Reaction (challenge → uncontrolled).** Scaffold name was "Shallow Harbor" — art is Adrift. Initiative 65 / Panache 0 / Brawl+Relentless. |
 | `modules/php/cards/bas/reactions/Reaction_04044.php` | Leader trait gate on `EventChallengeIssued`; `Controller != 0` + `canLocationBecomeUncontrolledBy`; Pass without `setUsed`. |
-| `modules/php/States/bas/State_planningPhaseResolveSchemes04044.php` | Two-location planning resolve (`actCityLocationsForReknownSelected` — needs `PlayerActions.js` actionMap). |
+| `modules/php/States/bas/State_planningPhaseResolveSchemes04044.php` | Two-location planning resolve (`actCityLocationsForRenownSelected` — needs `PlayerActions.js` actionMap). |
 | `modules/php/cards/bas/_04045.php` (Stand Your Ground) | **Docks-or-Bazaar Renown pick + En Garde Duelist unrefusable Combat challenge.** Init 81 / Panache -1 / Challenge+Relentless. Performer stays En Garde. |
 | `modules/php/cards/bas/actions/Action_04045.php` | `STAND_YOUR_GROUND_CHALLENGE_TYPE`; no engage; reject throw + JS disable; issuer = owner controls challenger (mirror match); `EventGenerateChallengeThreat` actorThreat; destroy-during-duel score Renown (issuer's defender only). |
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04045.php` | Planning Docks/Bazaar pick (`actFromCardWithLocations`). |

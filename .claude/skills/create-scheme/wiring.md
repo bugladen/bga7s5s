@@ -180,7 +180,7 @@ Reference: `_01044` (uses `card.type === 'Attachment'`), `_01045` (uses `card.tr
 For **"two different locations"** set `numberOfCityLocationsSelectable = 2` (same enter/leave/button shape). Also add to `PlayerActions.js` `actionMap`:
 
 ```js
-'planningPhaseResolveSchemes_<NNNNN>': 'actCityLocationsForReknownSelected',
+'planningPhaseResolveSchemes_<NNNNN>': 'actCityLocationsForRenownSelected',
 ```
 
 Buttons:

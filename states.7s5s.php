@@ -40,7 +40,7 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsEmpty",
         "possibleactions" => [
-            "actCityLocationsForReknownSelected", 
+            "actCityLocationsForRenownSelected", 
         ],
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_2]
     ],    
@@ -105,7 +105,7 @@ $machinestates += [
         "type" => "activeplayer",
         "args" => "argsEmpty",
         "possibleactions" => [
-            "actCityLocationsForReknownSelected", 
+            "actCityLocationsForRenownSelected", 
         ],
         "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
     ],
