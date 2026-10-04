@@ -20,6 +20,20 @@ class Action_03065 extends AttachmentAction
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
+        // WHY: Completed resolve always sinks Lodestone, so equipped+Used is only the
+        // faction-deck dusk-miss stale flag. Heal here (no setUsed/queue) so a copy
+        // already on the board becomes choosable this turn without waiting for dusk.
+        if ($this->Used)
+        {
+            $equippedOwner = $this->getOwningCharacter($theah);
+            $attachment = $this->getOwningAttachment($theah);
+            if ($equippedOwner !== null && $attachment !== null)
+            {
+                $this->Used = false;
+                $theah->game->updateCardObjectInDb($attachment);
+            }
+        }
+
         if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;

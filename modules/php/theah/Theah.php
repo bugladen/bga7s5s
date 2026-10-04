@@ -37,6 +37,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\GovernorsGardenAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\OlesInnAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -474,6 +475,16 @@ class Theah
                 $card->handleEvent($event);
             }
 
+            // WHY: Faction decks are deliberately omitted from buildCity() (locker-style:
+            // keep out-of-play piles out of the general handleEvent loop). CardAction /
+            // CardReaction reset Used on EventDuskEndOfDay, so a sunk card (Lodestone
+            // Action_03065, Action_04010, etc.) would keep Used=true forever and look
+            // "already used" when redrawn/re-equipped. Deliver dusk only to that pile.
+            if ($event instanceof EventDuskEndOfDay)
+            {
+                $this->deliverDuskEndOfDayToFactionDecks($event);
+            }
+
             //Run the event for theah actions
             foreach ($this->Actions as $action) 
                 $action->handleEvent($event);
@@ -588,6 +599,33 @@ class Theah
         if ($skipTransitions) return;
 
         $this->game->gamestate->nextState('endOfEvents');
+    }
+
+    // WHY: See runEvents EventDuskEndOfDay call site. Pin each deck card into the world
+    // before handleEvent so setUsed→getCardById persists the same instance (_04010
+    // faction-deck lesson), then remove it so later events in this run do not treat
+    // deck cards as in play.
+    private function deliverDuskEndOfDayToFactionDecks(EventDuskEndOfDay $event): void
+    {
+        $playerIds = $this->db->getPlayerIds();
+        foreach ($playerIds as $playerIdRow)
+        {
+            $playerId = (int)$playerIdRow['id'];
+            $deckName = $this->game->getPlayerFactionDeckName($playerId);
+            $deckCards = $this->db->getCardObjectsAtLocation($deckName);
+            foreach ($deckCards as $card)
+            {
+                $this->addCardToWorld($card);
+                $card->handleEvent($event);
+                unset($this->cards[$card->Id]);
+
+                if ($card->IsUpdated)
+                {
+                    $card->IsUpdated = false;
+                    $this->db->updateCardObject($card);
+                }
+            }
+        }
     }
 
     function getAdjacentCityLocations(string $location, bool $includeHome = true): array
