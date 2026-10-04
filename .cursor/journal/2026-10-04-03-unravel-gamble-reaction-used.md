@@ -50,8 +50,8 @@ Dusk `Used` + ends in Faction-*:
 Other sink-self:
 | Card | Why different / residual risk |
 |---|---|
-| **Dame of Swords `_02055` `Technique_02055`** | Sink self → Faction-*. Technique defaults `ResetOnDuelEnd=true`, `ResetOnDayEnd=false`. `EventDuelEnd` never reaches faction decks; **dusk pass does NOT clear Technique Used**. Re-equip → `mustBeAvailable` hides it forever. **Still broken** — needs duel-end→deck pass, ResetOnDayEnd, or Lodestone-style heal. |
-| Penya `_04cd01` `Action_04cd01b` | Sink self → **City** Deck (not faction) |
+| **Dame of Swords `_02055` `Technique_02055`** | Sink self → Faction-*. Technique defaults `ResetOnDuelEnd=true`, `ResetOnDayEnd=false`. `EventDuelEnd` never reaches faction decks; dusk pass does NOT clear Technique Used. **Fixed 2026-10-04:** soft-clear `Used` before sink; heal on `EventAttachmentEquipped` for already-stuck copies. WHY not isAvailableToPlayer heal: `getTechniquesArray(mustBeAvailable)` short-circuits on `isAvailable()` first. |
+| **Penya `_04cd01` `Action_04cd01b`** | Sink self → **City** Deck. Dusk pass is faction-only — City Deck never gets `EventDuskEndOfDay`. **Fixed 2026-10-04:** soft-clear `Used` before City Deck sink; Lodestone-style equipped+Used heal in `isAvailableToPlayer` (actions use that path — no Technique short-circuit); also heal on `EventAttachmentEquipped` as belt-and-suspenders. |
 | Locker unique spends | Self→Locker; Unique/gone |
 
 Dusk-Action/Reaction faction-deck cases: only Lodestone + Unravel (Action+Reaction). Dame is a Technique-Used variant of the same sink-to-deck hole.

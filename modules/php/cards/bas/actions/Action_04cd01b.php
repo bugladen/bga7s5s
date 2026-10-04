@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04cd01b extends AttachmentAction implements IAbilityThatTargetsCards
@@ -29,6 +30,20 @@ class Action_04cd01b extends AttachmentAction implements IAbilityThatTargetsCard
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
+        // WHY: Completed resolve always sinks Penya to City Deck, so equipped+Used is
+        // only the City-Deck dusk-miss stale flag (City Deck omitted from buildCity /
+        // deliverDuskEndOfDayToFactionDecks). Soft-clear so a re-equipped copy is choosable.
+        if ($this->Used)
+        {
+            $equippedOwner = $this->getOwningCharacter($theah);
+            $attachment = $this->getOwningAttachment($theah);
+            if ($equippedOwner !== null && $attachment !== null)
+            {
+                $this->Used = false;
+                $theah->game->updateCardObjectInDb($attachment);
+            }
+        }
+
         if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
         {
             return false;
@@ -86,6 +101,20 @@ class Action_04cd01b extends AttachmentAction implements IAbilityThatTargetsCard
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // WHY: Belt-and-suspenders with isAvailableToPlayer heal — clear stale Used when
+        // a City-Deck copy is re-equipped so the flag is clean before the action list builds.
+        if ($event instanceof EventAttachmentEquipped
+            && $event->attachmentId == $this->OwnerId
+            && $this->Used)
+        {
+            $this->Used = false;
+            $attachment = $this->getOwningAttachment($event->theah);
+            if ($attachment !== null)
+            {
+                $attachment->IsUpdated = true;
+            }
+        }
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
@@ -204,6 +233,12 @@ class Action_04cd01b extends AttachmentAction implements IAbilityThatTargetsCard
             // of opponent/risk selection without losing the attachment.
             if ($attachment instanceof Attachment && $attachment->isAttached() && $character !== null)
             {
+                // WHY: CardAction Used clears on EventDuskEndOfDay, which never reaches
+                // City Deck (omitted from buildCity / faction-deck dusk pass). Soft-clear
+                // before sink so a later muster/equip is not stuck Used.
+                $this->Used = false;
+                $attachment->IsUpdated = true;
+
                 $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
                     $controllerId,
                     $character->Id,

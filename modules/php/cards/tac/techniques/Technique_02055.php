@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -104,6 +105,22 @@ class Technique_02055 extends Technique
     {
         parent::handleEvent($event);
 
+        // WHY: Heal stuck Used on re-equip. getTechniquesArray(mustBeAvailable) checks
+        // isAvailable() before isAvailableToPlayer (short-circuit), so an availability
+        // heal there never runs. Completed Dame resolve always sinks — equipped+Used
+        // can only be the Faction-* DuelEnd-miss leftover.
+        if ($event instanceof EventAttachmentEquipped
+            && $event->attachmentId == $this->OwnerId
+            && $this->Used)
+        {
+            $this->Used = false;
+            $owner = $this->getOwningCard($event->theah);
+            if ($owner !== null)
+            {
+                $owner->IsUpdated = true;
+            }
+        }
+
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
@@ -170,6 +187,13 @@ class Technique_02055 extends Technique
             $character = $this->getOwningCharacter($game->theah);
             if ($character)
             {
+                // WHY: Technique Used clears on EventDuelEnd (ResetOnDayEnd=false).
+                // Faction decks are omitted from buildCity(), so DuelEnd never reaches
+                // a sunk Dame — Used would stick on redraw/re-equip. Soft-clear before
+                // sink (no setUsed/TechniqueUsed queue) so the deck copy is clean.
+                $this->Used = false;
+                $owner->IsUpdated = true;
+
                 $unequipEvent = EventFactory::createAttachmentUnequippedEvent($owner->ControllerId, $character->Id, $owner->Id);
                 $game->theah->queueEvent($unequipEvent);
 
