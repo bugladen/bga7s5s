@@ -84,6 +84,7 @@ class Game extends \Bga\GameFramework\Table
         8 => 'Angeline Dèmone',
         9 => 'Sanjay',
         10 => 'Ekaterina Ilyanava',
+        11 => 'Valeri Mikhailov',
     ];
 
     //Card locations
