@@ -37,6 +37,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\GovernorsGardenAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\OlesInnAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Theah
@@ -288,6 +289,110 @@ class Theah
             }
         }
         return isset($this->zombiePlayerIds[$playerId]);
+    }
+
+    /**
+     * Dry-run EventGenerateChallengeThreat for Accept UI.
+     * WHY: Technique (and scheme/risk challenge modifiers) add threat only on that
+     * event, which fires after Accept. Preview walks the same handlers with
+     * $event->preview so side effects (destroy, choosers, globals) stay off.
+     *
+     * @return array{actorThreat: int, adversaryThreat: int, adversaryThreatIsLethal: bool}
+     */
+    public function previewChallengeThreat(int $actorId, int $adversaryId, string $techniqueId, string $statUsed): array
+    {
+        $this->buildCity();
+
+        $event = new EventGenerateChallengeThreat();
+        $event->theah = $this;
+        $event->actorId = $actorId;
+        $event->adversaryId = $adversaryId;
+        $event->techniqueId = $techniqueId;
+        $event->statUsed = $statUsed;
+        $event->preview = true;
+
+        foreach ($this->cards as $card) {
+            if ($card->ControllerId !== 0 && $this->isPlayerZombie($card->ControllerId)) {
+                continue;
+            }
+            if ($card instanceof Character && $card->abilitiesAreBlanked()) {
+                $card->handleCoreCharacterEvent($event);
+                continue;
+            }
+            $card->handleEvent($event);
+        }
+
+        foreach ($this->Actions as $action) {
+            $action->handleEvent($event);
+        }
+        foreach ($this->Reactions as $reaction) {
+            $reaction->handleEvent($event);
+        }
+
+        $this->applyAbsentActorBaseChallengeThreat($event);
+
+        // WHY: Handlers must not persist IsUpdated during preview; clear any dirtied flags.
+        foreach ($this->cards as $card) {
+            $card->IsUpdated = false;
+        }
+
+        return [
+            'actorThreat' => $event->actorThreat,
+            'adversaryThreat' => $event->adversaryThreat,
+            'adversaryThreatIsLethal' => $event->adversaryThreatIsLethal,
+        ];
+    }
+
+    // WHY: Locker is not in buildCity. Stiletto-killed challenger never ran
+    // Character::handleCoreCharacterEvent — apply ChallengeIssued snapshot here.
+    public function applyAbsentActorBaseChallengeThreat(EventGenerateChallengeThreat $event): void
+    {
+        if ($event->skipBaseStatThreat || array_key_exists($event->actorId, $this->cards))
+        {
+            return;
+        }
+
+        $statSource = $this->game->getChallengeLastKnownCharacter($event->actorId);
+        if ($statSource === null)
+        {
+            $fromDb = $this->getCardById($event->actorId);
+            if ($fromDb instanceof Character)
+            {
+                $statSource = $fromDb;
+            }
+        }
+        if ($statSource === null)
+        {
+            return;
+        }
+
+        switch ($event->statUsed)
+        {
+            case Game::STAT_COMBAT:
+                $event->adversaryThreat += $statSource->ModifiedCombat;
+                $event->explanations[] = sprintf(
+                    $this->game->translate("%s adds %d Threat from their Combat Stat."),
+                    $statSource->Name,
+                    $statSource->ModifiedCombat
+                );
+                break;
+            case Game::STAT_FINESSE:
+                $event->adversaryThreat += $statSource->ModifiedFinesse;
+                $event->explanations[] = sprintf(
+                    $this->game->translate("%s adds %d Threat from their Finesse Stat."),
+                    $statSource->Name,
+                    $statSource->ModifiedFinesse
+                );
+                break;
+            case Game::STAT_INFLUENCE:
+                $event->adversaryThreat += $statSource->ModifiedInfluence;
+                $event->explanations[] = sprintf(
+                    $this->game->translate("%s adds %d Threat from their Influence Stat."),
+                    $statSource->Name,
+                    $statSource->ModifiedInfluence
+                );
+                break;
+        }
     }
 
     public function queueEvent(Event $event)

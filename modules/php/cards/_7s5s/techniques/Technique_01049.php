@@ -43,6 +43,8 @@ class Technique_01049 extends Technique implements IRangedAbility
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             // WHY: printed cost is "Engage this card • Gain Lethal". Effects-only copies
@@ -60,9 +62,13 @@ class Technique_01049 extends Technique implements IRangedAbility
         {
             $event->adversaryThreatIsLethal = true;
 
-            $owner = $this->getOwningCard($event->theah);
-            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $event->actorId);
-            $event->theah->queueEvent($rangedAbilityPlayedEvent);
+            // WHY: Accept preview needs Lethal flag only — do not queue RangedAbilityPlayed.
+            if (! $event->preview)
+            {
+                $owner = $this->getOwningCard($event->theah);
+                $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $event->actorId);
+                $event->theah->queueEvent($rangedAbilityPlayedEvent);
+            }
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)

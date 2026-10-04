@@ -127,7 +127,7 @@ class Technique_01090 extends Technique
             // WHY: GENERATE_THREAT also runs on Refuse (wound threat). Intervene sets
             // CHALLENGE_ACCEPTED without EventChallengeAccepted. Gate so Refuse never
             // reveals; Accept/Intervene get the reveal from GENERATE_THREAT_EVENTS.
-            if ($event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            if (! $event->preview && $event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
             {
                 $actor = $this->getActor($event->theah, $event->actorId);
                 $adversary = $this->getAdversary($event->theah, $event->adversaryId);

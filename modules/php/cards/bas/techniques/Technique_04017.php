@@ -118,7 +118,8 @@ class Technique_04017 extends Technique implements IRangedAbility
             // WHY: GENERATE_THREAT runs after Accept, Intervene, and Reject. Intervene does
             // not fire EventChallengeAccepted but sets CHALLENGE_ACCEPTED. Gate discard on
             // that flag so Refuse never prompts. AdversaryId is CHOSEN_TARGET post-Intervene.
-            if ($event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            // WHY !preview: Accept args dry-run must not queue discard / RangedAbilityPlayed.
+            if (! $event->preview && $event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
             {
                 $attachment = $this->getOwningCard($event->theah);
                 $owner = $this->getOwningCharacter($event->theah);
@@ -134,17 +135,20 @@ class Technique_04017 extends Technique implements IRangedAbility
                 }
             }
 
-            $owner = $this->getOwningCard($event->theah);
-            if ($owner !== null)
+            if (! $event->preview)
             {
-                $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent(
-                    $owner->ControllerId,
-                    $owner->Id,
-                    $this->Id,
-                    $event->actorId,
-                    $event->adversaryId
-                );
-                $event->theah->queueEvent($rangedAbilityPlayedEvent);
+                $owner = $this->getOwningCard($event->theah);
+                if ($owner !== null)
+                {
+                    $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent(
+                        $owner->ControllerId,
+                        $owner->Id,
+                        $this->Id,
+                        $event->actorId,
+                        $event->adversaryId
+                    );
+                    $event->theah->queueEvent($rangedAbilityPlayedEvent);
+                }
             }
         }
 

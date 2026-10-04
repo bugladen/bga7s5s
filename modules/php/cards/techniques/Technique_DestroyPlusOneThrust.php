@@ -63,7 +63,11 @@ class Technique_DestroyPlusOneThrust extends Technique
             // math). The old code always did getOwningCharacter()->Id with no attach
             // guard — unlike the duel branch — so an unattached owner (or a Character
             // copy with no attached host) fataled here on zombie refuse.
-            $this->queueDestroyOwner($event->theah, $owner);
+            // WHY skip destroy on preview: Accept args dry-run must not queue unequip/discard.
+            if (! $event->preview)
+            {
+                $this->queueDestroyOwner($event->theah, $owner);
+            }
         }
     }
 

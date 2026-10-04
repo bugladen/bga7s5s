@@ -17,6 +17,9 @@ class EventGenerateChallengeThreat extends Event
     // WHY: Katain re-queues this event for a copied Technique's effects only —
     // base challenge-stat threat is already in the seeded totals.
     public bool $skipBaseStatThreat;
+    // WHY: Accept-Challenge args dry-run — handlers must mutate only event threat
+    // fields (no queueEvent / globals / IsUpdated). EventHub after-handler skipped.
+    public bool $preview;
 
     public function __construct()
     {
@@ -31,6 +34,7 @@ class EventGenerateChallengeThreat extends Event
         $this->explanations = [];
         $this->statUsed = Game::STAT_COMBAT;
         $this->skipBaseStatThreat = false;
+        $this->preview = false;
         $this->runEventHubAfterCards = true;
     }
  

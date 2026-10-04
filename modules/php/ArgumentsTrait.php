@@ -726,26 +726,17 @@ trait ArgumentsTrait
         }
 
         $challengeStat = $this->globals->get(Game::CHALLENGE_STAT);
-        // WHY: Stiletto can destroy the challenger before Accept — preview must use
-        // ChallengeIssued snapshot, not recreated printed Modified*.
-        $threatSource = $performer;
-        if ($performer !== null && $this->characterIsInDiscardOrLocker($performer))
-        {
-            $lastKnown = $this->getChallengeLastKnownCharacter($performerId);
-            if ($lastKnown !== null)
-            {
-                $threatSource = $lastKnown;
-            }
-        }
-        $defenderThreat = 0;
-        if ($threatSource !== null)
-        {
-            $defenderThreat = match ($challengeStat) {
-                Game::STAT_FINESSE => $threatSource->ModifiedFinesse,
-                Game::STAT_INFLUENCE => $threatSource->ModifiedInfluence,
-                default => $threatSource->ModifiedCombat,
-            };
-        }
+        // WHY: Dry-run GenerateChallengeThreat (preview) so Technique +1 Thrust / Lethal
+        // / scheme challenge modifiers appear in the Accept status bar. Handlers skip
+        // side effects when preview=true; locker-challenger base Threat is included.
+        $techniqueId = (string) $this->globals->get(Game::CHOSEN_TECHNIQUE, '');
+        $threatPreview = $this->theah->previewChallengeThreat(
+            (int) $performerId,
+            (int) $targetId,
+            $techniqueId,
+            (string) $challengeStat
+        );
+        $defenderThreat = $threatPreview['adversaryThreat'];
 
         // WHY: Use challenge city site (set in stSetupChallenge before Stiletto), not
         // $target->Location — a destroyed challenged character is in Locker-*.

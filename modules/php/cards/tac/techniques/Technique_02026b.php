@@ -114,7 +114,7 @@ class Technique_02026b extends Technique
             // WHY: GENERATE_THREAT also runs on Refuse (to apply wound threat). Intervene
             // sets CHALLENGE_ACCEPTED without EventChallengeAccepted. Gate here so Refuse
             // never prompts; Accept/Intervene get the chooser from GENERATE_THREAT_EVENTS.
-            if ($event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            if (! $event->preview && $event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
             {
                 $this->queueAttachmentChooser($event->theah);
             }

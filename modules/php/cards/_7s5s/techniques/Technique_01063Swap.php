@@ -77,13 +77,21 @@ class Technique_01063Swap extends Technique
             $game = $event->theah->game;
 
             $newChallenger = $game->theah->getCharacterById($this->swapId);
-            $game->globals->set(Game::CHOSEN_PERFORMER, $newChallenger->Id);
 
             // WHY: Redirect the event's actor to the swapped character so that
             // Character::handleEvent (which adds the actor's stat to adversaryThreat
             // when actorId matches) and the EventHub threat notification both use
             // the new challenger instead of the original challenger.
             $event->actorId = $newChallenger->Id;
+
+            // WHY: Accept preview only needs actorId for threat math — do not touch
+            // CHOSEN_PERFORMER / conditions / ChallengerSwapped.
+            if ($event->preview)
+            {
+                return;
+            }
+
+            $game->globals->set(Game::CHOSEN_PERFORMER, $newChallenger->Id);
 
             // WHY: GENERATE_THREAT runs on rejection too (to wound the target via
             // CHALLENGER_THREAT). Without this guard the swap re-adds DUEL_CHALLENGER

@@ -24,7 +24,7 @@ class Technique_01157 extends Technique_DestroyPlusOneThrust implements IRangedA
             $event->theah->queueEvent($rangedAbilityPlayedEvent);
         }
 
-        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id && ! $event->preview)
         {
             $owner = $this->getOwningCard($event->theah);
             $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $event->actorId);

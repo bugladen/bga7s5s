@@ -1461,53 +1461,9 @@ trait EventHub
             case $event instanceof EventGenerateChallengeThreat:
                 $handler = function ($theah, EventGenerateChallengeThreat $event)
                 {
-                    // WHY: Locker is not in buildCity. A Stiletto-killed challenger is absent
-                    // from $theah->cards, so Character::handleEvent never added base Threat —
-                    // apply ChallengeIssued snapshot here (same logic as Character.php).
-                    // skipBaseStatThreat: Katain effects-only copy re-queues this event with
-                    // totals already seeded — do not stack a second base-stat add.
-                    if (! $event->skipBaseStatThreat && ! array_key_exists($event->actorId, $theah->cards))
-                    {
-                        $statSource = $theah->game->getChallengeLastKnownCharacter($event->actorId);
-                        if ($statSource === null)
-                        {
-                            $fromDb = $theah->getCardById($event->actorId);
-                            if ($fromDb instanceof Character)
-                            {
-                                $statSource = $fromDb;
-                            }
-                        }
-                        if ($statSource !== null)
-                        {
-                            switch ($event->statUsed)
-                            {
-                                case Game::STAT_COMBAT:
-                                    $event->adversaryThreat += $statSource->ModifiedCombat;
-                                    $event->explanations[] = sprintf(
-                                        $theah->game->translate("%s adds %d Threat from their Combat Stat."),
-                                        $statSource->Name,
-                                        $statSource->ModifiedCombat
-                                    );
-                                    break;
-                                case Game::STAT_FINESSE:
-                                    $event->adversaryThreat += $statSource->ModifiedFinesse;
-                                    $event->explanations[] = sprintf(
-                                        $theah->game->translate("%s adds %d Threat from their Finesse Stat."),
-                                        $statSource->Name,
-                                        $statSource->ModifiedFinesse
-                                    );
-                                    break;
-                                case Game::STAT_INFLUENCE:
-                                    $event->adversaryThreat += $statSource->ModifiedInfluence;
-                                    $event->explanations[] = sprintf(
-                                        $theah->game->translate("%s adds %d Threat from their Influence Stat."),
-                                        $statSource->Name,
-                                        $statSource->ModifiedInfluence
-                                    );
-                                    break;
-                            }
-                        }
-                    }
+                    // WHY: Shared with Accept UI preview — locker challenger base Threat.
+                    // skipBaseStatThreat: Katain effects-only copy already seeded totals.
+                    $theah->applyAbsentActorBaseChallengeThreat($event);
 
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
