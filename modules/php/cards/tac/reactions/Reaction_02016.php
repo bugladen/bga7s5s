@@ -40,6 +40,18 @@ class Reaction_02016 extends AttachmentReaction
         $this->Name = clienttranslate("Redirect Targeted Ability to Performer at Location");
     }
 
+    // WHY: Same as Vittoria Reaction_01014 / UL / Maryam — batched follow-ups from
+    // EventCharacterTargeted (CAD Valeri move+"05DabneyUS01_2") must be stripped on
+    // cancel or Decline re-queues a second package and GS1s at technique activate.
+    private function cancelHeldEvent(Event $event): void
+    {
+        $event->canceled = true;
+        if ($event->batchId)
+        {
+            $event->theah->deleteEventBatch($event->batchId);
+        }
+    }
+
     public function getReactionDescription(Theah $theah): string
     {
         return parent::getReactionDescription($theah) . $theah->game->translate('${you} may wound your performer to become the new target: ');
@@ -139,7 +151,7 @@ class Reaction_02016 extends AttachmentReaction
                 unset($this->engagedEvent->theah);
                 $this->targetCharacterId = $event->cardId;
                 $owner->IsUpdated = true;
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransitionEvent);
@@ -162,7 +174,7 @@ class Reaction_02016 extends AttachmentReaction
                 unset($this->engardedEvent->theah);
                 $this->targetCharacterId = $event->cardId;
                 $owner->IsUpdated = true;
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransitionEvent);
@@ -185,7 +197,7 @@ class Reaction_02016 extends AttachmentReaction
                 unset($this->cardMovingEvent->theah);
                 $this->targetCharacterId = $event->cardId;
                 $owner->IsUpdated = true;
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransitionEvent);
@@ -209,7 +221,7 @@ class Reaction_02016 extends AttachmentReaction
                 unset($this->characterWoundedEvent->theah);
                 $this->targetCharacterId = $event->characterId;
                 $owner->IsUpdated = true;
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransitionEvent);
@@ -232,7 +244,7 @@ class Reaction_02016 extends AttachmentReaction
                 unset($this->characterTargetedEvent->theah);
                 $this->targetCharacterId = $event->targetId;
                 $owner->IsUpdated = true;
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransitionEvent);
@@ -255,7 +267,7 @@ class Reaction_02016 extends AttachmentReaction
                 unset($this->characterHealedEvent->theah);
                 $this->targetCharacterId = $event->characterId;
                 $owner->IsUpdated = true;
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransitionEvent);
@@ -296,7 +308,7 @@ class Reaction_02016 extends AttachmentReaction
                 $this->isChallenger = $participant->Id == $event->challengerId;
                 $this->targetCharacterId = $participant->Id;
                 $owner->IsUpdated = true;
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -335,7 +347,7 @@ class Reaction_02016 extends AttachmentReaction
                 $this->targetCharacterId = $newTarget->Id;
                 $owner->IsUpdated = true;
 
-                $event->canceled = true;
+                $this->cancelHeldEvent($event);
 
                 $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($reactionTransitionEvent);

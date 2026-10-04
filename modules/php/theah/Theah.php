@@ -1806,6 +1806,11 @@ class Theah
         $this->db->deleteEventBatch($batchId);
     }
 
+    public function deleteQueuedTransitionsNamed(string $transitionName): void
+    {
+        $this->db->deleteQueuedTransitionsNamed($transitionName);
+    }
+
     public function deleteRenownAddedToLocationEventsByBatchId(int $batchId)
     {
         $this->db->deleteRenownAddedToLocationEventsByBatchId($batchId);

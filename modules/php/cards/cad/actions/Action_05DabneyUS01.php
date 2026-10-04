@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -67,12 +68,12 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             $event->theah->queueEvent($transition);
         }
 
-        // WHY: Come Hither (01162) pattern — gate move+challenge on EventCharacterTargeted
-        // surviving. Vittoria / Unyielding Loyalty / Maryam cancel during targeting; queuing
-        // move beside the targeting event lets the challenge proceed before the reaction
-        // resolves (journal 2026-09-13-12). Also fires "when targeted" *before* technique
-        // activation overwrites TRANSITION_INTERNAL_ID (Premonition journal 2026-09-05-07),
-        // so Vittoria can react with a Thug still in hand at pick time.
+        // WHY: Come Hither (01162) / Amour (01104) pattern — gate move on
+        // EventCharacterTargeted surviving. Challenge transition waits for EventCardMoved
+        // (below) so a re-delivered targeting event cannot stack a second hub-exit
+        // "05DabneyUS01_2" beside an unconsumed first one. Also fires "when targeted"
+        // *before* technique activation overwrites TRANSITION_INTERNAL_ID (Premonition
+        // journal 2026-09-05-07), so Vittoria can react with a Thug still in hand.
         if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
         {
             $game = $event->theah->game;
@@ -91,6 +92,12 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             // STAND_YOUR_GROUND (scheme-owned). Keep OFF stIssueChallenge auto-engage list (no Engage printed).
             $game->globals->set(Game::CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE);
 
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            // WHY: Decline/Pass re-delivers targeting — strip prior move/transition emit first.
+            $event->theah->deleteEventBatch($batchId);
+            $event->theah->deleteQueuedTransitionsNamed("05DabneyUS01_2");
+
             // WHY: Engage not printed — move without engaging (contrast base Valeri 01123 engage=true).
             $moveEvent = EventFactory::createCardMovingEvent(
                 $owner->ControllerId,
@@ -101,9 +108,23 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
                 $owner->Id,
                 $this->Id
             );
+            $moveEvent->batchId = $batchId;
             $event->theah->eventCheck($moveEvent);
             $event->theah->queueEvent($moveEvent);
+        }
 
+        // WHY: Hub-exit after the move actually lands — not beside EventCharacterTargeted.
+        // Queuing "05DabneyUS01_2" in the targeting handler left a duplicate in the events
+        // table through ACTIVATE_TECHNIQUE; stIssueChallenge then entered 4530 and GS1'd.
+        if ($event instanceof EventCardMoved && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner == null || $event->cardId != $owner->Id)
+            {
+                return;
+            }
+
+            $event->theah->deleteQueuedTransitionsNamed("05DabneyUS01_2");
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05DabneyUS01_2", $this->Id);
             $event->theah->queueEvent($transition);
         }
@@ -177,7 +198,11 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
 
             // WHY: Fire targeting alone here. Move + challenge transition are queued from
             // handleEvent only when EventCharacterTargeted is not canceled (see above).
+            // batchId: UL / Maryam / Vittoria deleteEventBatch on cancel so Pass/Decline
+            // re-emit is clean (Amour Action_01104 / Giacinto Action_01205).
+            $batchId = $game->getNextEventBatchId();
             $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $batchId;
             $game->theah->queueEvent($targetedEvent);
 
             // createActionResolvedEvent() is queued by the challenge resolution flow.

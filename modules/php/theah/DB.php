@@ -195,6 +195,19 @@ class DB
         $this->executeSql($sql);
     }
 
+    // WHY: Hub-exit transitions (e.g. CAD Valeri "05DabneyUS01_2") can be orphaned
+    // when EventCharacterTargeted is re-delivered. Match value form like reaction
+    // lookups (`s:N:"name"`), not the property key — serialize is s:10:"transition";s:N:"…".
+    public function deleteQueuedTransitionsNamed(string $transitionName): void
+    {
+        $escaped = addslashes($transitionName);
+        $len = strlen($transitionName);
+        $sql = "DELETE FROM events
+                WHERE event_serialized LIKE '%EventTransition%'
+                  AND event_serialized LIKE '%s:{$len}:\"{$escaped}\"%'";
+        $this->executeSql($sql);
+    }
+
     public function deleteRenownAddedToLocationEventsByBatchId(int $batchId)
     {
         $sql = "DELETE FROM events

@@ -95,6 +95,21 @@ class Reaction_01014 extends CardReaction
         return $array;
     }
 
+    // WHY: Match Unyielding Loyalty / Maryam — abilities that gate effects on
+    // EventCharacterTargeted (Amour, Giacinto, CAD Valeri) stamp batchId on the
+    // targeting event and its follow-up move/transition. Without deleteEventBatch,
+    // Decline/redirect re-queues the held event and the Action emits a second
+    // package while the first "…_2" transition still sits in the queue → GS1 at
+    // ACTIVATE_TECHNIQUE_EVENTS (4530) for Dabney's challenge Technique pick.
+    private function cancelHeldEvent(Event $event): void
+    {
+        $event->canceled = true;
+        if ($event->batchId)
+        {
+            $event->theah->deleteEventBatch($event->batchId);
+        }
+    }
+
     private function shouldReactToEvent(Theah $theah, int $sourceId, string $abilityId): bool{
         $source = $theah->getCardById($sourceId);
         if ($source)
@@ -182,7 +197,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;                    
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -194,7 +209,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;                        
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -222,7 +237,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;                    
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -234,7 +249,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;                        
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -262,7 +277,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;                    
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -274,7 +289,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;                        
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -303,7 +318,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;                    
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -315,7 +330,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;                        
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -344,7 +359,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;                    
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -356,7 +371,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;                        
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -384,7 +399,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -396,7 +411,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -431,7 +446,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;                    
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
                     if ($owner->Id == $event->challengerId)
                     {
                         $this->isChallenger = true;
@@ -447,7 +462,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;                        
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
                     if ($owner->Id == $event->challengerId)
                     {
                         $this->isChallenger = true;
@@ -478,7 +493,7 @@ class Reaction_01014 extends CardReaction
                     $this->inHandThug = true;                    
                     $owner->IsUpdated = true;
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);
@@ -490,7 +505,7 @@ class Reaction_01014 extends CardReaction
                     $this->inPlayThug = true;
                     $owner->IsUpdated = true;                        
 
-                    $event->canceled = true;
+                    $this->cancelHeldEvent($event);
 
                     $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionTransitionEvent);

@@ -88,6 +88,14 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("You cannot go back after engaging an attachment."));
         }
 
+        // WHY: CAD Valeri (Action_05DabneyUS01) already moved before technique pick.
+        // Back → CHOOSE_TARGET is the generic adjacent-target UI and can stick the game.
+        if ($stateName === "highDramaChallengeActionActivateTechnique"
+            && $this->globals->get(Game::CHALLENGE_TYPE) == Game::VALERI_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("You cannot go back after moving to issue this Challenge."));
+        }
+
         $this->gamestate->nextState("back");
     }
 

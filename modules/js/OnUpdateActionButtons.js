@@ -280,9 +280,13 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaChallengeActionActivateTechnique': () => {
+            // WHY: CAD Valeri already moved to the target's location before this picker.
+            // Back → CHOOSE_TARGET uses adjacent checks / generic target UI and can stick
+            // the game (same class as Servo / Andriana / Wilhelm move-then-challenge).
             if (args.challengeType != this.SERVO_SCARPA_CHALLENGE_TYPE && 
                 args.challengeType != this.ANDRIANA_DONDOLOS_CHALLENGE_TYPE &&
-                args.challengeType != this.WILHELM_DUNST_CHALLENGE_TYPE)
+                args.challengeType != this.WILHELM_DUNST_CHALLENGE_TYPE &&
+                args.challengeType != this.VALERI_CHALLENGE_TYPE)
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
 
             args.techniques.forEach((technique) => { 

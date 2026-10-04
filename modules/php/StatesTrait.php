@@ -792,6 +792,13 @@ trait StatesTrait
 
     public function stIssueChallenge()
     {
+        // WHY: Action_05DabneyUS01 queues hub-exit "05DabneyUS01_2" from player-turn
+        // events to reach TECHNIQUE_AVAILABLE. A duplicate can remain in the events
+        // table while the player is on ACTIVATE_TECHNIQUE; activate/pass then enters
+        // ACTIVATE_TECHNIQUE_EVENTS / SETUP_CHALLENGE_EVENTS and GS1s. Every challenge
+        // path calls this before those hubs — strip the orphan here.
+        $this->theah->deleteQueuedTransitionsNamed("05DabneyUS01_2");
+
         $playerId = $this->globals->get(GAME::CURRENT_PLAYER);
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
