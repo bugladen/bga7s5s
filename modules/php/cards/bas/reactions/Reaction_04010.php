@@ -23,7 +23,7 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventDuelGambleCardsRevealed && $this->isAvailable())
+        if ($event instanceof EventDuelGambleCardsRevealed)
         {
             $owner = $this->getOwningCard($event->theah);
             if ($owner === null)
@@ -37,8 +37,27 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
                 return;
             }
 
+            // WHY: Same dusk-miss class as Lodestone Action_03065 / deliverDuskEndOfDayToFactionDecks.
+            // A prior Use left Used=true while the card stayed in Faction-* (peek/sink), and
+            // faction decks never saw EventDuskEndOfDay until the deck dusk pass. Being among
+            // revealedCardIds now means we're on the deck edge — heal so Cesca (or any Sorcerer)
+            // can be offered Use/Pass. Same-day re-offer needs empty-deck reshuffle (rare).
+            if ($this->Used)
+            {
+                $this->Used = false;
+                $owner->IsUpdated = true;
+            }
+
+            if (! $this->isAvailable())
+            {
+                return;
+            }
+
             $actor = $event->theah->getCharacterById($event->actorId);
-            if ($actor === null || $actor->ControllerId != $owner->ControllerId)
+            // WHY OwnerId fallback: deck Risks sometimes keep ControllerId=0 while OwnerId
+            // is the faction owner; "your performer" is ownership, not in-play control.
+            $ownerPlayerId = $owner->ControllerId ?: $owner->OwnerId;
+            if ($actor === null || $actor->ControllerId != $ownerPlayerId)
             {
                 return;
             }
@@ -53,7 +72,7 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
             // reactions run first; then this state shows the revealed cards in chooseList
             // BEFORE Use/Pass so the player can see Unravel among them.
             $transition = EventFactory::createTransitionEvent(
-                $owner->ControllerId,
+                $ownerPlayerId,
                 $owner->Id,
                 "04010",
                 $this->Id
@@ -137,8 +156,10 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
             return;
         }
 
+        $ownerPlayerId = $owner->ControllerId ?: $owner->OwnerId;
+
         $sorceryStart = EventFactory::createSorcererAbilityStartEvent(
-            $owner->ControllerId,
+            $ownerPlayerId,
             $owner->Id,
             $this->Id,
             $actor->Id
@@ -174,7 +195,7 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
             {
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} reveals ${count} additional card(s) equal to ${performer_inject_code}\'s [Influence].'), [
                     "reaction_inject_code" => $owner->getInjectCode(),
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "player_name" => $game->getPlayerNameById($ownerPlayerId),
                     "count" => count($additionalIds),
                     "performer_inject_code" => $actor->getInjectCode(),
                 ]);
@@ -192,21 +213,21 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
             {
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} would reveal ${count} additional card(s), but the deck has no more cards.'), [
                     "reaction_inject_code" => $owner->getInjectCode(),
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                    "player_name" => $game->getPlayerNameById($ownerPlayerId),
                     "count" => $additional,
                 ]);
             }
         }
 
-        $game->globals->set(Game::UNRAVEL_THE_THREAD_CONTROLLER_ID, $owner->ControllerId);
+        $game->globals->set(Game::UNRAVEL_THE_THREAD_CONTROLLER_ID, $ownerPlayerId);
 
         $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name}\'s Sorceries gain +1[Parry] this round.'), [
             "reaction_inject_code" => $owner->getInjectCode(),
-            "player_name" => $game->getPlayerNameById($owner->ControllerId),
+            "player_name" => $game->getPlayerNameById($ownerPlayerId),
         ]);
 
         $sorceryPlayed = EventFactory::createSorcererAbilityPlayedEvent(
-            $owner->ControllerId,
+            $ownerPlayerId,
             $owner->Id,
             $this->Id,
             $actor->Id
