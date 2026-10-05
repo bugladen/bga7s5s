@@ -415,13 +415,7 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.duelRound = gamedatas.duelRound;
 
             this.displayDuelTable(gamedatas.challengeStat);
-
-            // Move faction hand placeholder to bottom of duel rows
-            if (this.player_id == gamedatas.challengingPlayerId || this.player_id == gamedatas.defendingPlayerId) {
-                dojo.place('factionHand-placeholder', 'duel_wrapper', 'after');
-                // Re-check floating state after moving placeholder
-                if (this.checkFloatingHand) this.checkFloatingHand();
-            }
+            this.placeFactionHandForDuel();
 
             gamedatas.duelRounds.forEach((round) => {
                 this.displayDuelRow(round);

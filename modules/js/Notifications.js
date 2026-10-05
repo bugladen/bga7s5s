@@ -2549,17 +2549,13 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         this.inDuel = true;
         this.duelRound = 0;
+        // Keep participant ids on gamedatas so resize / mid-duel hand re-place can gate.
+        this.gamedatas.challengingPlayerId = args.challengingPlayerId;
+        this.gamedatas.defendingPlayerId = args.defendingPlayerId;
         // WHY: Challenge-type chips are for the accept/refuse window; duel table shows the type after.
         this.removeAllChallengeStatChips();
         this.displayDuelTable(args.challengeStat);
-        
-        if (this.player_id == args.challengingPlayerId || this.player_id == args.defendingPlayerId)
-        {
-            // Move faction hand placeholder to bottom of duel rows
-            dojo.place('factionHand-placeholder', 'duel_wrapper', 'after');
-            // Re-check floating state after moving placeholder
-            if (this.checkFloatingHand) this.checkFloatingHand();
-        }
+        this.placeFactionHandForDuel();
     },
 
     notif_duelStatChanged: function( notif )
@@ -2922,6 +2918,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
         this.inDuel = false;
         dojo.destroy('duel_wrapper');
         this.clearChallengeParticipantChips(args.challengerId, args.defenderId);
+        this.gamedatas.challengingPlayerId = null;
+        this.gamedatas.defendingPlayerId = null;
 
         // Move faction hand placeholder back to top of page (after choose_container)
         if (!this.isSpectator)

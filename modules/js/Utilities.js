@@ -338,6 +338,24 @@ return declare('seventhseacityoffivesails.utilities', null, {
             || (window.innerHeight <= 500 && window.innerWidth > window.innerHeight);
     },
 
+    // Park the participant's faction hand next to the duel table.
+    // WHY mobile "before": floating is disabled on mobile, so parking the hand
+    // after the (often tall) duel table forces players to scroll past the whole
+    // table to pick combat cards. Desktop keeps "after" so the floating-hand
+    // scroll anchor stays below the duel block as historically intended.
+    placeFactionHandForDuel: function() {
+        if (!$('duel_wrapper') || !$('factionHand-placeholder')) return;
+        if (this.isSpectator) return;
+
+        const challengingPlayerId = this.gamedatas?.challengingPlayerId;
+        const defendingPlayerId = this.gamedatas?.defendingPlayerId;
+        if (this.player_id != challengingPlayerId && this.player_id != defendingPlayerId) return;
+
+        const position = this.isFactionHandMobile() ? 'before' : 'after';
+        dojo.place('factionHand-placeholder', 'duel_wrapper', position);
+        if (this.checkFloatingHand) this.checkFloatingHand();
+    },
+
     // Build a HandStock (desktop) or LineStock (mobile) on #factionHand and
     // wire up the selection callback. Reuses this.factionHandManager so card
     // divs survive a swap.
@@ -431,6 +449,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (typeof this.factionHandManager.removeStock === 'function') {
             this.factionHandManager.removeStock(oldStock);
         }
+
+        // Crossing the mobile breakpoint mid-duel must also flip hand↔table order.
+        if (this.inDuel) this.placeFactionHandForDuel();
     },
 
     // Tighten card overlap in the floating hand so the row stays within the viewport
