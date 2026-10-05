@@ -4,7 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\cad;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\maneuvers\Maneuver_05Henry;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\maneuvers\Maneuver_05Thomas;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ManeuverTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -12,7 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 
-class _05Henry extends Brute implements IHasManeuvers
+class _05Thomas extends Brute implements IHasManeuvers
 {
     use ManeuverTrait;
 
@@ -20,26 +20,25 @@ class _05Henry extends Brute implements IHasManeuvers
     {
         parent::__construct();
 
-        $this->Name = "Carlo";
-        $this->Title = "Blackguard";
-        $this->Image = "05Henry.v3.jpg";
+        $this->Name = "Bruno";
+        $this->Title = "Ruffian";
+        $this->Image = "05Thomas.v3.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
-        $this->CardNumber = 4;
+        $this->CardNumber = 5;
 
         $this->initializeFaction("Vodacce");
 
-        $this->WealthCost = 0;
+        $this->WealthCost = 1;
 
         $this->Resolve = 2;
         $this->Combat = 2;
-        $this->Finesse = 0;
+        $this->Finesse = 2;
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
-        $this->Riposte = 0;
-        $this->DashedRiposte = true;
-        $this->Parry = 3;
+        $this->Riposte = 2;
+        $this->Parry = 0;
         $this->Thrust = 1;
 
         $this->Traits = [
@@ -52,18 +51,18 @@ class _05Henry extends Brute implements IHasManeuvers
         ];
 
         $this->Text = "<p><b>Brute</b></p>
-<p>Carlo cannot intervene.</p>
-<p>Carlo cannot enter play from hand except during a duel.</p>
-<p><b>Duelist Maneuver</b>: Wound the adversary. Put Carlo into play at this location.</p>";
+<p>Bruno cannot intervene.</p>
+<p>Bruno cannot enter play from hand except during a duel.</p>
+<p><b>Duelist Maneuver</b>: +1[Parry]. Put Bruno into play at this location.</p>";
 
         $this->resetCard();
 
         $this->Maneuvers = [
-            new Maneuver_05Henry(),
+            new Maneuver_05Thomas(),
         ];
     }
 
-    // WHY: Play Brute is High Drama only — never during a duel. Carlo's printed
+    // WHY: Play Brute is High Drama only — never during a duel. Bruno's printed
     // exception is the in-duel Maneuver (and other during-duel hand→play effects),
     // not the Brute menu action.
     public function canBePlayedAsBruteFromHand(): bool
@@ -83,7 +82,7 @@ class _05Henry extends Brute implements IHasManeuvers
         // WHY: Penya hard-ban shape — predicate filters UI; eventCheck backstops bypass paths.
         if ($event instanceof EventCharacterIntervened && $event->newTargetId == $this->Id)
         {
-            throw new UserException("Carlo cannot intervene.");
+            throw new UserException("Bruno cannot intervene.");
         }
 
         // WHY: At check time fromLocation is still empty; Location is still the pre-muster
@@ -95,7 +94,7 @@ class _05Henry extends Brute implements IHasManeuvers
             && $this->Location == Game::LOCATION_HAND
             && ! $event->theah->game->globals->get(Game::IN_DUEL, false))
         {
-            throw new UserException("Carlo cannot enter play from hand except during a duel.");
+            throw new UserException("Bruno cannot enter play from hand except during a duel.");
         }
     }
 }

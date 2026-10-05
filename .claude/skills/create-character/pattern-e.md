@@ -709,7 +709,9 @@ No calc branch, no states, no JS. Keep `EventManeuverCanceled handler not needed
 
 **"Wound the adversary. Put <Name> into play at this location"** (Carlo `_05Henry`): same Duelist + dueling-line gates as Stefano. On resolve, queue `createCharacterBeingWoundedEvent` on `getDuelRoundOpponent()` **before** the muster (printed L→R). Skip the wound only when adversary is null / discard/locker — still muster. Do **not** gate availability on adversary liveness (put-into-play remains useful). Wound source = owning card (combat-card Maneuver shape — `Maneuver_01055` / `03009`).
 
-Reference: `Maneuver_05Coleman`; wound+muster sibling `Maneuver_05Henry`; equip-from-line sibling `Maneuver_02054` (attachment, not muster).
+**"+1[Parry]. Put <Name> into play at this location"** (Bruno `_05Thomas`): same Duelist + dueling-line gates. Handle **both** `EventDuelCalculateManeuverValues` (`$event->parry += 1` + explanation — `Maneuver_PlusOneParry` / `04046` shape) **and** `EventResolveManeuver` muster (Coleman). WHY both events in one class: Parry is a calculate-values effect; muster is a resolve effect — the duel pipeline fires them separately for an activated Maneuver, so no linking flag is needed.
+
+Reference: `Maneuver_05Coleman`; wound+muster sibling `Maneuver_05Henry`; Parry+muster sibling `Maneuver_05Thomas`; equip-from-line sibling `Maneuver_02054` (attachment, not muster).
 
 ### Duel-flow events worth knowing
 
