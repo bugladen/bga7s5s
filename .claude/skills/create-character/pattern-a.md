@@ -61,7 +61,7 @@ Fate's Silence (`_04008`) stamps `FATES_SILENCE_CONDITION` on the equipped chara
 
 WHY not "skip handleEvent is enough": Giacinto's −1 Influence was already on opposing Sorcerers before Silence equipped; skipping his passive left the stamp live.
 
-References: `_04032` Giacinto (done); Risk Pattern E.3 (`create-risk/pattern-e.md`); hooks on `Character::onAbilitiesBlanked` / `onAbilitiesUnblanked`.
+References: `_04032` Giacinto (stamp-on-others); Technique grant auras `_01067` Jean / `_01063` Bastien / `_03051` Yepikhodov / `_02022` Stranahan / `_05Cooper` Vissenta; Risk Pattern E.3 (`create-risk/pattern-e.md`); hooks on `Character::onAbilitiesBlanked` / `onAbilitiesUnblanked`.
 
 ### Gambled combat-card stat bonus
 
@@ -472,8 +472,9 @@ For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"),
 | `EventCardMoved` (`cardId == aura source`) | Strip at `fromLocation`; grant at `toLocation` (both skip Home) |
 | `EventCardMoved` (other card `toLocation == aura source.Location`) | Grant to the arriving controlled ally |
 | `EventCardMoved` (other card `fromLocation == aura source.Location`) | Strip from the departing ally |
-| `EventCharacterDestroyed` (`characterId == aura source`) | **`clearGranted*`** — strip ClassId across controlled **in-play** (see leave-play below) |
+| `EventCharacterDestroyed` (`characterId == aura source`) | **`clearGranted*`** — strip ClassId across controlled **in-play** (see leave-play below). Run **before** the blank early-return so leave-play still clears while Silence is on. |
 | `EventCardSentToLocker` (`cardId == aura source`) | **Same `clearGranted*`** — spend-to-locker / crew-cap sink |
+| **`onAbilitiesBlanked` / `onAbilitiesUnblanked`** | **Required** — Fate's Silence skips polymorphic `handleEvent`, so granted Techniques on allies would stick. Blank → same `clearGranted*` as leave-play; unblank → re-grant at current non-Home location (dedup via `getTechniqueByClassId`). See Pattern A "Fate's Silence blanking". Wire even on Leaders (Silence-immune today) for consistency. |
 
 **Leave-play clear (CRITICAL — Destroy alone is not enough):**
 

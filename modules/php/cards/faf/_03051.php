@@ -61,6 +61,24 @@ class _03051 extends Character implements IHasActions
     {
         parent::handleEvent($event);
 
+        // WHY: Leave-play clear must run even if blanked (destroy/locker while Silence still on).
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            $this->clearGrantedTechniques($event->theah);
+            return;
+        }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedTechniques($event->theah);
+            return;
+        }
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         // Mirror Jean Urbain (_01067): grant/remove location Technique aura.
         // WHY no trait filter: text is "Your other characters", not a subset.
 
@@ -77,17 +95,7 @@ class _03051 extends Character implements IHasActions
             }
         }
 
-        // WHY: Same leave-play pair as Cooper/Jean — Destroyed (after-cards) + CardSentToLocker
-        // (hub-first, no CardMoved). Strip by ClassId across controlled in-play, not Location.
-        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
-        {
-            $this->clearGrantedTechniques($event->theah);
-        }
-
-        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
-        {
-            $this->clearGrantedTechniques($event->theah);
-        }
+        // WHY: Same leave-play pair as Cooper/Jean — handled at top of handleEvent.
 
         if ($event instanceof EventCardMoved)
         {
@@ -195,6 +203,33 @@ class _03051 extends Character implements IHasActions
             }
 
             $this->removeTechniqueFrom($character, $theah->game);
+        }
+    }
+
+    // WHY: Fate's Silence skips handleEvent — granted copy-attachment Techniques stick on allies.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearGrantedTechniques($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId <= 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersAtLocation($this->Location) as $character)
+        {
+            if ($character->Id == $this->Id || $character->ControllerId != $this->ControllerId)
+            {
+                continue;
+            }
+            $this->grantTechniqueTo($character, $theah->game);
         }
     }
 }

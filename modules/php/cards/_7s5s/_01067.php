@@ -55,6 +55,24 @@ class _01067 extends Character
     {
         parent::handleEvent($event);
 
+        // WHY: Leave-play clear must run even if blanked (destroy/locker while Silence still on).
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            $this->clearGrantedRiposteTechniques($event->theah);
+            return;
+        }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedRiposteTechniques($event->theah);
+            return;
+        }
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($event instanceof EventCharacterRecruited)
         {
             $character = $event->theah->getCharacterById($event->characterId);
@@ -122,15 +140,7 @@ class _01067 extends Character
         // hub-first to Locker (no CardMoved; Location already Locker). Destroy does not emit
         // CardSentToLocker. Strip granted ClassId across controlled in-play — skip self so
         // Jean's own Technique_01067 is not removed (granted PlusOneRiposte shares ClassId).
-        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
-        {
-            $this->clearGrantedRiposteTechniques($event->theah);
-        }
-
-        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
-        {
-            $this->clearGrantedRiposteTechniques($event->theah);
-        }
+        // (Leave-play clear moved to top of handleEvent for blanked-destroy ordering.)
 
         if ($event instanceof EventCardMoved)
         {
@@ -232,6 +242,45 @@ class _01067 extends Character
                 $character->removeTechnique($technique, $theah->game);
                 $character->IsUpdated = true;
             }
+        }
+    }
+
+    // WHY: Fate's Silence skips handleEvent — granted +1 Riposte Techniques on allies stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearGrantedRiposteTechniques($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId <= 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersAtLocation($this->Location) as $character)
+        {
+            if ($character->Id == $this->Id
+                || $character->ControllerId != $this->ControllerId
+                || ! $character->hasTrait("Musketeer")
+                || ! ($character instanceof IHasTechniques))
+            {
+                continue;
+            }
+            if ($character->getTechniqueByClassId("Technique_01067"))
+            {
+                continue;
+            }
+
+            $technique = new Technique_PlusOneRiposte();
+            $technique->setId("Technique_01067");
+            $technique->setOwnerId($character->Id);
+            $character->addTechnique($technique, $theah->game);
+            $character->IsUpdated = true;
         }
     }
 }

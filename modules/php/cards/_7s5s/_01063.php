@@ -55,6 +55,24 @@ class _01063 extends Character
     {
         parent::handleEvent($event);
 
+        // WHY: Leave-play clear must run even if blanked (destroy/locker while Silence still on).
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            $this->clearGrantedSwapTechniques($event->theah);
+            return;
+        }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedSwapTechniques($event->theah);
+            return;
+        }
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($event instanceof EventCharacterRecruited)
         {
             $character = $event->theah->getCharacterById($event->characterId);
@@ -100,19 +118,8 @@ class _01063 extends Character
             }
         }
 
-        // WHY: Destroyed = runEventHubAfterCards (Location still city). CardSentToLocker =
-        // hub-first to Locker (no CardMoved). Destroy does not emit CardSentToLocker.
-        // Strip granted Technique_01063Swap across controlled in-play; skip self (Bastien
-        // also mounts Technique_01063Swap natively — same ClassId as the aura grant).
-        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
-        {
-            $this->clearGrantedSwapTechniques($event->theah);
-        }
-
-        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
-        {
-            $this->clearGrantedSwapTechniques($event->theah);
-        }
+        // WHY: Destroyed / CardSentToLocker leave-play clear moved to top of handleEvent
+        // (blanked-destroy ordering). Skip self when stripping — Bastien mounts Swap natively.
 
         if ($event instanceof EventCardMoved)
         {
@@ -216,6 +223,37 @@ class _01063 extends Character
             }
 
             $this->removeSwapTechnique($character, $theah->game);
+        }
+    }
+
+    // WHY: Fate's Silence skips handleEvent — granted Swap Techniques on allies stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearGrantedSwapTechniques($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId <= 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersAtLocation($this->Location) as $character)
+        {
+            if ($character->Id == $this->Id || $character->ControllerId != $this->ControllerId)
+            {
+                continue;
+            }
+            if ($character instanceof IHasTechniques && $character->getTechniqueByClassId("Technique_01063Swap"))
+            {
+                continue;
+            }
+            $this->addSwapTechnique($character, $theah->game);
         }
     }
 }

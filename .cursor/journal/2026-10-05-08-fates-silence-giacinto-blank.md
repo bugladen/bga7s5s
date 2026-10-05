@@ -85,5 +85,12 @@ Wired `onAbilitiesBlanked` / `onAbilitiesUnblanked` (+ handleEvent blank early-r
 **Skipped (intentional):** Soline `_01089` Leader (Silence non-Leader only);
 schemes/attachments (not blanked by Silence).
 
-Rosine has no apply flag — blank/unblank infer from `getOpposingSorcererCount`.
-Rena/Íñigo infer from Weapon count (same as equip transition).
+## Technique grant auras (2026-10-05 follow-up)
+
+Wired blank/unblank for Jean `_01067`, Bastien `_01063`, Yepikhodov `_03051`,
+Stranahan `_02022`, Cooper `_05Cooper` (Leader — Silence-immune but hooks for
+consistency). Same clear helpers as leave-play; unblank re-grants at location
+with ClassId dedup. Stranahan also got Jean-shaped `clearGrantedLethalTechniques`
++ CardSentToLocker (was location-only destroy clear before).
+
+pattern-a Location Technique grant table now lists the blanking hooks as required.

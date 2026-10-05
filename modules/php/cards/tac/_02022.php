@@ -12,6 +12,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _02022 extends Character
 {
@@ -54,6 +56,25 @@ class _02022 extends Character
     {
         parent::handleEvent($event);
 
+        // WHY: Leave-play clear must run even if blanked. Prefer ClassId strip across
+        // controlled in-play (Jean shape) — Location may already be Locker on CardSentToLocker.
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            $this->clearGrantedLethalTechniques($event->theah);
+            return;
+        }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedLethalTechniques($event->theah);
+            return;
+        }
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($event instanceof EventChallengeIssued)
         {
             $defender = $event->theah->getCharacterById($event->defenderId);
@@ -74,36 +95,7 @@ class _02022 extends Character
                 $character->hasTrait("Musketeer") && 
                 $character instanceof IHasTechniques)
             {
-                $technique = new Technique_GainLethal();
-                $technique->setId("Technique_02022");
-                $technique->setOwnerId($character->Id);
-                $character->addTechnique($technique, $event->theah->game);
-                $character->IsUpdated = true;
-            }
-        }
-
-        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
-        {
-            if ($this->Location != Game::LOCATION_PLAYER_HOME)
-            {
-                $characters = $event->theah->getCharactersAtLocation($this->Location);
-                $characters = array_filter($characters, fn($character) =>
-                    $character->Id != $this->Id &&
-                    $character->ControllerId == $this->ControllerId &&
-                    $character->hasTrait("Musketeer"));
-
-                foreach ($characters as $character)
-                {
-                    if ($character instanceof IHasTechniques)
-                    {
-                        $technique = $character->getTechniqueByClassId("Technique_02022");
-                        if ($technique)
-                        {
-                            $character->removeTechnique($technique, $event->theah->game);
-                            $character->IsUpdated = true;
-                        }
-                    }
-                }
+                $this->grantLethalTechniqueTo($character, $event->theah->game);
             }
         }
 
@@ -123,15 +115,7 @@ class _02022 extends Character
 
                     foreach ($characters as $character)
                     {
-                        if ($character instanceof IHasTechniques)
-                        {
-                            $technique = $character->getTechniqueByClassId("Technique_02022");
-                            if ($technique)
-                            {
-                                $character->removeTechnique($technique, $event->theah->game);
-                                $character->IsUpdated = true;
-                            }
-                        }
+                        $this->removeLethalTechniqueFrom($character, $event->theah->game);
                     }
                 }
 
@@ -145,14 +129,7 @@ class _02022 extends Character
                         $character->hasTrait("Musketeer"));
                     foreach ($characters as $character)
                     {
-                        $technique = new Technique_GainLethal();
-                        $technique->setId("Technique_02022");
-                        $technique->setOwnerId($character->Id);
-                        if ($character instanceof IHasTechniques)
-                        {
-                            $character->addTechnique($technique, $event->theah->game);
-                            $character->IsUpdated = true;
-                        }
+                        $this->grantLethalTechniqueTo($character, $event->theah->game);
                     }
                 }
             }
@@ -162,11 +139,7 @@ class _02022 extends Character
                 $character = $event->theah->getCardById($event->cardId);
                 if ($character->ControllerId == $this->ControllerId && $character->hasTrait("Musketeer") && $character instanceof IHasTechniques)
                 {
-                    $technique = new Technique_GainLethal();
-                    $technique->setId("Technique_02022");
-                    $technique->setOwnerId($character->Id);
-                    $character->addTechnique($technique, $event->theah->game);
-                    $character->IsUpdated = true;
+                    $this->grantLethalTechniqueTo($character, $event->theah->game);
                 }
             }
             //Handle the case where Musketeer is moved from Stranahan's location.
@@ -175,14 +148,89 @@ class _02022 extends Character
                 $character = $event->theah->getCardById($event->cardId);
                 if ($character->ControllerId == $this->ControllerId && $character->hasTrait("Musketeer") && $character instanceof IHasTechniques)
                 {
-                    $technique = $character->getTechniqueByClassId("Technique_02022");
-                    if ($technique)
-                    {
-                        $character->removeTechnique($technique, $event->theah->game);
-                        $character->IsUpdated = true;
-                    }
+                    $this->removeLethalTechniqueFrom($character, $event->theah->game);
                 }
             }
+        }
+    }
+
+    private function grantLethalTechniqueTo(Character $character, Game $game): void
+    {
+        if (! ($character instanceof IHasTechniques))
+        {
+            return;
+        }
+        if ($character->getTechniqueByClassId("Technique_02022"))
+        {
+            return;
+        }
+
+        $technique = new Technique_GainLethal();
+        $technique->setId("Technique_02022");
+        $technique->setOwnerId($character->Id);
+        $character->addTechnique($technique, $game);
+        $character->IsUpdated = true;
+    }
+
+    private function removeLethalTechniqueFrom(Character $character, Game $game): void
+    {
+        if (! ($character instanceof IHasTechniques))
+        {
+            return;
+        }
+
+        $technique = $character->getTechniqueByClassId("Technique_02022");
+        if ($technique)
+        {
+            $character->removeTechnique($technique, $game);
+            $character->IsUpdated = true;
+        }
+    }
+
+    private function clearGrantedLethalTechniques(Theah $theah): void
+    {
+        $controllerId = $this->ControllerId;
+        if ($controllerId <= 0)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersInPlayByPlayerId($controllerId) as $character)
+        {
+            if ($character->Id == $this->Id)
+            {
+                continue;
+            }
+            $this->removeLethalTechniqueFrom($character, $theah->game);
+        }
+    }
+
+    // WHY: Fate's Silence skips handleEvent — granted Gain Lethal Techniques stick on allies.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearGrantedLethalTechniques($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId <= 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersAtLocation($this->Location) as $character)
+        {
+            if ($character->Id == $this->Id
+                || $character->ControllerId != $this->ControllerId
+                || ! $character->hasTrait("Musketeer"))
+            {
+                continue;
+            }
+            $this->grantLethalTechniqueTo($character, $theah->game);
         }
     }
 }

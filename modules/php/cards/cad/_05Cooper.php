@@ -72,6 +72,25 @@ class _05Cooper extends Leader implements IHasReactions
     {
         parent::handleEvent($event);
 
+        // WHY: Leave-play clear must run even if blanked. Leader is Silence-immune today
+        // (non-Leader equip only) but hooks stay consistent for future blanking sources.
+        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
+        {
+            $this->clearGrantedThrustTechniques($event->theah);
+            return;
+        }
+
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedThrustTechniques($event->theah);
+            return;
+        }
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         // WHY: Jean Urbain (_01067) location Technique grant aura — Thug trait filter;
         // Vissenta is not a Thug so no "other" exclusion needed beyond Id != self.
         // ClassId Technique_05Cooper matches Jean's reuse of the card Technique id string
@@ -124,19 +143,7 @@ class _05Cooper extends Leader implements IHasReactions
             }
         }
 
-        // WHY: Destroyed = runEventHubAfterCards (Location still city during handleEvent).
-        // CardSentToLocker = hub-first moveCard to Locker (Location already Locker; no CardMoved).
-        // Destroy does not emit CardSentToLocker. Strip by ClassId across controlled in-play
-        // characters — location scan is wrong after locker move (Giacinto/Sango leave-play pair).
-        if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
-        {
-            $this->clearGrantedThrustTechniques($event->theah);
-        }
-
-        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
-        {
-            $this->clearGrantedThrustTechniques($event->theah);
-        }
+        // Leave-play Destroyed / CardSentToLocker handled at top of handleEvent.
 
         if ($event instanceof EventCardMoved)
         {
@@ -246,6 +253,36 @@ class _05Cooper extends Leader implements IHasReactions
             }
 
             $this->removeThrustTechniqueFrom($character, $theah->game);
+        }
+    }
+
+    // WHY: Fate's Silence skips handleEvent — granted +1 Thrust on Thugs would stick.
+    // Leader is Silence-immune today; hooks still required for consistency / future blankers.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearGrantedThrustTechniques($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId <= 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersAtLocation($this->Location) as $character)
+        {
+            if ($character->Id == $this->Id
+                || $character->ControllerId != $this->ControllerId
+                || ! $character->hasTrait("Thug"))
+            {
+                continue;
+            }
+            $this->grantThrustTechniqueTo($character, $theah->game);
         }
     }
 }
