@@ -118,6 +118,14 @@ abstract class Character extends Card implements IHasTechniques
         return ! $this->hasTrait("Brute");
     }
 
+    // WHY: Play Brute is a High Drama menu action. Cards like Stefano (_05Coleman) cannot
+    // enter play from hand except during a duel — so they must not appear in the Brute
+    // picker. eventCheck still backstops other hand→play muster paths (Vittoria, etc.).
+    public function canBePlayedAsBruteFromHand(): bool
+    {
+        return true;
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);

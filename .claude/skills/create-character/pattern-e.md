@@ -678,6 +678,37 @@ Default: use the character **Name alone** (no Title) — CAD Valeri and most uni
 
 The state classes' `name` field (used by JS) doesn't need disambiguation because state IDs already differ — `_01036`'s state is `duelChooseTechnique_01036`, `_03013`'s is `duelChooseTechnique_03013`.
 
+### Put self into play from the dueling line (Duelist Maneuver on a Brute / Character)
+
+For Stefano `_05Coleman`: **`<b>Duelist Maneuver:</b> Put Stefano into play at this location.`**
+
+The Maneuver lives on the **character** itself (`IHasManeuvers` + `ManeuverTrait`), not on a Risk. Flow: play Stefano from hand as the combat card → he sits on `LOCATION_DUELING_LINE` → a Duelist actor activates the Maneuver → resolve musters him at the duel location.
+
+```php
+public function isAvailableToPlayer(int $playerId, Theah $theah): bool
+{
+    if (! parent::isAvailableToPlayer($playerId, $theah)) return false;
+    if (! $theah->game->globals->get(Game::IN_DUEL, false)) return false;
+
+    $actor = $theah->getDuelRoundActor();
+    if ($actor === null || ! $actor->hasTrait("Duelist")) return false;
+
+    $owner = $this->getOwningCard($theah);
+    return $owner !== null && $owner->Location == Game::LOCATION_DUELING_LINE;
+}
+
+// EventResolveManeuver:
+$musterEvent = EventFactory::createCharacterMusteredEvent(
+    $owner->ControllerId, $owner->Id, $actor->Location
+);
+```
+
+WHY `actor->Location` for "this location": during a duel that is the shared duel site. WHY muster from dueling line not hand: combat-card play already moved him; the printed hand→play ban (`eventCheck` on the card) would block a hand muster outside duel and is unrelated to this Maneuver path. WHY EventHub Brute `cardRemovedFromHand` must gate on `fromLocation == HAND`: Play Brute needs that notify; dueling-line muster already left hand when the combat card was announced — double-firing corrupts hand-count UI.
+
+No calc branch, no states, no JS. Keep `EventManeuverCanceled handler not needed`. Pair with the card-class hand→play ban (`canBePlayedAsBruteFromHand` + muster `eventCheck`) — see SKILL shape table.
+
+Reference: `Maneuver_05Coleman`; equip-from-line sibling `Maneuver_02054` (attachment, not muster).
+
 ### Duel-flow events worth knowing
 
 | Event | When it fires |

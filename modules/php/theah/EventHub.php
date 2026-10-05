@@ -906,7 +906,11 @@ trait EventHub
                             "card" => $character->getPropertyArray($theah->game),
                         ]);
 
-                        if ($character instanceof Brute)
+                        // WHY: Play Brute musters from HAND — client needs cardRemovedFromHand.
+                        // Stefano (_05Coleman) can muster from the dueling line via Maneuver;
+                        // he already left hand when played as a combat card, so re-firing
+                        // cardRemovedFromHand would corrupt the hand-count UI.
+                        if ($character instanceof Brute && $event->fromLocation == Game::LOCATION_HAND)
                         {
                             $deck = $theah->game->getGameDeckObject();
                             $theah->game->notify->all("cardRemovedFromHand", '', [

@@ -1158,7 +1158,9 @@ class Theah
         $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
         foreach ($cards as $card)
         {
-            if ($card instanceof Character && $card->hasTrait("Brute"))
+            if ($card instanceof Character
+                && $card->hasTrait("Brute")
+                && $card->canBePlayedAsBruteFromHand())
             {
                 $brutes[] = $card->Id;
             }
@@ -1792,7 +1794,9 @@ class Theah
         $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
         foreach ($cards as $card)
         {
-            if ($card->hasTrait("Brute"))
+            if ($card instanceof Character
+                && $card->hasTrait("Brute")
+                && $card->canBePlayedAsBruteFromHand())
             {
                 $bruteCards[] = $card;
             }

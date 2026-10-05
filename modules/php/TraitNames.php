@@ -167,6 +167,7 @@ class TraitNames
             "Recuperation",
             "Red Hand",
             "Redeemed",
+            "Recruit",
             "Relentless",
             "Relic",
             "Rescue",
