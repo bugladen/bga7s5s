@@ -707,7 +707,9 @@ WHY `actor->Location` for "this location": during a duel that is the shared duel
 
 No calc branch, no states, no JS. Keep `EventManeuverCanceled handler not needed`. Pair with the card-class hand→play ban (`canBePlayedAsBruteFromHand` + muster `eventCheck`) — see SKILL shape table.
 
-Reference: `Maneuver_05Coleman`; equip-from-line sibling `Maneuver_02054` (attachment, not muster).
+**"Wound the adversary. Put <Name> into play at this location"** (Carlo `_05Henry`): same Duelist + dueling-line gates as Stefano. On resolve, queue `createCharacterBeingWoundedEvent` on `getDuelRoundOpponent()` **before** the muster (printed L→R). Skip the wound only when adversary is null / discard/locker — still muster. Do **not** gate availability on adversary liveness (put-into-play remains useful). Wound source = owning card (combat-card Maneuver shape — `Maneuver_01055` / `03009`).
+
+Reference: `Maneuver_05Coleman`; wound+muster sibling `Maneuver_05Henry`; equip-from-line sibling `Maneuver_02054` (attachment, not muster).
 
 ### Duel-flow events worth knowing
 
