@@ -145,6 +145,13 @@ The factories are:
 
 When the predicate that drives the modifier changes (a character moves into/out of the affected location, a duel ends), queue the inverse event to undo it. See `_01089` Soline el Gato — `lowerFinesse` on `EventDuelStarted`, `raiseFinesse` on `EventDuelEnd` / opposite swap. Track which character was affected on `$this->AffectedCharacterId` and set `$this->IsUpdated = true` so the change persists.
 
+**Finesse floor / Absorbed flag (required for −N Finesse auras):** `EventHub` clamps with `max(0, NewFinesse)`. Applying −1 to a 0-FIN character stamps the condition but stores no reduction — later +1 buffs (Elena Sorcery line, Assassin's Garb, etc.) then show unpenalized FIN. Fix on Soline `_01089` / Sango `_04043`:
+- `$FinessePenaltyAbsorbed` — true only when the −1 actually reduced stored ModifiedFinesse
+- On apply: if `ModifiedFinesse > 0` queue −1 and Absorbed=true; else Absorbed=false (still stamp condition for tooltip)
+- On clear: queue +1 **only if Absorbed** (else overshoot printed 0)
+- On `EventCharacterFinesseModifed` for the affected character while condition active and !Absorbed and FIN > 0: queue −1 and Absorbed=true (re-absorb). Own re-apply sets Absorbed before that event drains → no loop.
+- Swaps that share one Absorbed flag: **raise old then lower new** (never reverse).
+
 ### During a duel, Owner's adversary has −N[Stat]
 
 For Tomoe Sango `_04043` ("During a duel, Sango's adversary has −1[Finesse]"):
@@ -157,6 +164,8 @@ For Tomoe Sango `_04043` ("During a duel, Sango's adversary has −1[Finesse]"):
 **Identity gate ≠ Soline.** Soline's printed text is a location aura ("adversaries at Soline's location") implemented as duel-time when *your* participant is at her location. Sango's printed text is **"Sango's adversary"** — gate on `$event->challengerId == $this->Id` / `$event->defenderId == $this->Id` (Owner herself participating). Do not copy Soline's controller+location gate onto "Owner's adversary" wording.
 
 **Condition + client notifs** — stamp a named `Game::*_CONDITION` on the adversary and fire `*ConditionStarted` / `*ConditionEnded` notifs (Giacinto / Soline tooltip pattern). Wire the string constant in `Game.php`, `seventhseacityoffivesails.js`, and `Notifications.js`. Idempotent `hasCondition` before ±1 so double-apply cannot stack.
+
+**Finesse floor** — same `$FinessePenaltyAbsorbed` + `EventCharacterFinesseModifed` re-absorb as Soline (see above). Do not ship a −1 Finesse duel aura without it.
 
 **Clear immediately when Owner leaves play mid-duel** (user-confirmed for Sango):
 

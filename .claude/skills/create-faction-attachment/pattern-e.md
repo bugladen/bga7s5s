@@ -158,7 +158,7 @@ Canonical: **`Technique_03064` (Harpoon)** + `Game::HARPOON_CONDITION`. Mirror S
 1. Constant on `seventhseacityoffivesails.js` matching the PHP string exactly.
 2. Register `*ConditionStarted` / `*ConditionEnded` in `Notifications.js` durations + handlers that push/filter `card.conditions` and `refreshTooltipForCard(card)`.
 
-**Finesse floor footgun:** `EventHub` clamps ModifiedFinesse with `max(0, …)`. Clearing with +1 after a 0-floor can overshoot printed 0. Soline has the same footgun — mirror deliberately unless Rules ask otherwise.
+**Finesse floor footgun:** `EventHub` clamps ModifiedFinesse with `max(0, …)`. Clearing with +1 after a 0-floor can overshoot printed 0. **Soline `_01089` / Sango `_04043` fixed this** with `$FinessePenaltyAbsorbed` + re-absorb on `EventCharacterFinesseModifed` (see create-character pattern-a). Harpoon / other one-shot −1 clears still have the overshoot unless they adopt the same Absorbed flag — mirror Soline if Rules care about 0-FIN victims gaining later buffs mid-duel.
 
 ### Attachment-hosted technique — transition `sourceId`
 

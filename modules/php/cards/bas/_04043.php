@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
@@ -25,6 +26,9 @@ class _04043 extends Character implements IHasReactions
     // so swaps / DuelEnd can restore without re-scanning participants. Mirrored into
     // Game::TOMOE_SANGO_PENDING_DEBUFF_CHARACTER_ID because destroy recreates this card.
     public int $AffectedCharacterId = 0;
+
+    // WHY: Same EventHub max(0) floor footgun as Soline _01089 — see that card.
+    public bool $FinessePenaltyAbsorbed = false;
 
     public function __construct()
     {
@@ -112,14 +116,24 @@ class _04043 extends Character implements IHasReactions
             return;
         }
 
-        $event = EventFactory::createCharacterFinesseModifedEvent(
-            $this->ControllerId,
-            $character->Id,
-            $character->ModifiedFinesse,
-            $character->ModifiedFinesse - 1,
-            $this->getInjectCode()
-        );
-        $theah->queueEvent($event);
+        // WHY: Skip -1 event when already at 0 — EventHub clamps away the reduction.
+        // Stamp condition so tooltips show the aura; absorb on a later Finesse rise.
+        if ($character->ModifiedFinesse > 0)
+        {
+            $event = EventFactory::createCharacterFinesseModifedEvent(
+                $this->ControllerId,
+                $character->Id,
+                $character->ModifiedFinesse,
+                $character->ModifiedFinesse - 1,
+                $this->getInjectCode()
+            );
+            $theah->queueEvent($event);
+            $this->FinessePenaltyAbsorbed = true;
+        }
+        else
+        {
+            $this->FinessePenaltyAbsorbed = false;
+        }
 
         $character->addCondition(Game::TOMOE_SANGO_CONDITION);
         $theah->game->updateCardObjectInDb($character);
@@ -136,14 +150,20 @@ class _04043 extends Character implements IHasReactions
             return;
         }
 
-        $event = EventFactory::createCharacterFinesseModifedEvent(
-            $this->ControllerId,
-            $character->Id,
-            $character->ModifiedFinesse,
-            $character->ModifiedFinesse + 1,
-            $this->getInjectCode()
-        );
-        $theah->queueEvent($event);
+        // WHY: Only undo a reduction that was actually stored (Soline floor footgun).
+        if ($this->FinessePenaltyAbsorbed)
+        {
+            $event = EventFactory::createCharacterFinesseModifedEvent(
+                $this->ControllerId,
+                $character->Id,
+                $character->ModifiedFinesse,
+                $character->ModifiedFinesse + 1,
+                $this->getInjectCode()
+            );
+            $theah->queueEvent($event);
+        }
+
+        $this->FinessePenaltyAbsorbed = false;
 
         $character->removeCondition(Game::TOMOE_SANGO_CONDITION);
         $theah->game->updateCardObjectInDb($character);
@@ -153,11 +173,41 @@ class _04043 extends Character implements IHasReactions
         ]);
     }
 
+    private function tryAbsorbPendingPenalty(Theah $theah): void
+    {
+        if ($this->AffectedCharacterId <= 0 || $this->FinessePenaltyAbsorbed)
+        {
+            return;
+        }
+
+        $character = $theah->getCharacterById($this->AffectedCharacterId);
+        if ($character === null
+            || $theah->game->characterIsInDiscardOrLocker($character)
+            || ! $character->hasCondition(Game::TOMOE_SANGO_CONDITION)
+            || $character->ModifiedFinesse <= 0)
+        {
+            return;
+        }
+
+        $event = EventFactory::createCharacterFinesseModifedEvent(
+            $this->ControllerId,
+            $character->Id,
+            $character->ModifiedFinesse,
+            $character->ModifiedFinesse - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($event);
+
+        $this->FinessePenaltyAbsorbed = true;
+        $this->IsUpdated = true;
+    }
+
     private function clearAdversaryDebuff(Theah $theah): void
     {
         if ($this->AffectedCharacterId <= 0)
         {
             $theah->game->globals->set(Game::TOMOE_SANGO_PENDING_DEBUFF_CHARACTER_ID, 0);
+            $this->FinessePenaltyAbsorbed = false;
             return;
         }
 
@@ -168,6 +218,7 @@ class _04043 extends Character implements IHasReactions
         }
 
         $this->AffectedCharacterId = 0;
+        $this->FinessePenaltyAbsorbed = false;
         $theah->game->globals->set(Game::TOMOE_SANGO_PENDING_DEBUFF_CHARACTER_ID, 0);
         $this->IsUpdated = true;
     }
@@ -313,6 +364,14 @@ class _04043 extends Character implements IHasReactions
                 $this->clearAdversaryDebuff($event->theah);
                 $this->applyDebuffToAdversary($event->newChallengerId, $event->theah);
             }
+        }
+
+        // WHY: Hub runs before cards on FinesseModifed — absorb a floored -1 when FIN rises.
+        // Own re-apply sets Absorbed=true before the queued event drains, so no loop.
+        if ($event instanceof EventCharacterFinesseModifed
+            && $event->CharacterId == $this->AffectedCharacterId)
+        {
+            $this->tryAbsorbPendingPenalty($event->theah);
         }
     }
 }
