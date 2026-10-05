@@ -9,9 +9,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique_PlusOneRipost
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01067 extends Character 
 {
@@ -116,29 +118,18 @@ class _01067 extends Character
             }
         }
 
+        // WHY: Destroyed = runEventHubAfterCards (Location still city). CardSentToLocker =
+        // hub-first to Locker (no CardMoved; Location already Locker). Destroy does not emit
+        // CardSentToLocker. Strip granted ClassId across controlled in-play — skip self so
+        // Jean's own Technique_01067 is not removed (granted PlusOneRiposte shares ClassId).
         if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
         {
-            if ($this->Location != Game::LOCATION_PLAYER_HOME)
-            {
-                $characters = $event->theah->getCharactersAtLocation($this->Location);
-                $characters = array_filter($characters, fn($character) =>
-                    $character->Id != $this->Id &&
-                    $character->ControllerId == $this->ControllerId &&
-                    $character->hasTrait("Musketeer"));
+            $this->clearGrantedRiposteTechniques($event->theah);
+        }
 
-                foreach ($characters as $character)
-                {
-                    if ($character instanceof IHasTechniques)
-                    {
-                        $technique = $character->getTechniqueByClassId("Technique_01067");
-                        if ($technique)
-                        {
-                            $character->removeTechnique($technique, $event->theah->game);
-                            $character->IsUpdated = true;
-                        }
-                    }
-                }
-            }
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedRiposteTechniques($event->theah);
         }
 
         if ($event instanceof EventCardMoved)
@@ -216,6 +207,30 @@ class _01067 extends Character
                         $character->IsUpdated = true;
                     }
                 }
+            }
+        }
+    }
+
+    private function clearGrantedRiposteTechniques(Theah $theah): void
+    {
+        $controllerId = $this->ControllerId;
+        if ($controllerId <= 0)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersInPlayByPlayerId($controllerId) as $character)
+        {
+            if ($character->Id == $this->Id || ! ($character instanceof IHasTechniques))
+            {
+                continue;
+            }
+
+            $technique = $character->getTechniqueByClassId("Technique_01067");
+            if ($technique)
+            {
+                $character->removeTechnique($technique, $theah->game);
+                $character->IsUpdated = true;
             }
         }
     }

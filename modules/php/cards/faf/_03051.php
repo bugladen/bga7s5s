@@ -11,8 +11,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _03051 extends Character implements IHasActions
 {
@@ -75,20 +77,16 @@ class _03051 extends Character implements IHasActions
             }
         }
 
+        // WHY: Same leave-play pair as Cooper/Jean — Destroyed (after-cards) + CardSentToLocker
+        // (hub-first, no CardMoved). Strip by ClassId across controlled in-play, not Location.
         if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
         {
-            if ($this->Location != Game::LOCATION_PLAYER_HOME)
-            {
-                $characters = $event->theah->getCharactersAtLocation($this->Location);
-                $characters = array_filter($characters, fn($character) =>
-                    $character->Id != $this->Id &&
-                    $character->ControllerId == $this->ControllerId);
+            $this->clearGrantedTechniques($event->theah);
+        }
 
-                foreach ($characters as $character)
-                {
-                    $this->removeTechniqueFrom($character, $event->theah->game);
-                }
-            }
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedTechniques($event->theah);
         }
 
         if ($event instanceof EventCardMoved)
@@ -178,6 +176,25 @@ class _03051 extends Character implements IHasActions
         {
             $character->removeTechnique($technique, $game);
             $character->IsUpdated = true;
+        }
+    }
+
+    private function clearGrantedTechniques(Theah $theah): void
+    {
+        $controllerId = $this->ControllerId;
+        if ($controllerId <= 0)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersInPlayByPlayerId($controllerId) as $character)
+        {
+            if ($character->Id == $this->Id)
+            {
+                continue;
+            }
+
+            $this->removeTechniqueFrom($character, $theah->game);
         }
     }
 }

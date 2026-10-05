@@ -9,9 +9,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01063Sw
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01063 extends Character
 {
@@ -98,20 +100,18 @@ class _01063 extends Character
             }
         }
 
+        // WHY: Destroyed = runEventHubAfterCards (Location still city). CardSentToLocker =
+        // hub-first to Locker (no CardMoved). Destroy does not emit CardSentToLocker.
+        // Strip granted Technique_01063Swap across controlled in-play; skip self (Bastien
+        // also mounts Technique_01063Swap natively — same ClassId as the aura grant).
         if ($event instanceof EventCharacterDestroyed && $event->characterId == $this->Id)
         {
-            if ($this->Location != Game::LOCATION_PLAYER_HOME)
-            {
-                $characters = $event->theah->getCharactersAtLocation($this->Location);
-                $characters = array_filter($characters, fn($character) =>
-                    $character->Id != $this->Id &&
-                    $character->ControllerId == $this->ControllerId);
+            $this->clearGrantedSwapTechniques($event->theah);
+        }
 
-                foreach ($characters as $character)
-                {
-                    $this->removeSwapTechnique($character, $event->theah->game);
-                }
-            }
+        if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
+        {
+            $this->clearGrantedSwapTechniques($event->theah);
         }
 
         if ($event instanceof EventCardMoved)
@@ -197,6 +197,25 @@ class _01063 extends Character
 
             $character->removeTechnique($technique, $game);
             $character->IsUpdated = true;
+        }
+    }
+
+    private function clearGrantedSwapTechniques(Theah $theah): void
+    {
+        $controllerId = $this->ControllerId;
+        if ($controllerId <= 0)
+        {
+            return;
+        }
+
+        foreach ($theah->getCharactersInPlayByPlayerId($controllerId) as $character)
+        {
+            if ($character->Id == $this->Id)
+            {
+                continue;
+            }
+
+            $this->removeSwapTechnique($character, $theah->game);
         }
     }
 }
