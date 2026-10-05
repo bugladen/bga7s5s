@@ -711,7 +711,9 @@ No calc branch, no states, no JS. Keep `EventManeuverCanceled handler not needed
 
 **"+1[Parry]. Put <Name> into play at this location"** (Bruno `_05Thomas`): same Duelist + dueling-line gates. Handle **both** `EventDuelCalculateManeuverValues` (`$event->parry += 1` + explanation — `Maneuver_PlusOneParry` / `04046` shape) **and** `EventResolveManeuver` muster (Coleman). WHY both events in one class: Parry is a calculate-values effect; muster is a resolve effect — the duel pipeline fires them separately for an activated Maneuver, so no linking flag is needed.
 
-Reference: `Maneuver_05Coleman`; wound+muster sibling `Maneuver_05Henry`; Parry+muster sibling `Maneuver_05Thomas`; equip-from-line sibling `Maneuver_02054` (attachment, not muster).
+**"Discard all of your participant's threat. Put <Name> into play at this location"** (Ariella `_05Fedora`): same Duelist + dueling-line gates. On Resolve, **before** muster: map "your participant" via `$owner->ControllerId` to challenger/defender (Axelle `Reaction_04022` / Andare `Reaction_04031` shape), then `createThreatModifiedEvent(−threat, 0)` or `(0, −threat)` where `threat = getCurrentDuelThreat(participantId)` (Porté Travel `_01085` full-discard amount — but **one side only**, not both). Skip the threat event when threat is already 0. Do **not** gate availability on threat > 0 (put-into-play remains useful). Printed L→R: discard then muster.
+
+Reference: `Maneuver_05Coleman`; wound+muster sibling `Maneuver_05Henry`; Parry+muster sibling `Maneuver_05Thomas`; threat-discard+muster sibling `Maneuver_05Fedora`; equip-from-line sibling `Maneuver_02054` (attachment, not muster).
 
 ### Duel-flow events worth knowing
 
