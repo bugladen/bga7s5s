@@ -433,24 +433,33 @@ WHY not global `_01143`: printed "Opposing" in this codebase always means same l
 
 Reference: `_04032` Giacinto; condition/notif sibling `_01143`; location opposing siblings `_04001` Benci / `_04022` Axelle.
 
-### Location Technique grant aura — "Your other characters at this location gain: Technique: …"
+### Location Technique grant aura — "Your other characters / your \<Trait\>s at this location gain: Technique: …"
 
-For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"), Stranahan `_02022` ("Your Musketeers … gain Lethal"), or Yepikhodov `_03051` ("Your other characters … gain Technique: Engage … Copy …"). This is a **card-class `handleEvent` passive**, not a Reaction and not a Technique mounted on the aura source himself (unless the printed text also gives him the Technique).
+For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"), Stranahan `_02022` ("Your Musketeers … gain Lethal"), Yepikhodov `_03051` ("Your other characters … gain Technique: Engage … Copy …"), Bastien `_01063` ("Your characters … gain Technique: Swap…"), or CAD Vissenta `_05Cooper` ("Your Thugs … gain Technique: +1 Thrust"). This is a **card-class `handleEvent` passive**, not a Reaction and not a Technique mounted on the aura source himself (unless the printed text also gives him the Technique).
 
-**Lifecycle (canonical Jean shape):**
+**Lifecycle (canonical Jean shape + leave-play fix):**
 
 | Event | What to do |
 |---|---|
 | `EventCharacterRecruited` | If the recruit is another controlled character at the aura source's non-Home location → grant |
-| `EventCharacterDestroyed` (`characterId == aura source`) | Strip the Technique from every other controlled character at the (still-set) location |
+| `EventCharacterMustered` | Aura source mustered to city → grant all controlled allies there; other controlled ally mustered to aura source's city location → grant them. WHY: muster does **not** emit `EventCardMoved` (Bastien / Jean gap). |
 | `EventCardMoved` (`cardId == aura source`) | Strip at `fromLocation`; grant at `toLocation` (both skip Home) |
 | `EventCardMoved` (other card `toLocation == aura source.Location`) | Grant to the arriving controlled ally |
 | `EventCardMoved` (other card `fromLocation == aura source.Location`) | Strip from the departing ally |
+| `EventCharacterDestroyed` (`characterId == aura source`) | **`clearGranted*`** — strip ClassId across controlled **in-play** (see leave-play below) |
+| `EventCardSentToLocker` (`cardId == aura source`) | **Same `clearGranted*`** — spend-to-locker / crew-cap sink |
+
+**Leave-play clear (CRITICAL — Destroy alone is not enough):**
+
+- **Destroy does not emit `EventCardSentToLocker`** (EventHub). Spend-to-locker / crew-cap does not emit `EventCardMoved` either — hub `moveCard`s to Locker directly.
+- **`EventCardSentToLocker` is hub-first** — when card handlers run, `$this->Location` is already the locker. A location scan of `$this->Location` therefore finds **no** allies and silently leaks the granted Technique.
+- **Canonical clear:** iterate `getCharactersInPlayByPlayerId($this->ControllerId)`, skip self, `removeTechnique` by ClassId. Works for both Destroyed (`runEventHubAfterCards` — still in play during handlers) and CardSentToLocker (already in locker; allies still in play).
+- **Skip self on clear** when the aura source also mounts a native Technique with the **same ClassId** as the grant (Jean: own `Technique_01067` + granted PlusOneRiposte ClassId `Technique_01067`; Bastien: native + granted `Technique_01063Swap`). Vissenta/Yepikhodov grants don't collide with a native ClassId on self, but skipping self is still harmless.
 
 **Grant / remove recipe:**
 
 ```php
-$technique = new Technique_NNNNN();
+$technique = new Technique_PlusOneThrust(); // or Technique_NNNNN / PlusOneRiposte / …
 $technique->setId("Technique_NNNNN");   // sets ClassId too — required for later lookup
 $technique->setOwnerId($character->Id); // Id becomes "{charId}_Technique_NNNNN"
 $character->addTechnique($technique, $game);
@@ -464,13 +473,13 @@ WHY `setId` before `setOwnerId`: `setId` overwrites both `Id` and `ClassId`; `se
 
 **Filters:**
 
-- Trait gate only when the text names one (`hasTrait("Musketeer")`). "Your other characters" = every other controlled `IHasTechniques` character — **exclude the aura source**.
+- Trait gate only when the text names one (`hasTrait("Musketeer")` / `"Thug"`). "Your other characters" / "Your characters" = every other controlled `IHasTechniques` character — **exclude the aura source**.
 - Skip `LOCATION_PLAYER_HOME` for both grant and remove (Jean/Stranahan convention).
-- Dedup: skip grant if `getTechniqueByClassId` already finds one (Yepikhodov helper) — Jean historically re-adds; prefer the dedup.
+- Dedup: skip grant if `getTechniqueByClassId` already finds one (Yepikhodov / Cooper helpers) — Jean historically re-adds; prefer the dedup.
 
-**Known hole (accept when mirroring Jean):** `EventCharacterRecruited` does **not** also emit `EventCardMoved`. If the *aura source* is recruited into a location that already has allies, those allies are not granted until a later move. Same hole exists on `_01067` / `_02022`. Do not invent an extra Recruited-self branch unless Eddie asks — stay consistent with Jean.
+**Known hole (accept when mirroring Jean):** `EventCharacterRecruited` does **not** also emit `EventCardMoved`. If the *aura source* is recruited into a location that already has allies, those allies are not granted until a later move **unless** you also hook Muster (Bastien/Jean now do). Approach without Muster/Recruited/CardMoved remains a soft hole — do not invent `EventApproachCharacterPlayed` for this aura unless Eddie asks.
 
-Reference: `_03051` Yepikhodov (no trait filter; granted Technique is interactive), `_01067` Jean (`Technique_PlusOneRiposte` with ClassId `Technique_01067`), `_02022` Stranahan (`Technique_GainLethal`).
+Reference: `_05Cooper` Vissenta (Thugs + PlusOneThrust + leave-play clear), `_01067` Jean (`Technique_PlusOneRiposte` ClassId `Technique_01067`), `_01063` Bastien (`Technique_01063Swap`), `_03051` Yepikhodov (no trait filter; granted Technique is interactive), `_02022` Stranahan (`Technique_GainLethal`). Leave-play pair siblings for non-Technique auras: Giacinto `_04032`, Sango `_04043`.
 
 ### Location trait-stat aura — "Your <Trait>s at Home and <Owner>'s location gain +N[Stat] / +M Resolve"
 

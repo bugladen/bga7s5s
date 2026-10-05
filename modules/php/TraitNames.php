@@ -228,6 +228,7 @@ class TraitNames
             "Unguent",
             "Unique",
             "Unwelcome",
+            "Usurper",
             "Ussura",
             "Vala",
             "Valroux",

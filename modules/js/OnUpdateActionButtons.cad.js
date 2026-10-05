@@ -37,6 +37,11 @@
                 this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
             },
 
+            'duelChooseTechnique_05Cooper': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
         };
 
         if (methods[stateName])

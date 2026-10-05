@@ -733,3 +733,37 @@ WHY both controller `== 0` and `canLocationBeClaimedBy`: neither alone is enough
 **Effect:** Claim/Pass buttons (stash `$location` on the Reaction like `Reaction_03005`). On Claim: re-check Engaged + uncontrolled + claimable, then `createLocationClaimedEvent($owner->ControllerId, $owner->Id, $location)`. `setUsed(true)` on Claim. Pass declines without `setUsed`. No state / no JS.
 
 Reference: `Reaction_04043`; phase sibling `Reaction_01045`; claim sibling `Reaction_03005`.
+
+### Ignore wound from opponent's ability (Character / Leader — no cost)
+
+For CAD Vissenta `_05Cooper`: **`<i>Reaction</i> — When an opponent's ability wounds Vissenta • Ignore that wound`**
+
+**This is Pattern D (player choice), not Kaspar Pattern A `eventCheck`.** Kaspar is unconditional "cannot wound." A labelled Reaction offers Ignore / Pass.
+
+**Family (same cancel-first bones, different host / cost / target):**
+
+| Card | Host | Target | Cost |
+|---|---|---|---|
+| `Reaction_05Cooper` (Vissenta) | Character / Leader `CardReaction` | **Owner only** (`characterId == owner.Id`) | **None** |
+| `Reaction_02059` (Cascade) | Risk in hand | Any controlled character | Wealth pay via entering-pay |
+| `Reaction_04053` (Leather Spaulders) | Attachment | Equipped host only | Engage this card |
+
+**Do not** copy Cascade's pay path or Spaulders' engage when the Character Reaction prints neither cost.
+
+**Cancel-first on `EventCharacterBeingWounded`:**
+
+1. `$this->isAvailable()` + `!$event->canceled` + no pending `$savedWoundEvent`
+2. `$this->skipNextEvent` short-circuit (Pass re-queue)
+3. `$event->characterId == $owner->Id` — text names the Owner (not "your character")
+4. Opponent's ability: `abilityId !== ''` → `getAbilityById` → ability owner's `ControllerId != owner.ControllerId`
+5. Clone event (`unset($cloned->theah)`), `$event->canceled = true`, queue `createReactionTransitionEvent`
+
+**Buttons:** Ignore Wound / Pass.
+
+**On Ignore:** drop `$savedWoundEvent` (do **not** re-queue) → notify → `setUsed(true)`.
+
+**On Pass:** re-queue clone + `$skipNextEvent = true` (do **not** `setUsed` — later wounds still offer).
+
+No state / no JS / no `HIGH_PRIORITY` (wound canceled immediately on BeingWounded).
+
+Reference: `Reaction_05Cooper`; Risk sibling `Reaction_02059`; attachment sibling `Reaction_04053`.

@@ -625,6 +625,8 @@ class States
             const DUEL_CHOOSE_TECHNIQUE_04021 = 52104021;
             const DUEL_CHOOSE_TECHNIQUE_04033 = 52104033;
             const DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01 = 52105001;
+            // CAD — Don Vissenta Scarpa (_05Cooper). Exp 5 + card 2.
+            const DUEL_CHOOSE_TECHNIQUE_05COOPER = 52105002;
                 const DUEL_CHOOSE_TECHNIQUE_03043_2 = 521030432;
                 const DUEL_CHOOSE_TECHNIQUE_03043_3 = 521030433;
         const DUEL_USE_MANEUVER_FROM_COMBAT_CARD = 522;

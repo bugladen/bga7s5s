@@ -307,6 +307,24 @@ WHY at resolve-time and not inside `actFromTechniqueWithId`: by the time the pla
 
 The wound-event factory signature mirrors `Technique_01063`'s use: `($characterId, $sourceCharacterId, $wounds, $sourceDescription, $techniqueId)`.
 
+### Wound chosen ally • +N duel stat — "Wound your \<Trait\> / other character at this location • +N[Riposte]"
+
+For CAD Vissenta `_05Cooper`: **"Technique: Wound your Red Hand at this location • +2[Riposte]."** Sibling: Red Scepter `Technique_02006` ("Wound your other character … • +1 Parry" + engage attachment).
+
+**This is NOT Daniella wound-before-transition.** Daniella wounds a **fixed** character (Owner) before the effect picker. When the wound **target is chosen**, wound must happen in `actFromTechniqueWithId` after the pick — otherwise there is no valid target at Resolve time.
+
+**Availability:** `IN_DUEL` + `getDuelRoundActor()->Id == owner.Id` + ≥1 eligible controlled character at Owner's location. Eligibility = printed filter (`hasTrait("Red Hand")`, or `Id != actor` when text says "other"). No "other" / no "target" → Owner is legal if she matches the trait.
+
+**Resolve:** `createTechniqueTransitionEvent(..., "NNNNN", …)` only — HIGHEST_PRIORITY so the picker finishes before `EventDuelCalculateTechniqueValues`.
+
+**Picker state:** `DUEL_CHOOSE_TECHNIQUE_NNNNN` — highlight `ids` + Confirm (`onChooseInPlayCardConfirmed`). Wire cad/tac/`_7s5s` JS enter / buttons / leave like `02006` / Cooper.
+
+**`actFromTechniqueWithId`:** validate controller + location + trait → `createCharacterBeingWoundedEvent($chosen->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id)` → `nextState()`. Apply engage only if Engage is printed (02006); Cooper has none.
+
+**Calculate:** `$event->riposte += N` (or parry/thrust) + explanation + optional explicit `setUsed`.
+
+Reference: `Technique_05Cooper`; engage+other sibling `Technique_02006`; fixed-self wound-before-picker contrast `Technique_03013`.
+
 ### Swap mechanics inline in `actFromTechniqueWithId` — challenge vs duel context
 
 For "swap <Owner> with another character" techniques (Daniella Dietrich `_03013` — Wound + swap with Hunter/Zealot at this location), don't defer the swap to event handlers. Do it inline in `actFromTechniqueWithId` so the player's commit unambiguously commits the swap. Branch on the state to handle the challenge-time and duel-time contexts differently:

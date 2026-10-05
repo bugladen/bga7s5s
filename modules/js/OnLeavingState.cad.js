@@ -24,6 +24,15 @@
                 }
             },
 
+            'duelChooseTechnique_05Cooper': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
         };
 
         if (methods[stateName])
