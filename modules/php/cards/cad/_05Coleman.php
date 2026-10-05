@@ -82,7 +82,7 @@ class _05Coleman extends Brute implements IHasManeuvers
         // WHY: Penya hard-ban shape — predicate filters UI; eventCheck backstops bypass paths.
         if ($event instanceof EventCharacterIntervened && $event->newTargetId == $this->Id)
         {
-            throw new UserException($event->theah->game->translate("Stefano cannot intervene."));
+            throw new UserException("Stefano cannot intervene.");
         }
 
         // WHY: At queue time fromLocation is still empty; Location is still the pre-muster
@@ -94,7 +94,7 @@ class _05Coleman extends Brute implements IHasManeuvers
             && $this->Location == Game::LOCATION_HAND
             && ! $event->theah->game->globals->get(Game::IN_DUEL, false))
         {
-            throw new UserException($event->theah->game->translate("Stefano cannot enter play from hand except during a duel."));
+            throw new UserException("Stefano cannot enter play from hand except during a duel.");
         }
     }
 }

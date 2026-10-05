@@ -17,7 +17,7 @@ class Technique_05Cooper extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("Wound your Red Hand • +2 Riposte");
+        $this->Name = "Wound your Red Hand • +2 Riposte";
     }
 
     /**
@@ -89,7 +89,7 @@ class Technique_05Cooper extends Technique
             $owner = $this->getOwningCard($event->theah);
             $event->riposte += 2;
             $event->explanations[] = sprintf(
-                $event->theah->game->translate("%s: Technique [%s] adds 2 Riposte."),
+                "%s: Technique [%s] adds 2 Riposte.",
                 $owner->getInjectCode(),
                 $this->Name
             );
@@ -124,25 +124,25 @@ class Technique_05Cooper extends Technique
             $character = $game->theah->getCharacterById($id);
             if ($character === null)
             {
-                throw new UserException($game->translate("Character not found"));
+                throw new UserException("Character not found");
             }
 
             if ($character->ControllerId != $owner->ControllerId)
             {
-                throw new UserException($game->translate("Character is not controlled by you."));
+                throw new UserException("Character is not controlled by you.");
             }
 
             if ($character->Location != $owner->Location)
             {
                 throw new UserException(sprintf(
-                    $game->translate("Character is not at the same location as %s."),
+                    "Character is not at the same location as %s.",
                     $owner->Name
                 ));
             }
 
             if (! $character->hasTrait("Red Hand"))
             {
-                throw new UserException($game->translate("Character must be a Red Hand."));
+                throw new UserException("Character must be a Red Hand.");
             }
 
             // WHY: Wound is the cost; apply after pick (target chosen). Shape = Technique_02006

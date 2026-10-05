@@ -22,20 +22,20 @@ class Reaction_05Cooper extends CardReaction
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Ignore Opponent's Wound");
+        $this->Name = "Ignore Opponent's Wound";
     }
 
     public function getReactionDescription(Theah $theah): string
     {
         return parent::getReactionDescription($theah)
-            . $theah->game->translate('${you} may ignore a wound from an opponent\'s ability: ');
+            . "${you} may ignore a wound from an opponent's ability: ";
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Ignore Wound'), 'ignoreWound');
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');
+        $array[] = $this->createButtonProperty($theah->game, "Ignore Wound", 'ignoreWound');
+        $array[] = $this->createButtonProperty($theah->game, "Pass", 'pass');
 
         return $array;
     }
@@ -121,7 +121,7 @@ class Reaction_05Cooper extends CardReaction
 
         if ($reactionId === 'ignoreWound')
         {
-            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} ignored the wound.'), [
+            $game->notify->all("message", '${reaction_inject_code}: ${player_name} ignored the wound.', [
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
             ]);

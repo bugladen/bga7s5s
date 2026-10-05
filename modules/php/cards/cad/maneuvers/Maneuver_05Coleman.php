@@ -15,7 +15,7 @@ class Maneuver_05Coleman extends Maneuver
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Put Stefano into play at this location");
+        $this->Name = "Put Stefano into play at this location";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
