@@ -22,7 +22,7 @@ class _05Henry extends Brute implements IHasManeuvers
 
         $this->Name = "Carlo";
         $this->Title = "Blackguard";
-        $this->Image = "05Henry.v3.jpg";
+        $this->Image = "05Henry.v3.1.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 4;
