@@ -28,7 +28,7 @@ class _01142 extends Risk implements IHasManeuvers
         $this->Thrust = 2;
 
         $this->Traits = [
-            clienttranslate('Flouish'),
+            clienttranslate('Flourish'),
             clienttranslate('Demoralize'),
         ];
 
