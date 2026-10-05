@@ -32,6 +32,8 @@ class _01013 extends Character implements IHasTechniques, IHasReactions
         $this->Finesse = 2;
         $this->Influence = 1;
 
+        $this->InPlayXImageOffset = -20;
+
         $this->Traits = [
             clienttranslate("Hero"),
             clienttranslate("Duelist"),
