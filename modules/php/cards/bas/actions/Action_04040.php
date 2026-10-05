@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04040 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -130,6 +131,65 @@ class Action_04040 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "04040", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        // WHY: Do not queue unequip/locker/wound beside the cancel hook. Unyielding Loyalty
+        // (and Maryam / Vittoria) set canceled=true during EventCharacterTargeted. Queuing
+        // destroy events first meant they applied before UL's wound intercept — cancel
+        // stopped only the wound, attachment already in The Locker. Gate effects on
+        // targeting (Amour Action_01104 / Giacinto Action_01205). Pass / Night of Drinking
+        // re-queue the targeting clone; this handler emits the full package again.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            $attachmentId = (int)$game->globals->get(Game::CHOSEN_ATTACHMENT);
+            $attachment = $event->theah->getAttachmentById($attachmentId);
+
+            if ($owner === null || $target === null || $attachment === null || $attachment->FakeAttachment)
+            {
+                return;
+            }
+
+            if ($attachment->AttachedToId != $target->Id)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            // WHY unequip before locker: EventCardSentToLocker only moves the card — it does
+            // not detach. Mirror _01154_RiskClone / Action_03072 destroy path.
+            $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
+                $attachment->ControllerId,
+                $attachment->AttachedToId,
+                $attachment->Id
+            );
+            $unequipEvent->batchId = $batchId;
+            $event->theah->eventCheck($unequipEvent);
+            $event->theah->queueEvent($unequipEvent);
+
+            $lockerEvent = EventFactory::createCardSentToLockerEvent(
+                $attachment->ControllerId,
+                $attachment->Id
+            );
+            $lockerEvent->batchId = $batchId;
+            $event->theah->queueEvent($lockerEvent);
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                $target->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $woundEvent->batchId = $batchId;
+            $event->theah->eventCheck($woundEvent);
+            $event->theah->queueEvent($woundEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -223,34 +283,22 @@ class Action_04040 extends RiskCityAction implements IAbilityThatTargetsCharacte
 
             $owner = $this->getOwningCard($game->theah);
 
-            // WHY unequip before locker: EventCardSentToLocker only moves the card — it does
-            // not detach. Mirror _01154_RiskClone / Action_03072 destroy path.
-            $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
-                $attachment->ControllerId,
-                $attachment->AttachedToId,
-                $attachment->Id
-            );
-            $game->theah->eventCheck($unequipEvent);
-            $game->theah->queueEvent($unequipEvent);
+            $game->globals->set(Game::CHOSEN_ATTACHMENT, $attachment->Id);
 
-            $lockerEvent = EventFactory::createCardSentToLockerEvent(
-                $attachment->ControllerId,
-                $attachment->Id
-            );
-            $game->theah->queueEvent($lockerEvent);
-
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+            // WHY: Cancel hook first. Effects (unequip → locker → wound) emit only when
+            // EventCharacterTargeted survives — see handleEvent. Shared batchId so UL's
+            // deleteEventBatch strips siblings if this Risk queues effects before HAND
+            // cancels (city/discard order vs HAND).
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
                 $target->Id,
                 $owner->Id,
-                1,
-                $owner->getInjectCode(),
                 $this->Id
             );
-            $game->theah->eventCheck($woundEvent);
-            $game->theah->queueEvent($woundEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("attachmentChosen");
         }
