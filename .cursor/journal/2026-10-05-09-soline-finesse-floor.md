@@ -44,3 +44,9 @@ FIN ≥ 0; changing the hub clamp is a wider regression surface. Absorbed matche
 - `modules/php/cards/bas/_04043.php`
 - `.claude/skills/create-character/pattern-a.md`
 - `.claude/skills/create-faction-attachment/pattern-e.md`
+
+## Follow-up same day (2026-10-05-11)
+Same Elena+Garb table: after duel FIN stuck elevated. Separate bug —
+EventHub absolute `NewFinesse` write; multiple EventDuelEnd clears don't
+compose. Hub now applies Old→New as a live delta. Absorbed still needed for
+the floor case; delta hub does not replace it.

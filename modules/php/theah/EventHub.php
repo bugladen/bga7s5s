@@ -812,15 +812,23 @@ trait EventHub
                     $handler = function (Theah $theah, EventCharacterFinesseModifed $event)
                     {
                         $character = $theah->getCharacterById($event->CharacterId);
-                        $character->ModifiedFinesse = max(0, $event->NewFinesse);
+                        // WHY: Callers always mean a delta (Old→New from a snapshot). Applying
+                        // absolute NewFinesse loses earlier queued adjustments when several
+                        // sources clear on the same EventDuelEnd (Elena Sorcery-line bonus,
+                        // Assassin's Garb, Soline absorb undo) — last absolute write wins and
+                        // Finesse sticks high after the duel. Apply New−Old against the live
+                        // value; notify with the actual before/after so the UI stays in sync.
+                        $oldFinesse = $character->ModifiedFinesse;
+                        $delta = $event->NewFinesse - $event->OldFinesse;
+                        $character->ModifiedFinesse = max(0, $oldFinesse + $delta);
                         $character->IsUpdated = true;
     
                         $theah->game->notify->all("characterFinesseModifed", clienttranslate('The finesse of ${character_name} went from ${oldFinesse} to ${newFinesse} due to: ${reason}.'), [
                             'i18n' => ['character_name'],
                             "character_name" => $character->Name,
                             "characterId" => $character->Id,
-                            "oldFinesse" => $event->OldFinesse, 
-                            "newFinesse" => $event->NewFinesse,
+                            "oldFinesse" => $oldFinesse,
+                            "newFinesse" => $character->ModifiedFinesse,
                             "reason" => $event->Reason,
                         ]);
                     };
