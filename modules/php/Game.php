@@ -85,6 +85,7 @@ class Game extends \Bga\GameFramework\Table
         9 => 'Sanjay',
         10 => 'Ekaterina Ilyanava',
         11 => 'Valeri Mikhailov',
+        12 => 'Don Vissenta Scarpa',
     ];
 
     //Card locations
