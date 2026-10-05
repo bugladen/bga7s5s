@@ -208,6 +208,22 @@ class _04032 extends Character implements IHasActions
         }
     }
 
+    // WHY: Fate's Silence blanks via Theah core-only dispatch — this subclass never
+    // sees equip/unequip. Stamped GIACINTO_INFLUENCE_REDUCTION would otherwise stick
+    // (and stay missing after Silence destroys at end of HD).
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->removeFromAllDebuffedSorcerers($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->isGiacintoInPlay($theah) && $this->Location != Game::LOCATION_PLAYER_HOME)
+        {
+            $this->applyDebuffsAtLocation($theah, $this->Location);
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -221,6 +237,13 @@ class _04032 extends Character implements IHasActions
         if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
         {
             $this->removeFromAllDebuffedSorcerers($event->theah);
+            return;
+        }
+
+        // WHY: Defense in depth — Theah should skip this handleEvent while blanked, but
+        // Card::handleEvent early-return still lets Character subclasses run after parent.
+        if ($this->abilitiesAreBlanked())
+        {
             return;
         }
 

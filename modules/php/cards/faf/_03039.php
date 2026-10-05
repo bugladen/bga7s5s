@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _03039 extends Character
 {
@@ -49,6 +50,11 @@ class _03039 extends Character
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         // WHY: Mirror Rena (_01040) Weapon Combat bonus — apply +1 Finesse only on the
         // transition into "has at least one Weapon" (weaponsCount == 1 after equip), and
@@ -111,5 +117,58 @@ class _03039 extends Character
                 }
             }
         }
+    }
+
+    private function countEquippedWeapons(Theah $theah): int
+    {
+        $weaponsCount = 0;
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if ($attachment !== null && $attachment->hasTrait("Weapon"))
+            {
+                $weaponsCount++;
+            }
+        }
+        return $weaponsCount;
+    }
+
+    // WHY: Fate's Silence skips handleEvent — Weapon +1 Finesse stamp would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->ControllerId == 0 || $this->countEquippedWeapons($theah) < 1)
+        {
+            return;
+        }
+
+        $modifiedEvent = EventFactory::createCharacterFinesseModifedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedFinesse,
+            $this->ModifiedFinesse - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($modifiedEvent);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->countEquippedWeapons($theah) < 1)
+        {
+            return;
+        }
+
+        $modifiedEvent = EventFactory::createCharacterFinesseModifedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedFinesse,
+            $this->ModifiedFinesse + 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($modifiedEvent);
     }
 }

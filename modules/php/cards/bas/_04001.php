@@ -61,6 +61,11 @@ class _04001 extends Character
     {
         parent::handleEvent($event);
 
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
         {
             $this->recomputeOpposedWoundedCombatBonus($event->theah, $event->toLocation, $event);
@@ -263,5 +268,35 @@ class _04001 extends Character
         }
 
         return $wounds > 0;
+    }
+
+    // WHY: Fate's Silence skips handleEvent — +1 Combat stamp would stick while blanked.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if (! $this->OpposedWoundedCombatBonusApplied || $this->ControllerId == 0)
+        {
+            return;
+        }
+
+        $combatEvent = EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedCombat,
+            $this->ModifiedCombat - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($combatEvent);
+
+        $this->OpposedWoundedCombatBonusApplied = false;
+        $this->IsUpdated = true;
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $this->recomputeOpposedWoundedCombatBonus($theah, $this->Location);
     }
 }

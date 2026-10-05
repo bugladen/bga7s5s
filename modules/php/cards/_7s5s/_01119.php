@@ -67,6 +67,25 @@ class _01119 extends Character
         $theah->queueEvent($influenceEvent);
     }
 
+    // WHY: Fate's Silence skips handleEvent — EngagedEnemyBonus Influence would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->EngagedEnemyBonus != 0)
+        {
+            $this->updateInfluence($theah, 0);
+        }
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $count = $this->getOpposingEngagedCharacterCount($theah, $this->Location);
+        $this->updateInfluence($theah, $count);
+    }
+
     public function getOpposingEngagedCharacterCount(Theah $theah, string $location): int
     {
         $characters = $theah->getCharactersAtLocation($location);
@@ -77,6 +96,11 @@ class _01119 extends Character
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
 
         if ($event instanceof EventCardMoved && $event->cardId == $this->Id)

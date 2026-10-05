@@ -64,9 +64,40 @@ class _01007 extends Character implements IHasActions
         $theah->queueEvent($influenceEvent);
     }
 
+    // WHY: Fate's Silence skips handleEvent — Renown-driven Influence would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->ControllerId == 0)
+        {
+            return;
+        }
+        $this->updateInfluence($theah, 0);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            $this->updateInfluence($theah, 0);
+            return;
+        }
+
+        $location = $theah->getCityLocation($this->Location);
+        $this->updateInfluence($theah, $location->Renown);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         if ($event instanceof EventCardMoved && $event->cardId == $this->Id && $event->toLocation == Game::LOCATION_PLAYER_HOME)
         {

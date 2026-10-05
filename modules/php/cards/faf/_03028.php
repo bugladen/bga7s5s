@@ -81,6 +81,14 @@ class _03028 extends Character implements IHasReactions
     {
         parent::handleEvent($event);
 
+        // WHY: Combat-challenge ban is text-box — eventCheckCore still runs while blanked,
+        // but this ban lives in subclass eventCheck which Theah skips. handleEvent passives
+        // also skip via Theah; defense early-return below.
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($event instanceof EventDuelStarted)
         {
             if ($this->isParticipatingInDuelAtGrandBazaar($event))
@@ -208,6 +216,35 @@ class _03028 extends Character implements IHasReactions
         );
 
         $theah->queueEvent($combatEvent);
+    }
+
+    // WHY: Fate's Silence skips handleEvent — Combat=Influence override would stick mid-duel.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearCombatEqualsInfluence($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if (! $theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            return;
+        }
+        if ($this->Location != Game::LOCATION_CITY_BAZAAR)
+        {
+            return;
+        }
+
+        $challengerId = $theah->getDuelChallengerId();
+        $defenderId = $theah->getDuelDefenderId();
+        if ($challengerId == $this->Id || $defenderId == $this->Id)
+        {
+            $this->applyCombatEqualsInfluence($theah);
+        }
     }
 
 }

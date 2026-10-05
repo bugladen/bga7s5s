@@ -123,9 +123,46 @@ class _03026 extends Character implements IHasActions
         $theah->queueEvent($influenceEvent);
     }
 
+    // WHY: Fate's Silence skips handleEvent — absolute Influence = base+bonus would stick.
+    // Match updateInfluence's absolute shape (printed Influence, no attachment stacking).
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->ControllerId == 0)
+        {
+            return;
+        }
+        if ($this->ModifiedInfluence == $this->Influence)
+        {
+            return;
+        }
+
+        $influenceEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedInfluence,
+            $this->Influence,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($influenceEvent);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $this->updateInfluence($theah, $this->Location);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
         {

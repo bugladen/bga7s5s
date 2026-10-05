@@ -98,6 +98,17 @@ abstract class Character extends Card implements IHasTechniques
         return $this->hasCondition(Game::FATES_SILENCE_CONDITION);
     }
 
+    // WHY: Theah skips polymorphic handleEvent while blanked, so stamped aura/passives
+    // (Giacinto Influence, etc.) never see equip/unequip to clear or re-apply themselves.
+    // Fate's Silence calls these immediately after add/remove of FATES_SILENCE_CONDITION.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+    }
+
     // WHY: Targeting-time gate for passives like Kaspar (_03014) "Opponents' abilities
     // cannot wound or move wounds to …". eventCheck zeroing on EventCharacterBeingWounded
     // still blocks the wound half, but move-wound abilities heal first — without this

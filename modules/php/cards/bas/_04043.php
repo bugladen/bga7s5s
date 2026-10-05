@@ -187,6 +187,35 @@ class _04043 extends Character implements IHasReactions
         $this->IsUpdated = true;
     }
 
+    // WHY: Fate's Silence skips handleEvent — stamped adversary -1 Finesse would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearAdversaryDebuff($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if (! $theah->game->globals->get(Game::IN_DUEL, false))
+        {
+            return;
+        }
+
+        $challengerId = $theah->getDuelChallengerId();
+        $defenderId = $theah->getDuelDefenderId();
+        if ($challengerId == $this->Id)
+        {
+            $this->applyDebuffToAdversary($defenderId, $theah);
+        }
+        else if ($defenderId == $this->Id)
+        {
+            $this->applyDebuffToAdversary((int) $challengerId, $theah);
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
@@ -197,6 +226,10 @@ class _04043 extends Character implements IHasReactions
         // (Soline's printed aura) and not location match (duels already require same location).
         if ($event instanceof EventDuelStarted)
         {
+            if ($this->abilitiesAreBlanked())
+            {
+                return;
+            }
             if ($event->challengerId == $this->Id)
             {
                 $this->applyDebuffToAdversary($event->defenderId, $event->theah);
@@ -220,6 +253,13 @@ class _04043 extends Character implements IHasReactions
         if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
         {
             $this->clearAdversaryDebuff($event->theah);
+            return;
+        }
+
+        // WHY: Defense in depth — Theah skips handleEvent while blanked, but Card
+        // early-return still lets subclass code run after Character::handleEvent.
+        if ($this->abilitiesAreBlanked())
+        {
             return;
         }
 

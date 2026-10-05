@@ -107,9 +107,41 @@ class _01120 extends Character implements IHasReactions, IHasTechniques
         $theah->queueEvent($modifiedEvent);
     }
 
+    // WHY: Fate's Silence skips handleEvent — +1 Influence at controlled location would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->HasAddedInfluence)
+        {
+            $this->removeInfluence($theah);
+        }
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->Location == Game::LOCATION_PLAYER_HOME || $this->HasAddedInfluence)
+        {
+            return;
+        }
+
+        $location = $theah->getCityLocation($this->Location);
+        if ($location->Controller == $this->ControllerId)
+        {
+            $this->addInfluence($theah);
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
         {

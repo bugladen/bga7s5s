@@ -60,6 +60,11 @@ class _03016 extends Character implements IHasReactions
     {
         parent::handleEvent($event);
 
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if (($event instanceof EventCharacterWounded || $event instanceof EventCharacterHealed)
             && $event->characterId == $this->Id)
         {
@@ -103,5 +108,35 @@ class _03016 extends Character implements IHasReactions
             $this->WoundedCombatBonusApplied = false;
             $this->IsUpdated = true;
         }
+    }
+
+    // WHY: Fate's Silence skips handleEvent — +1 Combat while wounded would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if (! $this->WoundedCombatBonusApplied || $this->ControllerId == 0)
+        {
+            return;
+        }
+
+        $combatEvent = EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedCombat,
+            $this->ModifiedCombat - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($combatEvent);
+
+        $this->WoundedCombatBonusApplied = false;
+        $this->IsUpdated = true;
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $this->recomputeWoundedCombatBonus($theah);
     }
 }

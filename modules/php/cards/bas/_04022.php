@@ -174,9 +174,53 @@ class _04022 extends Character implements IHasReactions
         }
     }
 
+    // WHY: Fate's Silence skips handleEvent — +1 Finesse/+1 Influence stamp would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if (! $this->DuelistAuraApplied || $this->ControllerId == 0)
+        {
+            return;
+        }
+
+        $this->DuelistAuraApplied = false;
+        $this->IsUpdated = true;
+
+        $finesseEvent = EventFactory::createCharacterFinesseModifedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedFinesse,
+            $this->ModifiedFinesse - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($finesseEvent);
+
+        $influenceEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedInfluence,
+            $this->ModifiedInfluence - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($influenceEvent);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $this->updateDuelistAura($theah, $this->Location);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
         {

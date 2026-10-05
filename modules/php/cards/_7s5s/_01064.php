@@ -109,9 +109,46 @@ class _01064 extends Character implements IHasActions
         }
     }
 
+    // WHY: Fate's Silence skips handleEvent — +1 Combat vs higher Renown would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if (! $this->hasBonus || $this->ControllerId == 0)
+        {
+            return;
+        }
+
+        $this->hasBonus = false;
+        $this->IsUpdated = true;
+
+        $event = EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedCombat,
+            $this->ModifiedCombat - 1,
+            $this->getInjectCode()
+        );
+
+        $this->ModifiedCombat = $this->ModifiedCombat - 1;
+        $theah->queueEvent($event);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $this->checkRenown($theah->game);
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         if (($event instanceof EventCharacterMustered || $event instanceof EventApproachCharacterPlayed) && $event->characterId == $this->Id)
         {

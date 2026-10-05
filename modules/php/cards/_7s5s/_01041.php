@@ -78,9 +78,40 @@ class _01041 extends Character implements IHasActions
         return count($sorcerers);
     }
 
+    // WHY: No apply flag — infer from opposing count. Blank removes +1 if aura was live;
+    // unblank re-adds when still opposing a Sorcerer.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->ControllerId == 0)
+        {
+            return;
+        }
+        if ($this->getOpposingSorcererCount($theah, $this->Location) >= 1)
+        {
+            $this->updateInfluence($theah, -1);
+        }
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->getOpposingSorcererCount($theah, $this->Location) >= 1)
+        {
+            $this->updateInfluence($theah, 1);
+        }
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         // WHY: Must handle home→city self-moves. After dusk everyone is at
         // LOCATION_PLAYER_HOME; the next High Drama move into a city with an opposing

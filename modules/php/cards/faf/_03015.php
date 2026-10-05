@@ -10,6 +10,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 class _03015 extends Character
 {
@@ -52,6 +54,12 @@ class _03015 extends Character
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // WHY: Forced muster wound / dusk Resolve / refuse heal are all text-box.
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         if (($event instanceof EventCharacterMustered || $event instanceof EventApproachCharacterPlayed) && $event->characterId == $this->Id)
         {
@@ -103,6 +111,49 @@ class _03015 extends Character
 
             $healEvent = EventFactory::createCharacterBeingHealedEvent($this->Id, $this->Id, 1, $this->getInjectCode(), $this->Id);
             $event->theah->queueEvent($healEvent);
+        }
+    }
+
+    // WHY: Fate's Silence skips handleEvent — dusk -3 Resolve stamp would stick (and
+    // EndOfDay restore would miss if blanked through EndOfDay then unblanked later).
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if (! $this->DuskResolvePenaltyApplied)
+        {
+            return;
+        }
+
+        $this->ModifiedResolve += 3;
+        $this->DuskResolvePenaltyApplied = false;
+        $this->IsUpdated = true;
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || ! $this->isControlled() || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ((int) $theah->game->getGameStateValue(Game::TURN_PHASE) !== Game::DUSK)
+        {
+            return;
+        }
+        if ($this->DuskResolvePenaltyApplied)
+        {
+            return;
+        }
+
+        $this->ModifiedResolve -= 3;
+        $this->DuskResolvePenaltyApplied = true;
+        $this->IsUpdated = true;
+
+        if ($this->Wounds >= $this->ModifiedResolve && ! $this->IsDying)
+        {
+            $this->IsDying = true;
+            $this->unEquipAllAttachments($theah);
+
+            $destroyEvent = EventFactory::createCharacterDestroyedEvent($this->ControllerId, $this->Id, $this->getInjectCode());
+            $theah->queueEvent($destroyEvent);
         }
     }
 }

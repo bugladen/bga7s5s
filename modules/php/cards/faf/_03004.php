@@ -58,6 +58,11 @@ class _03004 extends Character
             return;
         }
 
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($event instanceof EventDuelEndOfRound)
         {
             $this->recomputeFinesseBonus($event->theah);
@@ -114,5 +119,20 @@ class _03004 extends Character
 
         $this->FinesseBonus = $newBonus;
         $this->IsUpdated = true;
+    }
+
+    // WHY: Fate's Silence skips handleEvent — Sorcery dueling-line Finesse bonus would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->applyFinesseDelta(0, $theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $this->recomputeFinesseBonus($theah);
     }
 }

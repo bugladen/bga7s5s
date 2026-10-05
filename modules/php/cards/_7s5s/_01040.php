@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01040 extends Character implements IHasReactions
 {
@@ -49,6 +50,11 @@ class _01040 extends Character implements IHasReactions
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
 
         if ($event instanceof EventAttachmentEquipped && $event->characterId == $this->Id)
         {
@@ -95,5 +101,58 @@ class _01040 extends Character implements IHasReactions
                 }
             }
         }
+    }
+
+    private function countEquippedWeapons(Theah $theah): int
+    {
+        $weaponsCount = 0;
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if ($attachment !== null && $attachment->hasTrait("Weapon"))
+            {
+                $weaponsCount++;
+            }
+        }
+        return $weaponsCount;
+    }
+
+    // WHY: Fate's Silence skips handleEvent — Weapon +1 Combat stamp has no flag and would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->ControllerId == 0 || $this->countEquippedWeapons($theah) < 1)
+        {
+            return;
+        }
+
+        $modifiedEvent = EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedCombat,
+            $this->ModifiedCombat - 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($modifiedEvent);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->countEquippedWeapons($theah) < 1)
+        {
+            return;
+        }
+
+        $modifiedEvent = EventFactory::createCharacterCombatModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $this->ModifiedCombat,
+            $this->ModifiedCombat + 1,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($modifiedEvent);
     }
 }

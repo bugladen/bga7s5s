@@ -75,6 +75,12 @@ class _04002 extends Character implements IHasActions
             return;
         }
 
+        // WHY: Fate's Silence — stamped Thug Finesse/Resolve must not keep applying while blanked.
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
         if ($event instanceof EventCardMoved
             || $event instanceof EventCharacterMustered
             || $event instanceof EventApproachCharacterPlayed
@@ -341,5 +347,20 @@ class _04002 extends Character implements IHasActions
         }
         $this->BuffedThugIds = [];
         $this->IsUpdated = true;
+    }
+
+    // WHY: Fate's Silence skips handleEvent — Thug +1 Finesse/+1 Resolve stamps would stick.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        $this->clearAllThugBuffs($theah);
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        $this->syncThugAura($theah);
     }
 }

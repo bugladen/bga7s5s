@@ -229,9 +229,13 @@ When an equipped RiskAttachment blanks the host character's text box, stamp a **
 
 **WHY condition + Theah skip (not array-stripping):** Turais Dall's cited counterplay is a **Reaction** (ability object) — skipping Character ability loops covers that. Character-class Forced/passives run *after* `parent::handleEvent` in subclasses, so only Theah's core-only dispatch blanks those without touching every Character file.
 
+**Stamped aura cleanup (required):** Passives that stamp conditions / Modified* on *other* cards (Giacinto `_04032` Influence) keep working after blank if you only skip `handleEvent` — the stamp already happened. `_04008_Silence` calls `Character::onAbilitiesBlanked` / `onAbilitiesUnblanked` right after add/remove of `FATES_SILENCE_CONDITION`. Override those on the host Character to clear / re-assert stamps. Default hooks are empty.
+
+**FakeAttachment display:** Copy printed `Text`, RPT (`FactionAttachment` + `FactionCardTrait`), wealth cost, expansion/card # onto the clone — full-text tooltips read the FakeAttachment, not the hidden Risk. Burden historically omitted these; Silence must not.
+
 **WHY not blank attachment abilities:** reminder text "their abilities" = the equipped character's printed abilities. Attachments retain their own text boxes.
 
-Reference: `_04008_Silence`, `Character::abilitiesAreBlanked` / `handleCoreCharacterEvent` / `eventCheckCore`, `Theah` blanked branches, `CardAction` / `Maneuver` / `Technique` availability gates.
+Reference: `_04008_Silence`, `Character::abilitiesAreBlanked` / `onAbilitiesBlanked` / `onAbilitiesUnblanked` / `handleCoreCharacterEvent` / `eventCheckCore`, `Theah` blanked branches, `CardAction` / `Maneuver` / `Technique` availability gates, `_04032` aura clear/reapply.
 
 ### Pattern E.4 — "When paying for this card, [Trait] cards gain Wealth"
 

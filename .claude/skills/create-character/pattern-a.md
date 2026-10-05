@@ -47,6 +47,22 @@ WHY `characterIsInDiscardOrLocker` and not just `isControlled()`:
 
 Apply the same check on any Character ability that triggers off phase events.
 
+### Fate's Silence blanking — stamped passives MUST clear/re-assert
+
+Fate's Silence (`_04008`) stamps `FATES_SILENCE_CONDITION` on the equipped character. While blanked, Theah skips polymorphic `handleEvent` / `eventCheck` and runs only `handleCoreCharacterEvent` / `eventCheckCore`. That stops *new* applications of text-box passives — it does **not** undo Modified* / conditions / Technique grants already stamped on self or others.
+
+**Required whenever a Character/Leader passive leaves lasting state** (Modified Combat/Finesse/Influence/Resolve, `Game::*_CONDITION` on another card, `$BuffedIds` / `$AffectedCharacterId`, Technique grants, duel-line bonuses, dusk Resolve penalties, Weapon-equip buffers, etc.):
+
+1. Override `onAbilitiesBlanked(Theah $theah)` — clear every stamp this card currently holds (same helpers as leave-play / scope-exit).
+2. Override `onAbilitiesUnblanked(Theah $theah)` — recompute and re-apply if the printed condition still holds.
+3. Optional defense: early-return the passive body when `$this->abilitiesAreBlanked()` (Theah should already skip `handleEvent`; Card's early-return still lets subclasses run after `parent::handleEvent`).
+
+`_04008_Silence` calls these hooks immediately after add/remove of `FATES_SILENCE_CONDITION`. Default `Character` hooks are empty — **silence does not know about Giacinto/Danilo/etc.** Leaders are out of Silence's equip range (non-Leader only) but still implement the hooks if they stamp lasting state (future blanking sources / consistency).
+
+WHY not "skip handleEvent is enough": Giacinto's −1 Influence was already on opposing Sorcerers before Silence equipped; skipping his passive left the stamp live.
+
+References: `_04032` Giacinto (done); Risk Pattern E.3 (`create-risk/pattern-e.md`); hooks on `Character::onAbilitiesBlanked` / `onAbilitiesUnblanked`.
+
 ### Gambled combat-card stat bonus
 
 For text like **"Sanjay's gambled combat cards have +1[Riposte]"** (not every combat card — only when the actor gambled this round):
@@ -428,6 +444,7 @@ This is a **debuff aura on opposing characters**, not a self-buff. Mirror Contem
 5. **Home → empty list** — same shared-`LOCATION_PLAYER_HOME` trap as Benci. Clear every debuff when Owner moves Home; skip muster/recruit hooks while Owner is at Home.
 6. **Stale-DB on `EventCardMoved`** — Angeline exclude-out / include-in when recounting who shares Owner's location.
 7. **Lifecycle hooks** — move / muster / approach / destroy / recruit / Owner sent to locker (clear all).
+8. **Fate's Silence** — override `onAbilitiesBlanked` / `onAbilitiesUnblanked` (clear all debuffs / re-apply at location). See Pattern A "Fate's Silence blanking".
 
 WHY not global `_01143`: printed "Opposing" in this codebase always means same location + different controller. A city-wide Influence tax would over-hit.
 
