@@ -1,0 +1,17 @@
+---
+description: Run local PHP regression tests after changing covered game code
+alwaysApply: true
+---
+
+# Regression tests
+
+When changing PHP under `modules/php/` (cards, composites, states, Game/Theah paths they exercise), run the local suite before finishing:
+
+```
+php tests/run.php
+```
+
+- Suites: `tests/regression/*_Test.php`
+- Currently covers `_01006`–`_01010` and their Action/Reaction/Technique composites
+- If you change a covered card/composite, run at least that suite (or the full runner)
+- If you add/fix behavior that should not regress, extend or add a suite under `tests/regression/`

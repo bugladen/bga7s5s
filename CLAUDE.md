@@ -13,7 +13,17 @@ Enable pre-commit hooks after cloning:
 git config core.hooksPath .githooks
 ```
 
-Deployment is via SFTP upload to BGA Studio — there is no local build step, package manager, or test runner.
+Deployment is via SFTP upload to BGA Studio — there is no local build step or package manager.
+
+### Regression tests
+
+Local PHP regression tests live under `tests/` (no PHPUnit). **When you change game PHP (especially cards/composites/states covered by a suite), run them before considering the work done:**
+
+```
+php tests/run.php
+```
+
+Suites are in `tests/regression/*_Test.php`. Currently covers cards `_01006`–`_01010` and their Action/Reaction/Technique composites.
 
 ## Architecture
 
