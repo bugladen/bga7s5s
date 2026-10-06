@@ -13,6 +13,7 @@
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01089;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04003a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04043;
@@ -1832,6 +1833,10 @@ trait StatesTrait
         // safety-net flush if that path missed after destroy recreate (AffectedCharacterId
         // wiped; locker cards not in buildCity so EventDuelEnd never hits her).
         _04043::clearPendingDebuff($this);
+
+        // WHY: Soline _01089 — primary clear is EventDuelEnd → raiseFinesse. Flush any
+        // leftover aura condition + stored -1 if AffectedCharacterId was lost.
+        _01089::clearLeftoverDebuffs($this);
 
         $this->globals->delete(Game::CHALLENGE_CANCELLED);
         $this->clearChallengeLastKnownParticipants();

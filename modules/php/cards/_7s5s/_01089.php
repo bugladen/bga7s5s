@@ -67,6 +67,51 @@ class _01089 extends Leader implements IHasReactions
         ];
     }
 
+    /**
+     * Safety-net restore for leftover Soline -1 Finesse. Called from stDuelEnd.
+     * WHY: Primary clear is EventDuelEnd → raiseFinesse. If AffectedCharacterId was
+     * lost while the condition (and stored -1) remained, this flushes by scanning.
+     */
+    public static function clearLeftoverDebuffs(Game $game): void
+    {
+        // WHY: stDuelEnd may run before buildCity; cards array must be loaded to scan.
+        $game->theah->buildCity();
+        $theah = $game->theah;
+        // WHY: $theah->cards is private — use getAllCards() (same as getWorldCards).
+        $soline = null;
+        foreach ($theah->getAllCards() as $card)
+        {
+            if ($card instanceof self)
+            {
+                $soline = $card;
+                break;
+            }
+        }
+        if ($soline === null)
+        {
+            return;
+        }
+
+        foreach ($theah->getAllCards() as $card)
+        {
+            if ($card instanceof Character
+                && $card->hasCondition(Game::SOLINE_EL_GATO_CONDITION)
+                && ! $game->characterIsInDiscardOrLocker($card))
+            {
+                $soline->raiseFinesse($card, $theah);
+            }
+        }
+
+        if ($soline->AffectedCharacterId > 0 || $soline->FinessePenaltyAbsorbed)
+        {
+            $soline->AffectedCharacterId = 0;
+            $soline->FinessePenaltyAbsorbed = false;
+            // WHY: stDuelEnd does not runEvents — IsUpdated alone would be lost before
+            // the next request's buildCity. Persist so EventDuelEnd sees a clean Soline.
+            $game->updateCardObjectInDb($soline);
+        }
+    }
+
     private function raiseFinesse(Character $character, Theah $theah)
     {
         if (! $character->hasCondition(Game::SOLINE_EL_GATO_CONDITION))
@@ -74,9 +119,13 @@ class _01089 extends Leader implements IHasReactions
             return;
         }
 
-        // WHY: Only undo a reduction that was actually stored. If the -1 was floored
-        // away at apply time, +1 here would overshoot printed 0.
-        if ($this->FinessePenaltyAbsorbed)
+        // WHY: Absorbed=true means the -1 was stored. Absorbed=false is the floor case
+        // (apply found FIN=0) — skip +1 to avoid overshooting printed 0. But Absorbed
+        // can desync (e.g. new typed property defaults false after a mid-duel deploy,
+        // or Soline instance fields wiped while the victim kept condition + reduced FIN).
+        // If the condition is still on and FIN > 0, the reduction is live — restore it.
+        // Pure floor leftovers stay at FIN=0 and correctly skip +1.
+        if ($this->FinessePenaltyAbsorbed || $character->ModifiedFinesse > 0)
         {
             $event = EventFactory::createCharacterFinesseModifedEvent($this->ControllerId, $character->Id, $character->ModifiedFinesse, $character->ModifiedFinesse + 1, $this->getInjectCode());
             $theah->queueEvent($event);

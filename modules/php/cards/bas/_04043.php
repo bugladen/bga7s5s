@@ -150,8 +150,9 @@ class _04043 extends Character implements IHasReactions
             return;
         }
 
-        // WHY: Only undo a reduction that was actually stored (Soline floor footgun).
-        if ($this->FinessePenaltyAbsorbed)
+        // WHY: Same Absorbed-or-FIN>0 restore as Soline _01089 — Absorbed can desync
+        // from a live stored -1; FIN>0 with the condition still on means restore.
+        if ($this->FinessePenaltyAbsorbed || $character->ModifiedFinesse > 0)
         {
             $event = EventFactory::createCharacterFinesseModifedEvent(
                 $this->ControllerId,

@@ -148,9 +148,10 @@ When the predicate that drives the modifier changes (a character moves into/out 
 **Finesse floor / Absorbed flag (required for −N Finesse auras):** `EventHub` clamps with `max(0, NewFinesse)`. Applying −1 to a 0-FIN character stamps the condition but stores no reduction — later +1 buffs (Elena Sorcery line, Assassin's Garb, etc.) then show unpenalized FIN. Fix on Soline `_01089` / Sango `_04043`:
 - `$FinessePenaltyAbsorbed` — true only when the −1 actually reduced stored ModifiedFinesse
 - On apply: if `ModifiedFinesse > 0` queue −1 and Absorbed=true; else Absorbed=false (still stamp condition for tooltip)
-- On clear: queue +1 **only if Absorbed** (else overshoot printed 0)
+- On clear: queue +1 if **Absorbed OR ModifiedFinesse > 0** (Absorbed alone can desync from a live stored −1 — e.g. new bool property defaults false after mid-duel deploy — while FIN>0 with the condition still on means restore; pure floor leftovers stay at FIN=0 and skip +1)
 - On `EventCharacterFinesseModifed` for the affected character while condition active and !Absorbed and FIN > 0: queue −1 and Absorbed=true (re-absorb). Own re-apply sets Absorbed before that event drains → no loop.
 - Swaps that share one Absorbed flag: **raise old then lower new** (never reverse).
+- Soline also has `clearLeftoverDebuffs` from `stDuelEnd` (scan leftover condition) — Sango-shaped safety net.
 
 ### During a duel, Owner's adversary has −N[Stat]
 
