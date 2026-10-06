@@ -60,6 +60,9 @@ class Game
     final const ADRIFT_IN_THE_WIND_CONDITION = "Finesse Modified by Adrift in the Wind";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
 
+    final const PLAYER_COUNT = 'playerCount';
+    final const STAT_COMBAT = 'Combat';
+
     final const RECRUIT_TYPE = 'recruitType';
     final const NORMAL_RECRUIT_TYPE = 0;
     final const CIRILO_RECRUIT_TYPE = 2;
@@ -71,6 +74,8 @@ class Game
 
     final const CHOSEN_CARD = 'chosenCard';
     final const CHOSEN_PERFORMER = 'chosenPerformer';
+    final const CHOSEN_TARGET = 'chosenTarget';
+    final const CHOSEN_LOCATION = 'chosenLocation';
     final const CHOSEN_ACTION = 'chosenAction';
     final const TRANSITION_INTERNAL_ID = 'transitionInternalId';
     final const ABNORMAL_FLOW = 'abnormalFlow';
@@ -79,6 +84,21 @@ class Game
     final const EQUIP_TYPE = 'equipType';
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
     final const FIRST_PLAYER = 'firstPlayer';
+
+    final const CHALLENGE_TYPE = 'challengeType';
+    final const NORMAL_CHALLENGE_TYPE = 0;
+    final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
+    final const CHALLENGE_STAT = 'ChallengeStat';
+    final const CHALLENGE_CANCELLED = 'challengeCancelled';
+    final const DUEL_DEFENDER = 'Defender';
+    final const IN_DUEL = 'inDuel';
+
+    final const PAY_STATE_IN_HAND_ACTION = 0;
+    final const PAY_STATE_EQUIP_ATTACHMENT = 1;
+    final const PAY_STATE_USE_MANEUVER_FROM_COMBAT_CARD = 2;
+    final const PAY_STATE_IN_HAND_REACTION = 3;
+    final const PAY_STATE_RECRUIT_MERCENARY = 4;
+    final const PAY_STATE_PLAY_BRUTE = 5;
 
     public FakeGlobals $globals;
     public FakeNotify $notify;
@@ -93,6 +113,7 @@ class Game
 
     public int $playerCount = 2;
     public int $activePlayerId = 1;
+    public bool $forceInDiscardOrLocker = false;
 
     /** @var array<int, string> */
     public array $playerNames = [
@@ -106,6 +127,13 @@ class Game
         $this->notify = new FakeNotify();
         $this->gamestate = new FakeGamestate();
         $this->globals->set(self::PRESSURE_TYPE, self::NORMAL_PRESSURE_TYPE);
+        // WHY: getAdjacentCityLocations branches on player count; default 2-player map.
+        $this->globals->set(self::PLAYER_COUNT, $this->playerCount);
+    }
+
+    public function notifyAllPlayers(string $type, string $message, array $args = []): void
+    {
+        $this->notify->all($type, $message, $args);
     }
 
     public function translate(string $text): string
@@ -173,7 +201,7 @@ class Game
 
     public function characterIsInDiscardOrLocker(Character $character): bool
     {
-        return false;
+        return $this->forceInDiscardOrLocker;
     }
 
     public function getPlayerFactionDeckName(int $playerId): string
@@ -222,5 +250,47 @@ class Game
         if ($card !== null) {
             $this->dbCards[$card->Id] = $card;
         }
+    }
+
+    // WHY: RiskAttachmentTrait::removeRiskAttachment and createRiskAttachment need
+    // location updates without DeckTrait / BGA deck object.
+    public function moveCard(int $cardId, string $location, $locationArg = 0, ?Card $card = null): Card
+    {
+        $card ??= $this->getCardObjectFromDb($cardId);
+        if ($card === null && $this->theah !== null) {
+            $card = $this->theah->getCardById($cardId);
+        }
+        if ($card === null) {
+            throw new \RuntimeException("moveCard: card {$cardId} not found");
+        }
+        $card->Location = $location;
+        $this->registerDbCard($card);
+        return $card;
+    }
+
+    /** @var list<array{className:string,originalCardId:int,location:string,ownerId:int,controllerId:int,targetId:int,abilityId:string}> */
+    public array $createdRiskAttachments = [];
+
+    // WHY: Action_01025 (and similar) call createRiskAttachment from UtilitiesTrait;
+    // FakeGame records the call so act tests can assert without createCardInLocation/DB.
+    public function createRiskAttachment(
+        Game $game,
+        string $className,
+        int $originalCardId,
+        string $location,
+        int $ownerId,
+        int $controllerId,
+        int $targetId,
+        string $abilityId = ''
+    ): void {
+        $this->createdRiskAttachments[] = [
+            'className' => $className,
+            'originalCardId' => $originalCardId,
+            'location' => $location,
+            'ownerId' => $ownerId,
+            'controllerId' => $controllerId,
+            'targetId' => $targetId,
+            'abilityId' => $abilityId,
+        ];
     }
 }

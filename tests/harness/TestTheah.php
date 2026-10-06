@@ -20,6 +20,9 @@ class TestTheah extends Theah
     public array $queuedEvents = [];
 
     public ?Character $duelOpponent = null;
+    public ?Character $duelActor = null;
+    /** @var array<int, \Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader> playerId => Leader */
+    public array $leadersByPlayerId = [];
 
     public function __construct(Game $game)
     {
@@ -58,6 +61,63 @@ class TestTheah extends Theah
     public function getDuelRoundOpponent(): ?Character
     {
         return $this->duelOpponent;
+    }
+
+    public function getDuelRoundActor(): ?Character
+    {
+        return $this->duelActor;
+    }
+
+    // WHY: Real getLeaderByPlayerId hits player.leader_card_id in DB (Action_01024 muster).
+    public function getLeaderByPlayerId($playerId): ?\Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader
+    {
+        $leader = $this->leadersByPlayerId[(int)$playerId] ?? null;
+        if ($leader instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader) {
+            return $leader;
+        }
+        return null;
+    }
+
+    // WHY: Real delete* hits DB; tests keep events in $queuedEvents only.
+    public function deleteEventBatch(int $batchId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            fn($event) => $event->batchId !== $batchId
+        ));
+    }
+
+    public function deleteTransitionEvents(string $reactionId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            function ($event) use ($reactionId) {
+                if (!$event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition) {
+                    return true;
+                }
+                return $event->internalId !== $reactionId;
+            }
+        ));
+    }
+
+    // WHY: Real getCardObjectsAtLocation hits DB; hand Thugs for Reaction_01014 live in RAM.
+    public function getCardObjectsAtLocation($location, $playerId = null): array
+    {
+        $cards = [];
+        $prop = new ReflectionProperty(Theah::class, 'cards');
+        $prop->setAccessible(true);
+        /** @var array<int, Card> $map */
+        $map = $prop->getValue($this);
+        foreach ($map as $card) {
+            if ($card->Location !== $location) {
+                continue;
+            }
+            if ($playerId !== null && (int)$card->ControllerId !== (int)$playerId) {
+                continue;
+            }
+            $cards[$card->Id] = $card;
+        }
+        return $cards;
     }
 
     public function seedDefaultCityLocations(): void
