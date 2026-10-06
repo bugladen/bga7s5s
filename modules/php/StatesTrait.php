@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04003a;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04043;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01135;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
@@ -1724,6 +1725,9 @@ trait StatesTrait
         $this->globals->delete(GAME::NEXT_COMBAT_CARD);
         // WHY: Unravel the Thread Sorceries +1 Parry is "this round" only.
         $this->globals->delete(Game::UNRAVEL_THE_THREAD_CONTROLLER_ID);
+        // WHY: Mireli's Revision -2 Thrust is "during their next round". Expire when that
+        // adversary finishes — must not live on the Risk (Miyato lockers it; clone gone).
+        Maneuver_01135::expirePendingForActor($this, $actorId);
         $this->globals->delete(GAME::DISCOUNT);
         $this->globals->delete(GAME::REVEALED_CARDS);
         $this->globals->delete(Game::DUEL_GAMBLED);
@@ -1860,6 +1864,9 @@ trait StatesTrait
         $this->globals->delete(Game::ABNORMAL_FLOW);
         $this->globals->delete(Game::PENDING_CHALLENGER_THREAT);
         $this->globals->delete(Game::PENDING_DEFENDER_THREAT);
+        // WHY: Safety-net — Maneuver_01135 EventDuelEnd may miss if Risk is in locker
+        // (not in buildCity) and the Miyato clone was already removed at NewRound.
+        Maneuver_01135::clearAllPending($this);
         $this->globals->delete(Game::DUEL_PENDING_MANEUVER_CARD);
         $this->globals->delete(Game::DUEL_MANUEVER_ID);
         $this->globals->delete(Game::NEXT_COMBAT_CARD);

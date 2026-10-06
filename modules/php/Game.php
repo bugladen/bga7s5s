@@ -162,6 +162,11 @@ class Game extends \Bga\GameFramework\Table
     // returns to the faction deck after gamble choose and leaves $theah->cards — sticky
     // on the Reaction would miss EventDuelCalculateCombatCardStats. Cleared end of round.
     final const UNRAVEL_THE_THREAD_CONTROLLER_ID = "unravelTheThreadControllerId";
+    // WHY: Mireli's Revision (01135) -2 Thrust next round. Miyato/Ota (02043a) lockers the
+    // Risk (buildCity omits locker) and removes the maneuver clone at NewRound — instance
+    // handleEvent never sees the adversary's combat-card calc. Global + EventHub apply.
+    // Cleared when that adversary's round ends / duel ends / maneuver cancel.
+    final const MIRELIS_REVISION_PENDING_THRUST_REDUCTIONS = "mirelisRevisionPendingThrustReductions";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
     final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 

@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01130;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01135;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionUsed;
@@ -1871,6 +1872,11 @@ trait EventHub
                             $card->getInjectCode()
                         );
                     }
+
+                    // WHY: Mireli's Revision (01135) -2 Thrust next round. Same locker /
+                    // left-$theah->cards problem as Unravel (Miyato/Ota 02043a). Apply from
+                    // global here — do not load locker into buildCity.
+                    Maneuver_01135::applyPendingThrustReductions($event);
 
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
