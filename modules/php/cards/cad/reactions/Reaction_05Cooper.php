@@ -27,8 +27,10 @@ class Reaction_05Cooper extends CardReaction
 
     public function getReactionDescription(Theah $theah): string
     {
+        // WHY: single quotes — ${you} is a BGA client token, not PHP. Double quotes
+        // interpolate undefined $you and fatal when args refresh (e.g. mid-04040).
         return parent::getReactionDescription($theah)
-            . "${you} may ignore a wound from an opponent's ability: ";
+            . '${you} may ignore a wound from an opponent\'s ability: ';
     }
 
     public function getReactionButtonProperties(Theah $theah): array
