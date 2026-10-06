@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01129;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -257,6 +258,14 @@ class Theah
     public function eventCheck(Event $event)
     {
         $this->buildCity();
+
+        // WHY: Borets (01129) rest-of-duel Maneuver/Technique ban. Risk may be in The
+        // Locker (Miyato/Ota) — not in $this->cards — so instance eventCheck never runs.
+        // Global armed on Resolve; checked here before the card walk.
+        $event->theah = $this;
+        Maneuver_01129::assertNotLocked($event);
+        unset($event->theah);
+
         foreach ($this->cards as $card) {
             // WHY: A zombie player's cards must not react to events — the zombie
             // handler can't make the interactive choices their reactions/abilities

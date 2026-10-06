@@ -167,6 +167,10 @@ class Game extends \Bga\GameFramework\Table
     // handleEvent never sees the adversary's combat-card calc. Global + EventHub apply.
     // Cleared when that adversary's round ends / duel ends / maneuver cancel.
     final const MIRELIS_REVISION_PENDING_THRUST_REDUCTIONS = "mirelisRevisionPendingThrustReductions";
+    // WHY: Borets (01129) bans Maneuvers/Techniques for the rest of the duel. Same locker /
+    // clone gap as 01135 — instance eventCheck never runs once the Risk leaves buildCity.
+    // Global + Theah::eventCheck. Cleared on duel end / maneuver cancel.
+    final const BORETS_MANEUVER_TECHNIQUE_LOCK = "boretsManeuverTechniqueLock";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
     final const DEAL_WITH_THE_DEVIL_GRANTED_MONSTER = "Deal with the Devil Granted Monster";
 

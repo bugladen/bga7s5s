@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04043;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01135;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01129;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
@@ -1867,6 +1868,7 @@ trait StatesTrait
         // WHY: Safety-net — Maneuver_01135 EventDuelEnd may miss if Risk is in locker
         // (not in buildCity) and the Miyato clone was already removed at NewRound.
         Maneuver_01135::clearAllPending($this);
+        Maneuver_01129::clearLock($this);
         $this->globals->delete(Game::DUEL_PENDING_MANEUVER_CARD);
         $this->globals->delete(Game::DUEL_MANUEVER_ID);
         $this->globals->delete(Game::NEXT_COMBAT_CARD);
