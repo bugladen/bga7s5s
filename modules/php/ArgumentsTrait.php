@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03013;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
@@ -677,10 +678,30 @@ trait ArgumentsTrait
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
         //
         $charactersAtLocation = array_values(array_filter($charactersAtLocation, fn($character) => $character->ControllerId && $character->ControllerId != $playerId));
+
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        // WHY: Defending Honor validates the enemy performer at step 1; step 2 picks a
+        // friendly to be challenged. Other challenge Actions filter via isValidTargetForAbility
+        // (e.g. Justice Served Cold — Mercenary/Thug only).
+        if ($challengeType != Game::DEFENDING_HONOR_CHALLENGE_TYPE)
+        {
+            $action = $this->theah->getInPlayActionById($this->globals->get(Game::CHOSEN_ACTION));
+            if ($action instanceof IAbilityThatTargetsCharacters)
+            {
+                $charactersAtLocation = array_values(array_filter(
+                    $charactersAtLocation,
+                    function ($character) use ($action) {
+                        [$isValid, ] = $action->isValidTargetForAbility($this, $character);
+                        return $isValid;
+                    }
+                ));
+            }
+        }
+
         $ids = array_map(fn($character) => $character->Id, $charactersAtLocation);
 
         return [
-            "challengeType" => $this->globals->get(Game::CHALLENGE_TYPE),
+            "challengeType" => $challengeType,
             "performerId" => $performerId,
             "ids" => $ids
         ];

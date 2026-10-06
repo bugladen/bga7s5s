@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\LocationAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
@@ -1322,7 +1323,7 @@ trait FrameworkActionsTrait
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         // For Defending Honor the ability's target is the enemy performer chosen in the first step,
         // not the friendly being challenged here. Skip the ability-target check in that case.
-        if ($challengeType != Game::DEFENDING_HONOR_CHALLENGE_TYPE)
+        if ($challengeType != Game::DEFENDING_HONOR_CHALLENGE_TYPE && $action instanceof IAbilityThatTargetsCharacters)
         {
             [$isValid, $errorMessage] = $action->isValidTargetForAbility($this, $character);
             if (!$isValid)
