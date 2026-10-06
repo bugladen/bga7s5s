@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlaye
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerLosesReknown;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class _01064 extends Character implements IHasActions
 {
