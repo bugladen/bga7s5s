@@ -68,7 +68,8 @@ class _01071 extends Scheme implements IHasActions
         if ($event instanceof EventCardMoved && $this->Location == Game::LOCATION_PLAYER_HOME)
         {
             $character = $event->theah->getCharacterById($event->cardId);
-            if ($character->ControllerId == $this->ControllerId && $character->hasTrait("Musketeer"))
+            // WHY: getCharacterById is null for non-characters; EventCardMoved fires for attachments too
+            if ($character && $character->ControllerId == $this->ControllerId && $character->hasTrait("Musketeer"))
             {
                 $addInfluence = false;
                 $removeInfluence = false;
