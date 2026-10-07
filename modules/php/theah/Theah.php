@@ -563,7 +563,8 @@ class Theah
                 $this->game->globals->set(Game::TRANSITION_SOURCE_ID, $event->sourceId);
                 $this->game->globals->set(Game::TRANSITION_INTERNAL_ID, $event->internalId);
 
-                // WHY: Leader destruction (2p) ends via EventTransition, not goToEndOfGame().
+                // WHY: Assassination (sole Leader-holder, 2p or multiplayer) ends via
+                // EventTransition from Leader.php, not goToEndOfGame().
                 if ($event->transition === 'endOfGame') {
                     $this->game->recordEndOfGameStats(Game::VICTORY_ASSASSINATION);
                 }

@@ -34,6 +34,11 @@ spl_autoload_register(function (string $class) use ($root): void {
         return;
     }
 
+    if ($class === 'Bga\\Games\\SeventhSeaCityOfFiveSails\\Tests\\Harness\\GenericLeader') {
+        require_once __DIR__ . '/harness/GenericLeader.php';
+        return;
+    }
+
     $prefix = 'Bga\\Games\\SeventhSeaCityOfFiveSails\\';
     if (!str_starts_with($class, $prefix)) {
         return;

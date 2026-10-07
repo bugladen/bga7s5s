@@ -146,6 +146,9 @@ class Game
         2 => 'Player Two',
     ];
 
+    /** @var array<int, int> playerId => Renown/score (Leader destroy / victory tests). */
+    public array $playerScores = [];
+
     public function __construct()
     {
         $this->globals = new FakeGlobals();
@@ -154,6 +157,17 @@ class Game
         $this->globals->set(self::PRESSURE_TYPE, self::NORMAL_PRESSURE_TYPE);
         // WHY: getAdjacentCityLocations branches on player count; default 2-player map.
         $this->globals->set(self::PLAYER_COUNT, $this->playerCount);
+    }
+
+    // WHY: Leader.php assassination / half-Renown paths use these instead of Theah DB.
+    public function getPlayerReknown(int $playerId): int
+    {
+        return $this->playerScores[$playerId] ?? 0;
+    }
+
+    public function setPlayerReknown(int $playerId, int $reknown): void
+    {
+        $this->playerScores[$playerId] = $reknown;
     }
 
     public function notifyAllPlayers(string $type, string $message, array $args = []): void
