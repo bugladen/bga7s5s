@@ -1064,10 +1064,14 @@
             },
 
             'duelResolveManeuver_01165': () => {
-                args._private.args.techniques.forEach((technique) => {
-                    this.addActionButton(`actChooseTechnique-${technique.Id}`, technique.Name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([technique.Id])}));
-                    this.addActionButton(`btnPass`, _('Pass'), () => this.bgaPerformAction('actPassWithPass', {}));
+                // WHY id??Id / name??Name: PHP sends both (getPropertyArray + legacy PascalCase).
+                const techniques = (args && args._private && args._private.args && args._private.args.techniques) || [];
+                techniques.forEach((technique) => {
+                    const id = technique.id ?? technique.Id;
+                    const name = technique.name ?? technique.Name ?? technique.shortName;
+                    this.addActionButton(`actChooseTechnique-${id}`, name, () => this.bgaPerformAction('actFromCardWithIds', {ids: JSON.stringify([id])}));
                 });
+                this.addActionButton(`btnPass`, _('Pass'), () => this.bgaPerformAction('actPassWithPass', {}));
             },
     
             'duelResolveManeuver_01200': () => {

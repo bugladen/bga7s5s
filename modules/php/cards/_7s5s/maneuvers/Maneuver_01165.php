@@ -3,8 +3,10 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
 use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -39,19 +41,60 @@ class Maneuver_01165 extends Maneuver
             return false;
         }
 
-        $techniques = $adversary instanceof IHasTechniques ? $adversary->getTechniquesAvailableToPlayer($theah->game, $playerId) : [];
-        if (count($techniques) > 0)
-            return true;
+        return count($this->getCopyableTechniques($theah, $adversary)) > 0;
+    }
+
+    /**
+     * WHY not isAvailableToPlayer: Trick copies effects only — source costs /
+     * prerequisites (e.g. Sabre Technique_04054b requiring the attachment's
+     * character to be the duel actor) must not gate what can be copied.
+     * Same shape as Dame (02055) / Yepikhodov (03051).
+     *
+     * @return Technique[]
+     */
+    private function getCopyableTechniques(Theah $theah, Character $adversary): array
+    {
+        $techniquesArray = [];
+
+        if ($adversary instanceof IHasTechniques)
+        {
+            foreach ($adversary->getTechniques() as $technique)
+            {
+                if ($this->isCopyableTechnique($technique))
+                {
+                    $techniquesArray[] = $technique;
+                }
+            }
+        }
 
         foreach ($adversary->Attachments as $attachmentId)
         {
             $attachment = $theah->getAttachmentById($attachmentId);
-            $techniques = $attachment instanceof IHasTechniques ? $attachment->getTechniquesAvailableToPlayer($theah->game, $playerId) : [];
-            if (count($techniques) > 0)
-                return true;
+            if (! ($attachment instanceof IHasTechniques))
+            {
+                continue;
+            }
+
+            foreach ($attachment->getTechniques() as $technique)
+            {
+                if ($this->isCopyableTechnique($technique))
+                {
+                    $techniquesArray[] = $technique;
+                }
+            }
         }
 
-        return false;
+        return $techniquesArray;
+    }
+
+    private function isCopyableTechnique(Technique $technique): bool
+    {
+        if ($technique->IsTemporaryCopy)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private function removeCopiedTechniques(Theah $theah): void
@@ -110,23 +153,17 @@ class Maneuver_01165 extends Maneuver
 
         if ($state == States::DUEL_RESOLVE_MANEUVER_01165)
         {
-            $playerId = $game->getActivePlayerId();
             $adversary = $game->theah->getDuelRoundOpponent();
-
-            $techniquesArray = [];
-            $techniques = $adversary instanceof IHasTechniques ? $adversary->getTechniquesAvailableToPlayer($game, $playerId) : [];
-            if (count($techniques) > 0)
-                $techniquesArray = array_merge($techniquesArray, $techniques);
-    
-            foreach ($adversary->Attachments as $attachmentId)
-            {
-                $attachment = $game->theah->getAttachmentById($attachmentId);
-                $techniques = $attachment instanceof IHasTechniques ? $attachment->getTechniquesAvailableToPlayer($game, $playerId) : [];
-                if (count($techniques) > 0)
-                    $techniquesArray = array_merge($techniquesArray, $techniques);
-            }
-    
-            $args['techniques'] = array_values($techniquesArray);
+            $techniquesArray = $this->getCopyableTechniques($game->theah, $adversary);
+            // WHY both casings: getPropertyArray is lowercase (Dame shape). Older JS for
+            // this state read technique.Id / technique.Name from raw objects — dual keys
+            // keep buttons labeled if only PHP is redeployed / JS is cached.
+            $args['techniques'] = array_values(array_map(function (Technique $t) use ($game) {
+                $props = $t->getPropertyArray($game);
+                $props['Id'] = $props['id'];
+                $props['Name'] = $props['name'];
+                return $props;
+            }, $techniquesArray));
         }
 
         return $args;
@@ -149,6 +186,13 @@ class Maneuver_01165 extends Maneuver
 
             $copy = clone $technique;
             $copy->setOwnerId($actor->Id);
+            // WHY: Distinct from source Id (adversaryId_ClassId) and from a second
+            // copy of the same ClassId. Dame / Yepikhodov use the same shape.
+            $copy->Id = $actor->Id . "_copy_" . $copy->ClassId;
+            // WHY: Engage-as-cost techniques (Sabre 04054b, etc.) skip re-engage when
+            // this is set; base Technique also self-removes on DuelNewRound / DuelEnd.
+            $copy->IsTemporaryCopy = true;
+            $copy->Used = false;
 
             if ($actor instanceof IHasTechniques) $actor->addTechnique($copy, $game, $notify = false);
 

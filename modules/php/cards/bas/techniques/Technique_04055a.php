@@ -60,13 +60,19 @@ class Technique_04055a extends Technique
                 return;
             }
 
-            $engageEvent = EventFactory::createCardEngagedEvent(
-                $event->playerId,
-                $attachment->Id,
-                $attachment->Id,
-                $this->Id
-            );
-            $event->theah->queueEvent($engageEvent);
+            // WHY: "Engage this card • +1 Parry" — Engage is cost. Dame/Yepikhodov/
+            // I Know That Trick (IsTemporaryCopy) and Katain (IsEffectsOnlyCopy)
+            // copy effects only and must not re-engage (or engage the Character host).
+            if (! $this->IsTemporaryCopy && ! $this->IsEffectsOnlyCopy)
+            {
+                $engageEvent = EventFactory::createCardEngagedEvent(
+                    $event->playerId,
+                    $attachment->Id,
+                    $attachment->Id,
+                    $this->Id
+                );
+                $event->theah->queueEvent($engageEvent);
+            }
         }
 
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
