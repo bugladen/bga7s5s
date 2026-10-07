@@ -410,7 +410,15 @@ trait DeckTrait
         while($this->cards->countCardsInLocation(Game::LOCATION_CITY_DISCARD) > 0) 
         {
             $cardInfo = $this->cards->getCardOnTop(Game::LOCATION_CITY_DISCARD);
-            $this->moveCard((int)$cardInfo['id'], Game::LOCATION_CITY_DECK);
+            $cardId = (int)$cardInfo['id'];
+            $card = $this->theah->getCardById($cardId);
+            if ($card === null)
+            {
+                $card = $this->getCardObjectFromDb($cardId);
+            }
+            // WHY: Same mid-day recycle gap as faction discard reshuffle.
+            $card->clearAbilityUsedFlags();
+            $this->moveCard($cardId, Game::LOCATION_CITY_DECK, 0, $card);
         }
         $this->cards->shuffle(Game::LOCATION_CITY_DECK);
 
@@ -468,7 +476,17 @@ trait DeckTrait
         while($this->cards->countCardsInLocation($discardLocation) > 0)
         {
             $cardInfo = $this->cards->getCardOnTop($discardLocation);
-            $this->moveCard((int)$cardInfo['id'], $location);
+            $cardId = (int)$cardInfo['id'];
+            // Prefer in-world instance so a discard-pile card already in Theah is
+            // cleared in place; otherwise load from DB before the move persists.
+            $card = $this->theah->getCardById($cardId);
+            if ($card === null)
+            {
+                $card = $this->getCardObjectFromDb($cardId);
+            }
+            // WHY: See Card::clearAbilityUsedFlags — mid-day recycle before dusk.
+            $card->clearAbilityUsedFlags();
+            $this->moveCard($cardId, $location, 0, $card);
         }
         $this->cards->shuffle($location);
         $this->endFactionDeckCountBatch();

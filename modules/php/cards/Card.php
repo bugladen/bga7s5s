@@ -656,6 +656,72 @@ abstract class Card
         $this->ModifiedTraits = $this->Traits;
     }
 
+    /**
+     * Soft-clear CardAbilityTrait::$Used on all attached abilities.
+     *
+     * WHY: Discard→deck recycle can happen mid-day, before EventDuskEndOfDay.
+     * A played Risk Action/Reaction (or used Maneuver/Technique) left Used=true
+     * would stay stuck when redrawn the same day. Soft-clear (no setUsed event
+     * queue) — same pattern as Action_03065 / Reaction_04010 dusk-miss heals.
+     * Clients do not need ActionUsed notifs for cards sitting in a deck.
+     *
+     * @return bool true if any ability was cleared
+     */
+    public function clearAbilityUsedFlags(): bool
+    {
+        $cleared = false;
+
+        if ($this instanceof IHasActions)
+        {
+            foreach ($this->getActions() as $action)
+            {
+                if ($action->Used)
+                {
+                    $action->Used = false;
+                    $cleared = true;
+                }
+            }
+        }
+
+        if ($this instanceof IHasReactions)
+        {
+            foreach ($this->getReactions() as $reaction)
+            {
+                if ($reaction->Used)
+                {
+                    $reaction->Used = false;
+                    $cleared = true;
+                }
+            }
+        }
+
+        if ($this instanceof IHasManeuvers)
+        {
+            foreach ($this->getManeuvers() as $maneuver)
+            {
+                if ($maneuver->Used)
+                {
+                    $maneuver->Used = false;
+                    $cleared = true;
+                }
+            }
+        }
+
+        if ($this instanceof IHasTechniques)
+        {
+            foreach ($this->getTechniques() as $technique)
+            {
+                if ($technique->Used)
+                {
+                    $technique->Used = false;
+                    $cleared = true;
+                }
+            }
+        }
+
+        return $cleared;
+    }
+
     public function addFaction(string $faction): void
     {
         if (!in_array($faction, $this->Factions))
