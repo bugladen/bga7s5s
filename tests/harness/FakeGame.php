@@ -96,6 +96,8 @@ class Game
     final const DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
     final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
     final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
+    // Must match Game.php — Thug challenge never engages (off auto-engage list).
+    final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CHALLENGE_STAT = 'ChallengeStat';
     final const CHALLENGE_CANCELLED = 'challengeCancelled';
     final const DUEL_DEFENDER = 'Defender';

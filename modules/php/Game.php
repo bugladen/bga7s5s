@@ -280,6 +280,8 @@ class Game extends \Bga\GameFramework\Table
     final const JUSTICE_SERVED_COLD_CHALLENGE_TYPE = 16;
     final const UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
     final const AJA_CHALLENGE_TYPE = 18;
+    // WHY: Don Constanzo (_03003) — Thug issues challenge with no Engage printed;
+    // keep off stIssueChallenge auto-engage. Never engages (Sanjay trichotomy c).
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CORNERED_CHALLENGE_TYPE = 20;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;

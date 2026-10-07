@@ -171,22 +171,12 @@ class Action_03003 extends CharacterAction implements IAbilityThatTargetsCharact
 
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+            // WHY DON_CONSTANZO_CHALLENGE_TYPE (off stIssueChallenge auto-engage):
+            // print has no Engage cost. The Thug issues the challenge without
+            // engaging — same never-engage trichotomy as Sanjay / Arrogant /
+            // Courageous. NORMAL would auto-engage the Thug. Do not reintroduce
+            // a conditional createCardEngagedEvent here.
             $game->globals->set(Game::CHALLENGE_TYPE, Game::DON_CONSTANZO_CHALLENGE_TYPE);
-
-            // WHY engage here instead of via stIssueChallenge's auto-engage
-            // list: engaged Thugs are eligible performers for this action
-            // (card text doesn't print "Engage your Thug"). Firing the
-            // auto-engage on an already-engaged Thug would re-emit
-            // EventCardEngaged, which downstream reactions (e.g. Vittoria's
-            // "instead of me" swap) treat as a fresh engagement. So we
-            // emit the engage event only when the Thug isn't already
-            // engaged, and we keep DON_CONSTANZO out of the auto-engage list.
-            if (! $performer->Engaged)
-            {
-                $don = $this->getOwningCharacter($game->theah);
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $don->Id, $this->Id);
-                $game->theah->queueEvent($engageEvent);
-            }
 
             $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $performer->Id, "03003_2", $this->Id);
             $game->theah->queueEvent($transitionEvent);
@@ -201,12 +191,9 @@ class Action_03003 extends CharacterAction implements IAbilityThatTargetsCharact
     /**
      * Thugs the player controls at Don's location.
      *
-     * WHY engaged Thugs are eligible: card text doesn't say "Engage your Thug"
-     * — the Thug just "issues a Combat challenge". An already-engaged Thug
-     * has effectively already paid the engagement cost so it can still
-     * perform this action. `canChallenge($theah)` covers the hard-ban cases (e.g.
-     * Sigurd Ulfsen's permanent "cannot challenge"); engagement is handled
-     * separately in step 2 of the action.
+     * WHY no !Engaged gate: print has no Engage cost — the Thug never engages
+     * when issuing this challenge, so an already-engaged Thug remains eligible.
+     * `canChallenge($theah)` covers hard bans (e.g. Sigurd Ulfsen).
      */
     private function getAvailableThugs(Theah $theah, Character $don): array
     {
