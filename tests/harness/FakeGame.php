@@ -62,9 +62,12 @@ class Game
 
     final const PLAYER_COUNT = 'playerCount';
     final const STAT_COMBAT = 'Combat';
+    final const STAT_INFLUENCE = 'Influence';
+    final const STAT_FINESSE = 'Finesse';
 
     final const RECRUIT_TYPE = 'recruitType';
     final const NORMAL_RECRUIT_TYPE = 0;
+    final const KASPAR_RECRUIT_TYPE = 1;
     final const CIRILO_RECRUIT_TYPE = 2;
 
     final const CONSTANZO_ID = 'constanzoId';
@@ -77,6 +80,9 @@ class Game
     final const CHOSEN_TARGET = 'chosenTarget';
     final const CHOSEN_LOCATION = 'chosenLocation';
     final const CHOSEN_ACTION = 'chosenAction';
+    final const CHOSEN_ATTACHMENT = 'chosenAttachment';
+    final const CHOSEN_TECHNIQUE = 'chosenTechnique';
+    final const CHOSEN_TECHNIQUE_IS_MAIN = 'chosenTechniqueIsMain';
     final const TRANSITION_INTERNAL_ID = 'transitionInternalId';
     final const ABNORMAL_FLOW = 'abnormalFlow';
     final const MULTI_STATE_INITIATING_PLAYER = 'multiStateInitiatingPlayer';
@@ -87,11 +93,25 @@ class Game
 
     final const CHALLENGE_TYPE = 'challengeType';
     final const NORMAL_CHALLENGE_TYPE = 0;
+    final const DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
     final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
+    final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
     final const CHALLENGE_STAT = 'ChallengeStat';
     final const CHALLENGE_CANCELLED = 'challengeCancelled';
     final const DUEL_DEFENDER = 'Defender';
     final const IN_DUEL = 'inDuel';
+    final const DUEL_ID = 'duelId';
+    final const DUEL_ROUND = 'duelRound';
+
+    final const PRESSURING_PLAYER = 'pressuringPlayer';
+    final const PRESSURE_BONUS = 'pressureBonus';
+    final const PACK_TACTICS_PRESSURE_TYPE = 64;
+    final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
+
+    final const CURRENT_PLAYER = 'currentPlayer';
+    final const REVEALED_CARDS = 'revealedCards';
+    final const DISCOUNT = 'discount';
+    final const DISCOUNT_EXPLAINATIONS = 'discountExplanations';
 
     final const PAY_STATE_IN_HAND_ACTION = 0;
     final const PAY_STATE_EQUIP_ATTACHMENT = 1;
@@ -114,6 +134,9 @@ class Game
     public int $playerCount = 2;
     public int $activePlayerId = 1;
     public bool $forceInDiscardOrLocker = false;
+
+    /** Stub return for Action_01035 city-deck reveal (real path hits Deck DB). */
+    public ?Card $cityDeckRevealResult = null;
 
     /** @var array<int, string> */
     public array $playerNames = [
@@ -219,6 +242,12 @@ class Game
         return array_slice($this->topFactionCards, 0, $count);
     }
 
+    // WHY: Action_01038 assigns getGameDeckObject() then never uses it; stub avoids fatals.
+    public function getGameDeckObject(): object
+    {
+        return new \stdClass();
+    }
+
     public function getNextEventBatchId(): int
     {
         $id = (int)$this->globals->get('eventBatchId', 0) + 1;
@@ -270,6 +299,12 @@ class Game
 
     /** @var list<array{className:string,originalCardId:int,location:string,ownerId:int,controllerId:int,targetId:int,abilityId:string}> */
     public array $createdRiskAttachments = [];
+
+    // WHY: Action_01035 reveal walks the city deck via BGA Deck; unit tests inject the Mercenary.
+    public function revealFirstCardTypeFromCityDeck(int $playerId, string $type, int $sourceId = 0): ?Card
+    {
+        return $this->cityDeckRevealResult;
+    }
 
     // WHY: Action_01025 (and similar) call createRiskAttachment from UtilitiesTrait;
     // FakeGame records the call so act tests can assert without createCardInLocation/DB.

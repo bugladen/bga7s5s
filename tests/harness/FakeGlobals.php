@@ -16,6 +16,11 @@ class FakeGlobals
         $this->values[$key] = $value;
     }
 
+    public function delete(string $key): void
+    {
+        unset($this->values[$key]);
+    }
+
     public function all(): array
     {
         return $this->values;

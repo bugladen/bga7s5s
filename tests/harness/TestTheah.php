@@ -21,6 +21,8 @@ class TestTheah extends Theah
 
     public ?Character $duelOpponent = null;
     public ?Character $duelActor = null;
+    /** Stub for Technique_01050 thrust gate (real path hits duel_round DB). */
+    public int $currentRoundThrust = 0;
     /** @var array<int, \Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader> playerId => Leader */
     public array $leadersByPlayerId = [];
 
@@ -68,6 +70,25 @@ class TestTheah extends Theah
         return $this->duelActor;
     }
 
+    // WHY: Real getDuelOpponentId / challenger / defender hit duel table in DB.
+    public function getDuelOpponentId($actorId): int
+    {
+        if ($this->duelOpponent !== null) {
+            return $this->duelOpponent->Id;
+        }
+        return 0;
+    }
+
+    public function getDuelChallengerId(): ?int
+    {
+        return $this->duelActor?->Id;
+    }
+
+    public function getDuelDefenderId(): int
+    {
+        return $this->duelOpponent?->Id ?? 0;
+    }
+
     // WHY: Real getLeaderByPlayerId hits player.leader_card_id in DB (Action_01024 muster).
     public function getLeaderByPlayerId($playerId): ?\Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader
     {
@@ -98,6 +119,35 @@ class TestTheah extends Theah
                 return $event->internalId !== $reactionId;
             }
         ));
+    }
+
+    // WHY: Reaction_01027 failPressure deletes pressure-result events before re-queueing failed result.
+    public function deletePressureResultEvents(): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            fn($event) => !$event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult
+        ));
+    }
+
+    // WHY: Reaction_01047 cancel clears pending technique resolve/calc events from the queue.
+    public function deleteTechniqueEvents(string $techniqueId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            function ($event) use ($techniqueId) {
+                if (property_exists($event, 'techniqueId') && (string)$event->techniqueId === $techniqueId) {
+                    return false;
+                }
+                return true;
+            }
+        ));
+    }
+
+    // WHY: Technique_01050 needs thrust >= 1; real path SELECTs duel_round.
+    public function getCurrentRoundThrust(): int
+    {
+        return $this->currentRoundThrust;
     }
 
     // WHY: Real getCardObjectsAtLocation hits DB; hand Thugs for Reaction_01014 live in RAM.
