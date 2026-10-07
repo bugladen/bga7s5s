@@ -1552,7 +1552,11 @@ trait EventHub
             case $event instanceof EventTechniqueCanceled:
                 $handler = function (Theah $theah, EventTechniqueCanceled $event)
                 {
-                    $theah->recordCanceledAbilityInDuelTable('technique', $event->techniqueId);
+                    $theah->recordCanceledAbilityInDuelTable(
+                        'technique',
+                        $event->techniqueId,
+                        $event->countsAsMainTechnique
+                    );
                 };
                 $handler($this, $event);
                 break;

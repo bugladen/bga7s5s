@@ -12,7 +12,7 @@ WHY EventHub not Reaction_01146b alone:
 
 On in-duel cancel:
 1. INSERT into `duel_round_technique` / `duel_round_maneuver` with display name `Card: Ability (Canceled)`.
-2. `technique_is_main = 0` — canceled must not count as main technique used.
+2. ~~`technique_is_main = 0` — canceled must not count as main technique used.~~ **SUPERSEDED 2026-10-07-03:** opponent cancel of a *main* Technique now records `technique_is_main = 1` (effects canceled ≠ Technique opportunity refunded). Player abort / non-main copies still use 0 via `EventTechniqueCanceled::$countsAsMainTechnique`.
 3. Notify `duelAbilityCanceled` so live UI appends the same text and clears `_7sfs-ability-not-chosen` on the name cell only (stats stay silver — no R/P/T).
 
 Page reload already loads names from those tables via UtilitiesTrait, so DB write covers refresh.

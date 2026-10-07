@@ -78,6 +78,9 @@ class State_duelChooseTechnique_01063 extends GameState
             }
 
             $playerId = $owner?->ControllerId ?? (int) $game->getActivePlayerId();
+            // WHY: countsAsMainTechnique defaults false — player abort is a take-back,
+            // not "performed with no effect". Must not consume the main Technique slot
+            // (unlike opponent cancel via 01146b / 01047 / 03044).
             $canceledEvent = EventFactory::createTechniqueCanceledEvent($playerId, $techniqueId);
             $game->theah->queueEvent($canceledEvent);
 

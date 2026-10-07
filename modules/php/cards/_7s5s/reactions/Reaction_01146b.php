@@ -107,12 +107,19 @@ class Reaction_01146b extends CardReaction
                     'player_name' => $game->getActivePlayerName(),
                     'technique' => $technique->Name,
                 ]);
+                // WHY: Read before delete — canceling effects still consumes the main
+                // Technique slot (argsChooseDuelAction / technique_is_main).
+                $wasMain = (bool) $game->globals->get(Game::CHOSEN_TECHNIQUE_IS_MAIN, false);
                 $game->globals->delete(Game::CHOSEN_TECHNIQUE);
                 $game->globals->delete(Game::CHOSEN_TECHNIQUE_IS_MAIN);
                 $game->theah->deleteTechniqueEvents($this->TechniqueId);
                 $scheme->IsUpdated = true;
 
-                $canceledEvent = EventFactory::createTechniqueCanceledEvent($scheme->ControllerId, $this->TechniqueId);
+                $canceledEvent = EventFactory::createTechniqueCanceledEvent(
+                    $scheme->ControllerId,
+                    $this->TechniqueId,
+                    $wasMain
+                );
                 $game->theah->queueEvent($canceledEvent);
 
                 $this->TechniqueId = '';

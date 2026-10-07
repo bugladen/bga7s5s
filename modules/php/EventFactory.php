@@ -1255,13 +1255,14 @@ public static function createChallengeRejectedEvent(int $challengerId, int $targ
         return $event;
     }
 
-    public static function createTechniqueCanceledEvent(int $playerId, string $techniqueId): EventTechniqueCanceled
+    public static function createTechniqueCanceledEvent(int $playerId, string $techniqueId, bool $countsAsMainTechnique = false): EventTechniqueCanceled
     {
         $event = self::createEvent(Events::TechniqueCanceled);
         if ($event instanceof EventTechniqueCanceled)
         {
             $event->playerId = $playerId;
             $event->techniqueId = $techniqueId;
+            $event->countsAsMainTechnique = $countsAsMainTechnique;
         }
 
         return $event;

@@ -1861,10 +1861,14 @@ class Theah
 
     // WHY: Cancel reactions (01146b / 01047 / 03044) delete Resolve before it INSERTs
     // the ability name into duel_round_*. Record a canceled marker so the duel table
-    // still shows what was announced. technique_is_main stays 0 so main-technique
-    // availability counts are unaffected. Only runs in-duel — cancel events outside
-    // a duel have no round row to annotate.
-    public function recordCanceledAbilityInDuelTable(string $mode, string $abilityId): void
+    // still shows what was announced.
+    // WHY technique_is_main from $countsAsMainTechnique (not always 0): canceling
+    // *effects* still counts as performing the Technique — argsChooseDuelAction gates
+    // Technique on count(technique_is_main=1)==0. Opponent cancel of a main Technique
+    // must not re-offer the slot (Eddie: Valeri + LTSSD). Player abort (Bastien Back)
+    // passes false so the slot stays open. Non-main copies (I Know That Trick) also
+    // pass false. Only runs in-duel — cancel events outside a duel have no round row.
+    public function recordCanceledAbilityInDuelTable(string $mode, string $abilityId, bool $countsAsMainTechnique = false): void
     {
         if (! $this->game->globals->get(Game::IN_DUEL, false))
         {
@@ -1908,8 +1912,9 @@ class Theah
 
         if ($mode === 'technique')
         {
+            $isMain = $countsAsMainTechnique ? 1 : 0;
             $sql = "INSERT INTO duel_round_technique (duel_id, round, technique_id, technique_name, technique_is_main)
-                    VALUES ($duelId, $round, '{$abilityId}', '$name', 0)";
+                    VALUES ($duelId, $round, '{$abilityId}', '$name', $isMain)";
         }
         else
         {

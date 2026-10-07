@@ -329,7 +329,13 @@ class Reaction_03044 extends AttachmentReaction
                 "technique" => $technique ? $technique->Name : $this->TechniqueId,
             ]);
 
-            $canceledEvent = EventFactory::createTechniqueCanceledEvent($owner->ControllerId, $this->TechniqueId);
+            // WHY: techniqueWasMain captured at offer — globals already cleared on Engage.
+            // Opponent Accept Cancel still consumes the main Technique slot.
+            $canceledEvent = EventFactory::createTechniqueCanceledEvent(
+                $owner->ControllerId,
+                $this->TechniqueId,
+                $this->techniqueWasMain
+            );
             $game->theah->queueEvent($canceledEvent);
         }
 
