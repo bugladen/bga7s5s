@@ -34,7 +34,7 @@ class _04001 extends Character
 
         $this->initializeFaction("Vodacce");
 
-        $this->Resolve = 3;
+        $this->Resolve = 5;
         $this->Combat = 2;
         $this->Finesse = 3;
         $this->Influence = 1;
