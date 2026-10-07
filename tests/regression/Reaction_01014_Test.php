@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01014;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01014;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Thomas;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
@@ -162,6 +163,54 @@ class Reaction_01014_Test extends TestCase
                 Assert::contains('$thugWasTargeted', $src, 'thugWasTargeted flag');
                 Assert::contains('if ($thugWasTargeted)', $src, 'moveHome gated');
                 Assert::contains('deleteEventBatch', $src, 'cancelHeldEvent clears batch');
+            },
+
+            // WHY: Bruno cannot enter play from hand except during a duel — outside
+            // duel he must not count for thugsInHand or appear as a putIntoPlay button.
+            'hand Bruno alone does not open hand-Thug path outside duel' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $bruno = $world->placeCard(new _05Thomas(), Game::LOCATION_HAND, 1);
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 2);
+                $sibellaAction = $sibella->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterBeingWounded();
+                $event->characterId = $vittoria->Id;
+                $event->sourceId = $sibella->Id;
+                $event->abilityId = $sibellaAction->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                // No in-play Thug and Bruno ineligible → reaction should not offer
+                // (nothing to redirect to).
+                Assert::false($event->canceled, 'no legal Thug — do not hold');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no reaction');
+            },
+
+            'hand Bruno is eligible during duel' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $bruno = $world->placeCard(new _05Thomas(), Game::LOCATION_HAND, 1);
+                $world->game->globals->set(Game::IN_DUEL, true);
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 2);
+                $sibellaAction = $sibella->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterBeingWounded();
+                $event->characterId = $vittoria->Id;
+                $event->sourceId = $sibella->Id;
+                $event->abilityId = $sibellaAction->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'held — Bruno legal in duel');
+                $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array('putIntoPlay-' . $bruno->Id, $ids, true), 'Bruno button in duel');
             },
 
             'does not react when own ability wounds Vittoria' => function () {

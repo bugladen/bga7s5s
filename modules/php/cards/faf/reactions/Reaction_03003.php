@@ -422,12 +422,41 @@ class Reaction_03003 extends CardReaction
     private function getEligibleThugs(Theah $theah, string $source): array
     {
         $owner = $this->getOwningCharacter($theah);
-        $location = $source === 'hand'
-            ? Game::LOCATION_HAND
-            : $theah->game->getPlayerDiscardDeckName($owner->ControllerId);
 
-        $cards = $theah->getCardObjectsAtLocation($location, $owner->ControllerId);
-        $thugs = array_filter($cards, fn($card) => $card->hasTrait("Thug") && $card->Id != $this->destroyedThugId);
+        // WHY: Discard piles are already per-player (Discard-$playerId). Do NOT pass
+        // ControllerId as the location_arg filter — destroyed Brutes and most discard
+        // moves use moveCardInDeck(..., locationArg=0), so AND card_location_arg =
+        // playerId returns empty and the reaction never offers (Action_01019 + Dante
+        // in discard). Hand still needs the playerId arg. Mirrors Action_01024.
+        if ($source === 'hand')
+        {
+            $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
+        }
+        else
+        {
+            $discardName = $theah->game->getPlayerDiscardDeckName($owner->ControllerId);
+            $cards = $theah->getCardObjectsAtLocation($discardName);
+        }
+
+        $thugs = array_filter($cards, function ($card) use ($theah, $source) {
+            if (! $card->hasTrait("Thug") || $card->Id == $this->destroyedThugId)
+            {
+                return false;
+            }
+
+            // WHY: Recruit Brutes cannot enter play from hand except during a duel.
+            // Use canEnterPlayFromHand (not bare canBePlayedAsBruteFromHand) so a
+            // Thug destroyed mid-duel can still be replaced by Bruno from hand.
+            if ($source === 'hand'
+                && $card instanceof Character
+                && ! $card->canEnterPlayFromHand($theah->game))
+            {
+                return false;
+            }
+
+            return true;
+        });
+
         return array_values($thugs);
     }
 

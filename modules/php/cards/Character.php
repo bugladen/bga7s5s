@@ -137,6 +137,21 @@ abstract class Character extends Card implements IHasTechniques
         return true;
     }
 
+    // WHY: Recruit Brutes print "cannot enter play from hand except during a duel".
+    // Play Brute uses canBePlayedAsBruteFromHand() alone (HD menu — never in a duel).
+    // Other hand→play effects (Vittoria Reaction_01014, Don Reaction_03003) must allow
+    // the printed duel exception so UI eligibility matches eventCheck, not offer a
+    // button that throws outside a duel / hide a legal duel muster.
+    public function canEnterPlayFromHand(Game $game): bool
+    {
+        if ($this->canBePlayedAsBruteFromHand())
+        {
+            return true;
+        }
+
+        return (bool) $game->globals->get(Game::IN_DUEL, false);
+    }
+
     public function eventCheck(Event $event)
     {
         parent::eventCheck($event);

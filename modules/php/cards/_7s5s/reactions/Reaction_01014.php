@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -70,9 +71,7 @@ class Reaction_01014 extends CardReaction
         $owner = $this->getOwningCharacter($theah);
         if ($this->inHandThug)
         {
-            $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-            $cards = array_filter($cards, fn($card) => $card->hasTrait("Thug"));
-            foreach ($cards as $card)
+            foreach ($this->getEligibleHandThugs($theah) as $card)
             {
                 $array[] = $this->createButtonProperty($theah->game, $card->Name, "putIntoPlay-$card->Id");
             }
@@ -157,12 +156,31 @@ class Reaction_01014 extends CardReaction
         return null;
     }
 
-    private function thugsInHand(Theah $theah): bool
+    /**
+     * Hand Thugs that can legally muster here. Recruit Brutes (Bruno etc.) are
+     * excluded outside a duel — same gate as Reaction_03003 / eventCheck.
+     *
+     * @return list<Character>
+     */
+    private function getEligibleHandThugs(Theah $theah): array
     {
         $owner = $this->getOwningCharacter($theah);
         $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-        $hand = array_filter($hand, fn($card) => $card->hasTrait("Thug"));
-        return count($hand) > 0;
+        $thugs = array_filter($hand, function ($card) use ($theah) {
+            if (! $card->hasTrait("Thug") || ! ($card instanceof Character))
+            {
+                return false;
+            }
+
+            return $card->canEnterPlayFromHand($theah->game);
+        });
+
+        return array_values($thugs);
+    }
+
+    private function thugsInHand(Theah $theah): bool
+    {
+        return count($this->getEligibleHandThugs($theah)) > 0;
     }
 
     private function thugsInPlay(Theah $theah): bool
