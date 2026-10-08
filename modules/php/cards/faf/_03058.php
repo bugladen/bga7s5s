@@ -37,6 +37,7 @@ class _03058 extends Risk implements IHasActions, IHasManeuvers, IRiskThatTarget
         $this->Traits = [
             clienttranslate('Virtue'),
             clienttranslate('Challenge'),
+            clienttranslate('Flourish'),
             clienttranslate('Heroic')
         ];
 
