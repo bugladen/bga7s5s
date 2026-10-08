@@ -25,13 +25,9 @@ class Maneuver_04038 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        if ($actor === null || ! $actor->hasTrait("Academic"))
-        {
-            return false;
-        }
-
-        // Complete as much as possible: hide only when neither half can resolve.
-        return $actor->Engaged || $actor->Wounds > 0;
+        // WHY Academic only: printed text has no cost before the effect (no •).
+        // En garde / heal may noop if already en garde and unwounded — still playable.
+        return $actor !== null && $actor->hasTrait("Academic");
     }
 
     public function handleEvent(Event $event)
