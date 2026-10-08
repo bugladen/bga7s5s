@@ -21,20 +21,23 @@
             },
 
             'duelChooseTechnique_05DabneyUS01': () => {
-                // WHY: EventHub zeroes Technique Riposte when combat card(s) have dashed
-                // Riposte — hide the option so it is not offered as a no-op.
+                // WHY: EventHub zeroes Technique Parry/Riposte when combat card(s) have
+                // dashed that axis — hide the option so it is not offered as a no-op.
+                if (args.parryAvailable)
+                {
+                    this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
+                }
                 if (args.riposteAvailable)
                 {
                     this.addActionButton(`btnRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
                 }
-                this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
                 this.addActionButton(`btnLethal`, _('Lethal'), () => this.bgaPerformAction('actFromCardWithId', { id: 2 }));
             },
 
             'highDramaChallengeActionResolveTechnique_05DabneyUS01': () => {
-                // WHY: Challenge — Riposte needs Calculate; Lethal is pointless (threat already
-                // capped at challenge stat, so Restricted Hostilities never cuts it). Thrust only.
-                this.addActionButton(`btnThrust`, _('+1 Thrust'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
+                // WHY: Technique is duel-only (Parry replaced Thrust — no challenge-useful
+                // choice). Pass out if a stale transition lands here.
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' });
             },
 
             'duelChooseTechnique_05Cooper': () => {

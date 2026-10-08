@@ -20,7 +20,7 @@ class _05DabneyUS01 extends Leader implements IHasActions
         parent::__construct();
         $this->Name = "Valeri Mikhailov";
         $this->Title = "A Lonely Bad Boy";
-        $this->Image = "05DabneyUS01_0.3.1.jpg";
+        $this->Image = "05DabneyUS01_0.4.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 1;
@@ -45,8 +45,8 @@ class _05DabneyUS01 extends Leader implements IHasActions
 
         $this->Text = "<p><i>Covert</i> - During pressures at Valeri's location, add +2 to your total.
 <br>(<i>Covert Abilities may only be used at uncontrolled locations.</i>)</p>
-<p><b>City Action:</b> Move Valeri to an adjacent <b>City</b> location. He issues an unrefusable [Combat] challenge to target opposing character.</p>
-<p><b>Technique:</b> +1[Thrust], +1[Riposte], or gain Lethal</p>";
+<p><b>City Action:</b> Move Valeri to an adjacent <b>City</b> location. He issues a [Combat] challenge to target opposing character.</p>
+<p><b>Technique:</b> +1[Parry], +1[Riposte], or gain Lethal</p>";
 
         $this->resetCard();
 

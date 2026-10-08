@@ -9,7 +9,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -17,7 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Technique_05DabneyUS01 extends Technique
 {
     public const CHOICE_RIPOSTE = 0;
-    public const CHOICE_THRUST = 1;
+    public const CHOICE_PARRY = 1;
     public const CHOICE_LETHAL = 2;
 
     // WHY: Public so IsUpdated on the owner persists the choice across Resolve → Calculate.
@@ -27,7 +26,7 @@ class Technique_05DabneyUS01 extends Technique
     {
         parent::__construct();
 
-        $this->Name = "+1 Thrust, +1 Riposte, or gain Lethal";
+        $this->Name = "+1 Parry, +1 Riposte, or gain Lethal";
         $this->Choice = self::CHOICE_RIPOSTE;
     }
 
@@ -44,14 +43,18 @@ class Technique_05DabneyUS01 extends Technique
             return false;
         }
 
-        // WHY: Challenge activation has no duel round actor — only gate actor==owner when IN_DUEL.
-        if ($theah->game->globals->get(Game::IN_DUEL, false))
+        // WHY: Parry / Riposte need EventDuelCalculateTechniqueValues; Lethal on challenge
+        // was already a no-op (threat at stat cap / RH). With Thrust gone there is no
+        // challenge-useful choice — duel-only like Technique_PlusOneParry.
+        if (! $theah->game->globals->get(Game::IN_DUEL, false))
         {
-            $actor = $theah->getDuelRoundActor();
-            if ($actor === null || $actor->Id !== $owner->Id)
-            {
-                return false;
-            }
+            return false;
+        }
+
+        $actor = $theah->getDuelRoundActor();
+        if ($actor === null || $actor->Id !== $owner->Id)
+        {
+            return false;
         }
 
         return true;
@@ -73,7 +76,7 @@ class Technique_05DabneyUS01 extends Technique
             $owner->IsUpdated = true;
 
             // WHY createTechniqueTransitionEvent: HIGHEST_PRIORITY so choice completes before
-            // EventDuelCalculateTechniqueValues / EventGenerateChallengeThreat reads Choice.
+            // EventDuelCalculateTechniqueValues reads Choice.
             $transition = EventFactory::createTechniqueTransitionEvent(
                 $owner->ControllerId,
                 $owner->Id,
@@ -85,37 +88,16 @@ class Technique_05DabneyUS01 extends Technique
             $this->setUsed($event->theah, true);
         }
 
-        // WHY: Challenge has no Calculate — Thrust → +1 adversary threat. Riposte/Lethal not offered
-        // on challenge (Lethal: threat already at stat cap; RH never reduces it).
-        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
-        {
-            $owner = $this->getOwningCharacter($event->theah);
-            $inject = $owner !== null ? $owner->getInjectCode() : $this->Name;
-
-            if ($this->Choice == self::CHOICE_THRUST)
-            {
-                if ($owner === null || $owner->Id == $event->actorId)
-                {
-                    $event->adversaryThreat += 1;
-                    $event->explanations[] = sprintf(
-                        "%s: Technique [%s] adds 1 Threat.",
-                        $inject,
-                        $this->Name
-                    );
-                }
-            }
-        }
-
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCharacter($event->theah);
             $inject = $owner !== null ? $owner->getInjectCode() : $this->Name;
 
-            if ($this->Choice == self::CHOICE_THRUST)
+            if ($this->Choice == self::CHOICE_PARRY)
             {
-                $event->thrust += 1;
+                $event->parry += 1;
                 $event->explanations[] = sprintf(
-                    "%s: Technique [%s] adds +1 Thrust.",
+                    "%s: Technique [%s] adds +1 Parry.",
                     $inject,
                     $this->Name
                 );
@@ -166,34 +148,38 @@ class Technique_05DabneyUS01 extends Technique
     {
         parent::actFromTechniqueWithId($game, $state, $stateName, $id);
 
-        // WHY: Challenge picker is a separate state so nextState returns to
-        // RESOLVE_TECHNIQUE_EVENTS — reusing DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01 would
-        // jump into the duel event hub mid-challenge (04017 / 04033 lesson).
+        // WHY: Challenge picker state kept registered but technique is duel-only now
+        // (Parry replaced Thrust — no challenge-useful choice). Still accept the state
+        // id so a stale transition cannot soft-lock; reject non-duel choices below.
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01
             || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05DABNEYUS01)
         {
             $owner = $this->getOwningCharacter($game->theah);
 
-            if ($id != self::CHOICE_RIPOSTE && $id != self::CHOICE_THRUST && $id != self::CHOICE_LETHAL)
+            if ($id != self::CHOICE_RIPOSTE && $id != self::CHOICE_PARRY && $id != self::CHOICE_LETHAL)
             {
                 throw new \Bga\GameFramework\UserException("Invalid Technique choice.");
             }
 
-            // WHY: Challenge UI is Thrust-only — Riposte needs Calculate; Lethal is a no-op on
-            // challenge threat (already capped at challenge stat / Restricted Hostilities).
-            if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05DABNEYUS01
-                && $id != self::CHOICE_THRUST)
+            if ($state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05DABNEYUS01)
             {
-                throw new \Bga\GameFramework\UserException("Only +1 Thrust is available before a duel.");
+                throw new \Bga\GameFramework\UserException("This Technique is only available during a duel.");
             }
 
             // WHY: Same rule as EventHub Technique Riposte strip — dashed combat Riposte
             // would zero the bonus; do not accept the choice.
-            if ($state == States::DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01
-                && $id == self::CHOICE_RIPOSTE
+            if ($id == self::CHOICE_RIPOSTE
                 && $game->theah->currentRoundCombatCardsHaveDashedRiposte())
             {
                 throw new \Bga\GameFramework\UserException("Riposte is not available — the combat card has dashed Riposte.");
+            }
+
+            // WHY: Mirror Riposte — EventHub zeroes Technique Parry when every combat card
+            // this round is DashedParry.
+            if ($id == self::CHOICE_PARRY
+                && $game->theah->currentRoundCombatCardsHaveDashedParry())
+            {
+                throw new \Bga\GameFramework\UserException("Parry is not available — the combat card has dashed Parry.");
             }
 
             $this->Choice = $id;
@@ -202,9 +188,9 @@ class Technique_05DabneyUS01 extends Technique
                 $owner->IsUpdated = true;
             }
 
-            if ($this->Choice == self::CHOICE_THRUST)
+            if ($this->Choice == self::CHOICE_PARRY)
             {
-                $game->notify->all("message", '${player_name} chooses +1 Thrust for ${owner_inject_code}\'s Technique.', [
+                $game->notify->all("message", '${player_name} chooses +1 Parry for ${owner_inject_code}\'s Technique.', [
                     "player_name" => $game->getActivePlayerName(),
                     "owner_inject_code" => $owner !== null ? $owner->getInjectCode() : $this->Name,
                 ]);

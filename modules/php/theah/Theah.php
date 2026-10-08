@@ -2257,6 +2257,29 @@ class Theah
         return true;
     }
 
+    /**
+     * True when every combat card this round has DashedParry (EventHub Technique
+     * Parry strip). No combat cards → false (Parry still meaningful).
+     */
+    public function currentRoundCombatCardsHaveDashedParry(): bool
+    {
+        $combatCards = $this->getCombatCardsForCurrentRound();
+        if (count($combatCards) === 0)
+        {
+            return false;
+        }
+
+        foreach ($combatCards as $combatCard)
+        {
+            if (! $combatCard->DashedParry)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function getCurrentDuelThreat($characterId) : int
     {
         $duelId = $this->game->globals->get(Game::DUEL_ID);

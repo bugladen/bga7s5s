@@ -7,7 +7,6 @@ use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\techniques\Technique_05DabneyUS01;
 
 class State_highDramaChallengeActionResolveTechnique_05DabneyUS01 extends GameState
 {
@@ -21,9 +20,9 @@ class State_highDramaChallengeActionResolveTechnique_05DabneyUS01 extends GameSt
             name: "highDramaChallengeActionResolveTechnique_05DabneyUS01",
 
             description: clienttranslate('${actplayer} is choosing options to perform a Technique.'),
-            // WHY: Challenge Thrust-only — Riposte needs duel Calculate; Lethal does nothing
-            // useful here (challenge threat is already capped at the challenge stat).
-            descriptionMyTurn: clienttranslate('Valeri Mikhailov') . clienttranslate(': ${you} must choose +1 Thrust: '),
+            // WHY: Technique is duel-only after Parry replaced Thrust (no challenge-useful
+            // choice). State kept registered so a stale transition can Pass out.
+            descriptionMyTurn: clienttranslate('Valeri Mikhailov') . clienttranslate(': ${you} have no Technique options before the duel: '),
             transitions: [
                 "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
             ],
@@ -36,14 +35,13 @@ class State_highDramaChallengeActionResolveTechnique_05DabneyUS01 extends GameSt
     }
 
     #[PossibleAction]
-    public function actFromCardWithId(string $id): void
+    public function actPass(): void
     {
-        $this->game->actFromCardWithId($id);
+        $this->game->gamestate->nextState();
     }
 
     public function zombie(int $playerId): void
     {
-        // WHY: Challenge UI is Thrust-only — zombie must apply Thrust.
-        $this->game->actFromCardWithId((string) Technique_05DabneyUS01::CHOICE_THRUST);
+        $this->game->gamestate->nextState();
     }
 }

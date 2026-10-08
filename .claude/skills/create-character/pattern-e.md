@@ -589,32 +589,26 @@ Wire `"NNNNN"` under `DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions`.
 
 Reference: `Technique_04033` (canonical modern); older sibling `Technique_01013`; HIGHEST_PRIORITY sibling `Technique_03049`.
 
-### Three-way Thrust / Riposte / Lethal choice (challenge + duel)
+### Three-way Parry / Riposte / Lethal choice (duel-only)
 
-For **"Technique: +1[Thrust], +1[Riposte], or gain Lethal"** (`Technique_05DabneyUS01` Valeri CAD) — extend the Iago dual-picker shape:
+For **"Technique: +1[Parry], +1[Riposte], or gain Lethal"** (`Technique_05DabneyUS01` Valeri CAD):
 
 1. On `EventResolveTechnique`: reset choice default + `createTechniqueTransitionEvent(..., "NNNNN", ...)` (HIGHEST_PRIORITY).
-2. **Two states** (same transition key, per-dispatcher routing — see "Technique usable in BOTH challenge and duel contexts"):
-   - `HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_NNNNN` — **Thrust-only** button.
-   - `DUEL_CHOOSE_TECHNIQUE_NNNNN` — Thrust / Riposte / Lethal (ids match your convention; Valeri uses `0` Riposte, `1` Thrust, `2` Lethal).
-3. Apply on `EventDuelCalculateTechniqueValues` (Thrust / Riposte / `createGainLethalEvent`) and on `EventGenerateChallengeThreat` for challenge Thrust → +1 adversary threat.
-4. Clear choice on `EventTechniqueCanceled` / `EventDuelEnd`.
+2. **Duel-only** (`isAvailableToPlayer` requires `IN_DUEL` + actor-is-owner). Parry/Riposte need Calculate; with no Thrust there is no challenge-useful choice (Lethal on challenge threat is a no-op at stat cap / RH).
+3. State `DUEL_CHOOSE_TECHNIQUE_NNNNN` — Parry / Riposte / Lethal (Valeri ids: `0` Riposte, `1` Parry, `2` Lethal).
+4. Apply on `EventDuelCalculateTechniqueValues` only (Parry / Riposte / `createGainLethalEvent`). No `EventGenerateChallengeThreat` handler.
+5. Clear choice on `EventTechniqueCanceled` / `EventDuelEnd`.
 
-**WHY challenge is Thrust-only:**
-- Riposte only matters on duel `EventDuelCalculateTechniqueValues` — no Calculate on challenge.
-- Lethal on challenge threat is a no-op: challenge threat is already capped at the challenge stat, so Restricted Hostilities never cuts it.
-
-**Dashed Riposte hides the Riposte option (duel only):**
-- EventHub zeroes Technique Riposte when every combat card this round has `DashedRiposte`.
-- Do not offer a no-op: `Theah::currentRoundCombatCardsHaveDashedRiposte()` (no combat cards → `false`, Riposte still offered).
-- Pass `riposteAvailable` from state `getArgs`; hide the Riposte button in `OnUpdateActionButtons`; server-reject Riposte in `actFromTechniqueWithId`; zombie → Thrust when dashed (default Choice is often Riposte).
-- Optional: dynamic `${technique_choices}` in `descriptionMyTurn` via args + `i18n`.
+**Dashed Parry / Riposte hide those options:**
+- EventHub zeroes Technique Parry/Riposte when every combat card this round has `DashedParry` / `DashedRiposte`.
+- Do not offer a no-op: `Theah::currentRoundCombatCardsHaveDashedParry()` / `…DashedRiposte()` (no combat cards → `false`, option still offered).
+- Pass `parryAvailable` / `riposteAvailable` from state `getArgs`; hide buttons in `OnUpdateActionButtons`; server-reject in `actFromTechniqueWithId`; zombie → Parry then Lethal when Riposte dashed (default Choice is often Riposte).
+- Optional: dynamic `${technique_choices}` in `descriptionMyTurn` via args + `i18n` (fixed `clienttranslate` strings per combo).
 
 **Empty transition + Back:**
 - An empty `""` transition may only exist if it is the **sole** transition from the state. If you add `"back"`, success must be a named key (`"done"`, …) and callers must `nextState("thatName")`.
-- Do **not** casually add Back on the challenge Technique resolve picker — cancelling a pending technique (Used / queued calc events) has unintended consequences. Bastien `01063` cancel-to-picker is a special case; Valeri's challenge Back was tried and **reverted**.
 
-Reference: `Technique_05DabneyUS01`; dual-picker sibling `Technique_04033`; EventHub dashed-Riposte strip; Bastien cancel `State_duelChooseTechnique_01063` (special case only).
+Reference: `Technique_05DabneyUS01`; choice-picker sibling `Technique_04033`; EventHub dashed-Parry/Riposte strip.
 
 ### Deferred optional effect on adversary's next round
 
@@ -659,7 +653,7 @@ Both states live under `modules/php/States/<expansion>/` and extend `GameState`.
 "NNNNN" => States::DUEL_CHOOSE_TECHNIQUE_NNNNN,
 ```
 
-Both state classes use the default-`""` transition back to their dispatcher EVENTS state (**only when `""` is the sole exit** — see empty-transition rule / checklist item 13), and both expose `actFromCardWithId` as their `#[PossibleAction]`. Their `getArgsFromTechnique`/`actFromTechniqueWithId` can share a single `if ($state == HIGH_DRAMA... || $state == DUEL_CHOOSE...)` branch when args/act validation match — **challenge vs duel button sets may still diverge** (e.g. Thrust-only on challenge for multi-choice Techniques — Valeri `05DabneyUS01`).
+Both state classes use the default-`""` transition back to their dispatcher EVENTS state (**only when `""` is the sole exit** — see empty-transition rule / checklist item 13), and both expose `actFromCardWithId` as their `#[PossibleAction]`. Their `getArgsFromTechnique`/`actFromTechniqueWithId` can share a single `if ($state == HIGH_DRAMA... || $state == DUEL_CHOOSE...)` branch when args/act validation match — **challenge vs duel button sets may still diverge** (e.g. Thrust-only on challenge when Thrust is among the choices — Iago `04033`; Valeri `05DabneyUS01` is duel-only after Parry replaced Thrust).
 
 JS handlers live in `modules/js/{OnEnteringState,OnUpdateActionButtons,OnLeavingState}.<expansion>.js`. Button-only choice states often need **only** `OnUpdateActionButtons` (Iago / Valeri). Swap/picker states that highlight characters need all three files — mirror `_01063` Bastien. The `_01063` versions live in the `*.7s5s.js` files; faf/bas/cad cards' versions live in `*.faf.js` / `*.bas.js` / `*.cad.js`.
 

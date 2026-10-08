@@ -21,7 +21,7 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
     {
         parent::__construct();
 
-        $this->Name = "Move to Adjacent Location; Issue Unrefusable Combat Challenge";
+        $this->Name = "Move to Adjacent Location; Issue Combat Challenge";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -88,8 +88,10 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
-            // WHY: Dedicated type — unrefusable. Do not reuse VALERI_MIKHAILOV (no-intervene) or
-            // STAND_YOUR_GROUND (scheme-owned). Keep OFF stIssueChallenge auto-engage list (no Engage printed).
+            // WHY: Dedicated type — not unrefusable (refuse allowed). Kept so ActivateTechnique
+            // Back stays blocked after the move lands. Do not reuse VALERI_MIKHAILOV
+            // (no-intervene) or STAND_YOUR_GROUND (scheme-owned / unrefusable). Keep OFF
+            // stIssueChallenge auto-engage list (no Engage printed).
             $game->globals->set(Game::CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE);
 
             $batchId = $event->batchId ?? $game->getNextEventBatchId();

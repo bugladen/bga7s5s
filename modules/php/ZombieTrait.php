@@ -118,8 +118,7 @@ trait ZombieTrait
                     if (! empty($args['cannotRefuseDueToDaichi'])
                         || $challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE
                         || $challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE
-                        || $challengeType == Game::STAND_YOUR_GROUND_CHALLENGE_TYPE
-                        || $challengeType == Game::VALERI_CHALLENGE_TYPE)
+                        || $challengeType == Game::STAND_YOUR_GROUND_CHALLENGE_TYPE)
                     {
                         $this->actHighDramaChallengeActionAccept();
                     }

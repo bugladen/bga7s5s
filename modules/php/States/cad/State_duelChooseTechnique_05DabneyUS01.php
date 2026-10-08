@@ -21,7 +21,7 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
             name: "duelChooseTechnique_05DabneyUS01",
 
             description: clienttranslate('${actplayer} is choosing options to perform a Technique.'),
-            // WHY: ${technique_choices} swaps when combat card(s) have dashed Riposte.
+            // WHY: ${technique_choices} swaps when combat card(s) have dashed Riposte/Parry.
             descriptionMyTurn: clienttranslate('Valeri Mikhailov') . clienttranslate(': ${you} must choose ${technique_choices}: '),
             transitions: [
                 "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
@@ -33,16 +33,34 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
     {
         $this->game->theah->buildCity();
 
-        // WHY: EventHub zeroes Technique Riposte when every combat card this round is
-        // DashedRiposte — hide the option so the player is not offered a no-op.
+        // WHY: EventHub zeroes Technique Riposte/Parry when every combat card this round
+        // is dashed on that axis — hide the option so the player is not offered a no-op.
         $riposteAvailable = ! $this->game->theah->currentRoundCombatCardsHaveDashedRiposte();
+        $parryAvailable = ! $this->game->theah->currentRoundCombatCardsHaveDashedParry();
+
+        // WHY: Fixed clienttranslate strings (not sprintf of English fragments) for i18n.
+        if ($parryAvailable && $riposteAvailable)
+        {
+            $techniqueChoices = clienttranslate('+1 Parry, +1 Riposte, or Lethal');
+        }
+        else if ($parryAvailable)
+        {
+            $techniqueChoices = clienttranslate('+1 Parry or Lethal');
+        }
+        else if ($riposteAvailable)
+        {
+            $techniqueChoices = clienttranslate('+1 Riposte or Lethal');
+        }
+        else
+        {
+            $techniqueChoices = clienttranslate('Lethal');
+        }
 
         return [
             'i18n' => ['technique_choices'],
-            'technique_choices' => $riposteAvailable
-                ? clienttranslate('+1 Thrust, +1 Riposte, or Lethal')
-                : clienttranslate('+1 Thrust or Lethal'),
+            'technique_choices' => $techniqueChoices,
             'riposteAvailable' => $riposteAvailable,
+            'parryAvailable' => $parryAvailable,
         ];
     }
 
@@ -54,13 +72,19 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
 
     public function zombie(int $playerId): void
     {
-        // WHY: Default Choice is Riposte — pick Thrust when Riposte is dashed/unavailable.
-        if ($this->game->theah->currentRoundCombatCardsHaveDashedRiposte())
+        // WHY: Default Choice is Riposte — fall back Parry, then Lethal, when dashed.
+        if (! $this->game->theah->currentRoundCombatCardsHaveDashedRiposte())
         {
-            $this->game->actFromCardWithId((string) Technique_05DabneyUS01::CHOICE_THRUST);
+            $this->game->gamestate->nextState();
             return;
         }
 
-        $this->game->gamestate->nextState();
+        if (! $this->game->theah->currentRoundCombatCardsHaveDashedParry())
+        {
+            $this->game->actFromCardWithId((string) Technique_05DabneyUS01::CHOICE_PARRY);
+            return;
+        }
+
+        $this->game->actFromCardWithId((string) Technique_05DabneyUS01::CHOICE_LETHAL);
     }
 }
