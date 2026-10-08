@@ -29,6 +29,8 @@ class _01121 extends Character
         $this->ExpansionNumber = 1;
         $this->CardNumber = 121;
 
+        $this->InPlayXImageOffset = -20;
+
         $this->initializeFaction("Ussura");
         $this->Title = clienttranslate("Graven Pendant");
         $this->Resolve = 4;

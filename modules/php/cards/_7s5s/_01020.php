@@ -24,6 +24,8 @@ class _01020 extends Brute implements IHasActions
         $this->Title = clienttranslate('Lummox');
         $this->initializeFaction('Vodacce');
 
+        $this->InPlayXImageOffset = -20;
+
         $this->Resolve = 2;
         $this->Combat = 2;
         $this->Finesse = 2;

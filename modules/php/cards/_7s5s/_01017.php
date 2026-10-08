@@ -23,6 +23,8 @@ class _01017 extends Brute implements IHasActions
         $this->Title = clienttranslate('Hoodlum');
         $this->initializeFaction('Vodacce');
 
+        $this->InPlayXImageOffset = 15;
+
         $this->Resolve = 2;
         $this->Combat = 1;
         $this->Finesse = 2;
