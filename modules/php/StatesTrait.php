@@ -114,13 +114,6 @@ trait StatesTrait
     }
 
     public function stRunEvents() {
-        // >>> TEMP_REMOVE_AFTER_DEPLOY: dabney-05DabneyUS01_2-4540-unstick <<<
-        // pre-fix Action_05DabneyUS01 left orphaned hub-exit in `events`. Permanent
-        // prevention is in stIssueChallenge; tables already in 4530/4540 never re-enter
-        // that purge. Delete is a no-op when the row is gone. Remove this whole block.
-        $this->theah->deleteQueuedTransitionsNamed("05DabneyUS01_2");
-        // <<< TEMP_REMOVE_AFTER_DEPLOY
-
         $this->theah->buildCity();
         $this->theah->runEvents();
     }
