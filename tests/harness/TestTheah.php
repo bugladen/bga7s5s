@@ -158,10 +158,29 @@ class TestTheah extends Theah
         ];
     }
 
+    /** @var array<int,int> characterId => current duel threat (Action/_01085 discards all threat). */
+    public array $duelThreats = [];
+
+    // WHY: Real getCurrentDuelThreat SELECTs duel_round; _01085 Porté Travel reads both
+    // participants' threat to zero it out. Unlisted characters read as 0.
+    public function getCurrentDuelThreat($characterId): int
+    {
+        return $this->duelThreats[(int)$characterId] ?? 0;
+    }
+
     // WHY: Technique_01050 needs thrust >= 1; real path SELECTs duel_round.
     public function getCurrentRoundThrust(): int
     {
         return $this->currentRoundThrust;
+    }
+
+    /** Stub for Technique_01093 riposte gate (real path hits duel_round DB). */
+    public int $currentRoundRiposte = 0;
+
+    // WHY: Technique_01093 needs combat card Riposte >= 1; real path SELECTs duel_round.
+    public function getCurrentRoundRiposte(): int
+    {
+        return $this->currentRoundRiposte;
     }
 
     // WHY: Real getCardObjectsAtLocation hits DB; hand Thugs for Reaction_01014 live in RAM.

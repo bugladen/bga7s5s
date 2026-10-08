@@ -88,21 +88,38 @@ class Game
     final const CHOSEN_TECHNIQUE_IS_MAIN = 'chosenTechniqueIsMain';
     final const TRANSITION_INTERNAL_ID = 'transitionInternalId';
     final const ABNORMAL_FLOW = 'abnormalFlow';
+    // WHY: Maneuver_01077 parks the chosen combat card then sets NEXT_COMBAT_CARD + ABNORMAL_FLOW.
+    final const NEXT_COMBAT_CARD = 'nextCombatCard';
     final const MULTI_STATE_INITIATING_PLAYER = 'multiStateInitiatingPlayer';
     final const PASS_COUNT = 'passCount';
     final const EQUIP_TYPE = 'equipType';
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
     final const FIRST_PLAYER = 'firstPlayer';
+    // WHY: Action_01090 / Action_01093 / Action_01095b first-player override + extra action.
+    final const EXTRA_ACTIONS = 'extraActions';
+    final const OVERRIDE_AS_NOT_FIRST_PLAYER = 'overrideAsNotFirstPlayer';
 
     final const CHALLENGE_TYPE = 'challengeType';
     final const NORMAL_CHALLENGE_TYPE = 0;
     // Must match Game.php — Montaigne / Eisen challenge variants.
     final const EPEE_SANGLANTE_CHALLENGE_TYPE = 2;
     final const CAVALIER_HAT_CHALLENGE_TYPE = 3;
+    // Must match Game.php — Action_01078 / Action_01083 special challenge types.
+    final const DEFENDING_HONOR_CHALLENGE_TYPE = 4;
+    final const LEGENDARY_REPUTATION_CHALLENGE_TYPE = 5;
     final const DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
     final const MOVE_ALONG_CHALLENGE_TYPE = 7;
     final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
     final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
+    // WHY: Theah::interventionCheck evaluates this whole else-if chain once the Legendary
+    // Reputation (Leaders-only) branch passes; an undefined Game:: const is a fatal Error,
+    // so Action_01083's "Leader may intervene" test needs them. Must match Game.php.
+    final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
+    final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
+    final const AJA_CHALLENGE_TYPE = 18;
+    final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
+    final const RAVEN_CHALLENGE_TYPE = 27;
+    final const CELERITY_CHALLENGE_TYPE = 30;
     // Must match Game.php — Thug challenge never engages (off auto-engage list).
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CHALLENGE_STAT = 'ChallengeStat';
@@ -234,6 +251,15 @@ class Game
         return $this->activePlayerId;
     }
 
+    // WHY: Action_01095b's multi-player discard step (and other "each opponent discards" states)
+    // asks BGA for the acting player. Tests set $currentPlayerId to the discarding opponent.
+    public int $currentPlayerId = 1;
+
+    public function getCurrentPlayerId(): int
+    {
+        return $this->currentPlayerId;
+    }
+
     public function getPlayerCount(): int
     {
         return $this->playerCount;
@@ -297,10 +323,79 @@ class Game
         return array_slice($this->topFactionCards, 0, $count);
     }
 
-    // WHY: Action_01038 assigns getGameDeckObject() then never uses it; stub avoids fatals.
+    /** @var list<array{id:int,deck:string,onTop:bool}> */
+    public array $deckInserts = [];
+
+    // WHY: Maneuver_01077 sinks unchosen reveal cards via insertCardOnExtremePosition;
+    // Action_01038 only assigns the deck object. Record inserts for assert, no-op otherwise.
+    /**
+     * WHY: _01098 Forced/locker paths call getCardsOfType / getCardsInLocation on the BGA Deck.
+     * Tests set this to a small stand-in; null keeps the default insert-recording deck below.
+     */
+    public ?object $deckOverride = null;
+
     public function getGameDeckObject(): object
     {
-        return new \stdClass();
+        if ($this->deckOverride !== null) {
+            return $this->deckOverride;
+        }
+        $game = $this;
+        return new class($game) {
+            public function __construct(private Game $game)
+            {
+            }
+
+            public function insertCardOnExtremePosition($cardId, $location, $bOnTop): void
+            {
+                $this->game->deckInserts[] = [
+                    'id' => (int)$cardId,
+                    'deck' => (string)$location,
+                    'onTop' => (bool)$bOnTop,
+                ];
+            }
+
+            // WHY: Technique_01090 (discard-to-play branch) validates the chosen card against the
+            // BGA deck's hand rows. Mirror those rows from the in-RAM dbCards so tests control the hand.
+            public function getCardsInLocation($location, $locationArg = null): array
+            {
+                $rows = [];
+                foreach ($this->game->dbCards as $card) {
+                    if ($card->Location !== $location) {
+                        continue;
+                    }
+                    if ($locationArg !== null && (int)$card->ControllerId !== (int)$locationArg) {
+                        continue;
+                    }
+                    $rows[$card->Id] = ['id' => $card->Id, 'location' => $location, 'location_arg' => $card->ControllerId];
+                }
+                return $rows;
+            }
+
+            public function getPlayerHand($playerId): array
+            {
+                return $this->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+            }
+        };
+    }
+
+    /** @var list<array{playerId:int,performerId:int|null,location:string,pressureType:string}> */
+    public array $pressureLocationCalls = [];
+
+    /** @var array{0:bool,1:string,2:int} [success, totals explanation, difference] returned by pressureLocation. */
+    public array $pressureLocationResult = [true, 'test totals', 1];
+
+    // WHY: Reaction_01080 resolves pressure by calling UtilitiesTrait::pressureLocation, which needs the
+    // player table + influence totals (DB). The pressure math itself is source-locked elsewhere; this stub
+    // records the call and returns a scripted outcome so the reaction's own wiring can be tested.
+    public function pressureLocation(int $attemptingPlayerId, ?Character $performer, string $location, string $pressureType): array
+    {
+        $this->pressureLocationCalls[] = [
+            'playerId' => $attemptingPlayerId,
+            'performerId' => $performer?->Id,
+            'location' => $location,
+            'pressureType' => $pressureType,
+        ];
+        return $this->pressureLocationResult;
     }
 
     public function getNextEventBatchId(): int
@@ -364,6 +459,24 @@ class Game
 
     /** @var list<array{className:string,originalCardId:int,location:string,ownerId:int,controllerId:int,targetId:int,abilityId:string}> */
     public array $createdRiskAttachments = [];
+
+    // WHY: Technique_01096 gates its steal on UtilitiesTrait::hasEquipRestrictions; the real method
+    // currently always returns [false, ""] (duplicate-slot limits moved to Reaction_AttachmentTypeLimit).
+    // Mirror that so equip legality in tests is decided by Attachment::canAttachTo only.
+    public function hasEquipRestrictions(Character $character, \Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment $attachment): array
+    {
+        return [false, ''];
+    }
+
+    /** @var array<int, Card> playerId => selected Scheme (UtilitiesTrait reads player.selected_scheme_id). */
+    public array $chosenSchemes = [];
+
+    // WHY: _01098 Forced stamps its EmbargoedCardId on the controller's chosen Scheme; the real lookup
+    // is a player-table SELECT. Tests register the scheme in $chosenSchemes instead.
+    public function getPlayerChosenScheme($playerId)
+    {
+        return $this->chosenSchemes[(int)$playerId] ?? null;
+    }
 
     // WHY: Action_01035 reveal walks the city deck via BGA Deck; unit tests inject the Mercenary.
     public function revealFirstCardTypeFromCityDeck(int $playerId, string $type, int $sourceId = 0): ?Card
