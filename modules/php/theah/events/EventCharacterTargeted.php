@@ -2,8 +2,9 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah\events;
 
-// Sent when a character is targeted by an ability.  Used in edge-cases when manipulation events aren't feasible.
-// Use-cases: Defending Honor
+// Cancel hook when an ability targets a card. targetId is usually a character, but
+// attachment-target abilities (e.g. Shoddy Craftsmanship) put the attachment Id here.
+// Unyielding Loyalty / Hexenjagd resolve the target via getCardById.
 class EventCharacterTargeted extends Event
 {
     public int $playerId;

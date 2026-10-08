@@ -316,9 +316,12 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
             $owner = $this->getOwningCard($event->theah);
             if ($owner->Location == Game::LOCATION_HAND)
             {
-                $character = $event->theah->getCharacterById($event->targetId);
-                if ($character !== null &&
-                    $owner->ControllerId == $character->ControllerId &&
+                // WHY: Card text is "your cards," not "your characters." Attachment-target
+                // Risks (Shoddy Craftsmanship) put the attachment Id in targetId —
+                // getCharacterById would null and skip. Mirror Hexenjagd / engage path.
+                $card = $event->theah->getCardById($event->targetId);
+                if ($card !== null &&
+                    $owner->ControllerId == $card->ControllerId &&
                     $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
                 {
                     $this->interceptEvent($event, 'characterTargetedEvent');

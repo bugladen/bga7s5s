@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01174 extends RiskAction implements IAbilityThatTargetsCards
@@ -41,6 +42,39 @@ class Action_01174 extends RiskAction implements IAbilityThatTargetsCards
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01174", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Do not queue unequip/discard beside the cancel hook. Unyielding Loyalty
+        // text is "your cards" — attachment Id is the target. Queuing destroy first meant
+        // UL never saw a hook (and even if it intercepted a later event, unequip would
+        // already have applied). Amour / Solvente / Giacinto shape: gate effects on
+        // EventCharacterTargeted surviving. Pass / Night of Drinking re-queue the clone.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $attachment = $event->theah->getAttachmentById($event->targetId);
+            if ($owner === null || $attachment === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+
+            $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
+                $attachment->ControllerId,
+                $attachment->AttachedToId,
+                $attachment->Id
+            );
+            $unequipEvent->batchId = $batchId;
+            $event->theah->eventCheck($unequipEvent);
+            $event->theah->queueEvent($unequipEvent);
+
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $owner->Id, $asEffect = true);
+            $discardEvent->batchId = $batchId;
+            $event->theah->queueEvent($discardEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -103,16 +137,21 @@ class Action_01174 extends RiskAction implements IAbilityThatTargetsCards
                 throw new \BgaUserException($game->translate("Attachment is in hand"));
             }
 
-            $unequipEvent = EventFactory::createAttachmentUnequippedEvent($attachment->ControllerId, $attachment->AttachedToId, $attachment->Id);
-            $game->theah->eventCheck($unequipEvent);
-            $game->theah->queueEvent($unequipEvent);
-
             $owner = $this->getOwningCard($game->theah);
-            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $owner->Id, $asEffect = true);
-            $game->theah->queueEvent($discardEvent);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: targetId is the attachment (printed target), not the host. UL /
+            // Hexenjagd resolve via getCardById. Shared batchId so cancel strips
+            // the effect package queued after the hook survives.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $attachment->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }
