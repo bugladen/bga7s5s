@@ -144,6 +144,20 @@ class TestTheah extends Theah
         ));
     }
 
+    /** @var list<array{duelId:int,round:int,oldId:int,newId:int}> */
+    public array $swappedParticipants = [];
+
+    // WHY: Technique_01063Swap rewrites the duel table row; real path SELECTs/UPDATEs duel in DB.
+    public function swapParticipantsInDuel(int $duelId, int $round, int $oldParticipantId, int $newParticipantId)
+    {
+        $this->swappedParticipants[] = [
+            'duelId' => $duelId,
+            'round' => $round,
+            'oldId' => $oldParticipantId,
+            'newId' => $newParticipantId,
+        ];
+    }
+
     // WHY: Technique_01050 needs thrust >= 1; real path SELECTs duel_round.
     public function getCurrentRoundThrust(): int
     {

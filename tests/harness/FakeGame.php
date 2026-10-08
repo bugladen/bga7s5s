@@ -73,6 +73,9 @@ class Game
     final const CONSTANZO_ID = 'constanzoId';
     final const PRESSURE_TYPE = 'pressureType';
     final const NORMAL_PRESSURE_TYPE = 0;
+    // Must match Game.php — Montaigne scheme/attachment Influence pressures.
+    final const REPUTATION_MERITEE_PRESSURE_TYPE = 4;
+    final const TABARD_PRESSURE_TYPE = 8;
     final const CONSTANZO_PRESSURE_TYPE = 16;
 
     final const CHOSEN_CARD = 'chosenCard';
@@ -93,13 +96,21 @@ class Game
 
     final const CHALLENGE_TYPE = 'challengeType';
     final const NORMAL_CHALLENGE_TYPE = 0;
+    // Must match Game.php — Montaigne / Eisen challenge variants.
+    final const EPEE_SANGLANTE_CHALLENGE_TYPE = 2;
+    final const CAVALIER_HAT_CHALLENGE_TYPE = 3;
     final const DANIELA_DEITRICH_CHALLENGE_TYPE = 6;
+    final const MOVE_ALONG_CHALLENGE_TYPE = 7;
     final const SERVO_SCARPA_CHALLENGE_TYPE = 8;
     final const VERONICAS_GUILLE_CHALLENGE_TYPE = 9;
     // Must match Game.php — Thug challenge never engages (off auto-engage list).
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CHALLENGE_STAT = 'ChallengeStat';
     final const CHALLENGE_CANCELLED = 'challengeCancelled';
+    // Must match Game.php — Technique_01063Swap only rewrites DUEL_CHALLENGER once the challenge is accepted.
+    final const CHALLENGE_ACCEPTED = 'challengeAccepted';
+    // WHY: Action_01071 first-wound steal gates on DUEL_CHALLENGER/DUEL_DEFENDER conditions.
+    final const DUEL_CHALLENGER = 'Challenger';
     final const DUEL_DEFENDER = 'Defender';
     final const IN_DUEL = 'inDuel';
     final const DUEL_ID = 'duelId';
@@ -149,8 +160,25 @@ class Game
     /** @var array<int, int> playerId => Renown/score (Leader destroy / victory tests). */
     public array $playerScores = [];
 
+    // WHY: Character::handleEvent(EventCharacterWounded) bumps $game->bga->playerStats;
+    // _01069 tests need the non-ignored (parent) wound path to run without BGA.
+    public object $bga;
+    final const STAT_WOUNDS_RECEIVED = 'wounds_received';
+
     public function __construct()
     {
+        $this->bga = new class {
+            public object $playerStats;
+
+            public function __construct()
+            {
+                $this->playerStats = new class {
+                    public function inc(string $name, int $delta = 1, ?int $playerId = null): void
+                    {
+                    }
+                };
+            }
+        };
         $this->globals = new FakeGlobals();
         $this->notify = new FakeNotify();
         $this->gamestate = new FakeGamestate();
@@ -168,6 +196,17 @@ class Game
     public function setPlayerReknown(int $playerId, int $reknown): void
     {
         $this->playerScores[$playerId] = $reknown;
+    }
+
+    // WHY: Action_01064 availability reads Game::getRenownForLocation (UtilitiesTrait → globals
+    // "Reknown_<location>"). Mirror it via TestTheah city-location Renown so tests use setLocationRenown().
+    public function getRenownForLocation($location): int
+    {
+        // Adjacency lists include Player Home, which has no CityLocation / Renown.
+        if ($this->theah === null || !array_key_exists($location, $this->theah->getCityLocations())) {
+            return 0;
+        }
+        return (int)$this->theah->getCityLocation($location)->Renown;
     }
 
     public function notifyAllPlayers(string $type, string $message, array $args = []): void
@@ -283,6 +322,16 @@ class Game
     public function handWealthCount(int $playerId): int
     {
         return 99;
+    }
+
+    // WHY: Action_01069 step 1 parks the discarded hand card in Purgatory via DeckTrait.
+    // Record only — real parkCard moves the BGA deck row, not Card->Location.
+    /** @var list<int> */
+    public array $parkedCardIds = [];
+
+    public function parkCard(int $cardId, string $holdingLocation = self::LOCATION_PURGATORY, $locationArg = 0): void
+    {
+        $this->parkedCardIds[] = $cardId;
     }
 
     public function registerDbCard(Card $card): void

@@ -12,6 +12,6 @@ php tests/run.php
 ```
 
 - Suites: `tests/regression/*_Test.php`
-- Currently covers `_01006`–`_01050` and their Action/Reaction/Technique/Maneuver composites
+- Currently covers `_01006`–`_01075` and their Action/Reaction/Technique/Maneuver composites
 - If you change a covered card/composite, run at least that suite (or the full runner)
 - If you add/fix behavior that should not regress, extend or add a suite under `tests/regression/`

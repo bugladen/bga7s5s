@@ -23,7 +23,7 @@ Local PHP regression tests live under `tests/` (no PHPUnit). **When you change g
 php tests/run.php
 ```
 
-Suites are in `tests/regression/*_Test.php`. Currently covers cards `_01006`–`_01050` and their Action/Reaction/Technique/Maneuver composites.
+Suites are in `tests/regression/*_Test.php`. Currently covers cards `_01006`–`_01075` and their Action/Reaction/Technique/Maneuver composites.
 
 ## Architecture
 
