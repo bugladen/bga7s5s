@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01130;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01121;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01135;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
@@ -1630,6 +1631,10 @@ trait EventHub
                         $event->explanations[] = $theah->game->translate("Combat Card(s) Thrust is dashed so Technique Thrust will not be applied.");
                     }
 
+                    // WHY: Ren (_01121) -1 Parry once/round — after Technique Parry is on
+                    // the event (card loop) and dashed zeroing, before DB write.
+                    _01121::applyAdversaryParryReductionToTechnique($event);
+
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
                     }
@@ -1763,6 +1768,10 @@ trait EventHub
                     $maneuver = $theah->getManeuverById($event->maneuverId);
                     $maneuverCard = $maneuver->getOwningCard($theah);
 
+                    // WHY: Ren (_01121) -1 Parry once/round — after Maneuver Parry is on
+                    // the event (card loop), before DB write. Same window as Technique.
+                    _01121::applyAdversaryParryReductionToManeuver($event);
+
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
                     }
@@ -1881,6 +1890,10 @@ trait EventHub
                     // left-$theah->cards problem as Unravel (Miyato/Ota 02043a). Apply from
                     // global here — do not load locker into buildCity.
                     Maneuver_01135::applyPendingThrustReductions($event);
+
+                    // WHY: Ren (_01121) -1 Parry once/round — after Unravel +1 so that
+                    // bonus is inside the reduction window; before DB write.
+                    _01121::applyAdversaryParryReductionToCombatCard($event);
 
                     foreach ($event->explanations as $explanation) {
                         $theah->game->notify->all("message", $theah->game->translate($explanation));
