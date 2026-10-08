@@ -66,7 +66,14 @@ class _01169 extends Risk
                     "character_name" => $actor->Name,
                 ]);
     
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($actor->Id, $this->Id, 1, $this->getInjectCode());
+                // WHY: abilityId = card Id (Joern / Stranahan). Forced on the Risk class.
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                    $actor->Id,
+                    $this->Id,
+                    1,
+                    $this->getInjectCode(),
+                    (string) $this->Id
+                );
                 $event->theah->queueEvent($woundEvent);
     
                 $moveEvent = EventFactory::createCardMovingEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, true, $this->Id);

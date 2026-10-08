@@ -79,7 +79,16 @@ class _01021 extends FactionAttachment
                 "character_inject_code" => $character->getInjectCode(),
             ]);
 
-            $event->theah->queueEvent(EventFactory::createCharacterBeingWoundedEvent($character->Id, $this->Id, 1, $this->getInjectCode()));
+            // WHY: abilityId = card Id (Joern / Stranahan). CanEquipToOpponents — Cascade /
+            // Cooper / Spaulders / Kaspar must see this as an opponent's ability when the
+            // attachment's controller differs from the wounded character's.
+            $event->theah->queueEvent(EventFactory::createCharacterBeingWoundedEvent(
+                $character->Id,
+                $this->Id,
+                1,
+                $this->getInjectCode(),
+                (string) $this->Id
+            ));
         }
     }
 }

@@ -82,7 +82,7 @@ class Reaction_04053 extends AttachmentReaction
         }
 
         // WHY: Mirror Cascade (02059) — only wounds sourced from an opponent's ability.
-        // Empty abilityId / missing ability = non-ability wound (e.g. duel threat resolve).
+        // Empty abilityId = non-ability wound (e.g. duel threat resolve).
         if ($event->abilityId === '')
         {
             return;
@@ -94,14 +94,19 @@ class Reaction_04053 extends AttachmentReaction
             return;
         }
 
+        // WHY: Prefer Ability composite. Card-level Forced/passives (Joern `_03015`,
+        // Stranahan `_02022`) use abilityId = card Id and miss getAbilityById —
+        // fall back to source ControllerId (Kaspar shape).
         $ability = $source->getAbilityById($event->abilityId);
-        if ($ability === null)
+        if ($ability !== null)
         {
-            return;
+            $abilityOwner = $ability->getOwningCard($event->theah);
+            if ($abilityOwner === null || $abilityOwner->ControllerId == $owner->ControllerId)
+            {
+                return;
+            }
         }
-
-        $abilityOwner = $ability->getOwningCard($event->theah);
-        if ($abilityOwner === null || $abilityOwner->ControllerId == $owner->ControllerId)
+        else if ($source->ControllerId == 0 || $source->ControllerId == $owner->ControllerId)
         {
             return;
         }

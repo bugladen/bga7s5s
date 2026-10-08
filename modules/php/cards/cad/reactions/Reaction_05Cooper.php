@@ -82,7 +82,7 @@ class Reaction_05Cooper extends CardReaction
         }
 
         // WHY: Mirror Cascade / Spaulders — only wounds sourced from an opponent's ability.
-        // Empty abilityId / missing ability = non-ability wound (e.g. duel threat resolve).
+        // Empty abilityId = non-ability wound (e.g. duel threat resolve).
         if ($event->abilityId === '')
         {
             return;
@@ -94,14 +94,19 @@ class Reaction_05Cooper extends CardReaction
             return;
         }
 
+        // WHY: Prefer the Ability composite when present. Card-level Forced/passives
+        // (Joern `_03015`, Stranahan `_02022`) set abilityId = card Id and are not
+        // registered on getAbilityById — fall back to source ControllerId (Kaspar shape).
         $ability = $source->getAbilityById($event->abilityId);
-        if ($ability === null)
+        if ($ability !== null)
         {
-            return;
+            $abilityOwner = $ability->getOwningCard($event->theah);
+            if ($abilityOwner === null || $abilityOwner->ControllerId == $owner->ControllerId)
+            {
+                return;
+            }
         }
-
-        $abilityOwner = $ability->getOwningCard($event->theah);
-        if ($abilityOwner === null || $abilityOwner->ControllerId == $owner->ControllerId)
+        else if ($source->ControllerId == 0 || $source->ControllerId == $owner->ControllerId)
         {
             return;
         }

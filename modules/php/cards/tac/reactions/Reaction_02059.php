@@ -59,20 +59,30 @@ class Reaction_02059 extends RiskReaction
                     $source = $event->theah->getCardById($event->sourceId);
                     if ($source)
                     {
+                        // WHY: Prefer Ability composite. Card-level Forced/passives
+                        // (Joern `_03015`, Stranahan `_02022`) use abilityId = card Id
+                        // and miss getAbilityById — fall back to source ControllerId.
+                        $fromOpponent = false;
                         $ability = $source->getAbilityById($event->abilityId);
                         if ($ability)
                         {
                             $abilityOwner = $ability->getOwningCard($event->theah);
-                            if ($abilityOwner && $abilityOwner->ControllerId != $owner->ControllerId)
-                            {
-                                $this->savedWoundEvent = clone $event;
-                                unset($this->savedWoundEvent->theah);
-                                $event->canceled = true;
-                                $owner->IsUpdated = true;
+                            $fromOpponent = $abilityOwner && $abilityOwner->ControllerId != $owner->ControllerId;
+                        }
+                        else
+                        {
+                            $fromOpponent = $source->ControllerId != 0 && $source->ControllerId != $owner->ControllerId;
+                        }
 
-                                $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                                $event->theah->queueEvent($transition);
-                            }
+                        if ($fromOpponent)
+                        {
+                            $this->savedWoundEvent = clone $event;
+                            unset($this->savedWoundEvent->theah);
+                            $event->canceled = true;
+                            $owner->IsUpdated = true;
+
+                            $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                            $event->theah->queueEvent($transition);
                         }
                     }
                 }

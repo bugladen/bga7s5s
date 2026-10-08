@@ -80,7 +80,17 @@ class _02022 extends Character
             $defender = $event->theah->getCharacterById($event->defenderId);
             if ($defender->ControllerId == $this->ControllerId && $defender->Location == $this->Location && $defender->hasTrait("Diplomat"))
             {
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($event->challengerId, $this->Id, 1, $this->getInjectCode());
+                // WHY: abilityId = card Id (Joern `_03015` shape). Card-level Forced/
+                // passives are not Action/Reaction/Technique composites, so Cascade /
+                // Cooper / Spaulders fall back to source ControllerId when getAbilityById
+                // misses. Empty abilityId would be treated as threat / non-ability.
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                    $event->challengerId,
+                    $this->Id,
+                    1,
+                    $this->getInjectCode(),
+                    (string) $this->Id
+                );
                 $event->theah->queueEvent($woundEvent);
             }
         }

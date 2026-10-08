@@ -755,7 +755,7 @@ For CAD Vissenta `_05Cooper`: **`<i>Reaction</i> — When an opponent's ability 
 1. `$this->isAvailable()` + `!$event->canceled` + no pending `$savedWoundEvent`
 2. `$this->skipNextEvent` short-circuit (Pass re-queue)
 3. `$event->characterId == $owner->Id` — text names the Owner (not "your character")
-4. Opponent's ability: `abilityId !== ''` → `getAbilityById` → ability owner's `ControllerId != owner.ControllerId`
+4. Opponent's ability: `abilityId !== ''` → `getAbilityById` → ability owner's `ControllerId != owner.ControllerId`. **If `getAbilityById` misses** (card-level Forced/passive with Joern/Stranahan `abilityId = card Id`): fall back to `source.ControllerId != owner.ControllerId` (Kaspar shape). Empty `abilityId` still = threat / non-ability.
 5. Clone event (`unset($cloned->theah)`), `$event->canceled = true`, queue `createReactionTransitionEvent`
 
 **Buttons:** Ignore Wound / Pass.

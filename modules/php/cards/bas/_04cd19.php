@@ -96,11 +96,15 @@ class _04cd19 extends CityEventCard
                 $event->batchId = $game->getNextEventBatchId();
             }
 
+            // WHY: abilityId = card Id (Joern / Stranahan). City Event ControllerId is 0
+            // so Cascade/Cooper opponent gates still skip — tag marks it ability-sourced
+            // vs threat for abilityId != '' checks (Kaspar threat carve-out family).
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
                 $character->Id,
                 $this->Id,
                 1,
-                $this->getInjectCode()
+                $this->getInjectCode(),
+                (string) $this->Id
             );
             $woundEvent->batchId = $event->batchId;
             $event->theah->queueEvent($woundEvent);

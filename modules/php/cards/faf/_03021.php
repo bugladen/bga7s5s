@@ -87,11 +87,15 @@ class _03021 extends Risk implements IHasActions, IRiskThatTargetsCharacters
                         "challenge_card" => $this->getInjectCode(),
                     ]
                 );
+                // WHY: abilityId = card Id (Joern / Stranahan). Intervene wound lives on
+                // the card handleEvent (CORNERED_CHALLENGE_TYPE), not Action_03021 — same
+                // card-level tag so Cascade / Cooper / Kaspar attribute it.
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
                     $intervener->Id,
                     $this->Id,
                     1,
-                    $this->getInjectCode()
+                    $this->getInjectCode(),
+                    (string) $this->Id
                 );
                 $event->theah->eventCheck($woundEvent);
                 $event->theah->queueEvent($woundEvent);

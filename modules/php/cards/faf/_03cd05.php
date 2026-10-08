@@ -47,11 +47,13 @@ class _03cd05 extends CityAttachment
         // Forced: When a character equips this card • Wound them.
         if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
         {
+            // WHY: abilityId = card Id (Joern / Stranahan). Forced on City Attachment.
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
                 $event->characterId,
                 $this->Id,
                 1,
-                $this->getInjectCode()
+                $this->getInjectCode(),
+                (string) $this->Id
             );
             $event->theah->queueEvent($woundEvent);
         }
