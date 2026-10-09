@@ -19,10 +19,10 @@ class State_highDramaChallengeActionResolveTechnique_05DabneyUS01 extends GameSt
             type: StateType::ACTIVE_PLAYER,
             name: "highDramaChallengeActionResolveTechnique_05DabneyUS01",
 
-            description: clienttranslate('${actplayer} is choosing options to perform a Technique.'),
+            description: '${actplayer} is choosing options to perform a Technique.',
             // WHY: Technique is duel-only after Parry replaced Thrust (no challenge-useful
             // choice). State kept registered so a stale transition can Pass out.
-            descriptionMyTurn: clienttranslate('Valeri Mikhailov') . clienttranslate(': ${you} have no Technique options before the duel: '),
+            descriptionMyTurn: 'Valeri Mikhailov' . ': ${you} have no Technique options before the duel: ',
             transitions: [
                 "" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_EVENTS,
             ],

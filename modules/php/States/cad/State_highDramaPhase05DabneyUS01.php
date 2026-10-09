@@ -19,8 +19,8 @@ class State_highDramaPhase05DabneyUS01 extends GameState
             type: StateType::ACTIVE_PLAYER,
             name: "highDramaPhase05DabneyUS01",
 
-            description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
-            descriptionMyTurn: clienttranslate('Valeri Mikhailov') . clienttranslate(': ${you} must choose an opposing character to challenge at an adjacent location:'),
+            description: '${actplayer} is choosing options to perform an Action.',
+            descriptionMyTurn: 'Valeri Mikhailov' . ': ${you} must choose an opposing non-Leader to challenge at an adjacent location:',
             transitions: [
                 "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "opponentChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,

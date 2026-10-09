@@ -20,9 +20,9 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
             type: StateType::ACTIVE_PLAYER,
             name: "duelChooseTechnique_05DabneyUS01",
 
-            description: clienttranslate('${actplayer} is choosing options to perform a Technique.'),
+            description: '${actplayer} is choosing options to perform a Technique.',
             // WHY: ${technique_choices} swaps when combat card(s) have dashed Riposte/Parry.
-            descriptionMyTurn: clienttranslate('Valeri Mikhailov') . clienttranslate(': ${you} must choose ${technique_choices}: '),
+            descriptionMyTurn: 'Valeri Mikhailov' . ': ${you} must choose ${technique_choices}: ',
             transitions: [
                 "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
             ],
@@ -41,19 +41,19 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
         // WHY: Fixed clienttranslate strings (not sprintf of English fragments) for i18n.
         if ($parryAvailable && $riposteAvailable)
         {
-            $techniqueChoices = clienttranslate('+1 Parry, +1 Riposte, or Lethal');
+            $techniqueChoices = '+1 Parry, +1 Riposte, or Lethal';
         }
         else if ($parryAvailable)
         {
-            $techniqueChoices = clienttranslate('+1 Parry or Lethal');
+            $techniqueChoices = '+1 Parry or Lethal';
         }
         else if ($riposteAvailable)
         {
-            $techniqueChoices = clienttranslate('+1 Riposte or Lethal');
+            $techniqueChoices = '+1 Riposte or Lethal';
         }
         else
         {
-            $techniqueChoices = clienttranslate('Lethal');
+            $techniqueChoices = 'Lethal';
         }
 
         return [

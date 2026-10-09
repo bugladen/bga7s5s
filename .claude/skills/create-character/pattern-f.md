@@ -266,5 +266,5 @@ Always implement this interface on a challenge-issuing action — challenge targ
 | `Action_04002` (Danilo Danini) | Engage + Influence challenge + **intervene wound-or-draw choice**. `DANILO_CHALLENGE_TYPE` on auto-engage; `"04002_3"` on GENERATE_THREAT_EVENTS. |
 | `Action_04012` (Raven) | Engage + Finesse challenge + **other characters cannot intervene**. `RAVEN_CHALLENGE_TYPE` on auto-engage; empty interveners + `interventionCheck` + `Reaction_02058` skip. |
 | `Action_01123` (Valeri Mikhailov) | Move-to-adjacent + Combat challenge + no intervene (`VALERI_MIKHAILOV_CHALLENGE_TYPE`). Engage via move `$engage=true`, not auto-engage list. |
-| `Action_05DabneyUS01` (Valeri Mikhailov, CAD) | Move-to-adjacent + Combat + **refusable** (`VALERI_CHALLENGE_TYPE` only blocks ActivateTechnique Back after move). Trichotomy (c) never engages; do **not** reuse `VALERI_MIKHAILOV` (that type is no-intervene). |
+| `Action_05DabneyUS01` (Valeri Mikhailov, CAD) | Move-to-adjacent + Combat to **opposing non-Leader** + **refusable** (`VALERI_CHALLENGE_TYPE` only blocks ActivateTechnique Back after move). Trichotomy (c) never engages; do **not** reuse `VALERI_MIKHAILOV` (that type is no-intervene). |
 
