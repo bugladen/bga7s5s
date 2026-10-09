@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -59,7 +60,8 @@ class Action_01096_Test extends TestCase
     {
         try {
             $this->act($world, $action, $id);
-        } catch (\BgaUserException $e) {
+        // WHY: act mixes UserException (city/equipped gates from the 01096 fix) and legacy BgaUserException (own/adjacency).
+        } catch (UserException|\BgaUserException $e) {
             return true;
         }
         return false;
@@ -218,7 +220,9 @@ class Action_01096_Test extends TestCase
             'act refuses a non-adjacent target' => function () {
                 $world = new TestWorld();
                 [, , $action] = $this->scene($world);
+                // WHY: equip Far — otherwise the controlled+attachment recheck rejects first and never hits adjacency.
                 $far = $world->placeCharacter(new GenericCharacter('Far Foe'), Game::LOCATION_CITY_BAZAAR, 2);
+                $this->equip($world, $far);
                 Assert::true($this->actThrows($world, $action, $far->Id), 'not adjacent');
                 Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },

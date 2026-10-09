@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -329,7 +330,8 @@ class Card_01098_Test extends TestCase
                 $threw = false;
                 try {
                     $this->chooseOpponent($world, $scheme, 1);
-                } catch (\BgaUserException $e) {
+                // WHY: Forced reveal validation throws GameFramework UserException (post-01098 crash fixes).
+                } catch (UserException $e) {
                     $threw = true;
                 }
                 Assert::true($threw, 'must pick an opponent');
@@ -344,7 +346,7 @@ class Card_01098_Test extends TestCase
                 $threw = false;
                 try {
                     $this->chooseOpponent($world, $scheme, 2);
-                } catch (\BgaUserException $e) {
+                } catch (UserException $e) {
                     $threw = true;
                 }
                 Assert::true($threw, 'empty hand');

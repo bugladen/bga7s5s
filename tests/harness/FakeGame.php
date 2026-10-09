@@ -64,6 +64,8 @@ class Game
     final const STAT_COMBAT = 'Combat';
     final const STAT_INFLUENCE = 'Influence';
     final const STAT_FINESSE = 'Finesse';
+    // WHY: Action_01105 Drinking Games pressures with Resolve (must match Game.php).
+    final const STAT_RESOLVE = 'Resolve';
 
     final const RECRUIT_TYPE = 'recruitType';
     final const NORMAL_RECRUIT_TYPE = 0;
@@ -86,6 +88,10 @@ class Game
     final const CHOSEN_ATTACHMENT = 'chosenAttachment';
     final const CHOSEN_TECHNIQUE = 'chosenTechnique';
     final const CHOSEN_TECHNIQUE_IS_MAIN = 'chosenTechniqueIsMain';
+    // WHY: Action_01106 Improvising stores the chosen discard-pile opponent here.
+    final const CHOSEN_OPPONENT = 'chosenOpponent';
+    // WHY: Action/Maneuver_01113 pay step reads the attachment's printed cost from globals.
+    final const CHOSEN_CARD_COST = 'chosenCardCost';
     final const TRANSITION_INTERNAL_ID = 'transitionInternalId';
     final const ABNORMAL_FLOW = 'abnormalFlow';
     // WHY: Maneuver_01077 parks the chosen combat card then sets NEXT_COMBAT_CARD + ABNORMAL_FLOW.
@@ -98,6 +104,16 @@ class Game
     // WHY: Action_01090 / Action_01093 / Action_01095b first-player override + extra action.
     final const EXTRA_ACTIONS = 'extraActions';
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = 'overrideAsNotFirstPlayer';
+
+    // WHY: Maneuver_01114 Roll the Bones sets these before computing reveal count (globals, not instance flags).
+    final const GAMBLE_TYPE = 'gambleType';
+    final const GAMBLE_TYPE_NORMAL = 0;
+    final const GAMBLE_TYPE_ROLL_THE_DICE = 1;
+    final const GAMBLE_TYPE_FREE = 2;
+    final const ROLL_THE_BONES_ACTIVATED = 'rollTheBonesActivated';
+    final const ROLL_THE_BONES_CARD_ID = 'rollTheBonesCardId';
+    final const GAMBLE_REVEAL_COUNT = 'gambleRevealCount';
+    final const GAMBLE_REVEAL_EXPLANATIONS = 'gambleRevealExplanations';
 
     final const CHALLENGE_TYPE = 'challengeType';
     final const NORMAL_CHALLENGE_TYPE = 0;
@@ -134,6 +150,8 @@ class Game
     final const DUEL_ROUND = 'duelRound';
 
     final const PRESSURING_PLAYER = 'pressuringPlayer';
+    // WHY: Action_01105 sets PRESSURE_STAT to STAT_RESOLVE before pressureLocation transition.
+    final const PRESSURE_STAT = 'pressureStat';
     final const PRESSURE_BONUS = 'pressureBonus';
     final const PACK_TACTICS_PRESSURE_TYPE = 64;
     final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
@@ -419,6 +437,18 @@ class Game
         return 99;
     }
 
+    // WHY: Action/Maneuver_01113 pay-with-ids validates exact Wealth; mirror UtilitiesTrait.
+    public function isValidWealthPayment(int $totalWealth, int $cost, bool $hasWealthCard): bool
+    {
+        if ($totalWealth == $cost) {
+            return true;
+        }
+        if ($hasWealthCard && $totalWealth == $cost + 1) {
+            return true;
+        }
+        return false;
+    }
+
     // WHY: Action_01069 step 1 parks the discarded hand card in Purgatory via DeckTrait.
     // Record only — real parkCard moves the BGA deck row, not Card->Location.
     /** @var list<int> */
@@ -505,5 +535,38 @@ class Game
             'targetId' => $targetId,
             'abilityId' => $abilityId,
         ];
+    }
+
+    /** @var list<Card> */
+    public array $createdCardsInLocation = [];
+
+    // WHY: Action_01106 Improvising clones a stolen Risk via DeckTrait::createCardInLocation
+    // (DB INSERT). Mirror instantiate + place into RAM so the clone/pay transition path
+    // can be asserted without BGA Deck.
+    public function createCardInLocation(string $className, string $location, int $ownerId, int $controllerId): Card
+    {
+        $set = substr($className, 0, 2);
+        $expansion = match ($set) {
+            '01' => '_7s5s',
+            '02' => 'tac',
+            '03' => 'faf',
+            '04' => 'bas',
+            '05' => 'cad',
+            default => '_7s5s',
+        };
+        $fqcn = "\\Bga\\Games\\SeventhSeaCityOfFiveSails\\cards\\{$expansion}\\_{$className}";
+        /** @var Card $card */
+        $card = new $fqcn();
+        $id = count($this->dbCards) > 0 ? max(array_keys($this->dbCards)) + 1 : 9000;
+        $card->setId($id);
+        $card->OwnerId = $ownerId;
+        $card->ControllerId = $controllerId;
+        $card->Location = $location;
+        $this->registerDbCard($card);
+        if ($this->theah !== null) {
+            $this->theah->addCardToWorld($card);
+        }
+        $this->createdCardsInLocation[] = $card;
+        return $card;
     }
 }

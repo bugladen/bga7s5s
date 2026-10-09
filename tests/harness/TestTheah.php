@@ -144,6 +144,37 @@ class TestTheah extends Theah
         ));
     }
 
+    // WHY: Reaction_01122 cancel clears DB event rows targeting Torsten / from the sorcery
+    // source. Unit tests keep events only in $queuedEvents — mirror deleteEventBatch.
+    public function deleteEventsTargetingCard(int $cardId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            function ($event) use ($cardId) {
+                foreach (get_object_vars($event) as $value) {
+                    if ($value === $cardId) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        ));
+    }
+
+    // WHY: Reaction_01122 cancel also drops transition events keyed by the sorcery sourceId.
+    public function deleteTransitionEventsBySourceId(int $sourceId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            function ($event) use ($sourceId) {
+                if (!$event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition) {
+                    return true;
+                }
+                return (int)$event->sourceId !== $sourceId;
+            }
+        ));
+    }
+
     /** @var list<array{duelId:int,round:int,oldId:int,newId:int}> */
     public array $swappedParticipants = [];
 
@@ -181,6 +212,106 @@ class TestTheah extends Theah
     public function getCurrentRoundRiposte(): int
     {
         return $this->currentRoundRiposte;
+    }
+
+    /** @var array<int,int> characterId => wounds taken in prior rounds of this duel (Maneuver_01107 gate). */
+    public array $duelWoundsTaken = [];
+
+    // WHY: Real duelParticipantWoundsTaken SELECTs duel_round SUM; Maneuver_01107 needs prior wounds.
+    public function duelParticipantWoundsTaken(int $participantId): int
+    {
+        return $this->duelWoundsTaken[(int)$participantId] ?? 0;
+    }
+
+    // WHY: Reaction_01109 (Night of Drinking) de-dupes offers via DB LIKE on EventTransition.
+    // Mirror that against in-memory $queuedEvents so ActionActivated / RiskPlayed paths do not double-offer.
+    public function areTransitionEventsOfTypeForPlayerQueued(int $playerId, string $reactionType): bool
+    {
+        foreach ($this->queuedEvents as $event) {
+            if (!$event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition) {
+                continue;
+            }
+            if ((int)$event->playerId !== (int)$playerId) {
+                continue;
+            }
+            if (str_contains((string)$event->internalId, $reactionType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // WHY: Reaction_01109 RiskPlayed path only offers when a RiskReactionTriggered for that source
+    // is already queued (Reaction announce) — skips Action plays already handled on ActionActivated.
+    public function areRiskReactionTriggeredEventsQueuedForSource(int $sourceId): bool
+    {
+        if ($sourceId <= 0) {
+            return false;
+        }
+        foreach ($this->queuedEvents as $event) {
+            if ($event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered
+                && (int)$event->sourceId === (int)$sourceId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // WHY: Reaction_01109 cancel deletes pending ActionTriggered / RiskPlayed / RiskReactionTriggered /
+    // Maneuver events from the DB queue. Tests only have $queuedEvents — filter in memory.
+    public function deleteActionTriggeredEvents(string $actionId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            function ($event) use ($actionId) {
+                if (!$event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered) {
+                    return true;
+                }
+                return !str_contains((string)$event->actionId, $actionId)
+                    && (string)$event->sourceId !== (string)$actionId;
+            }
+        ));
+    }
+
+    public function deleteRiskReactionTriggeredEvents(string $reactionId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            function ($event) use ($reactionId) {
+                if (!$event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered) {
+                    return true;
+                }
+                return !str_contains((string)$event->internalId, $reactionId)
+                    && (string)$event->sourceId !== (string)$reactionId;
+            }
+        ));
+    }
+
+    public function deleteRiskPlayedEvents(int $riskId): void
+    {
+        if ($riskId <= 0) {
+            return;
+        }
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            fn($event) => !(
+                $event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed
+                && (int)$event->riskId === (int)$riskId
+            )
+        ));
+    }
+
+    public function deleteManeuverEvents(string $maneuverId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            function ($event) use ($maneuverId) {
+                if (property_exists($event, 'maneuverId') && (string)$event->maneuverId === $maneuverId) {
+                    return false;
+                }
+                return true;
+            }
+        ));
     }
 
     // WHY: Real getCardObjectsAtLocation hits DB; hand Thugs for Reaction_01014 live in RAM.
