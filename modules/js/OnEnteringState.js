@@ -18,7 +18,8 @@ onEnteringState: function( stateName, args )
     const methods = {
         'dawnBeginning': (args) => {
             $('city-day-phase').innerHTML = _('Dawn');
-            dojo.style('city-day-phase', 'display', 'block');            
+            // WHY: Row also hosts Halloween horseman to the right of the phase chip.
+            dojo.style('city-day-phase-row', 'display', 'flex');
         },
 
         'planningPhase': () => {

@@ -417,7 +417,10 @@
                     <div id="city-discard"></div>
                     <div id="city-locker"></div>
                     <div id="day-indicator"></div>
-                    <div id="city-day-phase"></div>
+                    <div id="city-day-phase-row">
+                        <div id="city-day-phase"></div>
+                        <div id="city-halloween-horseman"></div>
+                    </div>
 
                     <div id="city-ur-tower">
                         <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">

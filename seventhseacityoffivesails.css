@@ -282,6 +282,73 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     border-top-right-radius: 10px;
 }
 
+/* WHY: CITY_HALLOWEEN — body gets _7sfs-halloween (Setup.js) so home-row icons
+   outside #city also swap. hand-count = cream fan cards; home-discard / city-discard
+   = dark stacked cards; home-locker / city-locker = white skull; home/score
+   panache = witch hat. Standalone PNGs with alpha (contain/center, not sprite offsets). */
+._7sfs-halloween ._7sfs-hand-count {
+    /* WHY: PNG with alpha — JPG baked a black box over the score row. */
+    background-image: url('img/holiday/hand-count.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+._7sfs-halloween ._7sfs-home-discard,
+._7sfs-halloween #city-discard {
+    background-image: url('img/holiday/home-discard.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* WHY: Transparent PNG must show faction colors on home rows; city chip keeps
+   saddlebrown (same as non-Halloween #city-discard). */
+._7sfs-halloween ._7sfs-home-discard {
+    background-color: transparent;
+}
+
+._7sfs-halloween #city-discard {
+    background-color: saddlebrown;
+}
+
+/* WHY: White skull @ 25×23 — solid dark sockets (not hollow) so face reads on
+   faction-colored home rows and saddlebrown city chip. Same asset for both. */
+._7sfs-halloween ._7sfs-home-locker,
+._7sfs-halloween #city-locker {
+    background-image: url('img/holiday/home-locker.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+._7sfs-halloween ._7sfs-home-locker {
+    background-color: transparent;
+}
+
+._7sfs-halloween #city-locker {
+    background-color: saddlebrown;
+}
+
+/* WHY: Witch hat replaces panache plume on home + score chips.
+   Black hat + purple band + orange buckle — white panache number still reads.
+   Transparent PNG so faction-colored home row / score bg shows through.
+   margin-left (home only): hat silhouette reads wider/emptier on the left
+   than the plume. */
+._7sfs-halloween ._7sfs-home-panache,
+._7sfs-halloween ._7sfs-score-panache {
+    background-image: url('img/holiday/home-panache.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+._7sfs-halloween ._7sfs-home-panache {
+    margin-left: -10px;
+}
+
 #city-locker {
     position: absolute;
     left: 75px;
@@ -318,11 +385,19 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     border-top-right-radius: 10px;
 }
 
-#city-day-phase {
+/* WHY: Row wraps phase chip + optional Halloween horseman so horseman stays
+   immediately right of the phase text as its width changes (Dawn vs High Drama). */
+#city-day-phase-row {
     display: none;
     position: absolute;
     left: 160px;
     top: -15px;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+#city-day-phase {
     line-height: 25px;
 
     text-align: center;
@@ -334,6 +409,26 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     border-top-right-radius: 10px;
     padding-left:5px;
     padding-right: 5px;
+}
+
+#city-halloween-horseman {
+    display: none;
+    box-sizing: border-box;
+    width: 31px;
+    height: 31px;
+    border: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background-image: url('img/holiday/headlesshorseman.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* WHY: Transparent PNG — no baked bg; sits on the board without a chip frame. */
+    background-color: transparent;
+}
+
+._7sfs-city-halloween #city-halloween-horseman {
+    display: block;
 }
 
 #city-ul-tower {
@@ -368,6 +463,31 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     fill: black;
     stroke-width: 10;
     stroke: saddlebrown;
+}
+
+/* WHY: CITY_HALLOWEEN === 1 adds _7sfs-city-halloween on #city (Setup.js).
+   Hide SVG rects; paint same 30x30 slots with lit jack-o-lantern art.
+   Border uses saddlebrown like #city / day chip / SVG tower stroke — without it the
+   black-backed JPG reads as a plain black block at this size. */
+._7sfs-city-halloween #city-ul-tower,
+._7sfs-city-halloween #city-ur-tower,
+._7sfs-city-halloween #city-ll-tower,
+._7sfs-city-halloween #city-lr-tower {
+    box-sizing: border-box;
+    width: 30px;
+    height: 30px;
+    border: 3px solid saddlebrown;
+    background-image: url('img/holiday/jackolantern.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+._7sfs-city-halloween #city-ul-tower svg,
+._7sfs-city-halloween #city-ur-tower svg,
+._7sfs-city-halloween #city-ll-tower svg,
+._7sfs-city-halloween #city-lr-tower svg {
+    display: none;
 }
 
 ._7sfs-city-location {
