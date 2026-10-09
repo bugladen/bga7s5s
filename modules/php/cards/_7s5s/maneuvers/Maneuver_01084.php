@@ -96,6 +96,15 @@ class Maneuver_01084 extends Maneuver
             {
                 $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Adversary's Thrust by %d"), $owner->getInjectCode(), 1);
                 $event->addThrust(1);
+
+                // WHY Maneuver column: So It Begins / Technique_01204 — deferred next-
+                // round bonus has no home in Combat Card column. Skip when dashed.
+                if (! $event->dashedThrust)
+                {
+                    $note = sprintf($event->theah->game->translate("%s: +1 Thrust to combat card"), $owner->Name);
+                    $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+                }
+
                 $this->IncreaseAdversaryThrust = false;
                 $owner->IsUpdated = true;
             }

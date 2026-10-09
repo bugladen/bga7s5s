@@ -53,6 +53,14 @@ class _01122 extends Character implements IHasReactions
         {
             $event->explanations[] = sprintf($event->theah->game->translate("%s increases his own Thrust values by +1 by having 2 or more Wounds."), $this->getInjectCode());
             $event->addThrust(1);
+
+            // WHY Maneuver column: So It Begins / Boar's Guile — reload-safe label;
+            // Combat Card column only stores card ids. Skip when Thrust is dashed.
+            if (! $event->dashedThrust)
+            {
+                $note = sprintf($event->theah->game->translate("%s: +1 Thrust to combat card"), $this->Name);
+                $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+            }
         }
     }
 

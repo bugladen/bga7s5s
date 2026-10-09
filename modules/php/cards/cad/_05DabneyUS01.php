@@ -27,7 +27,7 @@ class _05DabneyUS01 extends Leader implements IHasActions
 
         $this->initializeFaction("Ussura");
 
-        $this->Resolve = 7;
+        $this->Resolve = 6;
         $this->Combat = 2;
         $this->Finesse = 4;
         $this->Influence = 1;

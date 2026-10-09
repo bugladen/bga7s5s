@@ -112,6 +112,15 @@ class Technique_01193 extends Technique
                 {
                     $event->explanations[] = sprintf($event->theah->game->translate("%s reduces the Adversary's Thrust by %d"), $owner->getInjectCode(), 1);
                     $event->removeThrust(1);
+
+                    // WHY Technique column: same reload-safe path as Technique_01204 /
+                    // So It Begins. Combat Card column only stores card ids. Skip dashed.
+                    if (! $event->dashedThrust)
+                    {
+                        $note = sprintf($event->theah->game->translate("%s: -1 Thrust to combat card"), $owner->Name);
+                        $event->theah->recordDuelRoundColumnNote('technique', 'note_' . $this->Id, $note);
+                    }
+
                     $this->clearDeferredState($event->theah);
                 }
             }

@@ -77,6 +77,14 @@ class _03037 extends Leader implements IHasActions, IHasReactions
                 $this->getInjectCode()
             );
             $event->addRiposte(1);
+
+            // WHY Maneuver column: So It Begins / Boar's Guile — reload-safe label;
+            // Combat Card column only stores card ids. Skip when Riposte is dashed.
+            if (! $event->dashedRiposte)
+            {
+                $note = sprintf($event->theah->game->translate("%s: +1 Riposte to combat card"), $this->Name);
+                $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+            }
         }
     }
 }

@@ -201,6 +201,15 @@ class Action_04009 extends RiskAction
                 $owner->getInjectCode()
             );
             $event->addRiposte(1);
+
+            // WHY Maneuver column: So It Begins — reload-safe label; Combat Card
+            // column only stores card ids. Skip when Riposte is dashed.
+            if (! $event->dashedRiposte)
+            {
+                $note = sprintf($event->theah->game->translate("%s: +1 Riposte to combat card"), $owner->Name);
+                $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+            }
+
             $this->FirstCombatCardRiposteCharacterId = 0;
             $owner->IsUpdated = true;
         }

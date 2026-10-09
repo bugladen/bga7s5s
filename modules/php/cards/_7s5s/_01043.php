@@ -54,6 +54,14 @@ class _01043 extends Character
             {
                 $event->explanations[] = sprintf($event->theah->game->translate("%s increases the Thrust of his Combat Cards by 1 when dueling with a Sorcerer."), $this->getInjectCode());
                 $event->addThrust(1);
+
+                // WHY Maneuver column: So It Begins / Boar's Guile — reload-safe label;
+                // Combat Card column only stores card ids. Skip when Thrust is dashed.
+                if (! $event->dashedThrust)
+                {
+                    $note = sprintf($event->theah->game->translate("%s: +1 Thrust to combat card"), $this->Name);
+                    $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+                }
             }
         }
     }

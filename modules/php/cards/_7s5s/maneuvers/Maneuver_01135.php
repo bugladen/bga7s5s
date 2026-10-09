@@ -47,7 +47,7 @@ class Maneuver_01135 extends Maneuver
      * CalculateCombatCardStats. Global + EventHub apply mirrors Unravel (_04010).
      * Do NOT put locker cards into buildCity to "fix" this.
      *
-     * @return list<array{adversaryId:int,amount:int,sourceInjectCode:string,maneuverId:string}>
+     * @return list<array{adversaryId:int,amount:int,sourceInjectCode:string,sourceName:string,maneuverId:string}>
      */
     public static function getPendingThrustReductions(Game $game): array
     {
@@ -60,13 +60,15 @@ class Maneuver_01135 extends Maneuver
         int $adversaryId,
         int $amount,
         string $sourceInjectCode,
-        string $maneuverId
+        string $maneuverId,
+        string $sourceName = ''
     ): void {
         $pending = self::getPendingThrustReductions($game);
         $pending[] = [
             'adversaryId' => $adversaryId,
             'amount' => $amount,
             'sourceInjectCode' => $sourceInjectCode,
+            'sourceName' => $sourceName,
             'maneuverId' => $maneuverId,
         ];
         $game->globals->set(Game::MIRELIS_REVISION_PENDING_THRUST_REDUCTIONS, $pending);
@@ -100,6 +102,21 @@ class Maneuver_01135 extends Maneuver
                 $amount
             );
             $event->removeThrust($amount);
+
+            // WHY Maneuver column: So It Begins / Technique_01204 — deferred next-
+            // round mod has no home in Combat Card column. Skip when dashed.
+            // Plain Name (not inject code) matches other column labels.
+            $sourceName = $entry['sourceName'] ?? '';
+            if ($sourceName !== '' && ! $event->dashedThrust)
+            {
+                $note = sprintf(
+                    $event->theah->game->translate("%s: -%d Thrust to combat card"),
+                    $sourceName,
+                    $amount
+                );
+                $maneuverId = $entry['maneuverId'] ?? '';
+                $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $maneuverId, $note);
+            }
         }
         // WHY not consume here: card text is "during their next round" — same as the old
         // IsActive window through that round's EndOfRound (multi combat-card edge).
@@ -246,7 +263,8 @@ class Maneuver_01135 extends Maneuver
                     $adversary->Id,
                     2,
                     $owner->getInjectCode(),
-                    $this->Id
+                    $this->Id,
+                    $owner->Name
                 );
             }
 

@@ -1884,6 +1884,14 @@ trait EventHub
                             $theah->game->translate("Unravel the Thread: %s gains +1 Parry (Sorcery this round)."),
                             $card->getInjectCode()
                         );
+
+                        // WHY Maneuver column: So It Begins — Unravel may already be back
+                        // in the deck (no card handleEvent). Skip when Parry is dashed.
+                        if (! $event->dashedParry)
+                        {
+                            $note = $theah->game->translate("Unravel the Thread: +1 Parry to combat card");
+                            $theah->recordDuelRoundColumnNote('maneuver', 'note_unravel', $note);
+                        }
                     }
 
                     // WHY: Mireli's Revision (01135) -2 Thrust next round. Same locker /

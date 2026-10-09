@@ -71,6 +71,14 @@ class Reaction_02017 extends AttachmentReaction
             $owner = $this->getOwningCard($event->theah);
             $event->removeRiposte(1);
             $event->explanations[] = sprintf($event->theah->game->translate("%s removes 1 Riposte."), $owner->getInjectCode());
+
+            // WHY Maneuver column: So It Begins — Reaction has no Maneuver/Technique
+            // row for this round's combat card. Skip when Riposte is dashed.
+            if (! $event->dashedRiposte)
+            {
+                $note = sprintf($event->theah->game->translate("%s: -1 Riposte to combat card"), $owner->Name);
+                $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+            }
         }
 }
 

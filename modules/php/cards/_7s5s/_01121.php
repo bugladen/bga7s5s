@@ -87,6 +87,14 @@ class _01121 extends Character
                     $ren->getInjectCode()
                 );
                 $event->removeParry(1);
+
+                // WHY Maneuver column: So It Begins — reload-safe label; Combat Card
+                // column only stores card ids. Skip when Parry is dashed.
+                if (! $event->dashedParry)
+                {
+                    $note = sprintf($event->theah->game->translate("%s: -1 Parry to combat card"), $ren->Name);
+                    $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $ren->Id, $note);
+                }
                 return true;
             }
         );

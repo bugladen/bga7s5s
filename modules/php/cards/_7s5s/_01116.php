@@ -61,6 +61,16 @@ class _01116 extends Leader implements IHasReactions
         {
             $event->explanations[] = sprintf($event->theah->game->translate("%s increases his own Thrust values by +1"), $this->getInjectCode());
             $event->addThrust(1);
+
+            // WHY Maneuver column (not Combat Card): mirrors So It Begins (_01183) /
+            // The Boar's Guile (_01125) — reuse duel_round_maneuver for a reload-safe
+            // label without a new table. Combat Card column only stores card ids.
+            // Skip when Thrust is dashed. Plain Name matches other column labels.
+            if (! $event->dashedThrust)
+            {
+                $note = sprintf($event->theah->game->translate("%s: +1 Thrust to combat card"), $this->Name);
+                $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+            }
         }
     }
 

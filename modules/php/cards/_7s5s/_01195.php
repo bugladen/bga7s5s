@@ -60,6 +60,14 @@ class _01195 extends CityAttachment
             $event->explanations[] = sprintf($event->theah->game->translate("%s: +1 Riposte"), $this->getInjectCode());
             $event->addRiposte(1);
 
+            // WHY Maneuver column: So It Begins / Boar's Guile — reload-safe label;
+            // Combat Card column only stores card ids. Skip when Riposte is dashed.
+            if (! $event->dashedRiposte)
+            {
+                $note = sprintf($event->theah->game->translate("%s: +1 Riposte to combat card"), $this->Name);
+                $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+            }
+
             $event->theah->game->notify->all("message", clienttranslate('${card_inject_code} was used with a combat card.  Its ability will trigger and it will be destroyed.'), [
                 "card_inject_code" => $this->getInjectCode(),
             ]);
