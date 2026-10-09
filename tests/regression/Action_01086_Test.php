@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -180,6 +181,22 @@ class Action_01086_Test extends TestCase
                 $messages = $world->game->notify->messages;
                 Assert::true(count($messages) >= 1, 'message logged');
                 Assert::same([null], $world->game->gamestate->transitions, 'next state');
+            },
+
+            // WHY: empty/Mercenary was only checked in isAvailable/args; act must re-check against crafted clients.
+            'act refuses a location with a non-Mercenary character' => function () {
+                $world = new TestWorld();
+                [, $action] = $this->scene($world);
+                $world->placeCharacter(new GenericCharacter('Citizen'), Game::LOCATION_CITY_DOCKS, 1);
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_01086, 'x', [Game::LOCATION_CITY_DOCKS]);
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'rejected');
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },
         ];
     }

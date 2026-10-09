@@ -130,6 +130,14 @@ class Action_01096_Test extends TestCase
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'blanked');
             },
 
+            // WHY: City Action — Home adjacency includes city locations; without cardInCity this would be available.
+            'unavailable at Home even with an adjacent equipped enemy' => function () {
+                $world = new TestWorld();
+                [$raton, , $action] = $this->scene($world);
+                $raton->Location = Game::LOCATION_PLAYER_HOME;
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'Home');
+            },
+
             'trigger queues the 01096 target-selection transition' => function () {
                 $world = new TestWorld();
                 [$raton, , $action] = $this->scene($world);
@@ -212,6 +220,14 @@ class Action_01096_Test extends TestCase
                 [, , $action] = $this->scene($world);
                 $far = $world->placeCharacter(new GenericCharacter('Far Foe'), Game::LOCATION_CITY_BAZAAR, 2);
                 Assert::true($this->actThrows($world, $action, $far->Id), 'not adjacent');
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'act refuses an unequipped enemy' => function () {
+                $world = new TestWorld();
+                [, , $action] = $this->scene($world, false);
+                $bare = $world->placeCharacter(new GenericCharacter('Bare'), Game::LOCATION_CITY_FORUM, 2);
+                Assert::true($this->actThrows($world, $action, $bare->Id), 'no attachment');
                 Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },
         ];

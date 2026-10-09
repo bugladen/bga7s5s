@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -245,6 +246,40 @@ class Action_01076_Test extends TestCase
                     EventActionResolved::class,
                     EventSorcererAbilityPlayed::class,
                 ], $order, 'queue order');
+            },
+
+            'step 2 refuses a companion at a different location' => function () {
+                $world = new TestWorld();
+                [, $action, $sorcerer] = $this->scene($world);
+                $farAlly = $world->placeCharacter(new GenericCharacter('Far Ally'), Game::LOCATION_CITY_FORUM, 1);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $sorcerer->Id);
+                $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_BAZAAR);
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_01076_2, 'x', $farAlly->Id);
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'different location');
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'step 2 refuses an opposing character as companion' => function () {
+                $world = new TestWorld();
+                [, $action, $sorcerer] = $this->scene($world);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $sorcerer->Id);
+                $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_BAZAAR);
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_01076_2, 'x', $foe->Id);
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'opponent');
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },
         ];
     }

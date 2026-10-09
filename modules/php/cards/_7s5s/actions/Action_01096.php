@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -26,6 +27,13 @@ class Action_01096 extends CharacterAction
         }
 
         $owner = $this->getOwningCharacter($theah);
+        // WHY: City Action — peers (01091/92/94/97) gate with cardInCity. Home adjacency
+        // includes Docks/Forum/Bazaar, so without this Raton could activate from Home.
+        if ( ! $theah->cardInCity($owner))
+        {
+            return false;
+        }
+
         $locations = $theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
         $availableCharacters = [];
         foreach ($locations as $location)
@@ -91,6 +99,11 @@ class Action_01096 extends CharacterAction
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01096)
         {
             $owner = $this->getOwningCharacter($game->theah);
+            if ( ! $game->theah->cardInCity($owner))
+            {
+                throw new UserException($game->translate("Ratón must be in the City."));
+            }
+
             $character = $game->theah->getCharacterById($id);
             if ($character == null)
             {
@@ -100,6 +113,11 @@ class Action_01096 extends CharacterAction
             if ($character->ControllerId == $owner->ControllerId)
             {
                 throw new \BgaUserException($game->translate("You cannot manipulate your own character"));
+            }
+
+            if ( ! $character->isControlled() || count($character->Attachments) == 0)
+            {
+                throw new UserException($game->translate("Target must be a controlled enemy equipped with an attachment."));
             }
 
             $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);

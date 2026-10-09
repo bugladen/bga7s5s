@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -280,6 +281,22 @@ class Maneuver_01079_Test extends TestCase
                 Assert::count(0, $world->theah->queuedOfType(EventAttachmentUnequipped::class), 'not unequipped');
                 Assert::count(0, $world->theah->queuedOfType(EventCardDiscardedFromPlay::class), 'not discarded');
                 Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+            },
+
+            'step 2 refuses an id that is neither destroy nor wound' => function () {
+                $world = new TestWorld();
+                [, $maneuver, , $foe] = $this->duel($world);
+                $weapon = $this->equip($world, new _01049(), $foe);
+                $world->game->globals->set(Game::CHOSEN_ATTACHMENT, $weapon->Id);
+
+                $threw = false;
+                try {
+                    $maneuver->actFromManeuverWithId($world->game, States::DUEL_RESOLVE_MANEUVER_01079_2, 'x', 3);
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'invalid choice');
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },
         ];
     }

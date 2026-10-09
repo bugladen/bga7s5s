@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
@@ -40,13 +41,19 @@ class Reaction_01098 extends CardReaction
     {
         parent::handleEvent($event);
 
-        if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardDiscardedFromPlay) 
-            && $this->isAvailable()) 
+        // WHY: city attachments discard via EventCardAddedToCityDiscardPile (not FromPlay).
+        // Without this listener, Embargo misses city-attachment discards of the stamped name.
+        if (($event instanceof EventCardDiscardedFromHand
+            || $event instanceof EventCardDiscardedFromPlay
+            || $event instanceof EventCardAddedToCityDiscardPile)
+            && $this->isAvailable())
         {
             $game = $event->theah->game;
             $card = $game->getCardObjectFromDb($event->cardId);
             $owner = $this->getOwningCard($event->theah);
-            if (($card->hasCondition(Game::CATS_EMBARGO_TARGET) || $card->hasCondition(Game::OLD_CATS_EMBARGO_TARGET)) && $card->ControllerId != $owner->ControllerId)
+            if ($card
+                && ($card->hasCondition(Game::CATS_EMBARGO_TARGET) || $card->hasCondition(Game::OLD_CATS_EMBARGO_TARGET))
+                && $card->ControllerId != $owner->ControllerId)
             {
                 $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                 $event->theah->queueEvent($transition);

@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01099a extends CardReaction
@@ -43,7 +44,11 @@ class Reaction_01099a extends CardReaction
     {
         parent::handleEvent($event);
 
-        if (($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardAddedToCityDiscardPile) 
+        // WHY: generic "discards a card" — cover hand, faction-from-play, and city discard.
+        // FromPlay was claimed in the 2026-04-09 audit but missing from production.
+        if (($event instanceof EventCardDiscardedFromHand
+            || $event instanceof EventCardDiscardedFromPlay
+            || $event instanceof EventCardAddedToCityDiscardPile)
         && $this->isAvailable() && $event->asEffect)
         {
             //If the card is a city card, check to see if it was owned by a player
@@ -85,7 +90,8 @@ class Reaction_01099a extends CardReaction
                 'reaction_inject_code' => $owner->getInjectCode(),
             ]);
 
-            $drawEvent = EventFactory::createCardDrawnEvent($game->getActivePlayerId(), $owner->getInjectCode());
+            // WHY: ControllerId (not getActivePlayerId) — same as Reaction_01097; robust if active player drifts.
+            $drawEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
             $game->theah->queueEvent($drawEvent);
 
             $this->setUsed($game->theah, true);

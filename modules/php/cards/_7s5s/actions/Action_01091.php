@@ -100,6 +100,18 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCharact
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01091)
         {
+            $count = count($ids);
+            if ($count < 1 || $count > 2)
+            {
+                throw new UserException($game->translate("You must target one or two characters."));
+            }
+
+            // WHY: "two characters" — duplicate ids would heal the same character twice after a discard.
+            if ($count != count(array_unique($ids)))
+            {
+                throw new UserException($game->translate("You must target distinct characters."));
+            }
+
             foreach ($ids as $id)
             {
                 $character = $game->theah->getCharacterById($id);
@@ -115,7 +127,7 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCharact
                 }
             }
 
-            if (count($ids) == 1)
+            if ($count == 1)
             {
                 $owner = $this->getOwningCharacter($game->theah);
                 $healEvent = EventFactory::createCharacterBeingHealedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
@@ -126,7 +138,7 @@ class Action_01091 extends CharacterAction implements IAbilityThatTargetsCharact
 
                 $game->gamestate->nextState("characterChosen");
             }
-            else if (count($ids) == 2)
+            else
             {
                 $game->globals->set(Game::CHOSEN_TARGET, $ids);
                 $game->gamestate->nextState("charactersChosen");

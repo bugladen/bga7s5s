@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01098;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
@@ -70,10 +71,36 @@ class _01098 extends Scheme implements IHasReactions
 
         if ($event instanceof EventPhasePlanningEnd && $this->Location == Game::LOCATION_PLAYER_HOME) 
         {
-            $playerName = $event->theah->game->getPlayerNameById($this->ControllerId);
+            $game = $event->theah->game;
+            $playerName = $game->getPlayerNameById($this->ControllerId);
+
+            // WHY: if every opponent hand is empty, the chooser would soft-lock (no legal pick).
+            $deck = $game->getGameDeckObject();
+            $players = $game->loadPlayersBasicInfos();
+            $hasRevealableOpponent = false;
+            foreach ($players as $playerId => $player)
+            {
+                if ((int)$playerId == $this->ControllerId)
+                {
+                    continue;
+                }
+                if (count($deck->getCardsInLocation(Game::LOCATION_HAND, (int)$playerId)) > 0)
+                {
+                    $hasRevealableOpponent = true;
+                    break;
+                }
+            }
+
+            if (! $hasRevealableOpponent)
+            {
+                $game->notify->all("message", clienttranslate('${scheme_inject_code}: No opponent has cards in hand. The Forced reveal is skipped.'), [
+                    "scheme_inject_code" => $this->getInjectCode(),
+                ]);
+                return;
+            }
 
             //Pick an opponent. That opponent will reveal a random card from their hand.
-            $event->theah->game->notify->all("message", clienttranslate('${scheme_inject_code} triggers a Forced Reaction for the End of Planning Phase.  ${player_name} must choose an opponent to reveal a random card from their hand.'), [
+            $game->notify->all("message", clienttranslate('${scheme_inject_code} triggers a Forced Reaction for the End of Planning Phase.  ${player_name} must choose an opponent to reveal a random card from their hand.'), [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $playerName,
             ]);
@@ -85,8 +112,19 @@ class _01098 extends Scheme implements IHasReactions
 
         if ($event instanceof EventCardSentToLocker && $event->cardId == $this->Id)
         {
+            // WHY: Forced may never have stamped a card (empty hands, scheme locked early).
+            // getCardObjectFromDb(0) returns null and `$pickedCard::class` TypeErrors.
+            if ($this->EmbargoedCardId == 0)
+            {
+                return;
+            }
+
             $game = $event->theah->game;
             $pickedCard = $game->getCardObjectFromDb($this->EmbargoedCardId);
+            if ($pickedCard == null)
+            {
+                return;
+            }
 
             $class = $pickedCard::class;
             $class = substr($class, strrpos($class, '\\') + 2);
@@ -130,10 +168,23 @@ class _01098 extends Scheme implements IHasReactions
             $opponents = [];
             $players = $game->loadPlayersBasicInfos();
             $currentPlayerId = $game->getActivePlayerId();
+            $deck = $game->getGameDeckObject();
             foreach ( $players as $playerId => $player ) 
             {
-                if ($playerId != $currentPlayerId)
-                    $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
+                if ($playerId == $currentPlayerId)
+                {
+                    continue;
+                }
+
+                // WHY: empty-hand opponents cannot satisfy "reveal a card at random"; hide them
+                // so the chooser cannot submit a pick that would crash on array_rand.
+                $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+                if (count($hand) == 0)
+                {
+                    continue;
+                }
+
+                $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
             }        
     
             $args['opponents'] = $opponents;
@@ -153,6 +204,18 @@ class _01098 extends Scheme implements IHasReactions
         if ($state == States::PLANNING_PHASE_END_01098)
         {
             $chosenPlayerId = $id;
+            $activePlayerId = (int)$game->getActivePlayerId();
+
+            if ($chosenPlayerId == $activePlayerId)
+            {
+                throw new UserException($game->translate("You must choose an opponent."));
+            }
+
+            $players = $game->loadPlayersBasicInfos();
+            if (! isset($players[$chosenPlayerId]))
+            {
+                throw new UserException($game->translate("Invalid player."));
+            }
     
             //Get the chosen player's name
             $chosenPlayerName = $game->getPlayerNameById($chosenPlayerId);
@@ -160,6 +223,12 @@ class _01098 extends Scheme implements IHasReactions
             //Get the chosen player's hand
             $deck = $game->getGameDeckObject();
             $hand = $deck->getCardsInLocation(Game::LOCATION_HAND, $chosenPlayerId);
+
+            // WHY: array_rand on an empty array warns/fatals in PHP; Forced cannot reveal.
+            if (count($hand) == 0)
+            {
+                throw new UserException($game->translate("That opponent has no cards in hand."));
+            }
     
             //Randomly select a card from the hand
             $card = $hand[array_rand($hand)];
@@ -168,7 +237,7 @@ class _01098 extends Scheme implements IHasReactions
             $playerName = $game->getActivePlayerName();
     
             //Get the chosen scheme card for the active player and updated it with the chosen card
-            $scheme = $game->getPlayerChosenScheme($game->getActivePlayerId());
+            $scheme = $game->getPlayerChosenScheme($activePlayerId);
             if ($scheme instanceof _01098) {
                 $scheme->EmbargoedCardId = $pickedCard->Id;
                 $game->updateCardObjectInDb($scheme);

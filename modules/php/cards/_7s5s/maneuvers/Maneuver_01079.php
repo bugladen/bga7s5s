@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
@@ -158,6 +159,11 @@ class Maneuver_01079 extends Maneuver implements IAbilityThatTargetsCards
 
         if ($state == States::DUEL_RESOLVE_MANEUVER_01079_2)
         {
+            if ($id != 1 && $id != 2)
+            {
+                throw new UserException($game->translate("Invalid choice."));
+            }
+
             $actor = $game->theah->getDuelRoundActor();
             $adversaryId = $game->theah->getDuelOpponentId($actor->Id);
             $adversary = $game->theah->getCharacterById($adversaryId);

@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -104,17 +105,37 @@ class Action_01076 extends RiskAction implements ISorcererAbility
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCardById($performerId);
 
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id);
-            $game->theah->queueEvent($sorceryStartEvent);
-
+            $character = null;
             if ($id > 0)
             {
                 $character = $game->theah->getCardById($id);
                 if ($character == null)
                 {
-                    throw new \BgaUserException($game->translate("Character not found"));
+                    throw new UserException($game->translate("Character not found"));
                 }
 
+                // WHY: text — "move another of your characters from the first location".
+                // Args filter this; re-check so a crafted client cannot pull a remote/opposing character.
+                // Validate before Sorcerer Start so a rejected pick leaves no queued events.
+                if ($character->ControllerId != $performer->ControllerId)
+                {
+                    throw new UserException($game->translate("Companion must be one of your characters."));
+                }
+                if ($character->Id == $performer->Id)
+                {
+                    throw new UserException($game->translate("Companion must be a different character."));
+                }
+                if ($character->Location != $performer->Location)
+                {
+                    throw new UserException($game->translate("Companion must be at the same location as the performer."));
+                }
+            }
+
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($bloodMark->ControllerId, $bloodMark->Id, $this->Id, $performer->Id);
+            $game->theah->queueEvent($sorceryStartEvent);
+
+            if ($character != null)
+            {
                 $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $bloodMark->Id, 1, $bloodMark->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($event);
             }
@@ -125,7 +146,7 @@ class Action_01076 extends RiskAction implements ISorcererAbility
             $event = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $locationName, false, $bloodMark->Id, $this->Id);
             $game->theah->queueEvent($event);
 
-            if ($id > 0)
+            if ($character != null)
             {
                 $event = EventFactory::createCardMovingEvent($character->ControllerId, $character->Id, $character->Location, $locationName, false, $bloodMark->Id, $this->Id);
                 $game->theah->queueEvent($event);

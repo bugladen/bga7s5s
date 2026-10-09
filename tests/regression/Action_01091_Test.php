@@ -228,6 +228,50 @@ class Action_01091_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },
 
+            'step 1 refuses an empty target list' => function () {
+                $world = new TestWorld();
+                [, $action] = $this->scene($world);
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_01091, 'x', []);
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'empty');
+                Assert::same([], $world->game->gamestate->transitions, 'no transition');
+            },
+
+            'step 1 refuses more than two targets' => function () {
+                $world = new TestWorld();
+                [, $action, $ally, $foe] = $this->scene($world);
+                $third = $world->placeCharacter(new GenericCharacter('Third'), Game::LOCATION_CITY_DOCKS, 1);
+                $third->Wounds = 1;
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_01091, 'x', [$ally->Id, $foe->Id, $third->Id]);
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'too many');
+                Assert::same([], $world->game->gamestate->transitions, 'no transition');
+            },
+
+            'step 1 refuses duplicate target ids' => function () {
+                $world = new TestWorld();
+                [, $action, $ally] = $this->scene($world);
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_01091, 'x', [$ally->Id, $ally->Id]);
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'duplicate');
+                Assert::same([], $world->game->gamestate->transitions, 'no transition');
+            },
+
             'step 1 refuses an unwounded target even when another target is valid' => function () {
                 $world = new TestWorld();
                 [, $action, $ally] = $this->scene($world);

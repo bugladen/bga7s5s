@@ -153,6 +153,8 @@ class Card_01098_Test extends TestCase
             'planning end at Home queues the choose-opponent transition for the controller' => function () {
                 $world = new TestWorld();
                 $scheme = $world->placeCard(new _01098(), Game::LOCATION_PLAYER_HOME, 1);
+                // WHY: Forced only opens the chooser when some opponent can reveal a hand card.
+                $world->placeCard(new _01073(), Game::LOCATION_HAND, 2);
 
                 $event = new EventPhasePlanningEnd();
                 $world->fireOn($scheme, $event);
@@ -162,6 +164,17 @@ class Card_01098_Test extends TestCase
                 Assert::same('01098', $transitions[0]->transition, 'transition name');
                 Assert::same($scheme->Id, $transitions[0]->sourceId, 'source scheme');
                 Assert::same($scheme->ControllerId, $transitions[0]->playerId, 'scheme controller picks');
+            },
+
+            // WHY: empty chooser would soft-lock; skip Forced when nobody can reveal.
+            'planning end skips Forced when no opponent has cards in hand' => function () {
+                $world = new TestWorld();
+                $scheme = $world->placeCard(new _01098(), Game::LOCATION_PLAYER_HOME, 1);
+
+                $world->fireOn($scheme, new EventPhasePlanningEnd());
+
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no chooser');
+                Assert::count(1, $world->game->notify->messages, 'skip announced');
             },
 
             // WHY: only a revealed scheme (sitting at Home) has a Forced effect; a scheme elsewhere (deck, discard) must stay silent.
@@ -174,13 +187,23 @@ class Card_01098_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'not revealed');
             },
 
-            'chooser args list every player except the active one' => function () {
+            'chooser args list opponents who have cards in hand' => function () {
                 $world = new TestWorld();
                 [$scheme] = $this->scene($world);
 
                 $result = $scheme->argsFromCard($world->game, States::PLANNING_PHASE_END_01098, 'planningPhaseEnd_01098', '');
 
                 Assert::same([['id' => 2, 'name' => 'Player Two']], $result['args']['opponents'], 'opponents');
+            },
+
+            'chooser args omit opponents with empty hands' => function () {
+                $world = new TestWorld();
+                [$scheme, $deck] = $this->scene($world);
+                $deck->hands[2] = [];
+
+                $result = $scheme->argsFromCard($world->game, States::PLANNING_PHASE_END_01098, 'planningPhaseEnd_01098', '');
+
+                Assert::same([], $result['args']['opponents'], 'no revealable opponents');
             },
 
             'choosing an opponent embargoes the revealed hand card on the scheme' => function () {
@@ -284,6 +307,48 @@ class Card_01098_Test extends TestCase
                     fn($m) => $m['type'] === 'catsEmbargoTargetRemoved'
                 ));
                 Assert::count(3, $removed, 'client told to drop every copy\'s marker');
+            },
+
+            // WHY: EmbargoedCardId stays 0 when Forced never stamped; locker must not TypeError.
+            'sent to the locker with no embargoed card is a no-op' => function () {
+                $world = new TestWorld();
+                $scheme = $world->placeCard(new _01098(), Game::LOCATION_PLAYER_HOME, 1);
+                Assert::same(0, $scheme->EmbargoedCardId, 'unset');
+
+                $event = new EventCardSentToLocker();
+                $event->cardId = $scheme->Id;
+                $world->fireOn($scheme, $event);
+
+                Assert::count(0, $world->game->notify->messages, 'no cleanup notifications');
+            },
+
+            'choosing yourself as the Forced reveal target is rejected' => function () {
+                $world = new TestWorld();
+                [$scheme] = $this->scene($world);
+
+                $threw = false;
+                try {
+                    $this->chooseOpponent($world, $scheme, 1);
+                } catch (\BgaUserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'must pick an opponent');
+                Assert::same(0, $scheme->EmbargoedCardId, 'not stamped');
+            },
+
+            'choosing an opponent with an empty hand is rejected' => function () {
+                $world = new TestWorld();
+                [$scheme, $deck] = $this->scene($world);
+                $deck->hands[2] = [];
+
+                $threw = false;
+                try {
+                    $this->chooseOpponent($world, $scheme, 2);
+                } catch (\BgaUserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'empty hand');
+                Assert::same(0, $scheme->EmbargoedCardId, 'not stamped');
             },
 
             'another card being sent to the locker leaves the stamps alone' => function () {

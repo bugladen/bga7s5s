@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01095;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01095b;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatDependsOnNotBeingFirstPlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
@@ -63,9 +64,13 @@ class Action_01095b_Test extends TestCase
     public function tests(): array
     {
         return [
-            // NOTE: Action_01095b does NOT implement IAbilityThatDependsOnNotBeingFirstPlayer even though its text is
-            // first-player dependent, so Lorenzo's Reaction never offers itself for it. Deliberately not pinned either
-            // way (looks like a production gap); the override branch below is driven directly via the global.
+            // WHY: Lorenzo (Reaction_01090) only offers for abilities that implement this marker interface.
+            'implements IAbilityThatDependsOnNotBeingFirstPlayer so Lorenzo can offer' => function () {
+                Assert::true(
+                    (new Action_01095b()) instanceof IAbilityThatDependsOnNotBeingFirstPlayer,
+                    'Lorenzo-compatible'
+                );
+            },
 
             'available when en garde at the Docks' => function () {
                 $world = new TestWorld();

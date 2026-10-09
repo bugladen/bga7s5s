@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01099a;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventReactionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -54,6 +55,17 @@ class Reaction_01099a_Test extends TestCase
     private function cityDiscard(TestWorld $world, int $cardId, int $sourceId, bool $asEffect = true): EventCardAddedToCityDiscardPile
     {
         $event = new EventCardAddedToCityDiscardPile();
+        $event->cardId = $cardId;
+        $event->sourceId = $sourceId;
+        $event->asEffect = $asEffect;
+        $event->theah = $world->theah;
+        return $event;
+    }
+
+    private function playDiscard(TestWorld $world, int $ownerId, int $cardId, int $sourceId, bool $asEffect = true): EventCardDiscardedFromPlay
+    {
+        $event = new EventCardDiscardedFromPlay();
+        $event->ownerId = $ownerId;
         $event->cardId = $cardId;
         $event->sourceId = $sourceId;
         $event->asEffect = $asEffect;
@@ -147,6 +159,30 @@ class Reaction_01099a_Test extends TestCase
                 $reaction->handleEvent($this->handDiscard($world, 2, $discarded->Id, $source->Id));
 
                 Assert::count(0, $world->theah->queuedEvents, 'used');
+            },
+
+            // ---- discard from play ----
+            'offers when a card is discarded from play due to your effect' => function () {
+                $world = new TestWorld();
+                [$scheme, $reaction, $source] = $this->scene($world);
+                $inPlay = $world->placeCharacter(new GenericCharacter('In Play'), Game::LOCATION_CITY_DOCKS, 2);
+
+                $reaction->handleEvent($this->playDiscard($world, 2, $inPlay->Id, $source->Id));
+
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'offered');
+                Assert::same($scheme->Id, $transitions[0]->sourceId, 'source scheme');
+                Assert::same($reaction->Id, $transitions[0]->internalId, 'reaction id');
+            },
+
+            'from-play discard that is not an effect does not trigger' => function () {
+                $world = new TestWorld();
+                [, $reaction, $source] = $this->scene($world);
+                $inPlay = $world->placeCharacter(new GenericCharacter('In Play'), Game::LOCATION_CITY_DOCKS, 2);
+
+                $reaction->handleEvent($this->playDiscard($world, 2, $inPlay->Id, $source->Id, false));
+
+                Assert::count(0, $world->theah->queuedEvents, 'asEffect=false');
             },
 
             // ---- city discard pile ----

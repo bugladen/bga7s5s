@@ -267,8 +267,19 @@ class Reaction_01090_Test extends TestCase
                 Assert::same($lorenzo->Id, $activated[0]->sourceId, 'source Lorenzo');
             },
 
-            // WHY: the override (set by the Action or the Reaction) must not leak past the extra action's turn end.
-            'turn end clears the override while an extra action is pending' => function () {
+            // WHY: stNextPlayer only fires EventPlayerTurnEnd when EXTRA_ACTIONS is already 0.
+            // Clear on any turn end while OVERRIDE is set — otherwise First Player keeps it all day.
+            'turn end clears an active override' => function () {
+                $world = new TestWorld();
+                [, $reaction] = $this->scene($world);
+                $world->game->globals->set(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, true);
+
+                $reaction->handleEvent($this->turnEnd($world));
+
+                Assert::true($world->game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER) === false, 'override cleared');
+            },
+
+            'turn end clears the override even when EXTRA_ACTIONS is still non-zero' => function () {
                 $world = new TestWorld();
                 [, $reaction] = $this->scene($world);
                 $world->game->globals->set(Game::EXTRA_ACTIONS, 1);
@@ -282,7 +293,6 @@ class Reaction_01090_Test extends TestCase
             'turn end without an active override does nothing' => function () {
                 $world = new TestWorld();
                 [, $reaction] = $this->scene($world);
-                $world->game->globals->set(Game::EXTRA_ACTIONS, 1);
 
                 $reaction->handleEvent($this->turnEnd($world));
 

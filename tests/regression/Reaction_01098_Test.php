@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
@@ -116,6 +117,21 @@ class Reaction_01098_Test extends TestCase
                 $reaction->handleEvent($this->discardFromPlay($world, $card));
 
                 Assert::same(1, $this->offered($world), 'offered');
+            },
+
+            // WHY: city attachments leave play via EventCardAddedToCityDiscardPile, not FromPlay.
+            'offers when an opponent discards a stamped card to the city discard pile' => function () {
+                $world = new TestWorld();
+                [, $reaction] = $this->scene($world);
+                $card = $this->embargo($world->placeCard(new _01073(), Game::LOCATION_CITY_DOCKS, 2));
+
+                $event = new EventCardAddedToCityDiscardPile();
+                $event->cardId = $card->Id;
+                $event->playerId = 2;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::same(1, $this->offered($world), 'city discard offered');
             },
 
             // WHY: stamps written before the constant rename (OLD_CATS_EMBARGO_TARGET) must still be honored.

@@ -92,12 +92,14 @@ class Reaction_01090 extends CardReaction
             }
         }
 
+        // WHY: stNextPlayer only emits EventPlayerTurnEnd when EXTRA_ACTIONS is already 0
+        // (extra-action branch decrements and stays on the same player with no turn-end).
+        // Clearing only when EXTRA_ACTIONS > 0 was dead code and left OVERRIDE stuck for the
+        // rest of the day. Clear on any real turn end while the override is active.
         if ($event instanceof EventPlayerTurnEnd)
         {
             $game = $event->theah->game;
-            $extraActions = $game->globals->get(Game::EXTRA_ACTIONS, 0);
-            $overrideActive = $game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
-            if ($extraActions > 0 && $overrideActive)
+            if ($game->globals->get(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false))
             {
                 $game->globals->set(Game::OVERRIDE_AS_NOT_FIRST_PLAYER, false);
             }
