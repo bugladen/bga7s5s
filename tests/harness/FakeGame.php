@@ -79,6 +79,8 @@ class Game
     final const REPUTATION_MERITEE_PRESSURE_TYPE = 4;
     final const TABARD_PRESSURE_TYPE = 8;
     final const CONSTANZO_PRESSURE_TYPE = 16;
+    // WHY: Action_01143 Contempt and Hatred sets this flag so pressure wins ties (UtilitiesTrait).
+    final const CONTEMPT_AND_HATRED_PRESSURE_TYPE = 32;
 
     final const CHOSEN_CARD = 'chosenCard';
     final const CHOSEN_PERFORMER = 'chosenPerformer';
@@ -88,6 +90,8 @@ class Game
     final const CHOSEN_ATTACHMENT = 'chosenAttachment';
     final const CHOSEN_TECHNIQUE = 'chosenTechnique';
     final const CHOSEN_TECHNIQUE_IS_MAIN = 'chosenTechniqueIsMain';
+    // WHY: Reaction_01146b / Maneuver cancel clears this global; must match Game.php.
+    final const CHOSEN_MANEUVER = 'chosenManeuver';
     // WHY: Action_01106 Improvising stores the chosen discard-pile opponent here.
     final const CHOSEN_OPPONENT = 'chosenOpponent';
     // WHY: Action/Maneuver_01113 pay step reads the attachment's printed cost from globals.
@@ -100,6 +104,12 @@ class Game
     final const PASS_COUNT = 'passCount';
     final const EQUIP_TYPE = 'equipType';
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
+    // WHY: Action_01147 sets EQUIP_TYPE to Let's Haggle before pay; _01147::getEquipDiscount
+    // keys off CHOSEN_ACTION + this type. Must match Game.php.
+    final const LETS_HAGGLE_EQUIP_TYPE = 2;
+    // WHY: Scheme::getEquipDiscount compares action owner id to THEAH_ID for city actions.
+    // Must match Game.php.
+    final const THEAH_ID = 777777;
     final const FIRST_PLAYER = 'firstPlayer';
     // WHY: Action_01090 / Action_01093 / Action_01095b first-player override + extra action.
     final const EXTRA_ACTIONS = 'extraActions';
@@ -131,6 +141,8 @@ class Game
     // Reputation (Leaders-only) branch passes; an undefined Game:: const is a fatal Error,
     // so Action_01083's "Leader may intervene" test needs them. Must match Game.php.
     final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
+    // WHY: Action_01131 Iron and Velvet stamps this challenge type; must match Game.php.
+    final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
@@ -148,6 +160,12 @@ class Game
     final const IN_DUEL = 'inDuel';
     final const DUEL_ID = 'duelId';
     final const DUEL_ROUND = 'duelRound';
+    // WHY: Maneuver_01135 parks deferred -2 Thrust in globals so locker/clone-removed
+    // copies still apply via EventHub (must match Game.php).
+    final const MIRELIS_REVISION_PENDING_THRUST_REDUCTIONS = 'mirelisRevisionPendingThrustReductions';
+    // WHY: Maneuver_01129 Borets arms a rest-of-duel Maneuver/Technique ban in globals
+    // (survives Miyato locker). Must match Game.php.
+    final const BORETS_MANEUVER_TECHNIQUE_LOCK = 'boretsManeuverTechniqueLock';
 
     final const PRESSURING_PLAYER = 'pressuringPlayer';
     // WHY: Action_01105 sets PRESSURE_STAT to STAT_RESOLVE before pressureLocation transition.
@@ -178,6 +196,15 @@ class Game
 
     /** @var list<array{id:int}> */
     public array $topFactionCards = [];
+
+    /**
+     * WHY: _01149 When Revealed peeks city deck via DeckTrait::getCardsOnTopOfCityDeck (BGA Deck).
+     * Tests inject top rows here so resolve can queue CityCardAddedToLocation without Deck DB.
+     * Also used by Action_01035 city-deck reveal stubs.
+     *
+     * @var list<array{id:int}>
+     */
+    public array $topCityCards = [];
 
     public int $playerCount = 2;
     public int $activePlayerId = 1;
@@ -259,9 +286,22 @@ class Game
         return $this->playerNames[$playerId] ?? ('Player ' . $playerId);
     }
 
+    // WHY: _01150 notifyInterveneList / getInterveneListData include playerColor for the UI chip.
+    public function getPlayerColorById(int $playerId): string
+    {
+        return sprintf('%06x', $playerId);
+    }
+
     public function getActivePlayerName(): string
     {
         return $this->getPlayerNameById($this->activePlayerId);
+    }
+
+    // WHY: _01149 / Action_01134 call DeckTrait::getCardsOnTopOfCityDeck; FakeGame has no BGA Deck.
+    // Tests inject rows via $topCityCards.
+    public function getCardsOnTopOfCityDeck(int $nbr): array
+    {
+        return array_slice($this->topCityCards, 0, $nbr);
     }
 
     public function getActivePlayerId(): int
@@ -321,9 +361,73 @@ class Game
         return $this->dbCards[$id] ?? null;
     }
 
+    /** @var array<int, bool> cardId => discard/locker override (when unset, use $forceInDiscardOrLocker). */
+    public array $discardOrLockerByCardId = [];
+
+    // WHY: _01143 locker-aura cleanup writes +1 Influence directly for discard/locker rows
+    // (they are not in $theah->cards for IsUpdated flush). Per-card map lets tests stamp
+    // only Spend-to-Locker corpses while leaving in-play Mercenaries on the event path.
     public function characterIsInDiscardOrLocker(Character $character): bool
     {
+        if (array_key_exists($character->Id, $this->discardOrLockerByCardId)) {
+            return $this->discardOrLockerByCardId[$character->Id];
+        }
         return $this->forceInDiscardOrLocker;
+    }
+
+    // WHY: _01143 clearAuraFromAllAffected / DeckTrait locker piles use Locker-{playerId}.
+    public function getPlayerLockerName($playerId): string
+    {
+        return 'Locker-' . $playerId;
+    }
+
+    // WHY: _01144 fewest-Renown branch SELECTs player_score from the player table.
+    // Mirror $playerScores (default 0 for named players) so actFromCardWithIds can branch.
+    public function getObjectListFromDb(string $sql): array
+    {
+        $rows = [];
+        foreach ($this->playerNames as $playerId => $_) {
+            $rows[] = [
+                'player_id' => (int)$playerId,
+                'score' => (int)($this->playerScores[$playerId] ?? 0),
+            ];
+        }
+        usort($rows, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
+        return $rows;
+    }
+
+    // WHY: Reaction_01144 / _01145 fewest-characters gates call UtilitiesTrait::getPlayerControllingFewestCharacters.
+    // Mirror the real algorithm against in-RAM Theah character counts (ties → null player).
+    public function getPlayerControllingFewestCharacters(): array
+    {
+        $players = $this->loadPlayersBasicInfos();
+        $lowestCount = 999;
+        $lowestPlayerId = null;
+        foreach ($players as $playerId => $player) {
+            $count = $this->theah !== null
+                ? $this->theah->getCharacterCountByPlayerId((int)$playerId, true)
+                : 0;
+            if ($count == $lowestCount) {
+                $lowestPlayerId = null;
+            } elseif ($count < $lowestCount) {
+                $lowestCount = $count;
+                $lowestPlayerId = (int)$playerId;
+            }
+        }
+        return [$lowestPlayerId, $lowestCount];
+    }
+
+    /** @var list<array{recruitId:int,payWithCards:string}> */
+    public array $recruitMercenaryCalls = [];
+
+    // WHY: Reaction_01144 pay step calls FrameworkActionsTrait::actRecruitMercenary (DB + wealth).
+    // Record the call so unit tests assert wiring without BGA Deck / player wealth tables.
+    public function actRecruitMercenary(int $recruitId, string $payWithCards): void
+    {
+        $this->recruitMercenaryCalls[] = [
+            'recruitId' => $recruitId,
+            'payWithCards' => $payWithCards,
+        ];
     }
 
     public function getPlayerFactionDeckName(int $playerId): string
@@ -423,11 +527,17 @@ class Game
         return $id;
     }
 
+    // WHY: _01150 (and similar) walk loadPlayersBasicInfos and compare $player['player_id']
+    // to ControllerId — BGA rows include that key; omitting it made every player look like
+    // an opponent (undefined != controller).
     public function loadPlayersBasicInfos(): array
     {
         $infos = [];
         foreach ($this->playerNames as $id => $name) {
-            $infos[$id] = ['player_name' => $name];
+            $infos[$id] = [
+                'player_id' => $id,
+                'player_name' => $name,
+            ];
         }
         return $infos;
     }
@@ -485,6 +595,26 @@ class Game
         $card->Location = $location;
         $this->registerDbCard($card);
         return $card;
+    }
+
+    // WHY: Leshiye (_01126) SchemeMovedToCity sends characters Home via DeckTrait::moveCardInDeck
+    // (deck row only; Location comes from the queued CardMoving event). Mirror Location update
+    // so unit tests see the same in-RAM board state without BGA Deck.
+    public function moveCardInDeck(int $cardId, string $location, $locationArg = 0): void
+    {
+        $this->moveCard($cardId, $location, $locationArg);
+    }
+
+    // WHY: Theah::setLocationCanBeClaimed dual-writes globals + CityLocation. Leshiye / IW
+    // (Action_01130) call the Theah helpers; FakeGame needs the persistence half.
+    public function setCanBeClaimedForLocation(string $location, bool $canBeClaimed): void
+    {
+        $this->globals->set('CanBeClaimed_' . $location, $canBeClaimed);
+    }
+
+    public function setCanBecomeUncontrolledForLocation(string $location, bool $canBecomeUncontrolled): void
+    {
+        $this->globals->set('CanBecomeUncontrolled_' . $location, $canBecomeUncontrolled);
     }
 
     /** @var list<array{className:string,originalCardId:int,location:string,ownerId:int,controllerId:int,targetId:int,abilityId:string}> */

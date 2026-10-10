@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01129;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\CityLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -52,7 +53,12 @@ class TestTheah extends Theah
 
     public function eventCheck(Event $event): void
     {
-        // Skip DB-backed checks in unit tests.
+        // WHY: Real Theah::eventCheck walks DB-backed cards. Tests skip that walk, but
+        // Borets (Maneuver_01129) arms a global lock checked *before* the card walk —
+        // Risk may already be in The Locker / absent from $cards. Keep that gate live.
+        $event->theah = $this;
+        Maneuver_01129::assertNotLocked($event);
+        unset($event->theah);
     }
 
     public function buildCity(): void
@@ -97,6 +103,31 @@ class TestTheah extends Theah
             return $leader;
         }
         return null;
+    }
+
+    // WHY: _01145 stateFromCard step 3 SELECTs player_score via getDBObject()->getObjectList.
+    // Real Theah::$db is a DB helper; tests have no MySQL — return scores from FakeGame::$playerScores ASC.
+    public function getDBObject()
+    {
+        $game = $this->game;
+        return new class($game) {
+            public function __construct(private Game $game)
+            {
+            }
+
+            public function getObjectList(string $sql): array
+            {
+                $rows = [];
+                foreach ($this->game->playerNames as $playerId => $_) {
+                    $rows[] = [
+                        'player_id' => (int)$playerId,
+                        'score' => (int)($this->game->playerScores[$playerId] ?? 0),
+                    ];
+                }
+                usort($rows, static fn(array $a, array $b): int => $a['score'] <=> $b['score']);
+                return $rows;
+            }
+        };
     }
 
     // WHY: Real delete* hits DB; tests keep events in $queuedEvents only.
