@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -10,7 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01141 extends RiskAction
+class Action_01141 extends RiskCityAction
 {
     public function __construct()
     {
@@ -27,16 +27,18 @@ class Action_01141 extends RiskAction
             return false;
         }
 
-        $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        $performers = array_filter($performers, fn($character) => $character->canPressure(Game::STAT_COMBAT));
-        return count($performers) > 0;
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        $performers = array_filter($performers, fn($character) => $character->canPressure(Game::STAT_COMBAT));
-        return array_values($performers);
+        // WHY: RiskCityAction already restricts to city characters; Strong Hands further needs
+        // canPressure(Combat) (excludes dashed Combat).
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        return array_values(array_filter(
+            $performers,
+            fn($character) => $character->canPressure(Game::STAT_COMBAT)
+        ));
     }
 
     public function handleEvent(Event $event)

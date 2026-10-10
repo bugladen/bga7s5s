@@ -52,6 +52,12 @@ class Action_01139 extends RiskAction
             $game->notify->all("extraActions", clienttranslate('${player_name} NOW HAS TWO EXTRA ACTIONS'), [
                 "player_name" => $game->getPlayerNameById($owner->ControllerId)
             ]);
+
+            // WHY: RiskAction must queue ActionResolved so post-action windows (Soline-style
+            // reactions, turn cleanup) fire. Locker redirect is deferred via goToLocker on
+            // EventCardDiscardedFromHand — that is not a substitute for ActionResolved.
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 

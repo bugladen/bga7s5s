@@ -2,7 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -15,7 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class Action_01130 extends RiskAction
+class Action_01130 extends RiskCityAction
 {
     public bool $IsActive = false;
     public int $ControllingCharacterId = 0;
@@ -36,31 +36,18 @@ class Action_01130 extends RiskAction
             return false;
         }
 
-        $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        foreach ($performers as $performer)
-        {
-            if ($this->isViablePerformer($playerId, $theah, $performer))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        $availablePerformers = [];
-        foreach ($performers as $performer)
-        {
-            if ($this->isViablePerformer($playerId, $theah, $performer))
-            {
-                $availablePerformers[] = $performer;
-            }
-        }
-
-        return $availablePerformers;
+        // WHY: RiskCityAction already restricts to city characters; IW further needs alone +
+        // uncontrolled + claimable at that location.
+        $performers = parent::getPerformersForAction($playerId, $theah);
+        return array_values(array_filter(
+            $performers,
+            fn($performer) => $this->isViablePerformer($playerId, $theah, $performer)
+        ));
     }
 
     private function isViablePerformer(int $playerId, Theah $theah, $performer): bool

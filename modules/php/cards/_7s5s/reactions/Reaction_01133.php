@@ -40,20 +40,23 @@ class Reaction_01133 extends RiskReaction
         {
             $owner = $this->getOwningCard($event->theah);
 
+            // WHY: WillEngage reset and Engage/Pass offer both require hand — Risk pay
+            // only makes sense from hand. HD flow already pays from hand, but gate the
+            // offer the same way as the reset so a non-hand EnteringPayState cannot prompt.
             if ($event->cardId == $owner->Id && $owner instanceof _01133 && $owner->Location == Game::LOCATION_HAND)
             {
                 $owner->WillEngage = false;
                 $owner->IsUpdated = true;
-            }
 
-            $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
-            if ($performerId != null)
-            {
-                $performer = $event->theah->getCharacterById($performerId);
-                if ($event->cardId == $owner->Id && ! $performer->Engaged)
+                $performerId = $event->theah->game->globals->get(Game::CHOSEN_PERFORMER);
+                if ($performerId != null)
                 {
-                    $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $event->theah->stackEvent($transition);
+                    $performer = $event->theah->getCharacterById($performerId);
+                    if (! $performer->Engaged)
+                    {
+                        $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                        $event->theah->stackEvent($transition);
+                    }
                 }
             }
         }

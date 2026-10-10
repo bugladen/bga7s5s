@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -218,6 +219,18 @@ class Action_01134 extends RiskAction implements ISorcererAbility
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01134_2)
         {
             $owner = $this->getOwningCard($game->theah);
+
+            // WHY: Card text caps discard at performer's Influence. Client unselects past
+            // modifiedInfluence, but a crafted actFromCardWithIds must not discard more.
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+            if (count($ids) > $performer->ModifiedInfluence)
+            {
+                throw new UserException(sprintf(
+                    $game->translate("You may discard at most %d card(s) (performer's Influence)."),
+                    $performer->ModifiedInfluence
+                ));
+            }
 
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
             if ($playerId == 0)

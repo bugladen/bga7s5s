@@ -11,7 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01130;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01130;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
@@ -56,12 +55,9 @@ class Action_01130_Test extends TestCase
     public function tests(): array
     {
         return [
-            // FLAGGED: card text says "City Action" but production extends RiskAction
-            // (RiskAction.php says use RiskCityAction for City Actions). Pin current type.
-            'extends RiskAction not RiskCityAction' => function () {
+            'is a RiskCityAction that requires a performer' => function () {
                 $action = new Action_01130();
-                Assert::instanceOf(RiskAction::class, $action, 'RiskAction');
-                Assert::false($action instanceof RiskCityAction, 'not RiskCityAction');
+                Assert::instanceOf(RiskCityAction::class, $action, 'RiskCityAction');
                 Assert::true($action->RequiresPerformerSelected, 'needs performer');
             },
 

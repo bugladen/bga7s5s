@@ -98,10 +98,9 @@ class Reaction_01133_Test extends TestCase
                 Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'other card');
             },
 
-            // SUSPECTED BUG / pin: WillEngage reset is gated on Location==HAND, but the
-            // reaction offer only checks cardId + unengaged performer — no hand gate.
-            // EnteringPayState for in-hand Actions normally only fires while in hand.
-            'EnteringPay while not in hand still offers (hand gate only clears WillEngage)' => function () {
+            // WHY: offer and WillEngage reset share Location==HAND so a non-hand
+            // EnteringPayState cannot prompt Engage/Pass (latent; HD pay is hand-only).
+            'EnteringPay while not in hand neither clears WillEngage nor offers' => function () {
                 $world = new TestWorld();
                 [$risk, $reaction] = $this->scene($world);
                 $risk->WillEngage = true;
@@ -110,7 +109,7 @@ class Reaction_01133_Test extends TestCase
                 $reaction->handleEvent($this->enteringPay($world, $risk->Id));
 
                 Assert::true($risk->WillEngage, 'WillEngage not cleared off-hand');
-                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'still offered');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'not offered');
             },
 
             'engage sets WillEngage, queues CardEngaged, recalcs discount, and sets ABNORMAL_FLOW' => function () {

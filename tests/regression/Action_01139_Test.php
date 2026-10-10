@@ -83,15 +83,15 @@ class Action_01139_Test extends TestCase
                 Assert::count(1, $notes, 'extraActions notify');
             },
 
-            // SUSPECTED BUG: Action_01168 (similar Unique spend→Locker) queues ActionResolved;
-            // Action_01139 does not. Pin current production behavior.
-            'trigger does not queue ActionResolved (current production)' => function () {
+            // WHY: same Unique spend→Locker pattern as Action_01168 — ActionResolved must fire
+            // even though locker move is deferred via goToLocker on discard-from-hand.
+            'trigger queues ActionResolved' => function () {
                 $world = new TestWorld();
                 [, $action] = $this->scene($world, 1);
 
                 $this->trigger($world, $action);
 
-                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no ActionResolved');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
             },
 
             'trigger ignores a different action id' => function () {

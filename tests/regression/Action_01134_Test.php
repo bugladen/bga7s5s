@@ -163,8 +163,6 @@ class Action_01134_Test extends TestCase
                 Assert::true($threw, 'invalid');
             },
 
-            // SUSPECTED BUG: card text limits discards to performer's Influence, but
-            // actFromActionWithIds state _2 does not enforce that server-side.
             'discarding peeked cards moves them to discard and keeps the rest' => function () {
                 $world = new TestWorld();
                 [, $action] = $this->scene($world);
@@ -188,6 +186,36 @@ class Action_01134_Test extends TestCase
                 Assert::count(1, $remaining, 'one left');
                 Assert::same($keep->Id, $remaining[0]->id, 'kept');
                 Assert::same(['cardsChosen'], $world->game->gamestate->transitions, 'next');
+            },
+
+            'discarding more than performer Influence throws' => function () {
+                $world = new TestWorld();
+                [, $action, $performer] = $this->scene($world);
+                $performer->Influence = 1;
+                $performer->ModifiedInfluence = 1;
+                $a = $world->placeCard(new _01131(), 'Deck-2', 2);
+                $b = $world->placeCard(new _01131(), 'Deck-2', 2);
+                $world->game->globals->set(Game::CHOSEN_OPPONENT, 2);
+                $world->game->globals->set(Game::CHOSEN_CARD, json_encode([
+                    (object)['id' => $a->Id],
+                    (object)['id' => $b->Id],
+                ]));
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithIds(
+                        $world->game,
+                        States::HIGH_DRAMA_PLAYER_TURN_01134_2,
+                        'highDramaPlayerTurn_01134_2',
+                        [$a->Id, $b->Id]
+                    );
+                } catch (\BgaUserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'over Influence');
+                Assert::same('Deck-2', $a->Location, 'a stays');
+                Assert::same('Deck-2', $b->Location, 'b stays');
+                Assert::same([], $world->game->gamestate->transitions, 'no transition');
             },
 
             'pass on discard proceeds without moving cards' => function () {
