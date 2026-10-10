@@ -136,9 +136,9 @@ class Action_01172_Test extends TestCase
                 Assert::false(in_array($performer->Id, $args['ids'], true), 'self');
             },
 
-            // WHY: non-Strega performer is wounded first; Start then move then ActionResolved
-            // then Played. Start before move so Torsten-style cancel can still see the hook.
-            'non-Strega queues wound, Sorcerer Start, move, ActionResolved, Played' => function () {
+            // WHY: Start before wound so Torsten can cancel before the performer wound
+            // processes; shared batchId so deleteEventBatch strips the wound (not a Torsten target).
+            'non-Strega queues Sorcerer Start, wound, move, ActionResolved, Played' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $target] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
@@ -153,8 +153,8 @@ class Action_01172_Test extends TestCase
                 $order = array_map(fn($e) => $e::class, $world->theah->queuedEvents);
                 Assert::same(
                     [
-                        EventCharacterBeingWounded::class,
                         EventSorcererAbilityStart::class,
+                        EventCharacterBeingWounded::class,
                         EventCardMoving::class,
                         EventActionResolved::class,
                         EventSorcererAbilityPlayed::class,
@@ -163,29 +163,33 @@ class Action_01172_Test extends TestCase
                     'event order'
                 );
 
-                $wound = $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0];
-                Assert::same($performer->Id, $wound->characterId, 'wound performer');
-                Assert::same(1, $wound->wounds, 'one wound');
-                Assert::same($risk->Id, $wound->sourceId, 'source');
-                Assert::same($action->Id, $wound->abilityId, 'ability');
-
                 $start = $world->theah->queuedOfType(EventSorcererAbilityStart::class)[0];
                 Assert::same($risk->Id, $start->sourceId, 'start source');
                 Assert::same($action->Id, $start->abilityId, 'start ability');
                 Assert::same($performer->Id, $start->performerId, 'start performer');
                 Assert::same($target->Id, $start->targetId, 'start target');
                 Assert::same(Game::LOCATION_CITY_FORUM, $start->targetLocation, 'start from-loc');
+                Assert::true($start->batchId !== null, 'start batch');
+
+                $wound = $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0];
+                Assert::same($performer->Id, $wound->characterId, 'wound performer');
+                Assert::same(1, $wound->wounds, 'one wound');
+                Assert::same($risk->Id, $wound->sourceId, 'source');
+                Assert::same($action->Id, $wound->abilityId, 'ability');
+                Assert::same($start->batchId, $wound->batchId, 'wound same batch');
 
                 $move = $world->theah->queuedOfType(EventCardMoving::class)[0];
                 Assert::same($target->Id, $move->cardId, 'move target');
                 Assert::same(Game::LOCATION_CITY_FORUM, $move->fromLocation, 'from');
                 Assert::same(Game::LOCATION_CITY_DOCKS, $move->toLocation, 'to performer');
                 Assert::false($move->engage, 'no engage');
+                Assert::same($start->batchId, $move->batchId, 'move same batch');
 
                 $played = $world->theah->queuedOfType(EventSorcererAbilityPlayed::class)[0];
                 Assert::same($risk->Id, $played->sourceId, 'played source');
                 Assert::same($target->Id, $played->targetId, 'played target');
                 Assert::same(Game::LOCATION_CITY_FORUM, $played->targetLocation, 'played from-loc');
+                Assert::same($start->batchId, $played->batchId, 'played same batch');
                 Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
             },
 

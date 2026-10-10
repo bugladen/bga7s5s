@@ -136,6 +136,7 @@ class Maneuver_01164_Test extends TestCase
                     [Game::LOCATION_CITY_FORUM]
                 );
                 $world->game->gamestate->transitions = [];
+                $risk->IsUpdated = false;
 
                 $eor = new EventDuelEndOfRound();
                 $eor->theah = $world->theah;
@@ -149,6 +150,8 @@ class Maneuver_01164_Test extends TestCase
                 Assert::same($risk->Id, $moves[0]->sourceId, 'source');
                 Assert::same(0, $this->moveCharacter($maneuver), 'cleared');
                 Assert::same('', $this->moveLocation($maneuver), 'location cleared');
+                // WHY: Deferred state is on the Maneuver serialized with the Risk — EOR must dirty owner.
+                Assert::true($risk->IsUpdated, 'owner dirty');
             },
 
             'end of round skips move when the participant is discarded/locker' => function () {

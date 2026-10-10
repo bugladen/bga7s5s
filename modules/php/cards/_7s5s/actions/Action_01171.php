@@ -97,6 +97,12 @@ class Action_01171 extends RiskAction implements IAbilityThatTargetsCharacters
             return [false, $game->translate("Character is not at the same location as the performer.")];
         }
 
+        // WHY: Args already filter opposing; re-check so a client bypass cannot engage/Home your Merc.
+        if (! $character->isNotControlledByPlayer($performer->ControllerId))
+        {
+            return [false, $game->translate("Character is not opposing your performer.")];
+        }
+
         if (! $character->hasTrait('Mercenary'))
         {
             return [false, $game->translate("Character is not a Mercenary.")];

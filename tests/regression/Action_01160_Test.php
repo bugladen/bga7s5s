@@ -141,10 +141,8 @@ class Action_01160_Test extends TestCase
                 Assert::same($risk->Id, $transitions[0]->sourceId, 'source');
             },
 
-            // FLAG candidate pinned: getArgs lists wounded non-Leaders from getCharactersInPlay
-            // without cardInCity — Home wounded non-Leaders appear in args even though
-            // isAvailableToPlayer / isValidTargetForAbility require city. Act still refuses them.
-            'args include wounded non-Leaders in play (including Home)' => function () {
+            // WHY: args must match isAvailable / isValidTarget / act — city only.
+            'args list only wounded non-Leaders in the city' => function () {
                 $world = new TestWorld();
                 [, $action, $target] = $this->scene($world);
                 $home = $world->placeCharacter(new GenericCharacter('Home Hurt'), Game::LOCATION_PLAYER_HOME, 2);
@@ -159,7 +157,7 @@ class Action_01160_Test extends TestCase
                 );
 
                 Assert::true(in_array($target->Id, $args['ids'], true), 'city wounded');
-                Assert::true(in_array($home->Id, $args['ids'], true), 'home wounded in args');
+                Assert::false(in_array($home->Id, $args['ids'], true), 'home excluded');
                 Assert::false(in_array($leader->Id, $args['ids'], true), 'leader excluded');
             },
 

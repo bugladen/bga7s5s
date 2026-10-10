@@ -75,7 +75,9 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCharacters
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01160)
         {
+            // WHY: Match isAvailable / isValidTarget / act — Home wounded non-Leaders must not appear in UI ids.
             $characters = $game->theah->getCharactersInPlay();
+            $characters = array_filter($characters, fn($character) => $game->theah->cardInCity($character));
             $characters = array_filter($characters, fn($character) => ! $character->hasTrait("Leader"));
             $characters = array_values(array_filter($characters, fn($character) => $character->Wounds > 0));
             $args['ids'] = array_map(fn($character) => $character->Id, $characters);

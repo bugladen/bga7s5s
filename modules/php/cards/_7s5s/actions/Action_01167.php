@@ -3,7 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
 use Bga\GameFramework\UserException;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IWealthCost;
@@ -14,7 +14,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 
-class Action_01167 extends RiskAction implements IAbilityThatTargetsCards
+// WHY: Card text is City Action — same base as Robbery (Action_01113). Performer is still
+// chosen in step 3 (not RequiresPerformerSelected); city gating comes from this base + overrides.
+class Action_01167 extends RiskCityAction implements IAbilityThatTargetsCards
 {
     public function __construct()
     {

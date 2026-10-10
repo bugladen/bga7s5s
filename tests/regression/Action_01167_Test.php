@@ -17,7 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01155;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01167;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01167;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskCityAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
@@ -56,9 +56,9 @@ class Action_01167_Test extends TestCase
     public function tests(): array
     {
         return [
-            'is a RiskAction that targets cards' => function () {
+            'is a RiskCityAction that targets cards' => function () {
                 $action = new Action_01167();
-                Assert::instanceOf(RiskAction::class, $action, 'RiskAction');
+                Assert::instanceOf(RiskCityAction::class, $action, 'RiskCityAction');
                 Assert::instanceOf(IAbilityThatTargetsCards::class, $action, 'targets cards');
             },
 

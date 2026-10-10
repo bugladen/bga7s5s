@@ -259,6 +259,32 @@ class Action_01171_Test extends TestCase
                 }
                 Assert::true($threw, 'far refused');
             },
+
+            // WHY: printed "opposing" — act must refuse your own Merc even if client bypasses args.
+            'refuses a friendly Mercenary at the same location' => function () {
+                $world = new TestWorld();
+                [, $action, $performer] = $this->scene($world);
+                $allyMerc = $world->placeCharacter(
+                    new GenericCharacter('Ally Merc', ['Mercenary']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithId(
+                        $world->game,
+                        States::HIGH_DRAMA_PLAYER_TURN_01171,
+                        'x',
+                        $allyMerc->Id
+                    );
+                } catch (UserException $e) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'ally refused');
+                Assert::count(0, $world->theah->queuedEvents, 'nothing');
+            },
         ];
     }
 }

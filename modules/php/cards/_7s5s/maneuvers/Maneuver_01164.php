@@ -75,17 +75,20 @@ class Maneuver_01164 extends Maneuver
         {
             $game = $event->theah->game;
             $character = $game->theah->getCharacterById($this->MoveCharacter);
+            $owner = $this->getOwningCard($event->theah);
 
             if (! $game->characterIsInDiscardOrLocker($character))
             {
-                $owner = $this->getOwningCard($event->theah);
                 $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $this->MoveLocation, $engage = false, $owner->Id, $this->Id);
                 $event->theah->queueEvent($moveEvent);
             }
 
+            // WHY: Deferred MoveCharacter/MoveLocation live on this Maneuver (serialized with the Risk).
+            // Cancel already dirties owner; EOR must too or DB can keep the armed deferred move.
             $this->MoveCharacter = 0;
             $this->MoveLocation = "";
             $character->IsUpdated = true;
+            $owner->IsUpdated = true;
         }
     }
 
