@@ -78,18 +78,18 @@ class EventDuelCalculateCombatCardStats extends Event
         }
     }
 
+    // WHY allow negatives (no floor / no "only if > 0"): penalties like Syrneth Hand
+    // removeParry(2) on a 1P combat card must store combat_parry = -1 so a later
+    // Technique/Maneuver +1P nets to 0. Flooring here ate the overflow and left
+    // combat_parry = 0; technique mode then summed 0 + 1 = 1P (bug: 4 threat → 1
+    // remaining instead of 2). Effective R/P are floored at apply time in
+    // DB::updateRoundWithCombatStats (all modes). EventHub already formats
+    // negative combat contributions in the duel log.
     public function removeRiposte(int $value)
     {
         if (! $this->dashedRiposte)
         {
-            if ($this->riposte > 0)
-            {
-                $this->riposte -= $value;
-            }
-            if ($this->riposte < 0)
-            {
-                $this->riposte = 0;
-            }
+            $this->riposte -= $value;
         }
         else
         {
@@ -101,14 +101,7 @@ class EventDuelCalculateCombatCardStats extends Event
     {
         if (! $this->dashedParry)
         {
-            if ($this->parry > 0)
-            {
-                $this->parry -= $value;
-            }
-            if ($this->parry < 0)
-            {
-                $this->parry = 0;
-            }
+            $this->parry -= $value;
         }
         else
         {
@@ -120,14 +113,7 @@ class EventDuelCalculateCombatCardStats extends Event
     {
         if (! $this->dashedThrust)
         {
-            if ($this->thrust > 0)
-            {
-                $this->thrust -= $value;
-            }
-            if ($this->thrust < 0)
-            {
-                $this->thrust = 0;
-            }
+            $this->thrust -= $value;
         }
         else
         {

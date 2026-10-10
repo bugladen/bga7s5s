@@ -104,8 +104,10 @@ class Card_01121_Test extends TestCase
                 Assert::same(1, $ren->ParryReductionAppliedInRound, 'flag = round 1');
             },
 
-            // WHY: 0-Parry combat must NOT set the flag so a later +Parry Maneuver/Technique
-            // in the same round still gets -1 (removeParry no-ops at 0).
+            // WHY: Ren skips when combat Parry <= 0 so the once-per-round flag stays
+            // clear; a later +Parry Maneuver/Technique in the same round still gets -1.
+            // (removeParry itself may store negative debt for Hand-style penalties — Ren
+            // deliberately does not call it on a 0-Parry combat card.)
             '0-Parry combat card does not set the round flag' => function () {
                 $world = new TestWorld();
                 [$ren, $actor] = $this->duel($world);

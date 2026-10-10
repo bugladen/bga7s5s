@@ -778,9 +778,14 @@ class DB
         {
             //Riposte sends threat back to adversary, only in the amount it reduced threat to the actor
             // If adversary is absent (discard/locker), the bounced threat is discarded instead.
+            // WHY floor < 0: EventDuelCalculateCombatCardStats may store negative combat_*
+            // as penalty debt for later Technique/Maneuver stacking; applying a negative
+            // here would increase actor threat. Store raw event value in results/DB.
             $riposte = $eventRiposte;
             if ($riposte > $endingChallengerThreat) 
                 $riposte = $endingChallengerThreat;
+            if ($riposte < 0)
+                $riposte = 0;
             $endingChallengerThreat -= $riposte;
             if (! $adversaryAbsent)
                 $endingDefenderThreat += $riposte;
@@ -790,6 +795,8 @@ class DB
             $parry = $eventParry;
             if ($parry > $endingChallengerThreat) 
                 $parry = $endingChallengerThreat;
+            if ($parry < 0)
+                $parry = 0;
             $endingChallengerThreat -= $parry;
             $results['parry'] = $eventParry;
 
@@ -814,6 +821,8 @@ class DB
             $riposte = $eventRiposte;
             if ($riposte > $endingDefenderThreat) 
                 $riposte = $endingDefenderThreat;
+            if ($riposte < 0)
+                $riposte = 0;
             $endingDefenderThreat -= $riposte;
             if (! $adversaryAbsent)
                 $endingChallengerThreat += $riposte;
@@ -823,6 +832,8 @@ class DB
             $parry = $eventParry;
             if ($parry > $endingDefenderThreat) 
                 $parry = $endingDefenderThreat;
+            if ($parry < 0)
+                $parry = 0;
             $endingDefenderThreat -= $parry;
             $results['parry'] = $eventParry;
 
