@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -157,7 +158,7 @@ class Action_01134_Test extends TestCase
                         'x',
                         99
                     );
-                } catch (\BgaUserException $e) {
+                } catch (UserException | \BgaUserException $e) {
                     $threw = true;
                 }
                 Assert::true($threw, 'invalid');
@@ -209,7 +210,7 @@ class Action_01134_Test extends TestCase
                         'highDramaPlayerTurn_01134_2',
                         [$a->Id, $b->Id]
                     );
-                } catch (\BgaUserException $e) {
+                } catch (UserException | \BgaUserException $e) {
                     $threw = true;
                 }
                 Assert::true($threw, 'over Influence');
@@ -303,7 +304,7 @@ class Action_01134_Test extends TestCase
                         'x',
                         1
                     );
-                } catch (\BgaUserException $e) {
+                } catch (UserException | \BgaUserException $e) {
                     $threw = true;
                 }
                 Assert::true($threw, 'already engaged');

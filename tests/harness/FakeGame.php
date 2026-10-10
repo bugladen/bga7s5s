@@ -350,8 +350,20 @@ class Game
         return null;
     }
 
+    // WHY: _01151 actFromCardWithIds SELECTs player rows (ORDER BY turn_order) to queue
+    // opponent 01151_2 transitions. Empty [] silently skipped every opponent.
     public function getCollectionFromDB(string $sql): array
     {
+        if (stripos($sql, 'from player') !== false) {
+            $rows = [];
+            foreach ($this->playerNames as $id => $_) {
+                $rows[$id] = [
+                    'player_id' => $id,
+                    'schemeId' => isset($this->chosenSchemes[$id]) ? $this->chosenSchemes[$id]->Id : 0,
+                ];
+            }
+            return $rows;
+        }
         return [];
     }
 
@@ -476,6 +488,14 @@ class Game
                 ];
             }
 
+            // WHY: Action_01163 Devotion peeks the faction deck via Deck::getCardsOnTop(n, location).
+            // Mirror $topFactionCards (same rows as getCardsOnTopOfPlayerFactionDeck) — location is
+            // unused in the stub because tests seed only the acting player's top cards.
+            public function getCardsOnTop($n, $location): array
+            {
+                return array_slice($this->game->topFactionCards, 0, (int)$n);
+            }
+
             // WHY: Technique_01090 (discard-to-play branch) validates the chosen card against the
             // BGA deck's hand rows. Mirror those rows from the in-RAM dbCards so tests control the hand.
             public function getCardsInLocation($location, $locationArg = null): array
@@ -574,10 +594,14 @@ class Game
         $this->dbCards[$card->Id] = $card;
     }
 
+    /** @var list<int> card ids written via updateCardObjectInDb (Breastplate leftover-threat flag). */
+    public array $updatedCardObjectIds = [];
+
     public function updateCardObjectInDb(?Card $card): void
     {
         if ($card !== null) {
             $this->dbCards[$card->Id] = $card;
+            $this->updatedCardObjectIds[] = $card->Id;
         }
     }
 
