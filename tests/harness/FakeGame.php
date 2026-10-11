@@ -73,8 +73,14 @@ class Game
     final const CIRILO_RECRUIT_TYPE = 2;
 
     final const CONSTANZO_ID = 'constanzoId';
+    // WHY: Reaction_01184 / Inauguration Day store the card whose location defines the
+    // performer+en-garde-only pressure filter. Must match Game.php.
+    final const CLAUD_ID = 'claudeId';
     final const PRESSURE_TYPE = 'pressureType';
     final const NORMAL_PRESSURE_TYPE = 0;
+    // WHY: Reaction_01184 sets this binary flag; UtilitiesTrait filters the pressure set.
+    // Must match Game.php (value 1).
+    final const CLAUDE_PRESSURE_TYPE = 1;
     // Must match Game.php — Montaigne scheme/attachment Influence pressures.
     final const REPUTATION_MERITEE_PRESSURE_TYPE = 4;
     final const TABARD_PRESSURE_TYPE = 8;
@@ -103,6 +109,9 @@ class Game
     final const MULTI_STATE_INITIATING_PLAYER = 'multiStateInitiatingPlayer';
     final const PASS_COUNT = 'passCount';
     final const EQUIP_TYPE = 'equipType';
+    // WHY: Action_01187 sets SMUGGLED_ITEM_ATTACHMENT_ID before the equip chooser so
+    // FrameworkActionsTrait can destroy Smuggled Item on confirm. Must match Game.php.
+    final const SMUGGLED_ITEM_ATTACHMENT_ID = 'smuggledItemId';
     final const SMUGGLED_ITEM_EQUIP_TYPE = 1;
     // WHY: Action_01147 sets EQUIP_TYPE to Let's Haggle before pay; _01147::getEquipDiscount
     // keys off CHOSEN_ACTION + this type. Must match Game.php.
@@ -127,6 +136,8 @@ class Game
 
     final const CHALLENGE_TYPE = 'challengeType';
     final const NORMAL_CHALLENGE_TYPE = 0;
+    // WHY: Action_01198 Guild Triskelion stamps this; must match Game.php (= 1).
+    final const TRISKELION_CHALLENGE_TYPE = 1;
     // Must match Game.php — Montaigne / Eisen challenge variants.
     final const EPEE_SANGLANTE_CHALLENGE_TYPE = 2;
     final const CAVALIER_HAT_CHALLENGE_TYPE = 3;
@@ -160,6 +171,11 @@ class Game
     final const IN_DUEL = 'inDuel';
     final const DUEL_ID = 'duelId';
     final const DUEL_ROUND = 'duelRound';
+    // WHY: _01188 Vladislav sets DUEL_TYPE = VLADISLAV_DUEL_TYPE on round-1 NewRound so
+    // the UI only offers End Duel. Must match Game.php.
+    final const DUEL_TYPE = 'duelType';
+    final const NORMAL_DUEL_TYPE = 0;
+    final const VLADISLAV_DUEL_TYPE = 1;
     // WHY: Maneuver_01135 parks deferred -2 Thrust in globals so locker/clone-removed
     // copies still apply via EventHub (must match Game.php).
     final const MIRELIS_REVISION_PENDING_THRUST_REDUCTIONS = 'mirelisRevisionPendingThrustReductions';
@@ -171,8 +187,14 @@ class Game
     // WHY: Action_01105 sets PRESSURE_STAT to STAT_RESOLVE before pressureLocation transition.
     final const PRESSURE_STAT = 'pressureStat';
     final const PRESSURE_BONUS = 'pressureBonus';
+    // WHY: Action_01206 Captain's Coat OR's this flag onto PRESSURE_TYPE. Must match Game.php.
+    final const CAPTAINS_COAT_PRESSURE_TYPE = 2;
     final const PACK_TACTICS_PRESSURE_TYPE = 64;
     final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
+
+    // WHY: Reaction_01203 / Reaction_04031 button labels read live threat from globals.
+    final const CHALLENGER_THREAT = 'challengerThreat';
+    final const DEFENDER_THREAT = 'defenderThreat';
 
     final const CURRENT_PLAYER = 'currentPlayer';
     final const REVEALED_CARDS = 'revealedCards';
@@ -269,6 +291,23 @@ class Game
             return 0;
         }
         return (int)$this->theah->getCityLocation($location)->Renown;
+    }
+
+    // WHY: Action_01187 (Smuggled Item) gates on hand attachments via UtilitiesTrait.
+    // FakeGame has no $cards Deck property — walk dbCards (same source as getGameDeckObject).
+    public function getAttachmentsInHand(int $playerId): array
+    {
+        $attachments = [];
+        foreach ($this->dbCards as $card) {
+            if (
+                $card instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment
+                && $card->Location === self::LOCATION_HAND
+                && (int) $card->ControllerId === $playerId
+            ) {
+                $attachments[] = $card;
+            }
+        }
+        return $attachments;
     }
 
     public function notifyAllPlayers(string $type, string $message, array $args = []): void

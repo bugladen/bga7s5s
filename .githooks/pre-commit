@@ -107,8 +107,11 @@ for file in $staged_files; do
         fi
     fi
 
-    # Check if the class calls createAttachmentEquippedEvent (skip EventFactory.php)
-    if echo "$content" | grep -q 'createAttachmentEquippedEvent' && [[ "$file" != *"EventFactory.php" ]]; then
+    # Check if the class calls createAttachmentEquippedEvent (skip EventFactory.php and tests/)
+    # WHY: tests often name the factory method in comments without calling getRequiredAttachTargetId.
+    if echo "$content" | grep -q 'createAttachmentEquippedEvent' \
+        && [[ "$file" != *"EventFactory.php" ]] \
+        && [[ "$file" != tests/* ]]; then
 
         # Check for getRequiredAttachTargetId
         if ! echo "$content" | grep -q 'getRequiredAttachTargetId'; then
