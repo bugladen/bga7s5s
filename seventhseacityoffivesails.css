@@ -1080,6 +1080,12 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     z-index: 10;
 }
 
+/* WHY: Rena (_05Gary) A→B flip — preserve-3d so rotateY reads as a card flip. */
+._7sfs-card._7sfs-card-flipping {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+}
+
 ._7sfs-card-back {
     background-size: 190px 259px;
     background-position: -40px -73px;

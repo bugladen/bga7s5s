@@ -247,6 +247,7 @@ return declare('seventhseacityoffivesails.actions', null, {
 
         const actions = {
             'setupTable_01006'                      : 'actFromCardWithId',
+            'setupTable_05Gary'                     : 'actFromCardWithId',
             'duelChooseGambleCard'                  : 'actGambleCardChosen',
         };
 
@@ -532,6 +533,7 @@ return declare('seventhseacityoffivesails.actions', null, {
     {
         const actionArray = {
             'setupTable_01006'                          : 'actFromCardPass',
+            'setupTable_05Gary'                         : 'actFromCardPass',
             'highDramaPlayerTurn'                       : 'actHighDramaPass',
             'highDramaPhase01180_3'                     : 'actPassWithPass',
             'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',

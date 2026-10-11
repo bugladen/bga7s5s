@@ -63,6 +63,7 @@ $machinestates = [
         "transitions" => [
             "chooseNext" => States::SETUP_TABLE_CHOOSE_NEXT_ABILITY,
             "01006" => States::SETUP_TABLE_01006,
+            "05Gary" => States::SETUP_TABLE_05GARY,
             "reaction" => States::SETUP_TABLE_REACTIONS,
             "pay" => States::SETUP_TABLE_PAY_FOR_REACTION,
             "endOfEvents" => States::DAWN_NEW_DAY,
@@ -2788,6 +2789,7 @@ $machinestates = [
                         "04033" => States::DUEL_CHOOSE_TECHNIQUE_04033,
                         "05DabneyUS01" => States::DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01,
                         "05Cooper" => States::DUEL_CHOOSE_TECHNIQUE_05COOPER,
+                        "05GaryFlipped" => States::DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral

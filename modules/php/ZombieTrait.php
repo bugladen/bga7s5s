@@ -41,6 +41,12 @@ trait ZombieTrait
                     $this->actPass();
                     break;
 
+                case "setupTable_05Gary":
+                    // WHY: Named "pass" transition (not bare nextState) — State class zombie
+                    // also calls actFromCardPass; keep ZombieTrait aligned if it still runs.
+                    $this->actFromCardPass();
+                    break;
+
                 case "planningPhaseResolveSchemes_01044":
                 case "planningPhaseResolveSchemes_01045":
                 case "planningPhaseResolveSchemes_01150":
@@ -339,6 +345,7 @@ trait ZombieTrait
 
                 // Setup Table States
                 case "setupTable_01006_2":
+                case "setupTable_05Gary_2":
                 case "duelChooseTechnique_03043":
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;

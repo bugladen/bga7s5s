@@ -22,6 +22,9 @@ class States
         const SETUP_TABLE_EVENTS = 90;
         const SETUP_TABLE_01006 = 901006;
         const SETUP_TABLE_01006_2 = 9010062;
+        // CAD — Rena Klingenhalter (_05Gary). Exp 5 + card 3.
+        const SETUP_TABLE_05GARY = 90105003;
+        const SETUP_TABLE_05GARY_2 = 901050032;
         const SETUP_TABLE_REACTIONS = 91;
         const SETUP_TABLE_PAY_FOR_REACTION = 92;
         const SETUP_TABLE_CHOOSE_NEXT_ABILITY = 93;
@@ -627,6 +630,8 @@ class States
             const DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01 = 52105001;
             // CAD — Don Vissenta Scarpa (_05Cooper). Exp 5 + card 2.
             const DUEL_CHOOSE_TECHNIQUE_05COOPER = 52105002;
+            // CAD — Rena Klingenhalter B-side (_05GaryFlipped). Exp 5 + card 7.
+            const DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED = 52105007;
                 const DUEL_CHOOSE_TECHNIQUE_03043_2 = 521030432;
                 const DUEL_CHOOSE_TECHNIQUE_03043_3 = 521030433;
         const DUEL_USE_MANEUVER_FROM_COMBAT_CARD = 522;

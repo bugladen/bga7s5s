@@ -54,6 +54,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['cardMustered', 1000],
             ['characterRecruited', 1000],
             ['characterWounded', 1000],
+            ['characterFlipped', 1400],
             ['cityCardAddedToLocation', 1000],
             ['cityDiscardShuffled', 500],
             ['crystalEyeTargetChosen', 500],
@@ -1215,6 +1216,127 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         dojo.destroy(oldDivId);
         this.createCard(cardId, card, targetId);
+    },
+
+    notif_characterFlipped: async function( notif )
+    {
+        debug( 'notif_characterFlipped' );
+        debug( notif );
+
+        const args = notif.args;
+        const newCard = args.card;
+        const card = this.cardProperties[args.characterId] || this.cardProperties[newCard.id];
+        if (!card || !card.divId)
+        {
+            this.cardProperties[newCard.id] = newCard;
+            return;
+        }
+
+        const imageEl = $(`${card.divId}_image`);
+        const newImageUrl = this.getCardImageUrlRoot(newCard.image) + newCard.image;
+
+        // WHY: Visual flip then swap face — B-side art/title/stats replace A-side in place
+        // (same card Id; attachments DOM stays parented under the character).
+        if (imageEl && this.animationManager && this.animationManager.animationsActive())
+        {
+            const parentEl = imageEl.parentElement;
+            if (parentEl)
+            {
+                parentEl.style.perspective = '600px';
+            }
+            dojo.addClass(imageEl, '_7sfs-card-flipping');
+            // WHY fill forwards mid-flip: hold rotateY(90) while the face swaps.
+            // WHY cancel both after: WAAPI fill keeps an effect-level transform that
+            // overrides ._7sfs-engaged { transform: rotate(90deg) }. Clearing
+            // style.transform alone does not remove the animation fill — so after a
+            // flip, debug_EngageCard / cardEngaged looked like a no-op on clients
+            // that still had the live flip animation (typically the other browser).
+            const flipOut = imageEl.animate([
+                { transform: 'rotateY(0deg)' },
+                { transform: 'rotateY(90deg)' },
+            ], {
+                duration: 350,
+                easing: 'ease-in',
+                fill: 'forwards',
+            });
+            await flipOut.finished;
+
+            imageEl.style.setProperty('--card_image', `url('${newImageUrl}')`);
+
+            const flipIn = imageEl.animate([
+                { transform: 'rotateY(-90deg)' },
+                { transform: 'rotateY(0deg)' },
+            ], {
+                duration: 350,
+                easing: 'ease-out',
+                fill: 'forwards',
+            });
+            await flipIn.finished;
+
+            flipOut.cancel();
+            flipIn.cancel();
+            dojo.removeClass(imageEl, '_7sfs-card-flipping');
+            imageEl.style.transform = '';
+            if (parentEl)
+            {
+                parentEl.style.perspective = '';
+            }
+        }
+        else if (imageEl)
+        {
+            imageEl.style.setProperty('--card_image', `url('${newImageUrl}')`);
+        }
+
+        // WHY: divId / attachedCards are client-only; server getPropertyArray lacks them.
+        const preservedDivId = card.divId;
+        const preservedAttachedCards = card.attachedCards;
+        Object.assign(card, newCard);
+        card.divId = preservedDivId;
+        if (preservedAttachedCards !== undefined)
+        {
+            card.attachedCards = preservedAttachedCards;
+        }
+        this.cardProperties[newCard.id] = card;
+
+        const combatEl = $(`${card.divId}_combat_value`);
+        const finesseEl = $(`${card.divId}_finesse_value`);
+        const influenceEl = $(`${card.divId}_influence_value`);
+        const resolveEl = $(`${card.divId}_resolve_value`);
+
+        if (combatEl)
+        {
+            combatEl.innerHTML = card.dashedCombat ? '-' : card.modifiedCombat;
+            if (card.combat != card.modifiedCombat)
+                dojo.addClass(combatEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(combatEl, '_7sfs-modified-stat-value');
+        }
+        if (finesseEl)
+        {
+            finesseEl.innerHTML = card.dashedFinesse ? '-' : card.modifiedFinesse;
+            if (card.finesse != card.modifiedFinesse)
+                dojo.addClass(finesseEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(finesseEl, '_7sfs-modified-stat-value');
+        }
+        if (influenceEl)
+        {
+            influenceEl.innerHTML = card.dashedInfluence ? '-' : card.modifiedInfluence;
+            if (card.influence != card.modifiedInfluence)
+                dojo.addClass(influenceEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(influenceEl, '_7sfs-modified-stat-value');
+        }
+        if (resolveEl)
+        {
+            resolveEl.innerHTML = card.modifiedResolve;
+            if (card.resolve != card.modifiedResolve || card.wounds > 0)
+                dojo.addClass(resolveEl, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(resolveEl, '_7sfs-modified-stat-value');
+        }
+
+        this.createTooltipForCard(card);
     },
 
     notif_characterWounded: async function( notif )

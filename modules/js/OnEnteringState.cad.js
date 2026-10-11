@@ -37,6 +37,29 @@
                 }
             },
 
+            'setupTable_05Gary': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = 'Attachments in Your Faction Deck';
+
+                    args.args._private.args.attachments.forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+            'setupTable_05Gary_2': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = 'Chosen Attachment';
+
+                setTimeout(() => {
+                    this.addCardToDeck(this.chooseList, args.args.args.card);
+                    this.chooseList.setSelectionMode(0);
+                }, 500);
+            },
+
         };
 
         if (methods[stateName])

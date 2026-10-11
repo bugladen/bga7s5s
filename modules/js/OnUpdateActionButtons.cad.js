@@ -45,6 +45,21 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'setupTable_05Gary': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+            'setupTable_05Gary_2': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+            },
+
+            'duelChooseTechnique_05GaryFlipped': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
         };
 
         if (methods[stateName])

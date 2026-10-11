@@ -33,6 +33,17 @@
                 }
             },
 
+            'setupTable_05Gary': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+            'setupTable_05Gary_2': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
         };
 
         if (methods[stateName])

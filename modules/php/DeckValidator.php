@@ -74,6 +74,12 @@ class DeckValidator
             return false;
         }
 
+        if ($deck->leader == '05GaryFlipped')
+        {
+            $errors[] ='05GaryFlipped - Rena Klingenhalter "Wrathful" cannot be the leader of a deck.';
+            return false;
+        }
+
         $uniquelyNamedCards[] = $card->Name;  
 
         return true;
