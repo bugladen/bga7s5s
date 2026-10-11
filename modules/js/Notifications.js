@@ -1305,9 +1305,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }).finished;
         }
 
-        woundChip.innerHTML = card.wounds;
-        if (card.wounds == 0)
-            dojo.destroy(woundChip);
+        if (woundChip) 
+        {
+            woundChip.innerHTML = card.wounds;
+            if (card.wounds == 0)
+                dojo.destroy(woundChip);
+        }
 
         card.modifiedResolve = args.resolve;
 
@@ -1401,11 +1404,14 @@ return declare('seventhseacityoffivesails.notifications', null, {
         card.modifiedFinesse = args.newFinesse;
 
         const element = $(`${card.divId}_finesse_value`);
-        element.innerHTML = card.modifiedFinesse;
-        if (card.modifiedFinesse != card.finesse)
-            dojo.addClass(element, '_7sfs-modified-stat-value');
-        else
-            dojo.removeClass(element, '_7sfs-modified-stat-value');
+        if (element)
+        {
+            element.innerHTML = card.modifiedFinesse;
+            if (card.modifiedFinesse != card.finesse)
+                dojo.addClass(element, '_7sfs-modified-stat-value');
+            else
+                dojo.removeClass(element, '_7sfs-modified-stat-value');
+        }
     },
 
     notif_characterInfluenceModified: function( notif )
