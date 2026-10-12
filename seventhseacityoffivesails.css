@@ -465,8 +465,8 @@ body._7sfs-halloween {
     background-repeat: no-repeat;
     background-position: center bottom;
     pointer-events: none;
-    /* WHY: Staggered run bob via margin-top — leaves transform free for scaleX face. */
-    animation: _7sfs-halloween-villager-run 0.35s ease-in-out infinite;
+    /* WHY: Fast frantic bob via margin-top — leaves transform free for scaleX face. */
+    animation: _7sfs-halloween-villager-run 0.16s ease-in-out infinite;
     /* WHY: Slow slide to the new ahead side on turn — scramble, not a snap. */
     transition: left 1s ease-in-out;
 }
@@ -478,7 +478,9 @@ body._7sfs-halloween {
 
 #city-halloween-villager-2 {
     background-image: url('img/holiday/halloween/villager-2.svg');
-    animation-delay: 0.12s;
+    /* WHY: Offset phase so they don't panic in lockstep. */
+    animation-delay: 0.07s;
+    animation-duration: 0.13s;
     /* WHY: Slightly smaller / lower — depth cue that they're not stacked clones. */
     width: 16px;
     height: 20px;
@@ -493,7 +495,7 @@ body._7sfs-halloween {
 
 @keyframes _7sfs-halloween-villager-run {
     0%, 100% { margin-top: 0; }
-    50% { margin-top: -2px; }
+    50% { margin-top: -4px; }
 }
 
 #city-ul-tower {
