@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01163;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01163_CardClone;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01163;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskPhaseBegin;
 
 class Card_01163_Test extends TestCase
@@ -56,30 +57,47 @@ class Card_01163_Test extends TestCase
                 Assert::instanceOf(Action_01163::class, $risk->getActions()[0], 'Action_01163');
             },
 
-            // WHY (journal 2026-03-31-05): EventDuskPhaseBegin = "end of the day" (same as
-            // Yevgeni 01125). Control → hand; otherwise discard. Clone is a facedown placeholder.
-            'dusk: controlling the location adds the hidden card to hand' => function () {
+            // WHY: Control must be read at DuskPhaseBegin (cleanup zeroes Controllers)
+            // but hand/discard resolves on EventDuskEndOfDay (after panache discard).
+            'dusk begin: snapshots control without moving the hidden card' => function () {
                 $world = new TestWorld();
                 [$clone, , $original] = $this->facedownAt($world);
                 $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 1);
 
-                $dusk = new EventDuskPhaseBegin();
-                $world->fireOn($clone, $dusk);
+                $world->fireOn($clone, new EventDuskPhaseBegin());
+
+                Assert::true($clone->ControlledLocationAtDuskBegin, 'controlled snapshotted');
+                Assert::same(Game::LOCATION_CITY_DOCKS, $clone->Location, 'clone still at location');
+                Assert::same(Game::LOCATION_PERMANENTLY_HIDDEN, $original->Location, 'original still hidden');
+                Assert::count(0, $world->theah->queuedOfType(EventCardAddedToHand::class), 'no hand yet');
+            },
+
+            'end of day: controlling the location adds the hidden card to hand' => function () {
+                $world = new TestWorld();
+                [$clone, , $original] = $this->facedownAt($world);
+                $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 1);
+                $world->fireOn($clone, new EventDuskPhaseBegin());
+                // Simulate cleanup clearing controllers before end of day.
+                $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 0);
+
+                $world->fireOn($clone, new EventDuskEndOfDay());
 
                 Assert::same(Game::LOCATION_PERMANENTLY_HIDDEN, $clone->Location, 'clone hidden');
                 $added = $world->theah->queuedOfType(EventCardAddedToHand::class);
                 Assert::count(1, $added, 'to hand');
                 Assert::same($original->Id, $added[0]->cardId, 'original');
                 Assert::same(1, $added[0]->playerId, 'controller');
+                Assert::same(null, $clone->ControlledLocationAtDuskBegin, 'snapshot cleared');
             },
 
-            'dusk: not controlling the location discards the hidden card' => function () {
+            'end of day: not controlling the location discards the hidden card' => function () {
                 $world = new TestWorld();
                 [$clone, , $original] = $this->facedownAt($world);
                 $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 2);
+                $world->fireOn($clone, new EventDuskPhaseBegin());
+                $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 0);
 
-                $dusk = new EventDuskPhaseBegin();
-                $world->fireOn($clone, $dusk);
+                $world->fireOn($clone, new EventDuskEndOfDay());
 
                 Assert::same(Game::LOCATION_PERMANENTLY_HIDDEN, $clone->Location, 'clone hidden');
                 Assert::count(0, $world->theah->queuedOfType(EventCardAddedToHand::class), 'no hand');
@@ -90,13 +108,13 @@ class Card_01163_Test extends TestCase
                 );
             },
 
-            'dusk: uncontrolled location (Controller 0) discards the hidden card' => function () {
+            'end of day: uncontrolled location (Controller 0) discards the hidden card' => function () {
                 $world = new TestWorld();
                 [$clone, , $original] = $this->facedownAt($world);
                 // Default Controller is 0 — "does not control".
+                $world->fireOn($clone, new EventDuskPhaseBegin());
 
-                $dusk = new EventDuskPhaseBegin();
-                $world->fireOn($clone, $dusk);
+                $world->fireOn($clone, new EventDuskEndOfDay());
 
                 Assert::same(
                     $world->game->getPlayerDiscardDeckName(1),
