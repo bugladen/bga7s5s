@@ -282,7 +282,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     border-top-right-radius: 10px;
 }
 
-/* WHY: CITY_HALLOWEEN — body gets _7sfs-halloween (Setup.js) so home-row icons
+/* WHY: CITY_HALLOWEEN — body gets _7sfs-halloween (Holiday.js) so home-row icons
    outside #city also swap. hand-count = cream fan cards; home-discard / city-discard
    = dark stacked cards; home-locker / city-locker = white skull; home/score
    panache = witch hat. Standalone PNGs with alpha (contain/center, not sprite offsets). */
@@ -294,7 +294,7 @@ body._7sfs-halloween {
 
 ._7sfs-halloween ._7sfs-hand-count {
     /* WHY: PNG with alpha — JPG baked a black box over the score row. */
-    background-image: url('img/holiday/hand-count.png');
+    background-image: url('img/holiday/halloween/hand-count.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -303,7 +303,7 @@ body._7sfs-halloween {
 
 ._7sfs-halloween ._7sfs-home-discard,
 ._7sfs-halloween #city-discard {
-    background-image: url('img/holiday/home-discard.png');
+    background-image: url('img/holiday/halloween/home-discard.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -323,7 +323,7 @@ body._7sfs-halloween {
    faction-colored home rows and saddlebrown city chip. Same asset for both. */
 ._7sfs-halloween ._7sfs-home-locker,
 ._7sfs-halloween #city-locker {
-    background-image: url('img/holiday/home-locker.png');
+    background-image: url('img/holiday/halloween/home-locker.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -344,7 +344,7 @@ body._7sfs-halloween {
    than the plume. */
 ._7sfs-halloween ._7sfs-home-panache,
 ._7sfs-halloween ._7sfs-score-panache {
-    background-image: url('img/holiday/home-panache.png');
+    background-image: url('img/holiday/halloween/home-panache.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -391,8 +391,7 @@ body._7sfs-halloween {
     border-top-right-radius: 10px;
 }
 
-/* WHY: Row wraps phase chip + optional Halloween horseman so horseman stays
-   immediately right of the phase text as its width changes (Dawn vs High Drama). */
+/* WHY: Absolute slot for the phase chip along the city top edge (same band as towers). */
 #city-day-phase-row {
     display: none;
     position: absolute;
@@ -400,7 +399,6 @@ body._7sfs-halloween {
     top: -15px;
     flex-direction: row;
     align-items: center;
-    gap: 4px;
 }
 
 #city-day-phase {
@@ -417,24 +415,85 @@ body._7sfs-halloween {
     padding-right: 5px;
 }
 
-#city-halloween-horseman {
+/* WHY: Absolute chase group on #city (not inside day-phase-row) so Holiday.js can
+   animate left between the phase chip and #city-ur-tower. Chase.left = horseman;
+   villagers are children offset just ahead in JS. Native art faces left; per-sprite
+   scaleX on turnaround (not group scaleX — that jumped the horseman). */
+#city-halloween-chase {
     display: none;
+    position: absolute;
+    top: -15px;
+    left: 160px;
+    box-sizing: border-box;
+    width: 31px;
+    height: 31px;
+    pointer-events: none;
+    will-change: left;
+    z-index: 2;
+}
+
+._7sfs-city-halloween #city-halloween-chase {
+    display: block;
+}
+
+#city-halloween-horseman {
+    position: absolute;
+    left: 0;
+    top: 0;
     box-sizing: border-box;
     width: 31px;
     height: 31px;
     border: none;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    background-image: url('img/holiday/headlesshorseman.png');
+    background-image: url('img/holiday/halloween/headlesshorseman.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     /* WHY: Transparent PNG — no baked bg; sits on the board without a chip frame. */
     background-color: transparent;
+    /* WHY: Re-enable tippy hit target; chase group is pointer-events:none. */
+    pointer-events: auto;
+    /* WHY: Bob via top (not transform) so JS scaleX facing stays free. */
+    animation: _7sfs-halloween-horseman-bob 0.48s ease-in-out infinite;
 }
 
-._7sfs-city-halloween #city-halloween-horseman {
-    display: block;
+._7sfs-halloween-villager {
+    position: absolute;
+    top: 4px;
+    width: 18px;
+    height: 22px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    pointer-events: none;
+    /* WHY: Staggered run bob via margin-top — leaves transform free for scaleX face. */
+    animation: _7sfs-halloween-villager-run 0.35s ease-in-out infinite;
+    /* WHY: Slow slide to the new ahead side on turn — scramble, not a snap. */
+    transition: left 1s ease-in-out;
+}
+
+#city-halloween-villager-1 {
+    background-image: url('img/holiday/halloween/villager-1.svg');
+    animation-delay: 0s;
+}
+
+#city-halloween-villager-2 {
+    background-image: url('img/holiday/halloween/villager-2.svg');
+    animation-delay: 0.12s;
+    /* WHY: Slightly smaller / lower — depth cue that they're not stacked clones. */
+    width: 16px;
+    height: 20px;
+    top: 6px;
+}
+
+/* WHY: top/margin-top bob instead of transform — Holiday.js owns transform for facing. */
+@keyframes _7sfs-halloween-horseman-bob {
+    0%, 100% { top: 0; }
+    50% { top: -3px; }
+}
+
+@keyframes _7sfs-halloween-villager-run {
+    0%, 100% { margin-top: 0; }
+    50% { margin-top: -2px; }
 }
 
 #city-ul-tower {
@@ -471,7 +530,7 @@ body._7sfs-halloween {
     stroke: saddlebrown;
 }
 
-/* WHY: CITY_HALLOWEEN === 1 adds _7sfs-city-halloween on #city (Setup.js).
+/* WHY: CITY_HALLOWEEN === 1 adds _7sfs-city-halloween on #city (Holiday.js).
    Hide SVG rects; paint same 30x30 slots with lit jack-o-lantern art.
    Border uses saddlebrown like #city / day chip / SVG tower stroke — without it the
    black-backed JPG reads as a plain black block at this size. */
@@ -483,7 +542,7 @@ body._7sfs-halloween {
     width: 30px;
     height: 30px;
     border: 3px solid saddlebrown;
-    background-image: url('img/holiday/jackolantern.jpg');
+    background-image: url('img/holiday/halloween/jackolantern.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -494,6 +553,49 @@ body._7sfs-halloween {
 ._7sfs-city-halloween #city-ll-tower svg,
 ._7sfs-city-halloween #city-lr-tower svg {
     display: none;
+}
+
+/* WHY: CITY_HALLOWEEN ambient ghosts — stretch side containers so empty sides still
+   have a paint box (city image is 110px). Ghost layer is absolute + overflow:hidden
+   so sprites stay inside the side without clipping card fly animations on the flex
+   children. z-index 0 stays under ._7sfs-card (z-index 10). */
+._7sfs-city-halloween ._7sfs-city-my-cards,
+._7sfs-city-halloween ._7sfs-city-other-cards {
+    position: relative;
+    align-self: stretch;
+    min-height: 110px;
+    /* WHY: Subgrid auto columns collapse empty sides to ~0; give ghosts a
+       paint box before cards arrive without changing non-Halloween layout. */
+    min-width: 60px;
+}
+
+._7sfs-halloween-ghost-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+._7sfs-halloween-ghost {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-image: url('img/holiday/halloween/ghost.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    /* WHY: Barely-there — flavor, not distraction over location colors. */
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+    will-change: left, top;
+    animation: _7sfs-halloween-ghost-bob 3.5s ease-in-out infinite;
+}
+
+@keyframes _7sfs-halloween-ghost-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }
 
 ._7sfs-city-location {

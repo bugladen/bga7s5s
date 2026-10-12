@@ -42,6 +42,7 @@ define([
    g_gamethemeurl + 'modules/js/OnLeavingState.bas.js',
    g_gamethemeurl + 'modules/js/OnLeavingState.cad.js',
    g_gamethemeurl + 'modules/js/Setup.js',
+   g_gamethemeurl + 'modules/js/Holiday.js',
    g_gamethemeurl + 'modules/js/Utilities.js',
    g_gamethemeurl + 'modules/js/Notifications.js',
    g_gamethemeurl + 'modules/js/EventHandlers.js',
@@ -53,10 +54,6 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
     // Define isDebug and debug globally so all modules can access them
     window.isDebug = window.location.host == 'studio.boardgamearena.com' || window.location.hash.indexOf('debug') > -1;
 
-    // WHY: Seasonal city-tower swap. Set to 1 for lit jack-o-lanterns; 0 restores SVG towers.
-    // Client-only — no server/gamedatas involvement; flip and redeploy when Halloween ends.
-    window.CITY_HALLOWEEN = 1;
-    
     // Store bga-cards classes globally
     // The library exports CardManager as 'Manager' and HandStock directly
     window.CardManager = bgaCards.Manager;
@@ -94,6 +91,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
         seventhseacityoffivesails.onupdateactionbuttons_bas,
         seventhseacityoffivesails.onupdateactionbuttons_cad,
         seventhseacityoffivesails.setup,
+        seventhseacityoffivesails.holiday,
         seventhseacityoffivesails.utilities,
         seventhseacityoffivesails.notifications,
         seventhseacityoffivesails.eventhandlers,

@@ -15,13 +15,8 @@ return declare('seventhseacityoffivesails.setup', null, {
     {
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', this.mainBoardhtml);
 
-        // WHY: CITY_HALLOWEEN is a client flag (seventhseacityoffivesails.js).
-        // Class on #city keeps tower DOM ids intact for city-deck FLIP origins.
-        // Class on body also covers home-discard / hand-count outside #city.
-        if (window.CITY_HALLOWEEN === 1) {
-            dojo.addClass('city', '_7sfs-city-halloween');
-            dojo.addClass(document.body, '_7sfs-halloween');
-        }
+        // WHY: Holiday mixin (Holiday.js) — seasonal classes before city tooltips / cards.
+        this.setupHolidayClasses();
 
         debug( "Starting game setup" );
         debug( "gamedatas", gamedatas );
@@ -78,9 +73,9 @@ return declare('seventhseacityoffivesails.setup', null, {
         this.addTippyTooltip( 'city-locker', `<div class='_7sfs-basic-tooltip'>${_('City Locker Pile')}</div>` );
         this.addTippyTooltip( 'day-indicator', `<div class='_7sfs-basic-tooltip'>${_('The Current Day')}</div>` );
         this.addTippyTooltip( 'city-day-phase', `<div class='_7sfs-basic-tooltip'>${_('The Current Phase of the Day')}</div>` );
-        if (window.CITY_HALLOWEEN === 1) {
-            this.addTippyTooltip( 'city-halloween-horseman', `<div class='_7sfs-basic-tooltip'>${_('Happy Halloween!')}</div>` );
-        }
+        // WHY: After unused locations (Ole's / Garden) are destroyed so holiday
+        // ambience only seeds sides that remain for this player count.
+        this.setupHolidayFeatures();
         this.addTippyTooltipToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
 
         //Update the day
@@ -99,7 +94,6 @@ return declare('seventhseacityoffivesails.setup', null, {
                 case 5: $('city-day-phase').innerHTML = _('Dusk'); break;
             }
 
-            // WHY: Show the row (phase + optional horseman), not just #city-day-phase.
             dojo.style('city-day-phase-row', 'display', 'flex');
         }
 

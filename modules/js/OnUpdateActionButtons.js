@@ -32,17 +32,10 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('city', 'hidden');
                 dojo.addClass('approachDeck-container', 'hidden');
                 dojo.addClass('factionHand-placeholder', 'hidden');
-                // WHY: CITY_HALLOWEEN seasonal banner — prepend festival blurb when flag is on
-                // (same client-only window.CITY_HALLOWEEN as Setup.js towers / map tint).
-                let banner_description = _('Explore Starter Decks using the buttons below, or...<br>Select the <strong>Custom Deck Code</strong> button to paste a custom deck code.<p>When ready, click <strong>Confirm Deck</strong> to confirm selected Deck.</p>');
-                if (window.CITY_HALLOWEEN === 1) {
-                    banner_description = '<div style="background-color: rgba(45, 45, 45, 0.9); color: #FF7518; border: 2px solid #FF7518; padding: 10px; border-radius: 5px;">' + 
-                    _('Samhein, Vaticine Holy Days, Festival of Flames, Halloween...') + 
-                    '<br>' + 
-                    _('Whatever you want to call it, it\'s currently being celebrated in the City of Five Sails!') + 
-                    '</div><br>' + 
-                    banner_description;
-                }
+                // WHY: Holiday mixin (Holiday.js) may prepend seasonal festival copy.
+                let banner_description = this.decorateHolidayDeckPickerBanner(
+                    _('Explore Starter Decks using the buttons below, or...<br>Select the <strong>Custom Deck Code</strong> button to paste a custom deck code.<p>When ready, click <strong>Confirm Deck</strong> to confirm selected Deck.</p>')
+                );
                 dojo.place( this.format_block( 'jstpl_deck_picker', {
                     banner_description: banner_description,
                     castille_description_core: _('<strong>Castille</strong>: Soline el Gato grew up on the streets and canals of the Castillian District of Five Sails and knows intimately what it takes to survive in a city such as Five Sails. The leader of a den of thieves and scoundrels, Soline uses her cunning and adaptability to always keep her opponents on their toes, not knowing what to expect. Soline’s style is one of disruption, making it increasingly difficult for an opponent to gain ground.<p>Deck: <a target="_blank" href="https://sailsdb.onrender.com/decks/b3e77c40-12d3-47e7-a559-3e72f87762f4">Core Castille Starter</a></p>'),

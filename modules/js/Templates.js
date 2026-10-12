@@ -419,6 +419,14 @@
                     <div id="day-indicator"></div>
                     <div id="city-day-phase-row">
                         <div id="city-day-phase"></div>
+                    </div>
+                    <!-- WHY: Sibling of #city (not inside day-phase-row) so absolute left
+                         can ride from the phase chip across to #city-ur-tower.
+                         Chase.left tracks the horseman; villagers stay just ahead of
+                         him (JS offsets). Per-sprite scaleX on turnaround. -->
+                    <div id="city-halloween-chase">
+                        <div id="city-halloween-villager-1" class="_7sfs-halloween-villager"></div>
+                        <div id="city-halloween-villager-2" class="_7sfs-halloween-villager"></div>
                         <div id="city-halloween-horseman"></div>
                     </div>
 
