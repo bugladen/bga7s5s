@@ -15,8 +15,9 @@
     {
         const methods = {
 
+            // WHY: Prototype CAD — plain button labels, no _() (hide from translators).
             'highDramaPhase05DabneyUS01': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
@@ -25,33 +26,33 @@
                 // dashed that axis — hide the option so it is not offered as a no-op.
                 if (args.parryAvailable)
                 {
-                    this.addActionButton(`btnParry`, _('+1 Parry'), () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
+                    this.addActionButton(`btnParry`, '+1 Parry', () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
                 }
                 if (args.riposteAvailable)
                 {
-                    this.addActionButton(`btnRiposte`, _('+1 Riposte'), () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
+                    this.addActionButton(`btnRiposte`, '+1 Riposte', () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
                 }
-                this.addActionButton(`btnLethal`, _('Lethal'), () => this.bgaPerformAction('actFromCardWithId', { id: 2 }));
+                this.addActionButton(`btnLethal`, 'Lethal', () => this.bgaPerformAction('actFromCardWithId', { id: 2 }));
             },
 
             'highDramaChallengeActionResolveTechnique_05DabneyUS01': () => {
                 // WHY: Technique is duel-only (Parry replaced Thrust — no challenge-useful
                 // choice). Pass out if a stale transition lands here.
-                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' });
+                this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' });
             },
 
             'duelChooseTechnique_05Cooper': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
             'setupTable_05Gary': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseListCardConfirmed());
+                this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
             'setupTable_05Gary_2': () => {
-                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+                this.addActionButton(`actOk`, 'Ok', () => this.onMultipleOk());
             },
 
             'duelChooseTechnique_05GaryFlipped': () => {

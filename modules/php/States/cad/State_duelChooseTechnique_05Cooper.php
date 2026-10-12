@@ -19,10 +19,11 @@ class State_duelChooseTechnique_05Cooper extends GameState
             type: StateType::ACTIVE_PLAYER,
             name: "duelChooseTechnique_05Cooper",
 
-            description: clienttranslate('${actplayer} is choosing a Red Hand to wound.'),
+            // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
+            description: '${actplayer} is choosing a Red Hand to wound.',
             // WHY: Short descriptionMyTurn without Title — CAD checklist prefers that
             // unless same-name disambiguation requires Title (Dabney/Valeri shape).
-            descriptionMyTurn: clienttranslate('Don Vissenta Scarpa') . clienttranslate(': ${you} must choose a Red Hand to wound:'),
+            descriptionMyTurn: 'Don Vissenta Scarpa' . ': ${you} must choose a Red Hand to wound:',
             transitions: [
                 "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
             ],

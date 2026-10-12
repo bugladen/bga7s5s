@@ -19,6 +19,7 @@ class State_highDramaChallengeActionResolveTechnique_05DabneyUS01 extends GameSt
             type: StateType::ACTIVE_PLAYER,
             name: "highDramaChallengeActionResolveTechnique_05DabneyUS01",
 
+            // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
             description: '${actplayer} is choosing options to perform a Technique.',
             // WHY: Technique is duel-only after Parry replaced Thrust (no challenge-useful
             // choice). State kept registered so a stale transition can Pass out.

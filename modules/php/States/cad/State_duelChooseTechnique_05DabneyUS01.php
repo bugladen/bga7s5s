@@ -20,6 +20,7 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
             type: StateType::ACTIVE_PLAYER,
             name: "duelChooseTechnique_05DabneyUS01",
 
+            // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
             description: '${actplayer} is choosing options to perform a Technique.',
             // WHY: ${technique_choices} swaps when combat card(s) have dashed Riposte/Parry.
             descriptionMyTurn: 'Valeri Mikhailov' . ': ${you} must choose ${technique_choices}: ',
@@ -38,7 +39,8 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
         $riposteAvailable = ! $this->game->theah->currentRoundCombatCardsHaveDashedRiposte();
         $parryAvailable = ! $this->game->theah->currentRoundCombatCardsHaveDashedParry();
 
-        // WHY: Fixed clienttranslate strings (not sprintf of English fragments) for i18n.
+        // WHY: Prototype CAD — plain English fragments, no clienttranslate / no i18n arg
+        // (hide from translators). Still use fixed strings (not sprintf) so the prompt reads cleanly.
         if ($parryAvailable && $riposteAvailable)
         {
             $techniqueChoices = '+1 Parry, +1 Riposte, or Lethal';
@@ -57,7 +59,6 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
         }
 
         return [
-            'i18n' => ['technique_choices'],
             'technique_choices' => $techniqueChoices,
             'riposteAvailable' => $riposteAvailable,
             'parryAvailable' => $parryAvailable,
