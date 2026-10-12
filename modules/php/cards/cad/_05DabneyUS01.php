@@ -27,13 +27,13 @@ class _05DabneyUS01 extends Leader implements IHasActions
 
         $this->initializeFaction("Ussura");
 
-        $this->Resolve = 7;
+        $this->Resolve = 8;
         $this->Combat = 2;
-        $this->Finesse = 4;
+        $this->Finesse = 3;
         $this->Influence = 1;
 
         $this->CrewCap = 4;
-        $this->Panache = 6;
+        $this->Panache = 7;
 
         $this->Traits = [
             "Leader",
@@ -45,7 +45,7 @@ class _05DabneyUS01 extends Leader implements IHasActions
 
         $this->Text = "<p><i>Covert</i> - During pressures at Valeri's location, add +2 to your total.
 <br>(<i>Covert Abilities may only be used at uncontrolled locations.</i>)</p>
-<p><b>City Action:</b> Move Valeri to an adjacent <b>City</b> location. He issues a [Combat] challenge to target opposing non-<b>Leader</b>.</p>
+<p><b>City Action:</b> Move Valeri to an adjacent <b>City</b> location. He issues a [Combat] challenge to target opposing Character.</p>
 <p><b>Technique:</b> +1[Parry], +1[Riposte], or gain Lethal</p>";
 
         $this->resetCard();
