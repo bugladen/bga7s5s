@@ -32,8 +32,19 @@ onUpdateActionButtons: function( stateName, args )
                 dojo.addClass('city', 'hidden');
                 dojo.addClass('approachDeck-container', 'hidden');
                 dojo.addClass('factionHand-placeholder', 'hidden');
+                // WHY: CITY_HALLOWEEN seasonal banner — prepend festival blurb when flag is on
+                // (same client-only window.CITY_HALLOWEEN as Setup.js towers / map tint).
+                let banner_description = _('Explore Starter Decks using the buttons below, or...<br>Select the <strong>Custom Deck Code</strong> button to paste a custom deck code.<p>When ready, click <strong>Confirm Deck</strong> to confirm selected Deck.</p>');
+                if (window.CITY_HALLOWEEN === 1) {
+                    banner_description = '<div style="background-color: rgba(45, 45, 45, 0.9); color: #FF7518; border: 2px solid #FF7518; padding: 10px; border-radius: 5px;">' + 
+                    _('Samhein, Vaticine Holy Days, Festival of Flames, Halloween...') + 
+                    '<br>' + 
+                    _('Whatever you want to call it, it\'s currently being celebrated in the City of Five Sails!') + 
+                    '</div><br>' + 
+                    banner_description;
+                }
                 dojo.place( this.format_block( 'jstpl_deck_picker', {
-                    banner_description: _('Explore Starter Decks using the buttons below, or...<br>Select the <strong>Custom Deck Code</strong> button to paste a custom deck code.<p>When ready, click <strong>Confirm Deck</strong> to confirm selected Deck.</p>'),
+                    banner_description: banner_description,
                     castille_description_core: _('<strong>Castille</strong>: Soline el Gato grew up on the streets and canals of the Castillian District of Five Sails and knows intimately what it takes to survive in a city such as Five Sails. The leader of a den of thieves and scoundrels, Soline uses her cunning and adaptability to always keep her opponents on their toes, not knowing what to expect. Soline’s style is one of disruption, making it increasingly difficult for an opponent to gain ground.<p>Deck: <a target="_blank" href="https://sailsdb.onrender.com/decks/b3e77c40-12d3-47e7-a559-3e72f87762f4">Core Castille Starter</a></p>'),
                     eisen_description_core: _('<strong>Eisen</strong>: An accomplished General in the War of the Cross, Kaspar Dietrich returned home to Eisen, only to find it in ruins, overrun by monsters. As such, he has a passionate distrust for all things sorcery and supernatural. Kaspar fled south to the port city of Five Sails where he hopes to use his formidable reputation as a master commander and strategist to build an army to reclaim his homeland. He utilizes strategies that involve making use of the city and the mercenaries and equipment available to him.<p>Deck: <a target="_blank" href="https://sailsdb.onrender.com/decks/7c4bcda2-b788-48f9-bae1-5c55ceacd514">Core Eisen Starter</a></p>'),
                     montaigne_description_core: _('<strong>Montaigne</strong>: Odette Dubois d’Arrent is the most recent arrival to the city. She is a courtier from Montaigne, a country that does not have a district or established foothold in Five Sails. She is tasked to help her patron expand his influence within the free city.  As such, she is eager to find allies. But she did not arrive in Five Sails alone. A small, but elite, group of skilled Musketeers accompanies her and protects her from the rougher elements of the City. Her strengths include movement and creative positioning to make the most of her political abilities and her Musketeer’s steel. <p>Deck: <a target="_blank" href="https://sailsdb.onrender.com/decks/cee927a0-4ec3-4868-a7cf-cf38be98ab1e">Core Montaigne Starter</a></p>'),
