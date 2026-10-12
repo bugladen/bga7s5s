@@ -141,10 +141,13 @@ class _01041 extends Character implements IHasActions
             return;
         }
 
+        // WHY: EventCardMoved fires for attachments too; getCharacterById is null for them
+        // (same guard as _01071 / _01119). Without it, moving an attachment at Rosine's
+        // location fatals on hasTrait().
         if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->toLocation == $this->Location)
         {
             $character = $event->theah->getCharacterById($event->cardId);
-            if ($character->hasTrait("Sorcerer") && $character->ControllerId != $this->ControllerId && $this->getOpposingSorcererCount($event->theah, $event->toLocation) == 0)
+            if ($character && $character->hasTrait("Sorcerer") && $character->ControllerId != $this->ControllerId && $this->getOpposingSorcererCount($event->theah, $event->toLocation) == 0)
             {
                 $this->updateInfluence($event->theah, 1);
             }
@@ -153,7 +156,7 @@ class _01041 extends Character implements IHasActions
         if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->fromLocation == $this->Location)
         {
             $character = $event->theah->getCharacterById($event->cardId);
-            if ($character->hasTrait("Sorcerer") && $character->ControllerId != $this->ControllerId && $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
+            if ($character && $character->hasTrait("Sorcerer") && $character->ControllerId != $this->ControllerId && $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
             {
                 $this->updateInfluence($event->theah, -1);
             }
@@ -170,7 +173,7 @@ class _01041 extends Character implements IHasActions
         if ($event instanceof EventCharacterMustered && $event->characterId != $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($event->location == $this->Location && 
+            if ($character && $event->location == $this->Location && 
                 $character->hasTrait("Sorcerer") && 
                 $character->isNotControlledByPlayer($this->ControllerId) &&
                 $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
@@ -182,7 +185,7 @@ class _01041 extends Character implements IHasActions
         if ($event instanceof EventCharacterDestroyed && $event->characterId != $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->Location == $this->Location && 
+            if ($character && $character->Location == $this->Location && 
                 $character->hasTrait("Sorcerer") && 
                 $character->isNotControlledByPlayer($this->ControllerId) &&
                 $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
@@ -194,7 +197,7 @@ class _01041 extends Character implements IHasActions
         if ($event instanceof EventCharacterRecruited)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if ($character->Location == $this->Location && 
+            if ($character && $character->Location == $this->Location && 
                 $character->hasTrait("Sorcerer") && 
                 $character->isNotControlledByPlayer($this->ControllerId) &&
                 $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)

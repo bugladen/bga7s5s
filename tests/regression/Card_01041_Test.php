@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01041;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01073;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01041;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
@@ -81,6 +82,22 @@ class Card_01041_Test extends TestCase
                 $rosine->onAbilitiesBlanked($world->theah);
 
                 Assert::count(1, $world->theah->queuedOfType(EventCharacterInfluenceModified::class), 'blank -1');
+            },
+
+            // WHY: EventCardMoved fires for attachments too; getCharacterById is null and used
+            // to fatal on hasTrait() (server crash at _01041.php:156 fromLocation branch).
+            'EventCardMoved for a non-character card does not fatal (null-safe)' => function () {
+                $world = new TestWorld();
+                $rosine = $world->placeCharacter(new _01041(), Game::LOCATION_CITY_DOCKS, 1);
+                $hat = $world->placeCard(new _01073(), Game::LOCATION_CITY_DOCKS, 2);
+
+                $event = new EventCardMoved();
+                $event->cardId = $hat->Id;
+                $event->fromLocation = Game::LOCATION_CITY_DOCKS;
+                $event->toLocation = Game::LOCATION_PLAYER_HOME;
+                $world->fireOn($rosine, $event);
+
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterInfluenceModified::class), 'attachment ignored');
             },
         ];
     }
