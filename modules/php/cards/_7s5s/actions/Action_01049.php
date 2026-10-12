@@ -131,6 +131,19 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
                 $engageId = $this->originalAttachmentId ?? $owner->Id;
                 $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $engageId, $owner->Id, $this->Id);
                 $game->theah->queueEvent($engageEvent);
+
+                // WHY: Matchlock Action_01156 already-engaged path. RangedAbilityPlayed
+                // must fire even when the target skips engage-or-wound — Katain
+                // (Reaction_02011) listens here. Without it, a cancel-first ignore-wound
+                // reaction (Vissenta Reaction_05Cooper) looks like it "ate" Katain's window
+                // because only the BeingWounded reaction UI opened. ActionResolved too —
+                // same as 01049_2 finalize / Matchlock.
+                $performer = $this->getOwningCharacter($game->theah);
+                $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
+                $game->theah->queueEvent($rangedAbilityPlayedEvent);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($actionResolvedEvent);
             }
             else
             {

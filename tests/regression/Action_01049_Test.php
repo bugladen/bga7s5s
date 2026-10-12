@@ -71,7 +71,9 @@ class Action_01049_Test extends TestCase
                 Assert::same('01049', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'transition');
             },
 
-            // WHY: already-engaged target skips choice — wound + engage flintlock immediately
+            // WHY: already-engaged target skips choice — wound + engage flintlock immediately.
+            // Must still fire RangedAbilityPlayed / ActionResolved (Matchlock 01156 shape) so
+            // Katain's copy window opens even if a BeingWounded cancel-first reaction runs.
             'selecting engaged target wounds and engages flintlock' => function () {
                 $world = new TestWorld();
                 [, $flint] = $this->equipFlint($world);
@@ -89,6 +91,8 @@ class Action_01049_Test extends TestCase
 
                 Assert::count(1, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'wound');
                 Assert::count(1, $world->theah->queuedOfType(EventCardEngaged::class), 'engage flint');
+                Assert::count(1, $world->theah->queuedOfType(EventRangedAbilityPlayed::class), 'ranged');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
             },
 
             'selecting engarde target queues opponent choice transition' => function () {
@@ -146,6 +150,8 @@ class Action_01049_Test extends TestCase
 
                 Assert::count(1, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'wound');
                 Assert::count(1, $world->theah->queuedOfType(EventCardEngaged::class), 'engage flint');
+                Assert::count(1, $world->theah->queuedOfType(EventRangedAbilityPlayed::class), 'ranged');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
             },
         ];
     }
