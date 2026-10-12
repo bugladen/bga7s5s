@@ -1364,13 +1364,64 @@ $machinestates = [
                 "actBackWithTransition",
             ],
             "transitions" => [
-                "targetChosen" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE, 
+                "targetChosen" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_EVENTS,
                 "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_PERFORMER,
                 "backTriskelion" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
                 "backEpeeSanglante" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
                 "backCavalierHat" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_ACTION,
             ]
         ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_EVENTS => [
+                "name" => "highDramaChallengeActionTargetChosenEvents",
+                "type" => "game",
+                "action" => "stRunEvents",
+                "transitions" => [
+                    "chooseNext" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_CHOOSE_NEXT_ABILITY,
+                    "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS,
+                    "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_PAY_FOR_REACTION,
+                    "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                    "endOfGame" => States::END_GAME
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS => [
+                "name" => "playerReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actReactionForState",
+                ],
+                "transitions" => [
+                    "done" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_EVENTS,
+                ]
+            ],
+            States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_PAY_FOR_REACTION => [
+                "name" => "playerPayForReaction",
+                "description" => clienttranslate('${actplayer} is choosing Reaction options.'),
+                "descriptionmyturn" => "",
+                "type" => "activeplayer",
+                "args" => "argsForStatePrivate",
+                "possibleactions" => [
+                    "actBack",
+                    "actPayForReaction",
+                ],
+                "transitions" => [
+                    "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS,
+                    "paid" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_EVENTS,
+                ]
+            ],
+    States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_CHOOSE_NEXT_ABILITY => [
+        "name" => "chooseNextReaction",
+        "description" => clienttranslate('There are multiple abilities triggering. ${actplayer} (First Player) is choosing the order to release them.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose which Reaction choice is released to its owner next:'),
+        "type" => "activeplayer",
+        "args" => "argsChooseNextReaction",
+        "possibleactions" => ["actChooseNextReaction"],
+        "transitions" => [
+            "" => States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_EVENTS,
+        ],
+    ],
         States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE => [
             "name" => "highDramaChallengeActionTechniqueAvailable",
             "description" => clienttranslate('Determining if any techniques are available...'),

@@ -88,11 +88,12 @@ class _05Thomas extends Brute implements IHasManeuvers
         // WHY: At check time fromLocation is still empty; Location is still the pre-muster
         // zone (HAND / DUELING_LINE / …). Gate hand→play outside duels; Maneuver musters
         // from the dueling line so Location != HAND and passes. During-duel hand musters
-        // (e.g. Vittoria) remain legal per printed text.
+        // (IN_DUEL — after accept) remain legal per printed text. Challenge targeting is
+        // not a duel yet — Vittoria's challenge window cannot muster Recruit Brutes.
         if ($event instanceof EventCharacterMustered
             && $event->characterId == $this->Id
             && $this->Location == Game::LOCATION_HAND
-            && ! $event->theah->game->globals->get(Game::IN_DUEL, false))
+            && ! $this->canEnterPlayFromHand($event->theah->game))
         {
             throw new UserException("Bruno cannot enter play from hand except during a duel.");
         }

@@ -157,8 +157,9 @@ class Reaction_01014 extends CardReaction
     }
 
     /**
-     * Hand Thugs that can legally muster here. Recruit Brutes (Bruno etc.) are
-     * excluded outside a duel — same gate as Reaction_03003 / eventCheck.
+     * Hand Thugs that can legally muster here. Recruit Brutes (Bruno etc.) need
+     * IN_DUEL (after accept) — challenge targeting / ChallengeIssued is too early
+     * for their printed "except during a duel" text.
      *
      * @return list<Character>
      */
@@ -571,6 +572,9 @@ class Reaction_01014 extends CardReaction
 
         if ($this->characterTargetedEvent)
         {
+            // WHY: Framework challenge pick syncs CHOSEN_TARGET from CharacterTargeted
+            // in EventHub — set here too so mid-reaction globals match before re-queue.
+            $game->globals->set(Game::CHOSEN_TARGET, $characterId);
             $this->characterTargetedEvent->targetId = $characterId;
             $game->theah->queueEvent($this->characterTargetedEvent);
             $this->characterTargetedEvent = null;

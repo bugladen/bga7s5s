@@ -142,6 +142,9 @@ abstract class Character extends Card implements IHasTechniques
     // Other hand→play effects (Vittoria Reaction_01014, Don Reaction_03003) must allow
     // the printed duel exception so UI eligibility matches eventCheck, not offer a
     // button that throws outside a duel / hide a legal duel muster.
+    //
+    // Duel = after accept (IN_DUEL). Challenge targeting / ChallengeIssued is earlier —
+    // Recruit Brutes are illegal there even if Vittoria is targeted for a duel.
     public function canEnterPlayFromHand(Game $game): bool
     {
         if ($this->canBePlayedAsBruteFromHand())

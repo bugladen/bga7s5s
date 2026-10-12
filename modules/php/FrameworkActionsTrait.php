@@ -1334,6 +1334,31 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_TARGET, $character->Id);
 
+        // WHY: Framework challenge picker never fired EventCharacterTargeted — only
+        // ChallengeIssued later (after technique). Vittoria/UL/Premonition "when
+        // targeted" missed Stand Your Ground / Unsanctioned / scheme challenges when
+        // the only redirect piece was a hand Thug (ChallengeIssued still works for
+        // in-play Thugs, but CharacterTargeted is the printed targeting moment).
+        // Defending Honor's challenged ally is not the ability's character target.
+        if ($challengeType != Game::DEFENDING_HONOR_CHALLENGE_TYPE && $action instanceof IAbilityThatTargetsCharacters)
+        {
+            $sourceId = (int) $this->globals->get(Game::TRANSITION_SOURCE_ID, 0);
+            if ($sourceId === 0)
+            {
+                $sourceId = (int) $this->globals->get(Game::CHOSEN_PERFORMER, 0);
+            }
+            $playerId = (int) $this->globals->get(Game::CURRENT_PLAYER);
+            $batchId = $this->getNextEventBatchId();
+            $targeted = EventFactory::createCharacterTargetedEvent(
+                $playerId,
+                $character->Id,
+                $sourceId,
+                $action->Id
+            );
+            $targeted->batchId = $batchId;
+            $this->theah->queueEvent($targeted);
+        }
+
         $this->gamestate->nextState("targetChosen");
     }
 

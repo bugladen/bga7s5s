@@ -11,12 +11,16 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01014;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01014;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04045;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04045;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Thomas;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Reaction_01014_Test extends TestCase
@@ -87,6 +91,86 @@ class Reaction_01014_Test extends TestCase
 
                 Assert::true($event->canceled, 'challenge held');
                 Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'reaction offered');
+            },
+
+            // WHY regression: Dante (_01020) in hand + Stand Your Ground targeting.
+            // Framework picker now fires EventCharacterTargeted (not only ChallengeIssued).
+            'Action_04045 CharacterTargeted alone with Dante in hand offers reaction' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $dante = $world->placeCard(new _01020(), Game::LOCATION_HAND, 1);
+                $scheme = $world->placeCard(new _04045(), Game::LOCATION_PLAYER_HOME, 2);
+                /** @var Action_04045 $action */
+                $action = $scheme->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $vittoria->Id;
+                $event->sourceId = $scheme->Id;
+                $event->abilityId = $action->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'targeting held');
+                $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array('putIntoPlay-' . $dante->Id, $ids, true), 'Dante hand button');
+            },
+
+            // WHY regression: alone + hand Thug (Action_04045 / Stand Your Ground report).
+            // ChallengeIssued must open the hand path — not only in-play Thugs.
+            'challenge alone with hand Thug offers putIntoPlay' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $handThug = $world->placeCharacter(
+                    new GenericCharacter('Hand Thug', ['Thug']),
+                    Game::LOCATION_HAND,
+                    1
+                );
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventChallengeIssued();
+                $event->challengerId = $challenger->Id;
+                $event->defenderId = $vittoria->Id;
+                $event->sourceId = $challenger->Id;
+                $event->playerId = 2;
+                $event->abilityId = 'not-an-ability';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'challenge held');
+                $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array('putIntoPlay-' . $handThug->Id, $ids, true), 'hand Thug button');
+            },
+
+            // WHY: Recruit Brutes print "except during a duel". Duel starts on accept
+            // (IN_DUEL). ChallengeIssued / CharacterTargeted is Vittoria's challenge
+            // window only — Bruno in hand alone must not open the reaction.
+            'challenge alone with hand Bruno does not offer' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCard(new _05Thomas(), Game::LOCATION_HAND, 1);
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventChallengeIssued();
+                $event->challengerId = $challenger->Id;
+                $event->defenderId = $vittoria->Id;
+                $event->sourceId = $challenger->Id;
+                $event->playerId = 2;
+                $event->abilityId = 'not-an-ability';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::false($event->canceled, 'Bruno not legal before duel — do not hold');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no reaction');
             },
 
             'hand Thug path musters then opens in-play redirect' => function () {

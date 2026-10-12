@@ -43,6 +43,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterPutIntoApproachDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -1318,6 +1319,23 @@ trait EventHub
                         "techniqueId" => $event->techniqueId,
                         "used" => $event->used,
                     ]);
+                };
+                $handler($this, $event);
+                break;
+
+            case $event instanceof EventCharacterTargeted:
+                // WHY: Challenge framework pick queues CharacterTargeted before
+                // ChallengeIssued. Redirect reactions (Vittoria) rewrite targetId on
+                // re-release — keep CHOSEN_TARGET in sync so stIssueChallenge uses
+                // the Thug. Only when abilityId matches the in-flight CHOSEN_ACTION
+                // (avoid stomping unrelated CharacterTargeted from Risks etc.).
+                $handler = function (Theah $theah, EventCharacterTargeted $event)
+                {
+                    $chosenAction = $theah->game->globals->get(Game::CHOSEN_ACTION, '');
+                    if ($chosenAction !== '' && $event->abilityId == $chosenAction)
+                    {
+                        $theah->game->globals->set(Game::CHOSEN_TARGET, $event->targetId);
+                    }
                 };
                 $handler($this, $event);
                 break;
