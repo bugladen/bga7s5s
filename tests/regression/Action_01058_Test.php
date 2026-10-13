@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01058_Test extends TestCase
@@ -150,10 +151,12 @@ class Action_01058_Test extends TestCase
                 Assert::same([$foe->Id], $args['characterIds'], 'only weaker non-Leader');
             },
 
-            'act on ready target engages and moves Home engaged' => function () {
+            // WHY (journal 2026-10-13): act queues ONLY EventCharacterTargeted so Unyielding
+            // Loyalty can hold the cancel hook. Engage + Home must not sit beside the hook —
+            // UL stores one event and deleteEventBatchs the rest (Sibella still went Home).
+            'act queues only CharacterTargeted (UL cancel gate), not engage or Home' => function () {
                 $world = new TestWorld();
                 [$risk, $performer, $foe] = $this->scenario($world);
-                $foe->Engaged = false;
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
                 /** @var Action_01058 $action */
@@ -165,38 +168,73 @@ class Action_01058_Test extends TestCase
                     $foe->Id
                 );
 
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'foe');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage yet');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
+                Assert::count(1, $world->game->gamestate->transitions, 'nextState called');
+            },
+
+            // WHY: Surviving CharacterTargeted (Pass / NoD revert) emits engage then Home
+            // with a shared batchId so UL can still sweep if offered again on engage.
+            'surviving CharacterTargeted queues engage then Home then ActionResolved' => function () {
+                $world = new TestWorld();
+                [$risk, $performer, $foe] = $this->scenario($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+
+                /** @var Action_01058 $action */
+                $action = $risk->getActions()[0];
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $risk->Id;
+                $targeted->batchId = 42;
+                $targeted->canceled = false;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
                 $engage = $world->theah->queuedOfType(EventCardEngaged::class);
                 Assert::count(1, $engage, 'engage');
                 Assert::same($foe->Id, $engage[0]->cardId, 'engaged foe');
+                Assert::same(42, $engage[0]->batchId, 'shared batch');
 
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
                 Assert::count(1, $moves, 'move');
                 Assert::same($foe->Id, $moves[0]->cardId, 'moved foe');
                 Assert::same(Game::LOCATION_CITY_DOCKS, $moves[0]->fromLocation, 'from');
                 Assert::same(Game::LOCATION_PLAYER_HOME, $moves[0]->toLocation, 'Home');
-                Assert::true($moves[0]->engage, 'engage flag');
+                Assert::false($moves[0]->engage, 'move does not re-engage');
+                Assert::same(42, $moves[0]->batchId, 'batched with engage');
+
+                $order = array_map(fn($e) => $e::class, $world->theah->queuedEvents);
+                $firstEngage = array_search(EventCardEngaged::class, $order, true);
+                $firstMove = array_search(EventCardMoving::class, $order, true);
+                Assert::true($firstEngage < $firstMove, 'engage before Home (Lodestone-safe)');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::count(1, $world->game->gamestate->transitions, 'nextState called');
             },
 
-            'act on already engaged target skips engage event' => function () {
+            // WHY: Successful UL leaves CharacterTargeted canceled — no Press the Advantage effects.
+            'canceled CharacterTargeted queues no engage, move, or resolve' => function () {
                 $world = new TestWorld();
                 [$risk, $performer, $foe] = $this->scenario($world);
-                $foe->Engaged = true;
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
                 /** @var Action_01058 $action */
                 $action = $risk->getActions()[0];
-                $action->actFromActionWithId(
-                    $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01058,
-                    'highDramaPhase01058',
-                    $foe->Id
-                );
 
-                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage');
-                Assert::count(1, $world->theah->queuedOfType(EventCardMoving::class), 'move');
-                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'UL cancel holds effects');
             },
 
             'act rejects Leader and equal-Combat targets' => function () {

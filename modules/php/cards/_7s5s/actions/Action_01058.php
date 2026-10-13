@@ -5,13 +5,13 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01058 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -65,6 +65,41 @@ class Action_01058 extends RiskAction implements IAbilityThatTargetsCharacters
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01058", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Do not queue engage/Home beside the cancel hook. Unyielding Loyalty
+        // stores only the event it intercepts and deleteEventBatchs the rest. Queuing
+        // engage + move with no batchId let UL cancel the engage (or offer on move)
+        // while the sibling still fired — Sibella went Home engaged after a paid cancel.
+        // Gate effects on EventCharacterTargeted (Amour Action_01104 / Come Hither
+        // Action_01162 / Giacinto Action_01205): UL holds the targeting event; Pass /
+        // NoD re-queue it and this handler emits the full package again.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->targetId);
+
+            if ($character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            // WHY: Engage and go Home are separate clauses — queue Engage first, then move
+            // with engage=false (Action_01104 / Lodestone pattern). Tying engage to
+            // CardMoved left cancel/Lodestone targets engaged when only the move stopped.
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $event->theah->queueEvent($engageEvent);
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
+            $event->theah->queueEvent($moveEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -141,18 +176,11 @@ class Action_01058 extends RiskAction implements IAbilityThatTargetsCharacters
 
             $owner = $this->getOwningCard($game->theah);
 
-            if (! $target->Engaged)
-            {
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $target->Id, $owner->Id, $this->Id);
-                $game->theah->queueEvent($engageEvent);
-            }
-
-            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, Game::LOCATION_PLAYER_HOME, $engage = true, $owner->Id, $this->Id);
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }
