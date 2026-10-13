@@ -1018,7 +1018,48 @@
                 this.chooseList.setSelectionMode(2);
             },
 
+            'highDramaChallengeActionResolveTechnique_04001': () => {
+                // WHY: Same private look UI as duel — effect deferred until Accept (01090).
+                if (! this.isCurrentPlayerActive())
+                {
+                    return;
+                }
+                if (! args.args._private || ! args.args._private.args || ! args.args._private.args.cards)
+                {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _("Top Cards of Your Faction Deck");
+
+                args.args._private.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(2);
+            },
+
             'duelChooseTechnique_04001_2': () => {
+                if (! this.isCurrentPlayerActive())
+                {
+                    return;
+                }
+                if (! args.args._private || ! args.args._private.args || ! args.args._private.args.cards)
+                {
+                    return;
+                }
+
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+                $('choose_container_name').innerHTML = _("Remaining Faction Deck Cards");
+
+                args.args._private.args.cards.forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+                this.chooseList.setSelectionMode(2);
+            },
+
+            'highDramaChallengeActionResolveTechnique_04001_2': () => {
                 if (! this.isCurrentPlayerActive())
                 {
                     return;

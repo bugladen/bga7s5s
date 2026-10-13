@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -26,16 +27,23 @@ class Technique_04001 extends Technique
             return false;
         }
 
-        if (! $theah->game->globals->get(Game::IN_DUEL, false))
+        $owner = $this->getOwningCharacter($theah);
+        if ($owner === null)
         {
             return false;
         }
 
-        $owner = $this->getOwningCharacter($theah);
-        $actor = $theah->getDuelRoundActor();
-        if ($owner === null || $actor === null || $actor->Id !== $owner->Id)
+        // WHY: Challenge activation has no duel round actor — only gate actor==owner
+        // when IN_DUEL. Outside duel (challenge TechniqueAvailable), performer is
+        // already the host via getAvailableCharacterTechniques (04017 / 04033).
+        // Card text reminder: techniques do not resolve if the challenge is refused.
+        if ($theah->game->globals->get(Game::IN_DUEL, false))
         {
-            return false;
+            $actor = $theah->getDuelRoundActor();
+            if ($actor === null || $actor->Id !== $owner->Id)
+            {
+                return false;
+            }
         }
 
         // WHY: Empty deck makes look/sink a no-op — hide rather than a useless prompt.
@@ -49,44 +57,74 @@ class Technique_04001 extends Technique
 
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
-            $owner = $this->getOwningCharacter($event->theah);
-            $game = $event->theah->game;
-
-            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($owner->ControllerId, 2);
-            $cards = [];
-            foreach ($deckCards as $deckCard)
-            {
-                $card = $game->getCardObjectFromDb($deckCard['id']);
-                $cards[] = $card->getPropertyArray($game);
-            }
-
             $this->setUsed($event->theah, true);
 
-            // WHY: Deck may empty between availability and resolve — skip empty look UI.
-            if (count($cards) == 0)
+            // WHY: Challenge Resolve runs before Accept/Refuse. Look/sink must not fire
+            // on Refuse — defer to EventGenerateChallengeThreat + CHALLENGE_ACCEPTED
+            // (01090 / 04017 shape). In-duel Resolve is the real effect timing.
+            if ($event->inDuel)
             {
-                return;
+                $this->startLookOrSkip($event->theah);
             }
+        }
 
-            $game->globals->set(Game::CHOSEN_CARD, json_encode($cards));
-
-            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} looks at the top cards of their Faction Deck.'), [
-                "card_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-            ]);
-
-            // WHY: createTechniqueTransitionEvent is HIGHEST_PRIORITY so the look prompt
-            // runs before other queued resolve-side effects (Technique_01010 shape).
-            $transition = EventFactory::createTechniqueTransitionEvent(
-                $owner->ControllerId,
-                $owner->Id,
-                "04001",
-                $this->Id
-            );
-            $event->theah->queueEvent($transition);
+        if ($event instanceof EventGenerateChallengeThreat && $event->techniqueId == $this->Id)
+        {
+            // WHY: GENERATE_THREAT also runs on Refuse (wound threat). Intervene sets
+            // CHALLENGE_ACCEPTED without EventChallengeAccepted. Gate so Refuse never
+            // peeks the deck; Accept/Intervene get the look from GENERATE_THREAT_EVENTS.
+            // WHY !preview: Accept args dry-run must not queue the look UI.
+            if (! $event->preview && $event->theah->game->globals->get(Game::CHALLENGE_ACCEPTED, false))
+            {
+                $this->startLookOrSkip($event->theah);
+            }
         }
 
         // EventTechniqueCanceled handler not needed
+    }
+
+    private function startLookOrSkip(Theah $theah): void
+    {
+        $owner = $this->getOwningCharacter($theah);
+        if ($owner === null)
+        {
+            return;
+        }
+
+        $game = $theah->game;
+
+        $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($owner->ControllerId, 2);
+        $cards = [];
+        foreach ($deckCards as $deckCard)
+        {
+            $card = $game->getCardObjectFromDb($deckCard['id']);
+            $cards[] = $card->getPropertyArray($game);
+        }
+
+        // WHY: Deck may empty between availability and resolve — skip empty look UI.
+        if (count($cards) == 0)
+        {
+            return;
+        }
+
+        $game->globals->set(Game::CHOSEN_CARD, json_encode($cards));
+
+        $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} looks at the top cards of their Faction Deck.'), [
+            "card_inject_code" => $owner->getInjectCode(),
+            "player_name" => $game->getPlayerNameById($owner->ControllerId),
+        ]);
+
+        // WHY: createTechniqueTransitionEvent is HIGHEST_PRIORITY so the look prompt
+        // runs before other queued resolve-side effects (Technique_01010 shape).
+        // Key "04001" is dispatcher-scoped: DUEL_CHOOSE_TECHNIQUE_EVENTS → duel
+        // pickers; GENERATE_THREAT_EVENTS → challenge pickers (post-Accept).
+        $transition = EventFactory::createTechniqueTransitionEvent(
+            $owner->ControllerId,
+            $owner->Id,
+            "04001",
+            $this->Id
+        );
+        $theah->queueEvent($transition);
     }
 
     public function getArgsFromTechnique(Game $game, int $state, string $stateName): array
@@ -94,7 +132,9 @@ class Technique_04001 extends Technique
         $args = parent::getArgsFromTechnique($game, $state, $stateName);
 
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_04001
-            || $state == States::DUEL_CHOOSE_TECHNIQUE_04001_2)
+            || $state == States::DUEL_CHOOSE_TECHNIQUE_04001_2
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04001
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04001_2)
         {
             $cards = json_decode($game->globals->get(Game::CHOSEN_CARD, '[]'));
             $args['cards'] = is_array($cards) ? $cards : [];
@@ -107,13 +147,15 @@ class Technique_04001 extends Technique
     {
         parent::actFromTechniqueWithIds($game, $state, $stateName, $ids);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04001)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04001
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04001)
         {
             $this->handleSinkChosen($game, $ids);
             return;
         }
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04001_2)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04001_2
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04001_2)
         {
             $this->handleReorderChosen($game, $ids);
         }
@@ -123,7 +165,8 @@ class Technique_04001 extends Technique
     {
         parent::actFromTechniquePass($game, $state);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04001)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_04001
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04001)
         {
             // WHY: "You may sink" includes zero — Pass = sink none, then replace/reorder (04cd15).
             $this->finishReplaceOrReorder($game);

@@ -734,7 +734,25 @@
                 }
             },
 
+            'highDramaChallengeActionResolveTechnique_04001': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
             'duelChooseTechnique_04001_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                }
+            },
+
+            'highDramaChallengeActionResolveTechnique_04001_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.addClass('choose_container', 'hidden');
                     dojo.addClass('chooseList', 'hidden');

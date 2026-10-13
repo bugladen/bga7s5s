@@ -1679,6 +1679,10 @@ $machinestates = [
                     "01090" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_01090,
                     "02026a" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_02026a,
                     "02026b" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_02026b,
+                    // WHY: Benci look/sink/reorder — only after Accept/Intervene
+                    // (queued from EventGenerateChallengeThreat when CHALLENGE_ACCEPTED).
+                    // Pre-Accept RESOLVE_TECHNIQUE_EVENTS would peek even on Refuse.
+                    "04001" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04001,
                     // WHY: Danilo intervene wound-or-draw choice (queued from EventCharacterIntervened).
                     "04002_3" => States::HIGH_DRAMA_PLAYER_TURN_04002_3,
                     // WHY: Jägerarmbrust adversary discard — only after Accept/Intervene
