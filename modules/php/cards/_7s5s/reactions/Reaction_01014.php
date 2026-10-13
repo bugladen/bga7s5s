@@ -632,6 +632,9 @@ class Reaction_01014 extends CardReaction
     {
         parent::performReaction($game, $state, $internalId, $reactionId);
 
+        // WHY: These phases are mutually exclusive. Separate `if`s used to fall through
+        // so clicking `moveHome` while a stale inHandThug/inPlayThug flag was still set
+        // treated "moveHome" as a card id (SQL: WHERE card_id = moveHome).
         if ($this->moveHome)
         {
             if ($reactionId != 'decline')
@@ -644,15 +647,17 @@ class Reaction_01014 extends CardReaction
                 $owner->IsUpdated = true;
             }
 
+            $this->inHandThug = false;
+            $this->inPlayThug = false;
+            $this->moveHome = false;
             $this->setUsed($game->theah, true);
         }
-
-        if ($this->inPlayThug)
+        else if ($this->inPlayThug)
         {
             if ($reactionId != 'decline')
             {
                 $owner = $this->getOwningCharacter($game->theah);
-                $characterId = str_replace("putIntoPlay-", "", $reactionId);
+                $characterId = (int) str_replace("putIntoPlay-", "", $reactionId);
                 $character = $game->theah->getCharacterById($characterId);
 
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to use ${character_inject_code} (same location) as the new target.'), [
@@ -708,6 +713,7 @@ class Reaction_01014 extends CardReaction
 
                 if ($thugWasTargeted)
                 {
+                    $this->inHandThug = false;
                     $this->moveHome = true;
                     $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $game->theah->queueEvent($transitionEvent);
@@ -729,13 +735,12 @@ class Reaction_01014 extends CardReaction
                 $this->setUsed($game->theah, true);
             }
         }
-
-        if ($this->inHandThug)
+        else if ($this->inHandThug)
         {
             if ($reactionId != 'decline')
             {
                 $owner = $this->getOwningCharacter($game->theah);
-                $characterId = str_replace("putIntoPlay-", "", $reactionId);
+                $characterId = (int) str_replace("putIntoPlay-", "", $reactionId);
                 $character = $game->theah->getCharacterById($characterId);
                 $musterEvent = EventFactory::createCharacterMusteredEvent($owner->ControllerId, $characterId, $owner->Location);
                 $game->theah->queueEvent($musterEvent);

@@ -241,12 +241,50 @@ class Reaction_01014_Test extends TestCase
                 Assert::same(Game::LOCATION_PLAYER_HOME, $moves[0]->toLocation, 'Home');
             },
 
+            // WHY: Stale inHandThug alongside moveHome used to fall through and treat
+            // reactionId "moveHome" as a card id (SQL Unknown column 'moveHome').
+            'moveHome ignores stale inHandThug flag' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $thug = $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 2);
+                $sibellaAction = $sibella->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterBeingWounded();
+                $event->characterId = $vittoria->Id;
+                $event->sourceId = $sibella->Id;
+                $event->abilityId = $sibellaAction->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                $world->theah->takeQueuedEvents();
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'putIntoPlay-' . $thug->Id);
+
+                $inHand = new \ReflectionProperty(Reaction_01014::class, 'inHandThug');
+                $inHand->setAccessible(true);
+                $inHand->setValue($reaction, true);
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'moveHome');
+                $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::same($vittoria->Id, $moves[0]->cardId, 'Vittoria moves despite stale inHandThug');
+                Assert::same(0, count($world->theah->queuedOfType(EventCharacterMustered::class)), 'no muster from moveHome id');
+            },
+
             // WHY regression: audit 2026-03-31 — moveHome only if Thug was actually targeted
             'source gates moveHome on thugWasTargeted' => function () {
                 $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/_7s5s/reactions/Reaction_01014.php');
                 Assert::contains('$thugWasTargeted', $src, 'thugWasTargeted flag');
                 Assert::contains('if ($thugWasTargeted)', $src, 'moveHome gated');
                 Assert::contains('deleteEventBatch', $src, 'cancelHeldEvent clears batch');
+                Assert::contains('else if ($this->inPlayThug)', $src, 'phases mutually exclusive');
+                Assert::contains('else if ($this->inHandThug)', $src, 'hand phase after play');
             },
 
             // WHY: Bruno cannot enter play from hand except during a duel — outside
