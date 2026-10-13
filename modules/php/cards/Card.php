@@ -25,6 +25,11 @@ abstract class Card
     public Array $Traits = [];
     public Array $ModifiedTraits = [];
 
+    // WHY: Two-sided cards (e.g. Rena) need both faces in hover. FlippedImage alone
+    // is not enough to opt in — empty string is normal for single-sided cards.
+    public string $FlippedImage = "";
+    public bool $IsDoubleSided = false;
+
     public string $Text = "";
     public Array $Conditions = [];
 
@@ -46,6 +51,9 @@ abstract class Card
         $this->CardNumber = 0;
         $this->initializeFaction("Neutral");
         $this->Engaged = false;
+
+        $this->FlippedImage = "";
+        $this->IsDoubleSided = false;
 
         $this->Location = "";
         $this->IsUpdated = false;
@@ -472,6 +480,8 @@ abstract class Card
             'controllerId' => $this->ControllerId,
             'name' => $this->Name,
             'image' => $this->Image,
+            'flippedImage' => $this->FlippedImage,
+            'isDoubleSided' => $this->IsDoubleSided,
             'faction' => $this->getFactionForPropertyDisplay(),
             'location' => $this->Location,
             'engaged' => $this->Engaged,

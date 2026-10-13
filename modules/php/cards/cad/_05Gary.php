@@ -27,6 +27,8 @@ class _05Gary extends Leader implements IHasReactions
         $this->Name = "Rena Klingenhalter";
         $this->Title = "Collected";
         $this->Image = "05Gary.v3.jpg";
+        $this->FlippedImage = "05GaryFlipped.v3.jpg";
+        $this->IsDoubleSided = true;
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 3;

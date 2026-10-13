@@ -764,7 +764,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         const abilityStyle = (available) => `background-color: gold; color: black;${available ? '' : ' text-decoration: line-through;'}`;
         const html = `
         <div style="position:relative;">
-            <img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />
+            ${this.buildCardTooltipImagesHtml(card)}
             <div class="_7sfs-card-info">
                 <div class="_7sfs-card-info-text" style="background-color:white; color:black">Traits: ${traits}</div>
                 ${conditionsHtml}
@@ -789,12 +789,30 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     /**
+     * One card face image, or both faces when isDoubleSided + flippedImage are set.
+     * WHY IsDoubleSided flag (not just flippedImage truthy): empty FlippedImage is
+     * normal for single-sided cards; opt-in keeps hover dual-face intentional.
+     * @param {object} card
+     * @param {{unwrap?: boolean}} [options] - unwrap:true returns sibling <img>s
+     *   (no wrapper). WHY: Image+text hover's outer flex row lays siblings
+     *   side-by-side; a nested wrapper was stacking faces when its width collapsed.
+     */
+    buildCardTooltipImagesHtml: function(card, options) {
+        if (!card?.image) return '';
+        const front = `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`;
+        if (!card.isDoubleSided || !card.flippedImage) return front;
+        const back = `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.flippedImage) + card.flippedImage}" />`;
+        if (options && options.unwrap) return front + back;
+        return `<div class="_7sfs-card-tooltip-images">${front}${back}</div>`;
+    },
+
+    /**
      * Returns an image-tooltip block (img + optional conditions overlay).
      * Used by every fallback that shows a card image instead of a text table.
      */
     buildImageTooltipHtml: function(card) {
         const conditions = card.conditions ?? [];
-        const img = `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`;
+        const img = this.buildCardTooltipImagesHtml(card);
         if (!conditions.length) return img;
         const conditionsHtml = `<div class="_7sfs-card-info-text" style="background-color:#a00; color:white">${_('Conditions:')} ${conditions.map(c => _(c)).join(', ')}</div>`;
         return `<div style="position:relative;">${img}<div class="_7sfs-card-info">${conditionsHtml}</div></div>`;
@@ -808,11 +826,14 @@ return declare('seventhseacityoffivesails.utilities', null, {
      * Reuses ._7sfs-card-tooltip-img; CSS keeps the text column at the same width
      * it had when stacked. Does NOT use buildImageTooltipHtml — conditions already
      * appear in the text table.
+     * Double-sided: both face <img>s are unwrapped siblings so the outer flex row
+     * shows [A][B][text] side-by-side.
      */
     prependCardImageToTextTooltip: function(card, textHtml) {
         if (!card?.image) return textHtml;
-        const img = `<img class="_7sfs-card-tooltip-img" src="${this.getCardImageUrlRoot(card.image) + card.image}" />`;
-        return `<div class="_7sfs-text-tooltip-with-image">${img}${textHtml}</div>`;
+        const img = this.buildCardTooltipImagesHtml(card, { unwrap: true });
+        const dualClass = (card.isDoubleSided && card.flippedImage) ? ' _7sfs-text-tooltip-double-sided' : '';
+        return `<div class="_7sfs-text-tooltip-with-image${dualClass}">${img}${textHtml}</div>`;
     },
 
     /**

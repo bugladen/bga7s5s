@@ -2360,6 +2360,13 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
     min-width: 0;
 }
 
+/* Double-sided Image+Hover: faces are unwrapped sibling <img>s in the outer
+   flex row ([A][B][text]). Keep nowrap so faces cannot stack when the tippy
+   is viewport-capped. */
+.tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image._7sfs-text-tooltip-double-sided {
+    flex-wrap: nowrap;
+}
+
 .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image ._7sfs-basic-tooltip {
     /* Prefer 400px; shrink to remaining viewport space when screen is too narrow. */
     width: 400px;
@@ -2369,12 +2376,35 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
     margin-top: 0;
 }
 
+/* Image-only dual-face: two card arts side by side. */
+.tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-images {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    align-items: flex-start;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-images ._7sfs-card-tooltip-img {
+    width: 400px;
+    max-width: 400px;
+    flex: 0 1 400px;
+    min-width: 0;
+}
+
 /* Lock image-only tooltip width to the card image width so condition text
    wraps within the card silhouette instead of stretching the tooltip.
-   WHY :not(...text-tooltip-with-image): combined tooltips are wider (image + text). */
-.tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-img):not(:has(._7sfs-text-tooltip-with-image)) {
+   WHY :not(...text-tooltip-with-image): combined tooltips are wider (image + text).
+   WHY dual-face override below: two 400px faces need ~808px, not a single-card lock. */
+.tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-img):not(:has(._7sfs-text-tooltip-with-image)):not(:has(._7sfs-card-tooltip-images)) {
     max-width: min(400px, calc(100vw - 16px)) !important;
     width: min(400px, calc(100vw - 16px));
+}
+
+.tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-images):not(:has(._7sfs-text-tooltip-with-image)) {
+    max-width: min(808px, calc(100vw - 16px)) !important;
+    width: min(808px, calc(100vw - 16px));
 }
 
 .tippy-box[data-theme~='7sfs']:has(._7sfs-text-tooltip-with-image) {
@@ -2407,9 +2437,29 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
 
 /* Mobile Tippy tooltip adjustments */
 @media (max-width: 768px), (max-height: 500px) and (orientation: landscape) {
-    .tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-img):not(:has(._7sfs-text-tooltip-with-image)) {
+    .tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-img):not(:has(._7sfs-text-tooltip-with-image)):not(:has(._7sfs-card-tooltip-images)) {
         max-width: min(248px, calc(100vw - 16px)) !important;
         width: min(248px, calc(100vw - 16px));
+    }
+
+    /* Dual-face image-only: side-by-side at 75% each (186px of 248).
+       Tippy is sized to the pair (~378px) — do not share Image+text's smaller faces. */
+    .tippy-box[data-theme~='7sfs']:has(._7sfs-card-tooltip-images):not(:has(._7sfs-text-tooltip-with-image)) {
+        max-width: min(378px, calc(100vw - 16px)) !important;
+        width: min(378px, calc(100vw - 16px));
+    }
+
+    .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-images {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .tippy-box[data-theme~='7sfs'] ._7sfs-card-tooltip-images ._7sfs-card-tooltip-img {
+        width: 186px;
+        max-width: 186px;
+        flex: 0 1 186px;
+        min-width: 0;
     }
 
     /* WHY stack on mobile: side-by-side is too wide for phone viewports.
@@ -2442,6 +2492,32 @@ html[data-theme="dark"] ._7sfs-log_tooltip {
         height: auto;
         flex: none;
         align-self: center;
+    }
+
+    /* Double-sided Image+text on mobile: keep faces on one row, text below.
+       WHY row+wrap: unwrapped [A][B][text] siblings; column alone would stack A on B.
+       Text takes flex-basis 100% so it wraps under the face pair. */
+    .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image._7sfs-text-tooltip-double-sided {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    /* WHY 120px + 50% cap: match image-only; max-width keeps the pair on one
+       row inside the narrower ~85vw Image+text tippy (flex-wrap would stack). */
+    .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image._7sfs-text-tooltip-double-sided ._7sfs-card-tooltip-img {
+        width: 120px;
+        max-width: calc(50% - 3px);
+        flex: 1 1 0;
+        min-width: 0;
+        align-self: stretch;
+    }
+
+    .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image._7sfs-text-tooltip-double-sided ._7sfs-basic-tooltip {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: 100%;
     }
 
     .tippy-box[data-theme~='7sfs'] ._7sfs-text-tooltip-with-image ._7sfs-basic-tooltip {
