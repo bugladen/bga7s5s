@@ -199,7 +199,8 @@ class Action_04019 extends RiskAction implements IAbilityThatTargetsCharacters
 
             // WHY NO_MORE_WORDS_CHALLENGE_TYPE: attachment Engage is already paid — not NORMAL
             // (Back on highDramaChallengeActionChooseTarget only shows for NORMAL).
-            // Still on stIssueChallenge auto-engage list so performer engages when issuing.
+            // Keep OFF stIssueChallenge auto-engage: print engages the attachment only,
+            // not the performer ("They issue a challenge" ≠ Engage cost).
             $game->globals->set(Game::CHALLENGE_TYPE, Game::NO_MORE_WORDS_CHALLENGE_TYPE);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
 

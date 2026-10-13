@@ -835,7 +835,11 @@ trait StatesTrait
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE || $challengeType == Game::NO_MORE_WORDS_CHALLENGE_TYPE)
+        // WHY NO_MORE_WORDS off this list: print engages the Melee Weapon/Eisenfaust
+        // attachment only (Action_04019). "They issue a challenge" is not an Engage
+        // cost on the performer. Type still exists so choose-target Back stays hidden
+        // after the attachment cost (NORMAL-only Back in OnUpdateActionButtons).
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);

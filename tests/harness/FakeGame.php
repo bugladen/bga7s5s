@@ -158,6 +158,8 @@ class Game
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
     final const RAVEN_CHALLENGE_TYPE = 27;
+    // Must match Game.php — Action_04019; off auto-engage (attachment Engage only).
+    final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;
     final const CELERITY_CHALLENGE_TYPE = 30;
     // Must match Game.php — Thug challenge never engages (off auto-engage list).
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;

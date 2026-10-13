@@ -217,13 +217,13 @@ Also require `!$attachment->Engaged` and `$attachment->AttachedToId == $performe
 
 5. **WHY custom type when there is no refuse/intervene side effect:** `OnUpdateActionButtons.js` shows Back on `highDramaChallengeActionChooseTarget` **only** when `args.challengeType == NORMAL_CHALLENGE_TYPE`. After attachment Engage, Back would let the player undo past a paid cost. Custom type hides Back in UI; also guard `FrameworkActionsTrait::actBack()` when state is `highDramaChallengeActionChooseTarget` and type matches (blocks API abuse).
 
-6. **WHY custom type still goes ON `stIssueChallenge` auto-engage list:** printed Engage cost is on the **attachment**, not the performer. Performer should still auto-engage when issuing (same as `NORMAL` challenge flow). Contrast Censure `_03057` / Cornered `_03021` where **performer** Engage is paid on `EventActionTriggered` → type stays **off** auto-engage to avoid double-engage.
+6. **WHY custom type stays OFF `stIssueChallenge` auto-engage list:** printed Engage cost is on the **attachment** only. "They issue a challenge" is **not** an Engage cost on the performer (Honorable / Courageous / Sanjay trichotomy). Putting the type **on** the list double-engages Rena + weapon. Contrast Censure `_03057` / Cornered `_03021` (performer Engage paid early → also off list) and Raven / Danilo (performer Engage printed → **on** list).
 
 7. **"They issue a challenge":** attachments do not issue challenges in the engine — **performer** stays `CHOSEN_PERFORMER` for the challenge pipeline.
 
 8. **`isValidTargetForAbility`:** opposing controlled character at performer's location (mirror `Action_01083` / `Action_03058`).
 
-9. **Wire:** `"NNNNN"` → `State_highDramaPhaseNNNNN`; `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. Add constant to `Game.php` + `seventhseacityoffivesails.js`. Add type to auto-engage `if` in `StatesTrait::stIssueChallenge`.
+9. **Wire:** `"NNNNN"` → `State_highDramaPhaseNNNNN`; `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. Add constant to `Game.php` + `seventhseacityoffivesails.js`. Do **not** add the type to auto-engage `if` in `StatesTrait::stIssueChallenge`.
 
 10. **JS (bas expansion):** `OnEnteringState` highlight performer; `OnUpdateActionButtons` attachment name buttons (`args.args.attachments.forEach`); `OnLeavingState` unhighlight performer. No Back on attachment step (single forward path).
 
@@ -411,7 +411,7 @@ Composition of Leader-trait performer + En Garde precondition + character-count 
 8. **No Unique locker** unless text says "Send this card to The Locker" — Unique trait alone is deck-construction. Contrast A.8 Ambitious.
 9. **Wire** `"NNNNN"` → choose-stat GameState and `"NNNNN_2"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`. bas JS choose-stat trio mirrors `highDramaPhase03067`.
 
-**Contrast:** A.8 = Leader + fewer-**locations** + choose-stat **pressure** + locker. A.6 = Duelist City + location headcount If + fixed Combat (`COURAGEOUS` **off** auto-engage — no Engage printed). B.6 = En Garde + attachment Engage + Combat (`NO_MORE_WORDS` **on** auto-engage). Arrogant `_03008` = same never-engage seat (`ARROGANT` **off** auto-engage). Honorable `_04057` also off auto-engage (En Garde precondition only, no Engage cost).
+**Contrast:** A.8 = Leader + fewer-**locations** + choose-stat **pressure** + locker. A.6 = Duelist City + location headcount If + fixed Combat (`COURAGEOUS` **off** auto-engage — no Engage printed). B.6 = En Garde + **attachment** Engage + Combat (`NO_MORE_WORDS` **off** auto-engage — performer never engages). Arrogant `_03008` = same never-engage seat (`ARROGANT` **off** auto-engage). Honorable `_04057` also off auto-engage (En Garde precondition only, no Engage cost).
 
 References: `_04057` / `Action_04057` / `State_highDramaPhase04057`; multi-Leader performer `Action_01072` / `Action_02014`; choose-stat UI `_03067`; off-auto-engage custom type `_04009` / `_04047`; character-count If shape A.8 / `Action_03067`.
 
