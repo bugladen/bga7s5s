@@ -16,7 +16,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01056;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01056_Test extends TestCase
@@ -135,11 +134,13 @@ class Action_01056_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },
 
-            // WHY regression: ChallengeIssued must fire BEFORE the defender may move Home so
-            // "When X issues a challenge" reactions still trigger (card text: challenge is issued, then cancelled).
-            'selecting target issues Combat challenge before the defender choice transition' => function () {
+            // WHY regression: target pick must enter TECHNIQUE_AVAILABLE (not skip it) so
+            // Langschwert / other challenge Techniques can activate; ChallengeIssued fires
+            // later via stIssueChallenge, then CHECK_CANCELLED offers move-home.
+            'selecting target sets Combat Move Along globals and queues technique-available' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_TECHNIQUE, 'stale');
 
                 $this->selectTarget($world, $action, $performer, $foe);
 
@@ -148,23 +149,18 @@ class Action_01056_Test extends TestCase
                 Assert::same(false, $world->game->globals->get(Game::CHALLENGE_CANCELLED), 'not cancelled yet');
                 Assert::same($performer->Location, $world->game->globals->get(Game::CHOSEN_LOCATION), 'location');
                 Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
+                Assert::same(null, $world->game->globals->get(Game::CHOSEN_TECHNIQUE, null), 'cleared stale technique');
 
-                $queued = $world->theah->queuedEvents;
-                Assert::count(2, $queued, 'challenge + transition');
-                Assert::instanceOf(EventChallengeIssued::class, $queued[0], 'challenge first');
-                Assert::instanceOf(EventTransition::class, $queued[1], 'transition second');
-                Assert::same('01056_2', $queued[1]->transition, 'defender choice');
-                // Defender chooses, so the transition belongs to the defender's player.
-                Assert::same($foe->ControllerId, $queued[1]->playerId, 'defender player');
-
-                Assert::same($performer->Id, $queued[0]->challengerId, 'challenger');
-                Assert::same($foe->Id, $queued[0]->defenderId, 'defender');
-                Assert::same($risk->Id, $queued[0]->sourceId, 'source');
-                Assert::same($action->Id, $queued[0]->abilityId, 'ability');
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'technique transition only');
+                Assert::same('01056_3', $transitions[0]->transition, 'technique available');
+                Assert::same($performer->ControllerId, $transitions[0]->playerId, 'challenger player');
+                Assert::same($risk->Id, $transitions[0]->sourceId, 'source');
+                Assert::same($action->Id, $transitions[0]->internalId, 'ability');
                 Assert::same([null], $world->game->gamestate->transitions, 'next state');
             },
 
-            'defender id=1 moves Home engaged and cancels the challenge' => function () {
+            'defender id=1 moves Home engaged and cancels via CHECK_CANCELLED' => function () {
                 $world = new TestWorld();
                 [$risk, $action, , $foe] = $this->scene($world);
 
@@ -181,10 +177,10 @@ class Action_01056_Test extends TestCase
 
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'transition');
-                Assert::same('01056_3', $transitions[0]->transition, 'check cancelled');
+                Assert::same('01056_4', $transitions[0]->transition, 'check cancelled');
             },
 
-            'defender id=2 continues the challenge without moving' => function () {
+            'defender id=2 continues straight to Accept without moving' => function () {
                 $world = new TestWorld();
                 [, $action, , $foe] = $this->scene($world);
                 $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
@@ -196,7 +192,7 @@ class Action_01056_Test extends TestCase
 
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'transition');
-                Assert::same('01056_3', $transitions[0]->transition, 'check cancelled');
+                Assert::same('01056_5', $transitions[0]->transition, 'accept challenge');
                 Assert::same([null], $world->game->gamestate->transitions, 'next state');
             },
         ];

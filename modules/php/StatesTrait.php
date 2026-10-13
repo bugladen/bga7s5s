@@ -903,6 +903,7 @@ trait StatesTrait
         // before this gate) is not auto-cancel — Stiletto ruling keeps Accept UI.
         $cancelled = ($target !== null && $target->ControllerId == 0)
             || $this->globals->get(Game::CHALLENGE_CANCELLED, false);
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         // WHY: Cancel before Accept — otherwise leftover CHALLENGE_ACCEPTED or a SETUP
         // intervene (Mourad / Heroic Intervention) ignores 01088 cancel after pay.
         if ($cancelled)
@@ -948,6 +949,29 @@ trait StatesTrait
         else if ($accepted)
         {
             $this->gamestate->nextState("accepted");
+        }
+        else if ($challengeType == Game::MOVE_ALONG_CHALLENGE_TYPE)
+        {
+            // WHY: Move Along — challenge is already issued (technique path ran). Offer
+            // move-Home-engaged before Accept. Continue branch goes to ACCEPT directly
+            // (01056_5) so this gate does not loop.
+            //
+            // WHY restore TRANSITION_*: 01056_2 buttons use actFromCardWithId, which reads
+            // TRANSITION_SOURCE_ID / TRANSITION_INTERNAL_ID. Technique activate overwrites
+            // INTERNAL_ID with the technique Id; ChallengeIssued reaction windows can too.
+            // Without restore, getActionById misses Action_01056 and the click no-ops —
+            // stuck on highDramaPhase01056_2. CHOSEN_ACTION still holds Move Along from pay.
+            $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+            $action = $this->theah->getInPlayActionById($actionId);
+            if ($action !== null)
+            {
+                $owner = $action->getOwningCard($this->theah);
+                $this->globals->set(Game::TRANSITION_SOURCE_ID, $owner->Id);
+                $this->globals->set(Game::TRANSITION_INTERNAL_ID, $action->Id);
+            }
+
+            $this->gamestate->changeActivePlayer($target->ControllerId);
+            $this->gamestate->nextState("moveAlongChoice");
         }
         else
         {

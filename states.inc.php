@@ -1074,7 +1074,12 @@ $machinestates = [
                 "01055" => States::HIGH_DRAMA_PLAYER_TURN_01055,
                 "01056" => States::HIGH_DRAMA_PLAYER_TURN_01056,
                 "01056_2" => States::HIGH_DRAMA_PLAYER_TURN_01056_2,
-                "01056_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
+                // WHY: After Move Along target pick — standard technique → IssueChallenge.
+                "01056_3" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                // WHY: Defender moved Home — cancel path through CHECK_CANCELLED.
+                "01056_4" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,
+                // WHY: Defender continued — Accept UI (skip CHECK_CANCELLED so move-home is not re-offered).
+                "01056_5" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
                 "01058" => States::HIGH_DRAMA_PLAYER_TURN_01058,
                 "01059" => States::HIGH_DRAMA_PLAYER_TURN_01059,
                 "01060" => States::HIGH_DRAMA_PLAYER_TURN_01060,
@@ -1642,6 +1647,8 @@ $machinestates = [
             "transitions" => [
                 "accepted" => States::HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT,
                 "notCancelled" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACCEPT_CHALLENGE,
+                // WHY: Move Along — after ChallengeIssued + technique, offer move Home before Accept.
+                "moveAlongChoice" => States::HIGH_DRAMA_PLAYER_TURN_01056_2,
                 "cancelled" => States::NEXT_PLAYER,
             ]
         ],

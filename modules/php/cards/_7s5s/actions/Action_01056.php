@@ -11,8 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -151,28 +149,20 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacte
 
             $owner = $this->getOwningCard($game->theah);
 
-            // Fire the challenge-issued event BEFORE the defender's move-home choice so
-            // reactions to "When X issues a challenge" trigger even when the defender opts
-            // to move home (per card text: the challenge is issued, then optionally cancelled).
+            // WHY: Standard technique → stIssueChallenge path fires ChallengeIssued (with
+            // activatedTechniqueId) before CHECK_CANCELLED inserts the move-home choice.
+            // Do not fire ChallengeIssued here — that would double-issue and skip techniques
+            // (Langschwert +1 Thrust never offered). Card text: issue first, then they may
+            // move Home and cancel.
             $game->globals->set(Game::CHALLENGE_TYPE, Game::MOVE_ALONG_CHALLENGE_TYPE);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
             $game->globals->set(Game::CHALLENGE_CANCELLED, false);
             $game->globals->set(Game::CHOSEN_LOCATION, $performer->Location);
+            $game->globals->delete(Game::CHOSEN_TECHNIQUE);
 
-            $challengeEvent = $game->theah->createEvent(Events::ChallengeIssued);
-            if ($challengeEvent instanceof EventChallengeIssued)
-            {
-                $challengeEvent->playerId = $performer->ControllerId;
-                $challengeEvent->challengerId = $performer->Id;
-                $challengeEvent->defenderId = $target->Id;
-                $challengeEvent->activatedTechniqueId = '';
-                $challengeEvent->sourceId = $owner->Id;
-                $challengeEvent->abilityId = $this->Id;
-            }
-            $game->theah->eventCheck($challengeEvent);
-            $game->theah->queueEvent($challengeEvent);
-
-            $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_2', $this->Id);
+            // Challenger activates a Technique (or passes), then stIssueChallenge, then
+            // CHECK_CANCELLED routes MOVE_ALONG to the defender's move-home choice.
+            $transition = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, '01056_3', $this->Id);
             $game->theah->queueEvent($transition);
 
             $game->gamestate->nextState();
@@ -184,9 +174,7 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $target = $game->theah->getCharacterById($targetId);
             $owner = $this->getOwningCard($game->theah);
 
-            // Move Home — cancel the challenge via the standard cancellation path.
-            // CHECK_CANCELLED removes duel conditions, resets pass count, queues
-            // ActionResolvedEvent, and notifies the cancellation.
+            // Move Home — cancel via CHECK_CANCELLED (cleanup + ActionResolvedEvent).
             if ($id == 1)
             {
                 $game->notify->all("message", clienttranslate('${player_name} chose to move ${target_inject_code} home.'), [
@@ -198,21 +186,22 @@ class Action_01056 extends RiskCityAction implements IAbilityThatTargetsCharacte
                 $game->theah->queueEvent($moveEvent);
 
                 $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+
+                $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_4', $this->Id);
+                $game->theah->queueEvent($transition);
             }
 
-            // Continue with Challenge — defender will Accept/Reject/Intervene next.
+            // Continue — Accept/Reject/Intervene. Skip CHECK_CANCELLED so MOVE_ALONG does
+            // not re-offer move-home (that gate only runs once after technique/issue).
             if ($id == 2)
             {
                 $game->notify->all("message", clienttranslate('${player_name} chose to continue with Challenge.'), [
                     'player_name' => $game->getPlayerNameById($target->ControllerId),
                 ]);
-            }
 
-            // Both branches route through CHECK_CANCELLED, which dispatches based on
-            // CHALLENGE_CANCELLED: "cancelled" → NEXT_PLAYER (cleanup) or "notCancelled"
-            // → ACCEPT_CHALLENGE (defender's response).
-            $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_3', $this->Id);
-            $game->theah->queueEvent($transition);
+                $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, '01056_5', $this->Id);
+                $game->theah->queueEvent($transition);
+            }
 
             $game->gamestate->nextState();
         }

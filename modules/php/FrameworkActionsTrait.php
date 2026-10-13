@@ -97,6 +97,14 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("You cannot go back after moving to issue this Challenge."));
         }
 
+        // WHY: Move Along entered TECHNIQUE_AVAILABLE from its own target picker, not
+        // HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET — Back would land on the wrong UI.
+        if ($stateName === "highDramaChallengeActionActivateTechnique"
+            && $this->globals->get(Game::CHALLENGE_TYPE) == Game::MOVE_ALONG_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("You cannot go back after choosing the challenge target."));
+        }
+
         $this->gamestate->nextState("back");
     }
 
