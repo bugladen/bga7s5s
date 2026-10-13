@@ -839,6 +839,14 @@ trait UtilitiesTrait
         if (count($ties) > 1)
             $difference = 0;
 
+        // WHY: Overcoat Covert — Influence pressures at her uncontrolled location cannot succeed.
+        // Flag is only set when STAT_INFLUENCE is among pressureTypes (her Resolve Action is fine).
+        // Still compute totals/difference so the log shows what would have happened.
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::OVERCOAT_PRESSURE_TYPE))
+        {
+            return [false, $totals, $difference, $pressureStats];
+        }
+
         if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::TABARD_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::CONTEMPT_AND_HATRED_PRESSURE_TYPE)

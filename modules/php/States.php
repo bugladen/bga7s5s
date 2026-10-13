@@ -473,6 +473,8 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_04CD29 = 4040029;
         // CAD — Valeri Mikhailov (_05DabneyUS01). Exp 5 + card 1.
         const HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01 = 405001;
+        // CAD — Varvara Kurakina (_05Overcoat). Exp 5 + card 9.
+        const HIGH_DRAMA_PLAYER_TURN_05OVERCOAT = 405009;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;

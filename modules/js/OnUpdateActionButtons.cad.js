@@ -21,6 +21,18 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase05Overcoat': () => {
+                // WHY: Mandatory claim-or-move-renown (Soline "or" — no Pass).
+                // Args nest: OnUpdateActionButtons uses args.args.* (one less than OnEnteringState).
+                if (args.args.canClaim) {
+                    this.addActionButton(`actClaim`, 'Claim Location', () => this.bgaPerformAction('actFromCardWithId', {id: 0}));
+                }
+                if (args.args.locationIds && args.args.locationIds.length > 0) {
+                    this.addActionButton(`actCityLocationsSelected`, 'Confirm Move From Location', () => this.onCityLocationsSelected());
+                    dojo.addClass('actCityLocationsSelected', 'disabled');
+                }
+            },
+
             'duelChooseTechnique_05DabneyUS01': () => {
                 // WHY: EventHub zeroes Technique Parry/Riposte when combat card(s) have
                 // dashed that axis — hide the option so it is not offered as a no-op.

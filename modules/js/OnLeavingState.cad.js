@@ -24,6 +24,19 @@
                 }
             },
 
+            'highDramaPhase05Overcoat': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    if (this.clientStateArgs.locationIds && this.clientStateArgs.locationIds.length > 0) {
+                        this.resetCityLocations();
+                        this.selectedCityLocations = [];
+                        this.numberOfCityLocationsSelectable = 0;
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'duelChooseTechnique_05Cooper': () => {
                 if (this.isCurrentPlayerActive())
                 {

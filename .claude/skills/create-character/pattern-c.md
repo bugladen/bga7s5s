@@ -478,6 +478,7 @@ Reference: `Action_04032`; Pass/prevent sibling `Action_02036a`; move-both sibli
 | `Action_03038a` | Draw-then-discard City Action — draw queued on `EventActionTriggered`, then `factionHand` discard picker. |
 | `Action_03038b` | Move equipped character (`engage=false`) → attachment button destroy → draw `WealthCost + 1`. Dual-action `a`/`b` sibling of `Action_03038a`. |
 | `Action_03040` | Engage + Finesse pressure (win ties via dedicated `SOLINE_PRESSURE_TYPE`) → mandatory claim-or-engage choice state. |
+| `Action_05Overcoat` | **Covert Action:** Engage + Resolve pressure (NORMAL — no win-ties) → mandatory claim-or-move-adjacent-Renown. Uncontrolled gate; hybrid Claim button + location picker. |
 | `Action_04032` | En Garde City Action: target → Reveal Hand/Pass → Owner chooseList ack → hand-owner discard **or** adjacent move-both. ACTIVE_PLAYER chooseList (not multi-ack). |
 | `Action_04042` | En Garde Action: control Artifact at location → move opposing **engaged** to City location you do not control. Two-step Makepeace + location picker; not city Kaj `_01180`. |
 
@@ -545,6 +546,35 @@ Choice-state UX:
 - Args nesting: `OnEnteringState` reads `args.args.args.canClaim` / `ids`; `OnUpdateActionButtons` reads `args.args.canClaim` / `ids` (one less nest — established BGA/7s5s quirk).
 
 Auto-claim-only pressures (`Action_01075`) skip the picker and queue `createLocationClaimedEvent` directly on success when `canLocationBeClaimedBy`.
+
+### Covert Action: Engage + Pressure with [Stat] → claim or move adjacent Renown
+
+Printed: **`<b>Covert Action:</b> Engage <Owner> • Pressure this location with Resolve. If successful, either move an adjacent Renown to this location or claim it.`** (`Action_05Overcoat`).
+
+**Covert keyword (uncontrolled):** Gate availability (and keep the Action honest at runtime) on City location **uncontrolled** — `getCityLocation` + `!$cityLocation->isControlled()`. Reminder text may be omitted on the card; "Covert Action" is still a Covert ability (same parenthetical as Valeri). Pair with `cardInCity` + `!$owner->Engaged` (Engage printed) + `canPressure(STAT_*)`.
+
+**Pressure (no win-ties unless printed):** Same engage → `PRESSURING_PLAYER` / `CHOSEN_PERFORMER` / `PRESSURE_TYPE = NORMAL` / `PRESSURE_STAT` / `createPressureOccuringEvent` / transition `"pressureLocation"` recipe as Soline — **but** do **not** mint a win-ties `*_PRESSURE_TYPE` unless the text says "succeed even if tied". Resolve/Combat/Finesse still need `PRESSURE_STAT` (`stHighDramaPressureLocation` defaults to Influence).
+
+**Payoff availability:** at least one of `canLocationBeClaimedBy` **or** an adjacent city location with `Renown > 0` (`getAdjacentCityLocations(..., $includeHome = false)`). Mirror Soline's "gate on a live success payoff" so the Action never opens with nowhere to go.
+
+**Success choice (mandatory either/or — no Pass):**
+
+| Option | UX | Server |
+|---|---|---|
+| Claim | Claim button → `actFromCardWithId({id: 0})` | `canLocationBeClaimedBy` then `createLocationClaimedEvent` |
+| Move adjacent Renown | City location highlight (`locationIds`) → Confirm Location → `onCityLocationsSelected` → `actFromCardWithLocations` | Validate adjacency + Renown > 0; Odette/Aldo batch: `createRenownMovingBetweenLocationsEvent` + Removed + Added (`$isMove = true`) |
+
+State class needs **both** `#[PossibleAction] actFromCardWithId` and `actFromCardWithLocations`. Action implements `actFromActionWithId` (claim) and `actFromActionWithIds` (location names arrive as `$ids`). Args: `canClaim`, `locationIds`, `performerId`. Nesting quirk same as Soline (`OnEnteringState` = `args.args.args.*`; `OnUpdateActionButtons` = `args.args.*`).
+
+JS: show Claim only when `canClaim`; show Confirm Location only when `locationIds.length > 0`; LeavingState `resetCityLocations()` when locations were offered.
+
+WHY hybrid Claim+locations vs Soline Claim+character: printed payoff is Renown move, not engage. WHY not Reaction-style buttons per adjacent location: High Drama Action states already have the Aldo `01007` location-picker path.
+
+Always `createActionResolvedEvent` on pressure failure and after either choice. Transition key `"NNNNN"` on `HIGH_DRAMA_PLAYER_TURN_EVENTS`.
+
+If the card also has Covert "[Influence] pressures cannot succeed" (Pattern A), gate that flag on `STAT_INFLUENCE ∈ pressureTypes` so **this** Resolve (or other non-Influence) Action is not auto-failed by the passive.
+
+Reference: `Action_05Overcoat`; Soline claim-or-engage sibling `Action_03040`; Renown move recipe `Action_01007` / `Reaction_01062`; Covert uncontrolled sibling `_05DabneyUS01`.
 
 ### Move-a-wound recipe
 

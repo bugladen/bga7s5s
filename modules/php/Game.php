@@ -219,6 +219,8 @@ class Game extends \Bga\GameFramework\Table
     final const VANTAGE_POINT_PRESSURE_TYPE = 32768;
     final const MEETING_OF_THE_MINDS_PRESSURE_TYPE = 65536;
     final const VALERI_PRESSURE_TYPE = 131072;
+    // WHY: Overcoat Covert — Influence pressures at Varvara's uncontrolled location fail.
+    final const OVERCOAT_PRESSURE_TYPE = 262144;
     final const SOLOMONIA_ID = "solomoniaId";
     final const LOYAL_PLAYER_ID = "loyalPlayerId";
     final const VANTAGE_POINT_PLAYER_ID = "vantagePointPlayerId";

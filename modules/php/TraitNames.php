@@ -126,6 +126,7 @@ class TraitNames
             "Leshiye",
             "Logistics",
             "Maghreb",
+            "Magistrate",
             "Mantel",
             "Market",
             "Mask",

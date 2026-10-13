@@ -1201,6 +1201,22 @@ WHY a dedicated pressure-type bit: Covert applies to **any** pressure type at th
 
 Reference: `_05DabneyUS01` Valeri (CAD); Loyal / Solomonia apply shape in `pressureLocation`; Influence totals sibling logic for Solomonia/Constanzo in `getLocationInfluenceTotalsData`.
 
+### Covert — [Influence] pressures at this location cannot succeed
+
+Printed: **`<i>Covert</i> - [Influence] pressures at this location cannot succeed.`** (Reminder text about uncontrolled locations may be omitted — still gate on uncontrolled; Covert keyword.)
+
+**Different from Valeri's +N aura.** Same `EventPressureOccuring` → dedicated `*_PRESSURE_TYPE` flag shape, but `pressureLocation` **forces failure** instead of adding to a total.
+
+1. On `EventPressureOccuring` when Owner is controlled, not discard/locker, `cardInCity`, `$event->location == Owner.Location`, City location **uncontrolled** (`!$cityLocation->isControlled()`), **and** `in_array(Game::STAT_INFLUENCE, $event->pressureTypes, true)`: notify + `setGlobalFlag(PRESSURE_TYPE, *_PRESSURE_TYPE)` (e.g. `OVERCOAT_PRESSURE_TYPE`).
+2. In `UtilitiesTrait::pressureLocation`: **after** computing `$totals` / `$difference` / ties, if the flag is set return `[false, $totals, $difference, $pressureStats]`. WHY after compute: the log still shows what the totals would have been.
+3. **Do not** reuse Valeri's `VALERI_PRESSURE_TYPE` (aura +2) or any win-ties bit — fail-Influence is a distinct mid-pressure outcome.
+4. **Do not** touch `getLocationInfluenceTotalsData` / claim-uncontrol chip refresh — "cannot succeed" is not a standing Influence total; it only bites when an Influence pressure runs.
+5. **No `onAbilitiesBlanked` stamps** — flag is set only during `handleEvent` on the pressure; Fate's Silence skipping `handleEvent` is enough (no lasting Modified*/conditions).
+
+WHY gate on `$event->pressureTypes` containing `STAT_INFLUENCE`: Owner may also have a **Covert Action** that pressures with Resolve/Combat/Finesse. Those must succeed; only Influence pressures are blocked. Multi-stat pressures that include Influence fail when the flag is set (printed "[Influence] pressures").
+
+Reference: `_05Overcoat` Varvara (CAD); Valeri sibling `_05DabneyUS01` (aura, not fail); Covert Action follow-up `Action_05Overcoat` (Pattern C).
+
 ### Phase / lifecycle events worth knowing
 
 | Event | When it fires | Typical use |
@@ -1217,7 +1233,7 @@ Reference: `_05DabneyUS01` Valeri (CAD); Loyal / Solomonia apply shape in `press
 | `EventChallengeIssued` | A challenge was just issued (`$event->challengerId`, `$event->defenderId`); queued by `StatesTrait::stIssueChallenge` BEFORE the intervention dispatcher state advances | "After a challenge is issued at this location, **before choosing to intervene** …" — `_03027` Odette (pull adjacent Duelist before intervention). Use this (NOT `EventChallengeAccepted`) when the text says "before intervene" — accept fires AFTER the intervention window resolves. |
 | `EventChallengeAccepted` | A challenge was accepted (post-intervention) | "After a challenge is accepted at this location …" — existing Odette `_01062` move-adjacent-renown reaction. |
 | `EventCharacterIntervened` | An intervention character was selected during a challenge | "After X intervenes …" — `Reaction_01062`. |
-| `EventPressureOccuring` | A pressure is happening at a location | "When pressuring …", `_01006` Don Constanzo; **Covert** location aura `_05DabneyUS01` |
+| `EventPressureOccuring` | A pressure is happening at a location (`$event->pressureTypes` = stat list from `getPressureStats`) | "When pressuring …", `_01006` Don Constanzo; **Covert** +N aura `_05DabneyUS01`; **Covert** Influence-cannot-succeed `_05Overcoat` |
 | `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089`. **`EventDuelEnd` fires BEFORE the dueling line is cleared** in `stDuelEnd` (the discard events are queued AFTER it), so a recount-based dueling-line effect must reset via direct inverse-event, not via re-reading the line. |
 | `EventCharacterCombatModified` / `EventCharacterInfluenceModified` | A character's modified stat changed (`$event->CharacterId`, `$event->OldCombat`/`NewCombat` or `OldInfluence`/`NewInfluence`) | Re-sync a "set [StatA] equal to [StatB]" link when the source stat changes, or re-apply the link when an external effect mutates the target stat during the override. EventHub applies the new stat **before** card `handleEvent` runs (`runEventHubAfterCards = false`). Reference: `_03028` Térence. |
 | `EventAttachmentEquipped` | An attachment was equipped (`$event->characterId`, `$event->attachmentId`; `$event->asAction` distinguishes action-equip vs passive) | "After a character equips an attachment at [location] …" City Reactions. Look up equipping character via `getCharacterById($event->characterId)` and compare `.Location` to the named city constant. Skip `$attachment->FakeAttachment`. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01039` (owner self-equip only). |

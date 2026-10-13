@@ -29,6 +29,7 @@ Duel-specific (used in Pattern E and the in-duel branch of any ability):
 
 Pressure / Influence-label (Pattern A Covert and standing chips):
 - Mint a dedicated `Game::*_PRESSURE_TYPE` power-of-two + apply in `UtilitiesTrait::pressureLocation` outside the per-stat loop (Loyal / Solomonia shape). Do **not** reuse `PRESSURE_BONUS` for "any pressure type" auras.
-- `$game->getLocationInfluenceTotalsData()` / `notifyLocationInfluenceTotals()` — standing Influence chips. Covert-style bonuses that gate on uncontrolled must also recompute here.
+- `$game->getLocationInfluenceTotalsData()` / `notifyLocationInfluenceTotals()` — standing Influence chips. Covert-style **bonuses** that gate on uncontrolled must also recompute here.
 - `$game->eventAffectsLocationInfluenceTotals($event)` — must include `EventLocationClaimed` and `EventLocationBecomesUncontrolled` when uncontrolled-gated bonuses exist, or chips go stale after claim.
+- Covert **"[Influence] cannot succeed"** (Overcoat): different bit from Valeri +N; set flag only when `STAT_INFLUENCE ∈ EventPressureOccuring::$pressureTypes`; force `[false, …]` in `pressureLocation` after totals. **No** chip recompute — fail is mid-pressure only.
 

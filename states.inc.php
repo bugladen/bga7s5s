@@ -1288,6 +1288,7 @@ $machinestates = [
                 "04cd15_3" => States::HIGH_DRAMA_PLAYER_TURN_04CD15_3,
                 "05DabneyUS01" => States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01,
                 "05DabneyUS01_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "05Overcoat" => States::HIGH_DRAMA_PLAYER_TURN_05OVERCOAT,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,
