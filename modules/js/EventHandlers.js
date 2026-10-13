@@ -949,8 +949,16 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         //Enable the confirm button if we have at least once card selected
         if (this.selectedCards.length > 0) {
             dojo.removeClass('actChooseCardSelected', 'disabled');
+            // WHY: Selecting an intervener implies Intervene, not Accept — disable Accept
+            // so a nearby click cannot accept with the original defender by mistake.
+            if (this.gamedatas.gamestate.name === 'highDramaChallengeActionAcceptChallenge') {
+                dojo.addClass('btnAccept', 'disabled');
+            }
         } else {
             dojo.addClass('actChooseCardSelected', 'disabled');
+            if (this.gamedatas.gamestate.name === 'highDramaChallengeActionAcceptChallenge') {
+                dojo.removeClass('btnAccept', 'disabled');
+            }
         }
     },
 
