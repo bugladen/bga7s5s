@@ -182,6 +182,23 @@ Card text:
 
 Full implementation: `modules/php/cards/bas/_04004.php`, `actions/Action_04004.php`, `reactions/Reaction_04004.php`, `States/bas/State_planningPhaseResolveSchemes04004{,_2}.php`, `State_highDramaPhase04004.php`.
 
+## Walkthrough: implementing `_05William` (Syrneth Secrets)
+
+Card text (CAD prototype — plain strings, no `clienttranslate`):
+
+> Add a Renown to [The City Docks] and [The Grand Bazaar].
+> Then, move your Academic to a City location. If an available Artifact is there, you may equip it to your performer, paying all costs.
+> **City Action:** Engage an **Artifact** equipped to your performer and target an opposing non-**Leader** • Move them **Home**.
+
+1. **Constructor.** Ussura, Init 27 / Panache 0 (match art). Traits Discovery + Scholarship. `IHasActions` + `Action_05William`. Class `_05William` / keys `"05William"` / state ids `2605010*` + `405010*`. JS in `*.cad.js`.
+2. **Resolve Renown + Academic move.** Mirror `_04004` with Academic trait. Contingent Then — skip pick when no eligible Academic. Planning states 1–2: `academicChosen` / `locationChosen` + `back`.
+3. **Optional equip.** On location confirm: queue move (`engage=false`), set `CHOSEN_LOCATION` + `CHOSEN_PERFORMER`, offer equip only if affordable Artifacts at **destination**. Transition `"05William_3"` at **`LOW_PRIORITY`** (not MEDIUM — CardMoving→CardMoved trap). State 3: Artifact highlight + Pass. State 4: equip-from-play pay UI (no chooseList).
+4. **Crystal Eye side-effect.** Equipping fires Forced `"01200"` on resolve EVENTS — add `PLANNING_PHASE_RESOLVE_SCHEMES_01200{,_2}` + map entry + `_01200` args/acts + JS (same as Kaj Approach fix).
+5. **City Action (Pattern O).** Performers with unengaged Artifact + opposing non-Leader. HD state 1: Artifact **buttons**. HD state 2: target pick. Engage attachment → Home move → `ActionResolved`. Back → DISPATCH on state 1.
+6. **Bugs hit in playtest:** (a) MEDIUM post-move Transition → empty Artifact ids; (b) chooseList on city Artifact pay UX; (c) missing resolve-map `"01200"`; (d) board-selectable attached Artifacts hard to click → buttons.
+
+Full implementation: `modules/php/cards/cad/_05William.php`, `actions/Action_05William.php`, `States/cad/State_planningPhaseResolveSchemes05William{,_2,_3,_4}.php`, `State_highDramaPhase05William{,_2}.php`.
+
 ## Walkthrough: implementing `_04005` (Denounced, Disgraced)
 
 Card text:

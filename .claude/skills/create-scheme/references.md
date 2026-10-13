@@ -132,4 +132,13 @@
 | `modules/php/States/bas/State_planningPhaseResolveSchemes04052_2.php` | Resolve state 2: different-location Renown. |
 | `modules/php/cards/_7s5s/_01126.php` (Leshiye) | Claim-lock sibling (`setLocationCanBeClaimed` + `eventCheck`); Leshiye moves onto the city — Motion to Delay does not. |
 | `modules/php/cards/_7s5s/_01072.php` (Réputation Méritée) | Pass-when-no-eligible-location sibling (0 Renown filter). |
+| `modules/php/cards/cad/_05William.php` (Syrneth Secrets) | **Fixed dual Renown (Docks + Bazaar) + Then move Academic + optional equip available Artifact paying costs + Pattern O City Action.** CAD prototype (plain strings). Post-move equip Transition = **LOW_PRIORITY** + `CHOSEN_LOCATION`. Crystal Eye Forced needs resolve-map `"01200"`. |
+| `modules/php/cards/cad/actions/Action_05William.php` | Pattern O: Artifact buttons; engage attachment; move opposing non-Leader Home. |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05William.php` | Planning Academic pick (`academicChosen`). |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05William_2.php` | City dest (`locationChosen` + `back`). |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05William_3.php` | Optional Artifact pick + Pass. |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05William_4.php` | Pay to equip (equip-from-play UI). |
+| `modules/php/States/cad/State_highDramaPhase05William.php` | HD Artifact button pick (`artifactChosen` + Back→DISPATCH). |
+| `modules/php/States/cad/State_highDramaPhase05William_2.php` | HD opposing non-Leader pick (`targetChosen` + `back`). |
+| `modules/php/cards/_7s5s/_01200.php` (Crystal Eye) | Forced on equip queues `"01200"` — phase-scoped copies include Approach, HD, duel, **and** `PLANNING_PHASE_RESOLVE_SCHEMES_01200` (William equip path). |
 

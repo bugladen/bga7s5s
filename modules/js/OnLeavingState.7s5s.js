@@ -1491,6 +1491,14 @@
                     this.chooseList.removeAll();
                 }
             },
+
+            'planningPhaseResolveSchemes_01200_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                }
+            },
     
             'highDramaPhase01205': () => {
                 if (this.isCurrentPlayerActive()) {

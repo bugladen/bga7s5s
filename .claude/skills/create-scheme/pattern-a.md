@@ -238,7 +238,7 @@ When the scheme says **"Then, move your Duelist to a City location"** (or anothe
 1. Queue fixed Renown events as usual.
 2. Collect eligible characters: `getCharactersInPlayByPlayerId` + `hasTrait(...)` + ≥1 City destination ≠ current location (Home Duelists qualify — any City is valid).
 3. **Only** queue `createTransitionEvent(..., "NNNNN")` at `MEDIUM_PRIORITY` when the list is non-empty. Otherwise notify that there is no traited character to move and stop (contingent "Then").
-4. **State 1** (`PLANNING_PHASE_RESOLVE_SCHEMES_NNNNN`): highlight `ids` via `argsFromCard` / `actFromCardWithId`. Stash pick in `Game::CHOSEN_CARD`. Transition `"duelistChosen"` (or `"characterChosen"`) → state 2. Do **not** use `CHOSEN_PERFORMER` here — that global belongs to HD City Actions.
+4. **State 1** (`PLANNING_PHASE_RESOLVE_SCHEMES_NNNNN`): highlight `ids` via `argsFromCard` / `actFromCardWithId`. Stash pick in `Game::CHOSEN_CARD`. Transition `"duelistChosen"` (or `"characterChosen"` / `"academicChosen"`) → state 2. Do **not** use `CHOSEN_PERFORMER` here — that global belongs to HD City Actions.
 5. **State 2** (`…_NNNNN_2`): `locationIds` from city locations excluding the chosen character's current location. `actFromCardWithLocations` → `actFromCardWithIds` on the scheme. `createCardMovingEvent(..., engage=false)` unless Engage is printed.
 6. **Named success** on state 2 (`"locationChosen"`) whenever `"back"` / `"zombie"` also exist — `nextState("")` throws "More than one possible transition" (same as Pattern G / `_03042`).
 7. JS: state 1 = `highlightCardsAsSelectable` + Confirm; state 2 = city locations + Back + Confirm; leave cleans highlights / `resetCityLocations`.
@@ -246,6 +246,19 @@ When the scheme says **"Then, move your Duelist to a City location"** (or anothe
 Same card-number key `"NNNNN"` may also appear under `HIGH_DRAMA_PLAYER_TURN_EVENTS` for a City Action on the same scheme — distinct maps, intentional (see `_03030`, `_04004`).
 
 Reference: `_04004` / `State_planningPhaseResolveSchemes04004{,_2}`.
+
+### Move Trait + optional equip available Artifact (paying all costs)
+
+When the scheme adds **"If an available Artifact is there, you may equip it to your performer, paying all costs"** after the move (Syrneth Secrets):
+
+1. Do the `_04004` move first (two states). On location confirm: queue move, set `CHOSEN_LOCATION = $dest`, copy Academic from `CHOSEN_CARD` → `CHOSEN_PERFORMER` (equip pay discounts need performer).
+2. Gate the equip offer on ≥1 **affordable** available Artifact at the **destination** (`getAvailableAttachmentsAtLocation` + `hasTrait("Artifact")` + `!FakeAttachment` + `handWealthCount >= cost−getEquipDiscount`). Skip equip states when none.
+3. **Post-move transition priority = `Event::LOW_PRIORITY`.** WHY: `createCardMovingEvent` only queues `EventCardMoved` — both default MEDIUM. A MEDIUM equip transition FIFO-runs *before* `CardMoved`, so `performer->Location` is still the old site → empty `ids` / nothing selectable. LOW waits for the Location update. Also prefer `CHOSEN_LOCATION` in args/validation over live Location.
+4. **State 3** (optional Artifact pick): highlight available Artifact `ids` + Pass (always legal — "may"). No Back (move already committed).
+5. **State 4** (pay): equip-from-play idiom — highlight city Artifact + performer `_7sfs-chosen`, wealth chip on the city card, faction hand multi-select. **Do not** use chooseList (that is for discard/locker-sourced attachments like Liberating Goods). Queue `createEnteringPayStateEvent` + Transition to pay state; on confirm discard payment cards + `createAttachmentEquippedEvent` (`asAction=false` is fine for scheme resolve). No `createActionResolvedEvent` (not an HD Action).
+6. **Attachment Forced side-effects:** equipping Crystal Eye (etc.) queues `"01200"` (or similar) while still on `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS`. That key must exist on the **resolve** map with states that return to resolve EVENTS — Approach (`2201200`) / HD (`401200`) / duel copies are not enough. Same class of bug as Kaj equipping Crystal Eye during Approach. Wire `_01200` args/acts to include the new state ids + JS triple.
+
+Reference: `_05William` / `State_planningPhaseResolveSchemes05William{,_2,_3,_4}`; Crystal Eye resolve path `PLANNING_PHASE_RESOLVE_SCHEMES_01200{,_2}`.
 
 ### Choose opponent → they Renown → you Renown (different)
 

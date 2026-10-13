@@ -37,6 +37,78 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_05William': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseResolveSchemes_05William_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    if (this.clientStateArgs.characterId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseResolveSchemes_05William_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
+                        this.unhighlightCards(this.clientStateArgs.ids);
+                    }
+                    if (this.clientStateArgs.characterId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'planningPhaseResolveSchemes_05William_4': () => {
+                if (this.isCurrentPlayerActive()) {
+                    if (this.clientStateArgs.performerId) {
+                        this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    }
+                    if (this.clientStateArgs.chosenAttachmentId) {
+                        const card = this.cardProperties[this.clientStateArgs.chosenAttachmentId];
+                        if (card) {
+                            const image = $(`${card.divId}_image`);
+                            dojo.removeClass(image, '_7sfs-chosen');
+                            const costDiv = $(`${card.divId}_wealth_cost`);
+                            if (costDiv) {
+                                costDiv.innerHTML = card.wealthCost;
+                                dojo.removeClass(costDiv, '_7sfs-discounted-wealth-cost');
+                            }
+                        }
+                    }
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05William': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05William_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    if (this.clientStateArgs.attachmentId) {
+                        this.unhighlightCards([this.clientStateArgs.attachmentId]);
+                    }
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'duelChooseTechnique_05Cooper': () => {
                 if (this.isCurrentPlayerActive())
                 {

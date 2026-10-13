@@ -161,6 +161,14 @@ class States
             const PLANNING_PHASE_RESOLVE_SCHEMES_04051_3 = 26040513;
         const PLANNING_PHASE_RESOLVE_SCHEMES_04052 = 2604052;
             const PLANNING_PHASE_RESOLVE_SCHEMES_04052_2 = 26040522;
+        // CAD — Syrneth Secrets (_05William). Exp 5 + card 10.
+        const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM = 2605010;
+            const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_2 = 26050102;
+            const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_3 = 26050103;
+            const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_4 = 26050104;
+        // Crystal Eye Forced — equip during scheme resolve (e.g. Syrneth Secrets)
+        const PLANNING_PHASE_RESOLVE_SCHEMES_01200 = 2601200;
+            const PLANNING_PHASE_RESOLVE_SCHEMES_01200_2 = 26012002;
 
     const PLANNING_PHASE_DRAW = 27;
 
@@ -475,6 +483,9 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01 = 405001;
         // CAD — Varvara Kurakina (_05Overcoat). Exp 5 + card 9.
         const HIGH_DRAMA_PLAYER_TURN_05OVERCOAT = 405009;
+        // CAD — Syrneth Secrets (_05William). Exp 5 + card 10.
+        const HIGH_DRAMA_PLAYER_TURN_05WILLIAM = 405010;
+            const HIGH_DRAMA_PLAYER_TURN_05WILLIAM_2 = 4050102;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;

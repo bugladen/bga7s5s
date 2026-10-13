@@ -17,7 +17,7 @@ When a scheme has a City Action / Action / Leader City Action / Risk City Action
 
 Pre-commit hook: `SchemeAction` / `SchemeCityAction` subclasses must call `createActionResolvedEvent()`. Don't call `setUsed` / `resetPlayerPassCount` / `announceAction` directly — those run centrally during `actHighDramaInPlayActionConfirm` (same as character actions).
 
-Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`, `_04034`, `_04045`.
+Reference: `_01044`'s `Action_01044`, `_02014`'s `Action_02014`, `_03029`'s `Action_03029`, `_03053`'s `Action_03053`, `_03054`'s `Action_03054`, `_03061`–`_03063`, `_04004`, `_04005`, `_04015`, `_04034`, `_04045`, `_05William`.
 
 **Action-object persistence:** public fields on the Action (`$MoveMode`, `$pendingMusterId`, …) survive only if you call `$game->updateCardObjectInDb($owner)` after mutating them. `$owner->IsUpdated = true` alone is **not** flushed before `stRunEvents` rebuilds cards from DB (learned on `_03029` / `_03062` / `_03063`).
 
@@ -363,6 +363,23 @@ Use when refuse is allowed only by paying a hand card under a trait condition (e
 **Why `actFromCardWithId` reaches the Action during refuse:** `TRANSITION_SOURCE_ID` / `TRANSITION_INTERNAL_ID` set by the original `createTransitionEvent` persist through the challenge flow. `Card::actFromCardWithId` routes via the action id to `actFromActionWithId`.
 
 **After discard, resume the normal reject path:** `cardDiscarded` → `HIGH_DRAMA_CHALLENGE_ACTION_GENERATE_THREAT` (same as ACCEPT_CHALLENGE's `""` after a free refuse). Do not invent a separate reject-events entry.
+
+### Pattern O — Engage equipped Artifact; move opposing non-Leader Home
+
+Use when the City Action is **"Engage an Artifact equipped to your performer and target an opposing non-Leader • Move them Home"**. Canonical: `_05William` (Syrneth Secrets).
+
+**Flow:**
+
+1. `SchemeCityAction` + `IAbilityThatTargetsCharacters` + `RequiresPerformerSelected = true`.
+2. `getPerformersForAction` / availability: city performers with ≥1 **unengaged** equipped Artifact (`hasTrait("Artifact")`, `!FakeAttachment`, `!$Engaged`) **and** ≥1 opposing non-Leader at the same location (`ControllerId` different and non-zero, `!hasTrait("Leader")`).
+3. `EventActionTriggered` → re-validate → `createTransitionEvent(..., "NNNNN", $this->Id)`.
+4. HD state 1 (Artifact pick): expose `attachments` as `[{id, name}, …]` — **buttons**, not `highlightCardsAsSelectable`. WHY: attached cards sit under the host and are awkward to click (01194 / GaryFlipped idiom). Instant `actFromCardWithId` on button (no Confirm). Stash id in `CHOSEN_CARD`. `"back" => HIGH_DRAMA_IN_PLAY_ACTION_DISPATCH`.
+5. HD state 2 (target pick): highlight opposing non-Leader `ids` + Confirm + Back to state 1. `isValidTargetForAbility` enforces opposing + same location + non-Leader.
+6. Resolve: `createCardEngagedEvent` on the **attachment** id (not the performer) → `createCardMovingEvent(..., LOCATION_PLAYER_HOME, engage=false)` → `createActionResolvedEvent` → named `"targetChosen"`.
+
+**JS:** State 1 = performer highlight only + Back + one button per attachment. State 2 = performer highlight + optional chosen-attachment `_7sfs-chosen` + target selectable + Confirm/Back.
+
+Reference: `Action_05William`, `State_highDramaPhase05William{,_2}`. Engage-attachment siblings: `Reaction_04014`, `Technique_03049`.
 
 ### GameState transition pitfall (BGA)
 

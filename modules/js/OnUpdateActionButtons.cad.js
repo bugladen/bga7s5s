@@ -33,6 +33,47 @@
                 }
             },
 
+            // WHY: Prototype CAD — plain button labels, no _() (hide from translators).
+            'planningPhaseResolveSchemes_05William': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_05William_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_05William_3': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
+                this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_05William_4': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onPaymentConfirmedFromCard());
+            },
+
+            'highDramaPhase05William': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                // WHY: Instant button pick — attached Artifacts are awkward to click on the board.
+                (args.args.attachments || []).forEach((attachment) => {
+                    this.addActionButton(
+                        `actChooseAttachment-${attachment.id}`,
+                        attachment.name,
+                        () => this.bgaPerformAction('actFromCardWithId', { id: attachment.id })
+                    );
+                });
+            },
+
+            'highDramaPhase05William_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'duelChooseTechnique_05DabneyUS01': () => {
                 // WHY: EventHub zeroes Technique Parry/Riposte when combat card(s) have
                 // dashed that axis — hide the option so it is not offered as a no-op.
