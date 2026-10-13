@@ -140,18 +140,6 @@ return declare('seventhseacityoffivesails.holiday', null, {
         const TURN_STAGGER_MS = 650;
         const TURN_SLIDE_MS = 850;
 
-        const relLeft = (el, cityRect, borderLeft, fallback) => {
-            if (!el) {
-                return fallback;
-            }
-            const rect = el.getBoundingClientRect();
-            // WHY: #city-day-phase-row is display:none until turnPhase > 0 — zero rect.
-            if (rect.width === 0 && rect.height === 0) {
-                return fallback;
-            }
-            return rect.left - cityRect.left - borderLeft;
-        };
-
         const faceOf = (towardTower) => (towardTower ? FACE_RIGHT : FACE_LEFT);
 
         // Ahead offsets relative to horseman at left:0 — always just ahead of him.
@@ -192,26 +180,30 @@ return declare('seventhseacityoffivesails.holiday', null, {
             setTimeout(onDone, TURN_STAGGER_MS + TURN_SLIDE_MS);
         };
 
+        // WHY: Use offsetLeft/offsetWidth (layout px), not getBoundingClientRect.
+        // BGA applies CSS zoom on mobile; native GBR returns scaled viewport coords
+        // that don't match CSS `left` — chase stopped short of the tower. offset*
+        // stays in the same coordinate system as absolute positioning under #city.
+        // (BGA docs: getBoundingClientRectIgnoreZoom for zoomed-area positioning.)
         const endpoints = () => {
-            const cityRect = city.getBoundingClientRect();
-            const borderLeft = parseFloat(getComputedStyle(city).borderLeftWidth) || 0;
             const phase = $('city-day-phase');
+            const phaseRow = $('city-day-phase-row');
             const tower = $('city-ur-tower');
             // Fallback 160 matches #city-day-phase-row { left: 160px }.
             // WHY: Park just to the right of the chip (old in-row spot) so endpoint
             // doesn't cover Dawn / High Drama text.
-            let phaseX = relLeft(phase, cityRect, borderLeft, 160);
-            if (phase) {
-                const phaseRect = phase.getBoundingClientRect();
-                if (phaseRect.width > 0) {
-                    phaseX = phaseRect.right - cityRect.left - borderLeft + 4;
-                }
+            // WHY: Row is display:none until turnPhase > 0 — offsetWidth 0 → fallback.
+            let phaseX = 160;
+            if (phase && phaseRow && phase.offsetWidth > 0) {
+                phaseX = phaseRow.offsetLeft + phase.offsetLeft + phase.offsetWidth + 4;
             }
             // WHY: Stop when horseman's right edge meets the tower's left. Villagers
             // sit ahead and may briefly overlap the tower edge — better than cutting
             // the horseman short of his boundary.
-            const towerLeft = relLeft(tower, cityRect, borderLeft, Math.max(phaseX + HORSE * 2, cityRect.width - borderLeft));
-            return { ready: cityRect.width >= 50, phaseX, towerX: towerLeft - HORSE };
+            const towerLeft = tower
+                ? tower.offsetLeft
+                : Math.max(phaseX + HORSE * 2, city.clientWidth);
+            return { ready: city.clientWidth >= 50, phaseX, towerX: towerLeft - HORSE };
         };
 
         // towardTower=true → ride to UR tower; false → ride back to phase.
