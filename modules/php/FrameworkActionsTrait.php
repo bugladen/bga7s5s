@@ -1930,6 +1930,10 @@ trait FrameworkActionsTrait
         $round = $this->globals->get(Game::DUEL_ROUND);    
         $type = $this->globals->get(Game::DUEL_TYPE);
 
+        // WHY: Reveal-count modifiers and ModifiedFinesse live on the built city;
+        // without buildCity, getNumberOfGambleCardsToReveal sees an empty card list
+        // and gamblesLeft can disagree with argsChooseDuelAction.
+        $this->theah->buildCity();
         $actor = $this->theah->getDuelRoundActor();
 
         if ($round == 1 && $type != Game::VLADISLAV_DUEL_TYPE)
@@ -1945,10 +1949,23 @@ trait FrameworkActionsTrait
             $sql = "SELECT count(*) FROM duel_round_combat_card where duel_id = $duelId AND round = $round";
             $combatCardsCount = $this->getUniqueValueFromDB($sql);
 
-            //Check to see if a combat card was played (but if you can't gamble or have no cards in hand, you can pass)
-            if ($combatCardsCount == 0 && ($handCardsCount > 0 || $gamblesLeft > 0))
+            $gambleAllowedByCardEffects = true;
+            try {
+                $this->theah->eventCheck(EventFactory::createDuelAttemptGambleEvent($actor->Id));
+            } catch (UserException|UserException $e) {
+                $gambleAllowedByCardEffects = false;
+            }
+
+            [$revealCount] = $this->theah->getNumberOfGambleCardsToReveal($actor);
+
+            // WHY: Round 1 requires a combat card only when the actor can still produce
+            // one. Empty hand + no useful gamble (0 Finesse left, blocked, or reveal
+            // count reduced to 0) must be allowed to End Round and take threat wounds.
+            $canPlayFromHand = $handCardsCount > 0;
+            $canGamble = $gamblesLeft > 0 && $gambleAllowedByCardEffects && $revealCount > 0;
+            if ($combatCardsCount == 0 && ($canPlayFromHand || $canGamble))
             {
-                throw new \BgaUserException(clienttranslate("For the first round, you must either gamble or a combat card must be played."));
+                throw new UserException(clienttranslate("For the first round, you must either gamble or a combat card must be played."));
             }
         }
 

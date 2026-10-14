@@ -895,6 +895,10 @@ trait ArgumentsTrait
             $gambleAllowedByCardEffects = false;
         }
 
+        // WHY: Mirror actDuelDoneRound — a 0-card reveal is not a useful gamble (Gallegos
+        // Blade / stacked -1 effects). Hide the button so End Round is the escape hatch.
+        [$revealCount] = $this->theah->getNumberOfGambleCardsToReveal($actor);
+
         $techniques = $this->theah->getAvailableCharacterTechniques($actor);
 
         $pendingManeuverCardId = (int) $this->globals->get(Game::DUEL_PENDING_MANEUVER_CARD, 0);
@@ -937,7 +941,7 @@ trait ArgumentsTrait
                     "active" => [
                         "maneuversAvailable" => $maneuversAvailable,
                         "techniquesAvailable" => $combatCardsCount > 0 && count($techniques) > 0 && $playedTechniquesCount == 0,
-                        "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0 && $gambleAllowedByCardEffects,
+                        "gambleAvailable" => $gamblesLeft > 0 && $round['gambled'] == null && $combatCardsCount == 0 && $gambleAllowedByCardEffects && $revealCount > 0,
                         "gamblesLeft" => $gamblesLeft,
                         "combatCardAvailable" => $combatCardsCount == 0,
                         "considerAdversarySorcererAvailable" => $considerAdversarySorcererAvailable,
