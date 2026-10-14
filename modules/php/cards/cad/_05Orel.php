@@ -13,12 +13,15 @@ class _05Orel extends Character
     {
         parent::__construct();
         $this->Name = "Orel";
+        $this->Title = "CACAW!";
         $this->Image = "05Orel.v4.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 11;
 
         $this->initializeFaction("Ussura");
+
+        $this->InPlayXImageOffset = -25;
 
         $this->Resolve = 2;
         $this->Combat = 2;

@@ -52,6 +52,7 @@ class TraitNames
             "Cloak",
             "Coat",
             "Codex",
+            "Command",
             "Compass",
             "Compromise",
             "Conscription",

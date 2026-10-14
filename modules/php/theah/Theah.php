@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01129;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05SnowWhite;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
@@ -919,11 +920,59 @@ class Theah
     {
         $count = 0;
         foreach ($this->cards as $card) {
-            if ($card instanceof Character && $this->cardInPlay($card) && $card->ControllerId == $playerId && (! $card->hasTrait("Brute") || $includeBrutes)) {
-                $count++;
+            if (! ($card instanceof Character)
+                || ! $this->cardInPlay($card)
+                || $card->ControllerId != $playerId)
+            {
+                continue;
             }
+
+            if (! $this->characterCountsAgainstCrewCap($card, $playerId, $includeBrutes))
+            {
+                continue;
+            }
+
+            $count++;
         }
         return $count;
+    }
+
+    /**
+     * Characters that contribute to Crew Cap for $playerId.
+     * Brutes never count (unless $includeBrutes). Animals skip while Wildcall
+     * (_05SnowWhite) is the chosen scheme at Home ("Until the end of the day.").
+     */
+    public function characterCountsAgainstCrewCap(Character $character, int $playerId, bool $includeBrutes = false): bool
+    {
+        if ($character->hasTrait("Brute") && ! $includeBrutes)
+        {
+            return false;
+        }
+
+        if ($character->hasTrait("Animal") && $this->playerAnimalsExemptFromCrewCap($playerId))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Wildcall passive: Animals do not count toward Crew Cap while the scheme is at Home.
+     */
+    public function playerAnimalsExemptFromCrewCap(int $playerId): bool
+    {
+        foreach ($this->cards as $card)
+        {
+            if ($card instanceof _05SnowWhite
+                && $card->ControllerId == $playerId
+                && $card->isAnimalsExemptFromCrewCap())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     function getCharacterById($id): ?Character

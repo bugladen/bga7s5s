@@ -55,11 +55,8 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
-        // WHY: Not printed "City Reaction", but "opposing" requires same location and
-        // LOCATION_PLAYER_HOME is shared across players — without cardInCity, a Home
-        // Volk would falsely see every opponent leaving their Home as "opposing".
-        // Horatio Reaction_01066 uses the same gate (his text is City Reaction).
-        if (! $event->theah->cardInCity($owner))
+        // WHY: Plain Reaction (not Horatio City Reaction). In play = city or Home.
+        if (! $event->theah->cardInPlay($owner))
         {
             return;
         }
@@ -70,20 +67,22 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
+        // WHY: Playtests — "opposing" here is enemy-controlled, not leave-from-here.
+        // Horatio needs fromLocation == owner (City + co-located). Volk follows any
+        // enemy move into a play location, including Home → city while Volk is elsewhere.
         if ($character->ControllerId == 0 || $character->ControllerId == $owner->ControllerId)
         {
             return;
         }
 
-        // WHY: Opposing = left from Volk's location. Arrival-only moves (to here) are
-        // not "follow to their new location" — destination would equal current.
-        if ($event->fromLocation != $owner->Location)
+        $fromLocation = $event->fromLocation;
+        if ($fromLocation != Game::LOCATION_PLAYER_HOME
+            && ! $event->theah->locationInCity($fromLocation))
         {
             return;
         }
 
-        // WHY: Unlike Horatio (adjacent only), Volk has no adjacent restriction —
-        // any city destination or Home. Skip non-play destinations (discard/locker).
+        // WHY: Any city destination or Home. Skip discard/locker so Follow is never dead.
         $toLocation = $event->toLocation;
         if ($toLocation != Game::LOCATION_PLAYER_HOME
             && ! $event->theah->locationInCity($toLocation))
@@ -91,6 +90,7 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
+        // WHY: Already there — "move to their new location" would be a no-op prompt.
         if ($toLocation == $owner->Location)
         {
             return;

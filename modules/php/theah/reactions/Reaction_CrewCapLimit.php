@@ -47,11 +47,13 @@ class Reaction_CrewCapLimit extends GameReaction
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        // Get non-leaders that count against Crew Cap (Brutes do not).
-        $characters = $theah->getCharactersInPlayByPlayerId($theah->game->getActivePlayerId());
+        // Get non-leaders that count against Crew Cap (Brutes do not; Animals skip under Wildcall).
+        $playerId = $theah->game->getActivePlayerId();
+        $characters = $theah->getCharactersInPlayByPlayerId($playerId);
         $characters = array_filter(
             $characters,
-            fn($character) => ! $character instanceof Leader && ! $character->hasTrait("Brute")
+            fn($character) => ! $character instanceof Leader
+                && $theah->characterCountsAgainstCrewCap($character, $playerId)
         );
         foreach ($characters as $character)
         {
@@ -91,9 +93,11 @@ class Reaction_CrewCapLimit extends GameReaction
 
         // WHY: Locker event is queued, not processed yet — subtract this sink from the live count.
         // Re-prompt until at or under cap (e.g. LostBrute can put a player several over at once).
+        // Animals under Wildcall (and Brutes) did not count — do not subtract them from remaining.
         $count = $game->theah->getCharacterCountByPlayerId($playerId);
         $leader = $game->theah->getLeaderByPlayerId($playerId);
-        $remaining = $character->hasTrait("Brute") ? $count : $count - 1;
+        $didCount = $game->theah->characterCountsAgainstCrewCap($character, $playerId);
+        $remaining = $didCount ? $count - 1 : $count;
         if ($remaining > $leader->ModifiedCrewCap)
         {
             $transition = EventFactory::createReactionTransitionEvent($playerId, Game::THEAH_ID, $this->Id);

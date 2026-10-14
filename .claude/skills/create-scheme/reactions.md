@@ -176,6 +176,22 @@ Printed **`<b>Merchant Reaction:</b> At the end of Planning • Look at the top 
 
 Reference: `Reaction_04025` + `State_planningPhaseEnd_04025`. Look/reorder City Deck sibling: `Reaction_03052`. Sink-from-look opponent deck: `_02005`.
 
+### Sorcerer Reaction at Planning End — muster named characters from out of play
+
+Printed **`<b>Sorcerer Reaction:</b> At the end of Planning • Muster Orel or Volk at your Home from out of play.`** — Reaction, not Pattern F. Canonical: `Reaction_05SnowWhite` (Wildcall).
+
+1. **Trigger:** `EventPhasePlanningEnd` + `$this->isAvailable()` + scheme `Location == LOCATION_PLAYER_HOME` + ≥1 controlled Sorcerer (`getCharactersInPlayByPlayerId` + `hasTrait("Sorcerer")`) + ≥1 named target **not already in play** for this player. Skip when no Sorcerer or both already in play.
+2. **`ISorcererAbility`:** emit `createSorcererAbilityStartEvent` / `createSorcererAbilityPlayedEvent` on success. No pickable performer in the text — use the first controlled Sorcerer's id as `performerId` (Merchant `_04025` "trait in play" gate, not a City Action performer pick).
+3. **UX:** when the choice set is tiny (two named animals), use **buttons on the reaction** (`muster-05Orel` / `muster-05Volk` / Pass) — no `PLANNING_PHASE_END_*` GameState and no JS. Pass does **not** `setUsed`.
+4. **"From out of play" muster:**
+   - **Already in play** for this player → that name is not musterable (offering would only trip Name Gate).
+   - **In Locker / Discard** → `getCardObjectsAtLocation` (locker is **not** in world `$cards`) → `createCardRemovedFromLockerEvent` / `createCardRemovedFromPlayerDiscardPileEvent` → `createCharacterMusteredEvent(..., LOCATION_PLAYER_HOME)`.
+   - **Not in the game yet** (Orel/Volk cannot enter Approach or faction decks) → `createCardInLocation('05Orel'|'05Volk', LOCATION_PURGATORY, …)` + `addCardToWorld` then muster (Lucas Damned create shape).
+   - Catch-all other out-of-play world slots: `$theah->getAllCards()` — **never** `$theah->cards` (private outside Theah; fatal on Studio).
+5. **CAD prototype:** plain button labels / notifies — no `clienttranslate` / `$game->translate` until invited.
+
+Reference: `Reaction_05SnowWhite`, `_05SnowWhite`, Damned create sibling `_02031`, locker muster sibling `Action_03062`.
+
 ### Multi-stage reactions (button-driven, no sub-state)
 
 Use this when the Reaction needs several player clicks in sequence (e.g. offer → pick target → confirm), or when the *player who clicks* changes between steps. Pattern source: `Reaction_03cd10` (Julius Caligari), `Reaction_03006` (Premonition).

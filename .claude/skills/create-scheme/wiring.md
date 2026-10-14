@@ -118,7 +118,7 @@ State name prefixes:
 
 Hand multi-discard also needs an `EventHandlers.js` entry so the Confirm button enables/disables on selection change. Private look multi-select (draw N of looked cards) likewise needs `EventHandlers.js` exact-count enable on `chooseList` + Confirm → `onMultipleChooseListCardsConfirmed`.
 
-**CAD named schemes (`_05William`):** put JS in `OnEnteringState.cad.js` / `OnUpdateActionButtons.cad.js` / `OnLeavingState.cad.js`. Transition keys and state names use the full id (`"05William"`, `planningPhaseResolveSchemes_05William`, `highDramaPhase05William`). Prototype CAD: plain button labels — no `_()`.
+**CAD named schemes (`_05William`):** put JS in `OnEnteringState.cad.js` / `OnUpdateActionButtons.cad.js` / `OnLeavingState.cad.js`. Transition keys and state names use the full id (`"05William"`, `planningPhaseResolveSchemes_05William`, `highDramaPhase05William`). Prototype CAD: plain button labels — no `_()`. **Button-only Planning-End Reactions** (`_05SnowWhite` muster Orel/Volk) need **no** cad.js entries and no `PLANNING_PHASE_END_*` state.
 
 **Attachment Forced after resolve-time equip:** if pay/equip during `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS` can equip Crystal Eye (or similar), register `"01200"` (etc.) on that map and add phase-scoped states that return to resolve EVENTS — do not rely on Approach/HD copies alone (`_05William` + `_01200`).
 

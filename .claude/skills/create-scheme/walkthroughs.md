@@ -199,6 +199,22 @@ Card text (CAD prototype — plain strings, no `clienttranslate`):
 
 Full implementation: `modules/php/cards/cad/_05William.php`, `actions/Action_05William.php`, `States/cad/State_planningPhaseResolveSchemes05William{,_2,_3,_4}.php`, `State_highDramaPhase05William{,_2}.php`.
 
+## Walkthrough: implementing `_05SnowWhite` (Wildcall)
+
+Card text (CAD prototype — plain strings, no `clienttranslate`):
+
+> Add a Renown to [The City Forum] and [The Grand Bazaar].
+> **Sorcerer Reaction:** At the end of Planning • Muster Orel or Volk at your **Home** from out of play.
+> Your **Animals** do not count towards [Crew Cap]. (Until the end of the day.)
+
+1. **Constructor.** Ussura, Init 56 / Panache 0 (match art). Name **Wildcall** (art title band — scaffold had WildCall). Traits Dar Matushki + Command (add `Command` to TraitNames). `CardNumber=13` (CAD sequence after William/Orel/Volk); footer CAD-US8 is not the CardNumber. `IHasReactions` + `Reaction_05SnowWhite`.
+2. **Resolve.** Trivial Forum + Bazaar Renown. No planning sub-state.
+3. **Sorcerer Planning-End Reaction.** `EventPhasePlanningEnd` + scheme at Home + ≥1 controlled Sorcerer + ≥1 of Orel/Volk not in play. Buttons: Muster Orel / Muster Volk / Pass — **no** `PLANNING_PHASE_END_*` state / no JS. `implements ISorcererAbility`; first Sorcerer as `performerId` on start/played. Pass without `setUsed`.
+4. **Muster from out of play.** Not in game → `createCardInLocation('05Orel'|'05Volk', PURGATORY)` + `addCardToWorld` + `createCharacterMusteredEvent` at Home (Damned). Locker/discard → remove event then muster. Skip name already in play. Iterate out-of-play world cards via **`getAllCards()`** — never `$theah->cards` (private; Studio fatal). Locker via `getCardObjectsAtLocation`.
+5. **Animals Crew Cap passive.** While scheme at Home: `Theah::characterCountsAgainstCrewCap` / `playerAnimalsExemptFromCrewCap`. Wire `getCharacterCountByPlayerId` and `Reaction_CrewCapLimit` (sink buttons + remaining). EOD = scheme→locker — no dusk clear.
+
+Full implementation: `modules/php/cards/cad/_05SnowWhite.php`, `reactions/Reaction_05SnowWhite.php`; Theah crew-cap helpers; `Reaction_CrewCapLimit.php`.
+
 ## Walkthrough: implementing `_04005` (Denounced, Disgraced)
 
 Card text:

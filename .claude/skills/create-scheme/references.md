@@ -141,4 +141,8 @@
 | `modules/php/States/cad/State_highDramaPhase05William.php` | HD Artifact button pick (`artifactChosen` + Back→DISPATCH). |
 | `modules/php/States/cad/State_highDramaPhase05William_2.php` | HD opposing non-Leader pick (`targetChosen` + `back`). |
 | `modules/php/cards/_7s5s/_01200.php` (Crystal Eye) | Forced on equip queues `"01200"` — phase-scoped copies include Approach, HD, duel, **and** `PLANNING_PHASE_RESOLVE_SCHEMES_01200` (William equip path). |
+| `modules/php/cards/cad/_05SnowWhite.php` (Wildcall) | **Fixed dual Renown (Forum + Bazaar) + Sorcerer Planning-End muster Orel/Volk from out of play + Animals exempt from Crew Cap while scheme at Home.** CAD prototype (plain strings). No resolve/Planning-End GameState (button-only Reaction). `Command` in TraitNames. |
+| `modules/php/cards/cad/reactions/Reaction_05SnowWhite.php` | Planning-End Sorcerer Reaction: buttons Muster Orel/Volk/Pass; `ISorcererAbility`; createCardInLocation or locker/discard remuster at Home; `getAllCards()` not private `$cards`. |
+| `modules/php/theah/reactions/Reaction_CrewCapLimit.php` | Crew Cap sink buttons + remaining use `characterCountsAgainstCrewCap` (Wildcall Animal exempt). |
+| `modules/php/cards/tac/_02031.php` (Lucas Doomed) | `createCardInLocation` from out of play sibling (Damned into locker). |
 

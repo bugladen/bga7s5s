@@ -15,6 +15,7 @@ class _05Volk extends Character implements IHasReactions
     {
         parent::__construct();
         $this->Name = "Volk";
+        $this->Title = "BoRF!";
         $this->Image = "05Volk.v4.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;

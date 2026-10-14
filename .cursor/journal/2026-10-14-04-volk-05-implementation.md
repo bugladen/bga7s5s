@@ -18,10 +18,11 @@ Test CAD card — no `clienttranslate` / `_()` on card or reaction (user request
 
 ## WHY decisions
 
-- **Mirror Horatio, drop adjacent:** Horatio text is "moved to an *adjacent* location" + City Reaction. Volk omits adjacent and is plain Reaction. Same opposing leave-from-here gates; destination = any city **or** Home.
-- **Still `cardInCity(owner)` despite not City Reaction:** "Opposing" needs same location; `LOCATION_PLAYER_HOME` is shared across players. Without the city gate, Volk at Home would treat every opponent leaving *their* Home as opposing. Horatio had the City label; we keep the gate for correctness.
-- **fromLocation == owner.Location:** Follow when they leave Volk's site — not when they arrive (arrival destination == current → useless prompt).
-- **Destination filter:** city or Home only — skip discard/locker/etc. so we never offer a dead Follow.
+- **Not Horatio leave-from-here:** First pass copied Horatio's `fromLocation == owner.Location`. Wrong for Volk.
+- **`cardInPlay`, not `cardInCity`:** Plain Reaction — Owner may be at Home or in the city.
+- **"opposing" = enemy controller (playtest):** Volk follows any enemy Character play→play move. Second playtest: Volk at a city site, opponent Home → other city — must offer Follow even though they never shared a location. Horatio still needs leave-from-here because City Reaction + co-located opposing + adjacent.
+- **Skip `toLocation == owner.Location`:** Already there — useless Follow prompt.
+- **Origin + destination filter:** both must be city or Home — skip discard/locker/etc.
 - **Stash `$FollowedCharacterLocation`:** Horatio shape — destination captured at trigger; performReaction may be a later request.
 - **No states/JS:** Follow/Pass buttons only.
 - **Novel trait Wolf** → TraitNames. Animal + Familiar already present (Orel).
@@ -34,15 +35,15 @@ Test CAD card — no `clienttranslate` / `_()` on card or reaction (user request
 
 ## Unfinished / watch
 
-- Playtest: opposing leaves city site → Follow to non-adjacent city and to Home; no prompt when ally moves; no prompt at Home; Approach/equip/Risk-Scheme bans like Orel.
+- Playtest: opposing leaves city site → Follow to non-adjacent city and to Home; no prompt when ally moves; Home → Forum Follow now expected (regression `Reaction_05Volk_Test`); Approach/equip/Risk-Scheme bans like Orel.
+
+## Playtest corrections (same day)
+
+1. **Home Owner + opponent Home → Forum:** `cardInCity` blocked it. Switched to `cardInPlay`.
+2. **City Owner + opponent Home → other city:** leave-from-here still blocked it. Dropped `fromLocation == owner.Location` for Volk entirely. "Opposing" on this card = enemy controller per playtest — do not re-add the Horatio co-location gate.
+
+Skill/checklist/helpers/references now split Volk vs Horatio explicitly. Regression: `tests/regression/Reaction_05Volk_Test.php`.
 
 ## Skill fold-in (same day, user-requested)
 
-Updated create-character skill with Volk follow learnings:
-- SKILL shape table: follow opposing → new location (any dest vs adjacent)
-- pattern-d: "Follow opposing character to their new location" + example table rows for `Reaction_05Volk` / `Reaction_01066`
-- checklist 113; CAD id note 103 extended for Volk
-- references `_05Volk` / `Reaction_05Volk` / `Reaction_01066`
-- helpers: Home opposing false-positive note on `getOpposingCharactersAtLocation`
-
-WHY document `cardInCity` for non-City Reaction: future agents will drop it because the keyword is absent, then Home Volk spuriously follows every opponent leaving their Home.
+Updated create-character skill with Volk follow learnings — later corrected so skill does **not** teach leave-from-here for plain Volk text.
