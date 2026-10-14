@@ -1465,11 +1465,14 @@ trait StatesTrait
             $event->dashedThrust = $card->DashedThrust;
             // WHY: FREE gambles (01135) leave duel_round.gambled NULL so they do not
             // consume Finesse, but the combat card was still obtained by gambling —
-            // Sanjay and similar need event->gambled true. Exclude Roll the Bones
-            // additive stats: those values attach to a non-gambled combat card (01114).
-            $event->gambled = $gambled == 1 || (
-                ! $isRollTheBonesGambleStats
-                && $this->globals->get(Game::DUEL_GAMBLED, false)
+            // Sanjay and similar need event->gambled true.
+            // WHY RtB additive always gambled=false (even if duel_round.gambled=1):
+            // the chosen card is not a combat card — its values are added to 01114.
+            // Sanjay already applied on 01114's own stats pass if 01114 was gambled;
+            // granting again here would double the +1 Riposte.
+            $event->gambled = ! $isRollTheBonesGambleStats && (
+                $gambled == 1
+                || $this->globals->get(Game::DUEL_GAMBLED, false)
             );
             $event->statsAddedToExistingCombatCard = $isRollTheBonesGambleStats;
         }

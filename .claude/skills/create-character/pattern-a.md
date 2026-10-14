@@ -80,7 +80,7 @@ if ($event instanceof EventDuelCalculateCombatCardStats
 }
 ```
 
-WHY `$event->gambled` (not `Game::DUEL_GAMBLED` alone): `StatesTrait::stResolveCombatCard` sets `$event->gambled` from `duel_round.gambled` for the current round — the authoritative per-round flag, including Roll-the-Bones paths that still attribute stats through this event. The `DUEL_GAMBLED` global is the right gate for **Gambling Technique** availability (`isAvailableToPlayer`); the calculate-stats event's own field is the right gate for **passive combat-card modifiers**.
+WHY `$event->gambled` (not `Game::DUEL_GAMBLED` alone): `StatesTrait::stApplyCombatCardStats` sets `$event->gambled` for *this* combat-card stats pass. Roll-the-Bones additive stats force `gambled=false` — the chosen card is not a combat card (values attach to 01114); Sanjay must not get a second +1 on that pass. The `DUEL_GAMBLED` global is the right gate for **Gambling Technique** availability (`isAvailableToPlayer`); the calculate-stats event's own field is the right gate for **passive combat-card modifiers**.
 
 Contrast: Yevgeni `_01116` adds +1 Thrust on every combat card (`actorId` only, no gambled gate). Sanjay `_03037` is the gambled-only variant.
 

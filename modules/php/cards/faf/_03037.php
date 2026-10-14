@@ -65,9 +65,10 @@ class _03037 extends Leader implements IHasActions, IHasReactions
     {
         parent::handleEvent($event);
 
-        // WHY gate on $event->gambled (duel_round.gambled for this round) rather
-        // than Game::DUEL_GAMBLED alone: the calculate-stats event already carries
-        // the authoritative per-round flag, including Roll-the-Bones paths.
+        // WHY gate on $event->gambled rather than Game::DUEL_GAMBLED alone: the
+        // calculate-stats event carries the authoritative flag for *this* combat
+        // card pass. stApplyCombatCardStats sets gambled=false for Roll-the-Bones
+        // additive stats (chosen card is not a combat card — values attach to 01114).
         if ($event instanceof EventDuelCalculateCombatCardStats
             && $event->actorId == $this->Id
             && $event->gambled)
