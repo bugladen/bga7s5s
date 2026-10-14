@@ -74,15 +74,13 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
             $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->ControllerId, $this->cancelledCombatCardId, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
-            // WHY: Card text — forced replacement gamble "does not count against their
-            // total played gambles." Clear any voluntary-gamble flag already written
-            // for the cancelled card, then mark FREE so actGambleCardChosen will not
-            // re-set duel_round.gambled.
-            $duelId = $game->globals->get(Game::DUEL_ID);
-            $round = $game->globals->get(Game::DUEL_ROUND);
-            $sql = "UPDATE duel_round SET gambled = NULL WHERE duel_id = $duelId AND round = $round";
-            $game->DbQuery($sql);
-
+            // WHY: Card text — forced replacement "does not count against their total
+            // played gambles" means the FREE choose must not *add* a Finesse spend.
+            // actGambleCardChosen only writes duel_round.gambled for NORMAL, so FREE
+            // leaves the column alone:
+            // - cancelled play was from hand → gambled stays NULL (free replacement)
+            // - cancelled play was itself a voluntary gamble → gambled stays 1
+            //   (do NOT clear — clearing refunded the spent gamble and gave an extra)
             $actor = $game->theah->getDuelRoundActor();
             [$cardCount, $explanations] = $game->theah->getNumberOfGambleCardsToReveal($actor);
             if ($explanations != '')

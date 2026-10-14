@@ -1845,9 +1845,11 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::DUEL_GAMBLED, true);
         $gambleType = $this->globals->get(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
-        // WHY: Only NORMAL gambles consume Finesse. ROLL_THE_DICE (01114) and FREE
-        // (01135 forced) still set DUEL_GAMBLED so gambling effects apply, but leave
-        // duel_round.gambled alone so gamblesLeft is unchanged.
+        // WHY: Only NORMAL gambles write duel_round.gambled=1. ROLL_THE_DICE (01114)
+        // and FREE (01135 forced) still set DUEL_GAMBLED so gambling effects apply,
+        // but leave the column alone: hand→FREE stays NULL (no Finesse spend);
+        // voluntary-gamble→Mireli-cancel→FREE keeps the existing 1 (replacement
+        // inherits the spent gamble).
         if ($gambleType == Game::GAMBLE_TYPE_NORMAL)
         {
             //Set that the player has gambled

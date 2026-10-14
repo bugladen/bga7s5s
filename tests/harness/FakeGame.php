@@ -376,9 +376,12 @@ class Game
         return ($global & $flag) === $flag;
     }
 
+    /** @var list<string> SQL passed to DbQuery (tests assert absences like Mireli gambled clear). */
+    public array $dbQueries = [];
+
     public function DbQuery(string $sql): void
     {
-        // no-op for unit tests
+        $this->dbQueries[] = $sql;
     }
 
     public function getUniqueValueFromDB(string $sql): mixed

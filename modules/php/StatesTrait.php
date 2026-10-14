@@ -1463,9 +1463,10 @@ trait StatesTrait
             $event->dashedParry = $card->DashedParry;
             $event->addThrust($card->Thrust);
             $event->dashedThrust = $card->DashedThrust;
-            // WHY: FREE gambles (01135) leave duel_round.gambled NULL so they do not
-            // consume Finesse, but the combat card was still obtained by gambling —
-            // Sanjay and similar need event->gambled true.
+            // WHY: FREE gambles (01135) leave duel_round.gambled unchanged (NULL if the
+            // cancelled play was from hand; 1 if it was already a voluntary gamble).
+            // The replacement was still obtained by gambling — Sanjay and similar need
+            // event->gambled true even when the DB flag stayed NULL.
             // WHY RtB additive always gambled=false (even if duel_round.gambled=1):
             // the chosen card is not a combat card — its values are added to 01114.
             // Sanjay already applied on 01114's own stats pass if 01114 was gambled;

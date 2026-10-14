@@ -129,8 +129,10 @@ class Reaction_01135_Test extends TestCase
                 Assert::same(['done'], $world->game->gamestate->transitions, 'done');
             },
 
-            // WHY (journal 2026-09-12): forced replacement must be GAMBLE_TYPE_FREE and clear
-            // duel_round.gambled so it does not count against played gambles.
+            // WHY (journal 2026-09-12 + correction): forced replacement is GAMBLE_TYPE_FREE
+            // so actGambleCardChosen does not *write* duel_round.gambled. Do NOT clear an
+            // existing gambled=1 — if the cancelled card was itself a voluntary gamble,
+            // clearing refunded that spend and gave the opponent an extra Finesse gamble.
             'RiskReactionTriggered discards the combat card and arms a free gamble' => function () {
                 $world = new TestWorld();
                 [$risk, $reaction] = $this->scene($world);
@@ -153,6 +155,13 @@ class Reaction_01135_Test extends TestCase
                 Assert::true($discards[0]->asEffect, 'as effect');
                 Assert::same(Game::GAMBLE_TYPE_FREE, $world->game->globals->get(Game::GAMBLE_TYPE), 'free');
                 Assert::true($world->game->globals->get(Game::GAMBLE_REVEAL_COUNT) >= 1, 'reveal count');
+                $clears = array_filter(
+                    $world->game->dbQueries,
+                    fn(string $sql) => stripos($sql, 'duel_round') !== false
+                        && stripos($sql, 'gambled') !== false
+                        && stripos($sql, 'NULL') !== false
+                );
+                Assert::count(0, $clears, 'must not clear duel_round.gambled');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, '01135');
                 Assert::same('01135', $transitions[0]->transition, 'name');

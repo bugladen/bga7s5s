@@ -338,7 +338,9 @@ class Game extends \Bga\GameFramework\Table
     final const GAMBLE_TYPE_NORMAL = 0;
     final const GAMBLE_TYPE_ROLL_THE_DICE = 1;
     // WHY: Mireli's Revision (01135) forces a gamble that still plays the chosen
-    // card as a combat card, but must not consume a Finesse gamble for the duel.
+    // card as a combat card. Does not *write* duel_round.gambled (so a hand-play
+    // replacement stays free); if the cancelled card was already gambled, that
+    // existing 1 is left in place so the replacement still counts.
     final const GAMBLE_TYPE_FREE = 2;
 
     //Pay state global variables
