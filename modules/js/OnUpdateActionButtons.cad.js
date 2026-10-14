@@ -21,6 +21,12 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            // WHY: Prototype CAD — plain button labels, no _() (hide from translators).
+            'highDramaPhase05Forsythe': () => {
+                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase05Overcoat': () => {
                 // WHY: Mandatory claim-or-move-renown (Soline "or" — no Pass).
                 // Args nest: OnUpdateActionButtons uses args.args.* (one less than OnEnteringState).

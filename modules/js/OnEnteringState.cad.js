@@ -26,6 +26,21 @@
                 }
             },
 
+            'highDramaPhase05Forsythe': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    this.selectedCityLocations = [];
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.locationIds = args.args.args.locationIds || [];
+                    this.clientStateArgs.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
             'highDramaPhase05Overcoat': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.highlightCharacterChosen(args.args.args.performerId);

@@ -158,6 +158,45 @@ $addEvent->batchId = $batchId;
 
 WHY the three-event batch: Moving is the animation/intent; Removed + Added mutate the slots; `isMove=true` on Added keeps the UI from treating it as a fresh place. Shared `batchId` plays them as one relocate (`_04034`, `Action_01007`, `Action_04036a`). Literal "City location" → no Home dest.
 
+### "Move an adjacent Renown to this location" (from-adjacent picker)
+
+Printed: **Move an adjacent Renown to this location** — often under **Covert Action** or City Action (`Action_05Forsythe`, Guillén `Action_01064`, Overcoat renown payoff).
+
+**Direction is inverted from Ciphered Tome a:** destination is **fixed** (`$owner->Location`); the picker is the **source** — adjacent City locations with `Renown > 0`.
+
+```php
+$adjacent = $theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
+// keep only names where getCityLocation(...)->Renown > 0
+```
+
+Availability: `cardInCity` + engage gate (attachment or character per printed cost) + at least one adjacent with Renown. When the keyword is **Covert Action**, also require `!$cityLocation->isControlled()` (see Covert subsection below) — re-check on resolve so control flips mid-state cannot cheat.
+
+Resolve on location confirm with the same `_04034` batch (`Moving` + `Removed` + `Added(..., isMove=true)`, shared `batchId`): `$fromLocation` = chosen adjacent, `$toLocation` = `$owner->Location`. Inject code = attachment when AttachmentAction (`_05Forsythe`), character when CharacterAction (Guillén / Overcoat).
+
+Do **not** copy `Action_04036a` (dest picker, source = here). Do **not** invent a dest picker when text says "to this location."
+
+HD GameState + `"NNNNN"` on `HIGH_DRAMA_PLAYER_TURN_EVENTS`; `sourceId` = attachment for AttachmentAction; JS city-only location highlight + Confirm Location (Overcoat / `04036a` enter-leave shape). No Home (adjacency + Renown are City-only).
+
+### Covert Action (attachment-hosted)
+
+Printed: **`<b>Covert Action:</b> Engage this card • Move an adjacent Renown to this location.`** (`Action_05Forsythe`).
+
+**Covert keyword (uncontrolled):** Gate availability **and** resolve on City location **uncontrolled** — `getCityLocation` + `!$cityLocation->isControlled()`. Reminder text may be omitted; "Covert Action" is still a Covert ability (same Valeri parenthetical as create-character Overcoat / Dabney). Implies `cardInCity` (Home has no control track for Covert play).
+
+**Still `extends AttachmentAction`.** There is no Covert/City Action subclass. Stack Covert uncontrolled + printed engage + printed effect.
+
+| Printed half | Attachment shape |
+|---|---|
+| Engage this card | Gate `!$attachment->Engaged`; `createCardEngagedEvent` on attachment on **resolve** with the effect (`Action_04036a`) |
+| Move an adjacent Renown here | From-adjacent picker above — not Ciphered Tome dest-picker |
+| (Character Overcoat) Engage Owner • Pressure • claim **or** move Renown | Different card — CharacterAction + pressure machine + hybrid Claim/locations. Read create-character Pattern C; do **not** copy pressure/claim onto Forsythe-shaped text |
+
+WHY not CharacterAction: the host is the FactionAttachment; performer is `getOwningCharacter`. WHY re-check uncontrolled on resolve: announce can land before control changes; Covert must stay honest.
+
+Prototype CAD (`_05Forsythe`): plain strings — no `clienttranslate` / `_()` on card, Action, GameState descriptions, or `*.cad.js` until translators are invited (same as Overcoat / Volk). File must be `_05Forsythe.php` — `getCardClassName('05Forsythe')` builds `cards\cad\_05Forsythe`. State id `405005` (exp 5 + CardNumber); transition `"05Forsythe"`. CAD `CardNumber` may collide across named test cards (Thomas also 5) — state const must still be unique.
+
+Reference: `Action_05Forsythe`; Character Covert pressure sibling `Action_05Overcoat`; renown-in siblings Guillén `Action_01064` / Overcoat `actFromActionWithIds`; Academic equip host `_04036`.
+
 ### "Move your performer to another location with more Renown"
 
 `_03055` choose-location + dest filter `$location->Renown > $currentRenown` (strictly greater; ties are invalid). Exclude `$performer->Location`. Pay engage on resolve; `createCardMovingEvent(..., engage=false)`.
@@ -201,4 +240,4 @@ Same hazard for any "move to a location with Trait X" where the host card grants
 
 `Action_NNNNN extends AttachmentAction → CardAction` — the hook requires `createActionResolvedEvent()` somewhere in the class. Make sure it's queued at the end of effect resolution (after any state loops complete).
 
-References: `_01073` / `_01075` (City Action templates), `_03055` (engage-this-card + choose-location move), `_03065` (immediate-resolve sink + move Home), `_02047` (City Action + available attachments at location), `_04036` / `Action_04036a` / `Action_04036b` (Academic equip + two City Actions: renown relocate + move-to-more-Renown).
+References: `_01073` / `_01075` (City Action templates), `_03055` (engage-this-card + choose-location move), `_03065` (immediate-resolve sink + move Home), `_02047` (City Action + available attachments at location), `_04036` / `Action_04036a` / `Action_04036b` (Academic equip + two City Actions: renown relocate out + move-to-more-Renown), `_05Forsythe` / `Action_05Forsythe` (Academic equip + Covert Action: engage this card + move adjacent Renown in).

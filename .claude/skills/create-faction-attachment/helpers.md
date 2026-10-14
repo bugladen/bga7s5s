@@ -8,9 +8,11 @@
 - `$theah->getAttachmentById(int $id): ?Attachment` — hydrate an equipped (or available) attachment.
 - `$theah->getLeaderByPlayerId(int $playerId): ?Leader` — get a player's Leader (returns null if destroyed).
 - `$theah->getCardObjectsAtLocation(string $location, int $playerId = 0): Card[]` — all cards in a generic location (`Game::LOCATION_HAND`, `Game::LOCATION_PLAYER_HOME`, etc.). For hand, pass the player id.
-- `$theah->locationInCity(string $location): bool` / `$theah->cardInCity(Card $card): bool` — canonical City checks. **Required** for attachment City Actions (no `AttachmentCityAction` base).
-- `$theah->getCityLocations(): CityLocation[]` — all five city slots; map `->Name` when building destination lists. Each has `->Renown` (int). **Home has no Renown track** — `getCityLocation(LOCATION_PLAYER_HOME)` throws; treat Home as 0. A "more Renown than current" filter can never match Home (`Action_04036b`).
-- `$game->getNextEventBatchId()` — share one `batchId` across `createRenownMovingBetweenLocationsEvent` + `createRenownRemovedFromLocationEvent` + `createRenownAddedToLocationEvent(..., isMove=true)` so the UI plays a relocate as one animation (`_04034`, `Action_01007`, `Action_04036a`).
+- `$theah->locationInCity(string $location): bool` / `$theah->cardInCity(Card $card): bool` — canonical City checks. **Required** for attachment City Actions (no `AttachmentCityAction` base). Also required for Covert Actions (uncontrolled is a City-slot property).
+- `$theah->getCityLocations(): CityLocation[]` — all five city slots; map `->Name` when building destination lists. Each has `->Renown` (int) and `isControlled()`. **Home has no Renown track** — `getCityLocation(LOCATION_PLAYER_HOME)` throws; treat Home as 0. A "more Renown than current" filter can never match Home (`Action_04036b`).
+- `$theah->getAdjacentCityLocations(string $location, bool $includeHome = true): string[]` — adjacency for "move an adjacent Renown here" / Covert renown pickers. Pass `$includeHome = false` when Renown or Covert is involved (`Action_05Forsythe`, Guillén `01064`).
+- `$cityLocation->isControlled(): bool` — **Covert** availability/resolve gate: Covert Actions require `!$cityLocation->isControlled()` even when Reminder text is omitted (`Action_05Forsythe`, create-character Overcoat / Dabney).
+- `$game->getNextEventBatchId()` — share one `batchId` across `createRenownMovingBetweenLocationsEvent` + `createRenownRemovedFromLocationEvent` + `createRenownAddedToLocationEvent(..., isMove=true)` so the UI plays a relocate as one animation (`_04034`, `Action_01007`, `Action_04036a`, `Action_05Forsythe`).
 - `$game->getCardObjectFromDb(int $id): ?Card` — hydrate any card from db (works even if it's not in `Theah::$cards`).
 - `$game->getGameDeckObject(int $playerId = 0): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` queries discard; `getPlayerHand($playerId)` queries hand.
 - `$game->getPlayerFactionDeckName(int $playerId): string` — the deck-table location string for a player's faction deck.
@@ -33,6 +35,8 @@
 - **"Pressure fails instead" (difference ≤1)** ≠ Risk Objection pay path. Attachment versions engage in `performReaction` and rebuild a failed Result — do not `ICancelReaction` / `EventRiskReactionTriggered` (`Reaction_04026` vs `Reaction_01027`).
 - **"Ignore that wound" from an opponent's ability** ≠ Cascade pay path. Attachment versions cancel-first `EventCharacterBeingWounded`, engage in `performReaction`, and drop the saved clone — do not copy `Reaction_02059`'s entering-pay / `EventRiskReactionTriggered` (`Reaction_04053` vs Cascade). Target is the **equipped** character only (Cascade allows any controlled character).
 - **Stat-threshold equip** ("N[Finesse] or more") ≠ trait equip and ≠ Shackles ally-compare. Dual-gate `Modified* >= N` (`_04053`).
+- **"Move an adjacent Renown to this location"** ≠ **"Move a Renown from this location to another City location"**. Former = from-adjacent picker, dest fixed (`Action_05Forsythe`). Latter = dest picker, source fixed (`Action_04036a`). Same `_04034` batch either way.
+- **Covert Action** ≠ City Action. Covert adds uncontrolled gate; still `AttachmentAction`. Attachment Covert without pressure (`_05Forsythe`) ≠ Character Covert pressure → claim-or-move (`Action_05Overcoat`) — only share the uncontrolled gate + optional adjacent-Renown recipe.
 
 **`EventAttachmentUnequipped` + `AttachedToId`:** EventHub clears `$attachment->AttachedToId = 0` **before** card `handleEvent` (event does not set `runEventHubAfterCards`). Any unequip cleanup that needs the former host must use `$event->characterId` (Pattern B trait remove, B'' condition clear, B''' bonus undo — `_04006`).
 

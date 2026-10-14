@@ -1297,6 +1297,7 @@ $machinestates = [
                 "04cd15_3" => States::HIGH_DRAMA_PLAYER_TURN_04CD15_3,
                 "05DabneyUS01" => States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01,
                 "05DabneyUS01_2" => States::HIGH_DRAMA_CHALLENGE_ACTION_TECHNIQUE_AVAILABLE,
+                "05Forsythe" => States::HIGH_DRAMA_PLAYER_TURN_05FORSYTHE,
                 "05Overcoat" => States::HIGH_DRAMA_PLAYER_TURN_05OVERCOAT,
                 "05William" => States::HIGH_DRAMA_PLAYER_TURN_05WILLIAM,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
