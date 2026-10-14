@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\actions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -37,6 +38,10 @@ class RiskAction extends CardAction
         // Add characters owned by the player that are in play
         $performers += $theah->getCharactersInPlayByPlayerId($playerId);
 
-        return $performers;
+        // WHY: Orel (_05Orel) and similar — cannot perform Risk abilities.
+        return array_filter(
+            $performers,
+            fn($performer) => $performer instanceof Character && $performer->canPerformRiskAndSchemeAbilities()
+        );
     }
 }

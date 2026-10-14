@@ -1187,6 +1187,22 @@ WHY `setUsed(false)` on a continuous Action: the parent `CardAction::handleEvent
 
 Reference: `Action_03013` (Daniella Dietrich) — Continuous Action that tags opposing characters with "Sorcerer" on ability-start events and untags at `EventPlayerTurnEnd`. `Action_01090` (Yuri Pyetrovich) — Continuous Action that pre-activates a paired Reaction; opposite shape (user-triggered, but immediately flips `Used` back to false).
 
+### Approach / equip / Risk-Scheme host bans
+
+Printed variants (often stacked on Familiars / Brutes / Damned):
+
+| Printed | Character predicate | Framework consumers |
+|---|---|---|
+| **"cannot be included in / cannot be in an Approach deck"** | `canEnterApproachDeck()` → `false` | `DeckValidator` (non-Brute message vs Brute trait message); `EventCharacterPutIntoApproachDeck` in `eventCheckCore`; Object of Wonder filters |
+| **"cannot be equipped"** | `canReceiveAttachments()` | `Attachment::canAttachTo`; `hasEquipRestrictions`; HD Equip performer lists (`ArgumentsTrait` / `FrameworkActionsTrait`); `characterCanEquip`; `EventAttachmentEquipped` in `eventCheckCore` |
+| **"cannot perform abilities on risks and schemes"** | `canPerformRiskAndSchemeAbilities()` | `RiskAction::getPerformersForAction`; `SchemeAction::getPerformersForAction` (parent); `Theah::actionAvailableToPerformer` when owner is `Risk`/`Scheme`; in-hand/in-play performer args |
+
+**Silence vs deck rules:** Approach bans are structural — keep `canEnterApproachDeck()` always `false`. Equip and Risk/Scheme bans are printed text-box restrictions — prefer `return $this->abilitiesAreBlanked()` so Fate's Silence lifts them (blanked → true → legal). Defaults on `Character` are all permissive (`true` / Brute-aware Approach).
+
+**Do not** sprinkle `instanceof _05Orel` through equip/performer paths — override the predicates on the card and let the framework hooks do the filtering.
+
+Reference: `_05Orel` (all three); Approach-only sibling `_02032` Damned; Brute Approach via default `!hasTrait("Brute")`.
+
 ### Covert pressure aura (+N at Owner's uncontrolled location)
 
 Printed: **`<i>Covert</i> - During pressures at <Owner>'s location, add +N to your total.`** plus parenthetical **`(Covert Abilities may only be used at uncontrolled locations.)`**.
@@ -1199,7 +1215,24 @@ Printed: **`<i>Covert</i> - During pressures at <Owner>'s location, add +N to yo
 
 WHY a dedicated pressure-type bit: Covert applies to **any** pressure type at the location, not Influence-only. WHY uncontrolled gate on both set-flag and standing labels: Covert parenthetical is load-bearing — claimed locations must lose the +N immediately in UI and math.
 
-Reference: `_05DabneyUS01` Valeri (CAD); Loyal / Solomonia apply shape in `pressureLocation`; Influence totals sibling logic for Solomonia/Constanzo in `getLocationInfluenceTotalsData`.
+Reference: `_05DabneyUS01` Valeri (CAD); Loyal / Solomonia apply shape in `pressureLocation`; Influence totals sibling logic for Solomonia/Constanzo in `getLocationInfluenceTotalsData`. Non-Covert + initiator-win-ties sibling: `_05Orel` (next subsection).
+
+### Non-Covert pressure aura (+N at Owner's location) + initiator win-ties
+
+Printed: **"During pressures at <Owner>'s location, add +N to your total. If you initiated the pressure, you succeed even if tied."** — **no** Covert keyword / no uncontrolled Reminder.
+
+Same Valeri `EventPressureOccuring` → flag machinery, with these differences:
+
+1. **No uncontrolled gate** on set-flag or standing Influence chips — aura applies at claimed City locations too (still `cardInCity` + Owner at `$event->location`).
+2. Mint **two** dedicated bits (do **not** reuse Valeri / Overcoat / Tabard):
+   - `*_PRESSURE_TYPE` — +N to Owner's controller outside the per-stat loop (always when Owner is at the pressure location).
+   - `*_WIN_TIES_PRESSURE_TYPE` — OR into `pressureLocation`'s win-ties list; set **only** when `$event->playerId == Owner.ControllerId` (initiator is "you").
+3. Stash Owner id in a dedicated global for the +N apply path (Valeri `*_ID` shape).
+4. Standing chips recompute +N whenever Owner is controlled at that location — **no** `$location->isControlled()` skip.
+
+WHY two bits: a single bit that both adds +N and wins ties would let an **opponent** who initiates at Owner's location win ties. The printed "If you initiated" scopes win-ties to Owner's controller only; +N still applies for Owner's controller even when the opponent initiated.
+
+Reference: `_05Orel`; Covert +N sibling `_05DabneyUS01`; Action-minted win-ties (engage then pressure) are Pattern C Tabard/Soline — different emitter, same win-ties OR list.
 
 ### Covert — [Influence] pressures at this location cannot succeed
 
@@ -1233,7 +1266,7 @@ Reference: `_05Overcoat` Varvara (CAD); Valeri sibling `_05DabneyUS01` (aura, no
 | `EventChallengeIssued` | A challenge was just issued (`$event->challengerId`, `$event->defenderId`); queued by `StatesTrait::stIssueChallenge` BEFORE the intervention dispatcher state advances | "After a challenge is issued at this location, **before choosing to intervene** …" — `_03027` Odette (pull adjacent Duelist before intervention). Use this (NOT `EventChallengeAccepted`) when the text says "before intervene" — accept fires AFTER the intervention window resolves. |
 | `EventChallengeAccepted` | A challenge was accepted (post-intervention) | "After a challenge is accepted at this location …" — existing Odette `_01062` move-adjacent-renown reaction. |
 | `EventCharacterIntervened` | An intervention character was selected during a challenge | "After X intervenes …" — `Reaction_01062`. |
-| `EventPressureOccuring` | A pressure is happening at a location (`$event->pressureTypes` = stat list from `getPressureStats`) | "When pressuring …", `_01006` Don Constanzo; **Covert** +N aura `_05DabneyUS01`; **Covert** Influence-cannot-succeed `_05Overcoat` |
+| `EventPressureOccuring` | A pressure is happening at a location (`$event->playerId` = initiator, `$event->pressureTypes` = stat list from `getPressureStats`) | "When pressuring …", `_01006` Don Constanzo; **Covert** +N aura `_05DabneyUS01`; **non-Covert** +N + initiator win-ties `_05Orel` (gate win-ties on `playerId == ControllerId`); **Covert** Influence-cannot-succeed `_05Overcoat` |
 | `EventDuelStarted` / `EventDuelEnd` | Duel boundaries | Passive duel stat modifiers, `_01089`. **`EventDuelEnd` fires BEFORE the dueling line is cleared** in `stDuelEnd` (the discard events are queued AFTER it), so a recount-based dueling-line effect must reset via direct inverse-event, not via re-reading the line. |
 | `EventCharacterCombatModified` / `EventCharacterInfluenceModified` | A character's modified stat changed (`$event->CharacterId`, `$event->OldCombat`/`NewCombat` or `OldInfluence`/`NewInfluence`) | Re-sync a "set [StatA] equal to [StatB]" link when the source stat changes, or re-apply the link when an external effect mutates the target stat during the override. EventHub applies the new stat **before** card `handleEvent` runs (`runEventHubAfterCards = false`). Reference: `_03028` Térence. |
 | `EventAttachmentEquipped` | An attachment was equipped (`$event->characterId`, `$event->attachmentId`; `$event->asAction` distinguishes action-equip vs passive) | "After a character equips an attachment at [location] …" City Reactions. Look up equipping character via `getCharacterById($event->characterId)` and compare `.Location` to the named city constant. Skip `$attachment->FakeAttachment`. Reference: `Reaction_03028` (any character at Grand Bazaar), `Reaction_01039` (owner self-equip only). |

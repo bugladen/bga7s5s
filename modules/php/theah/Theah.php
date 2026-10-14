@@ -1633,6 +1633,13 @@ class Theah
 
     public function characterCanEquip(Character $character): bool
     {
+        // WHY: Orel canReceiveAttachments — Equip menu must stay off for hosts that
+        // cannot be equipped (locked Extra Action performer path uses this).
+        if (! $character->canReceiveAttachments())
+        {
+            return false;
+        }
+
         if ($this->cardInCity($character))
         {
             $attachmentsAtLocation = $this->getAvailableAttachmentsAtLocation($character->Location);
@@ -1700,6 +1707,21 @@ class Theah
         if ($action instanceof CharacterAction)
         {
             return (int) $action->OwnerId === $performerId;
+        }
+
+        // WHY: Orel — cannot perform Risk/Scheme abilities. Catch Scheme subclasses that
+        // build performer lists without filtering via parent::getPerformersForAction.
+        if ($action instanceof CardAction)
+        {
+            $owner = $action->getOwningCard($this);
+            if ($owner instanceof Risk || $owner instanceof Scheme)
+            {
+                $performer = $this->getCharacterById($performerId);
+                if ($performer !== null && ! $performer->canPerformRiskAndSchemeAbilities())
+                {
+                    return false;
+                }
+            }
         }
 
         if (method_exists($action, 'getPerformersForAction'))

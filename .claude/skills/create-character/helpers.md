@@ -32,4 +32,10 @@ Pressure / Influence-label (Pattern A Covert and standing chips):
 - `$game->getLocationInfluenceTotalsData()` / `notifyLocationInfluenceTotals()` — standing Influence chips. Covert-style **bonuses** that gate on uncontrolled must also recompute here.
 - `$game->eventAffectsLocationInfluenceTotals($event)` — must include `EventLocationClaimed` and `EventLocationBecomesUncontrolled` when uncontrolled-gated bonuses exist, or chips go stale after claim.
 - Covert **"[Influence] cannot succeed"** (Overcoat): different bit from Valeri +N; set flag only when `STAT_INFLUENCE ∈ EventPressureOccuring::$pressureTypes`; force `[false, …]` in `pressureLocation` after totals. **No** chip recompute — fail is mid-pressure only.
+- Non-Covert **+N + initiator win-ties** (Orel): **two** bits — aura always at Owner's location (no uncontrolled gate); win-ties bit only when `$event->playerId == Owner.ControllerId`. Standing chips recompute +N without uncontrolled skip.
+
+Character host-ban predicates (Pattern A; override on the card — framework already wires consumers):
+- `$character->canEnterApproachDeck(): bool` — default `!hasTrait("Brute")`. Deck construction + PutIntoApproachDeck.
+- `$character->canReceiveAttachments(): bool` — default `true`. Equip paths + `Attachment::canAttachTo`.
+- `$character->canPerformRiskAndSchemeAbilities(): bool` — default `true`. Risk/Scheme performer filters.
 

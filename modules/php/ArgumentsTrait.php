@@ -26,6 +26,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 
 trait ArgumentsTrait
 {
@@ -262,6 +264,10 @@ trait ArgumentsTrait
         $handHasAttachments = $this->handHasAttachments($playerId);
         $charactersThatCanEquip = [];
         foreach ($charactersInCity as $character) {
+            // WHY: Orel canReceiveAttachments — do not offer hosts that cannot be equipped.
+            if (! $character->canReceiveAttachments()) {
+                continue;
+            }
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
             if (count($attachmentsAtLocation) > 0 || $handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
@@ -277,6 +283,9 @@ trait ArgumentsTrait
             $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
         }
         foreach($charactersAtHome as $character) {
+            if (! $character->canReceiveAttachments()) {
+                continue;
+            }
             if ($handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
             }
@@ -487,6 +496,15 @@ trait ArgumentsTrait
             $owner = $action->getOwningCard($this->theah);
         
         $performers = array_values($action->getPerformersForAction($playerId, $this->theah));
+        // WHY: Scheme Actions that build their own performer lists bypass SchemeAction/
+        // RiskAction filters — drop hosts that cannot perform Risk/Scheme abilities (Orel).
+        if ($owner instanceof Risk || $owner instanceof Scheme)
+        {
+            $performers = array_values(array_filter(
+                $performers,
+                fn($performer) => $performer->canPerformRiskAndSchemeAbilities()
+            ));
+        }
         
         //Select the Ids of the performers
         $performerIds = array_map(function($performer) { return $performer->Id; }, $performers);
@@ -549,6 +567,15 @@ trait ArgumentsTrait
 
         $owner = $action->getOwningCard($this->theah);
         $performers = array_values($action->getPerformersForAction($playerId, $this->theah));
+        // WHY: Same Orel Risk/Scheme performer gate as in-play choose (Scheme subclasses
+        // that rebuild lists without parent filter).
+        if ($owner instanceof Risk || $owner instanceof Scheme)
+        {
+            $performers = array_values(array_filter(
+                $performers,
+                fn($performer) => $performer->canPerformRiskAndSchemeAbilities()
+            ));
+        }
         
         //Select the Ids of the performers
         $performerIds = array_map(fn($performer) => $performer->Id, $performers);

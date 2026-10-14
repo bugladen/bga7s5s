@@ -87,7 +87,9 @@ abstract class Attachment extends Card implements IWealthCost
 
     public function canAttachTo(Character $character): bool
     {
-        return true;
+        // WHY: Character host gate (Orel canReceiveAttachments) — shared by every caller
+        // of canAttachTo so steal/salvage/HD equip paths don't each re-check.
+        return $character->canReceiveAttachments();
     }
 
     // WHY: Default true. Kaspar's Panzerhand (_01047) overrides when printed text

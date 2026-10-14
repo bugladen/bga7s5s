@@ -221,11 +221,16 @@ class Game extends \Bga\GameFramework\Table
     final const VALERI_PRESSURE_TYPE = 131072;
     // WHY: Overcoat Covert — Influence pressures at Varvara's uncontrolled location fail.
     final const OVERCOAT_PRESSURE_TYPE = 262144;
+    // WHY: Orel — +1 at his location (any pressure type; not Covert / no uncontrolled gate).
+    final const OREL_PRESSURE_TYPE = 524288;
+    // WHY: Orel — win ties only when his controller initiated (separate bit from +1).
+    final const OREL_WIN_TIES_PRESSURE_TYPE = 1048576;
     final const SOLOMONIA_ID = "solomoniaId";
     final const LOYAL_PLAYER_ID = "loyalPlayerId";
     final const VANTAGE_POINT_PLAYER_ID = "vantagePointPlayerId";
     final const MEETING_OF_THE_MINDS_PLAYER_ID = "meetingOfTheMindsPlayerId";
     final const VALERI_ID = "valeriId";
+    final const OREL_ID = "orelId";
 
     //Player action global variables
     //Delete these in stNextPlayer

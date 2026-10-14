@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01130;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
@@ -129,6 +130,23 @@ abstract class Character extends Card implements IHasTechniques
         return ! $this->hasTrait("Brute");
     }
 
+    // WHY: Host-side equip gate (Orel _05Orel "cannot be equipped"). Attachment::canAttachTo
+    // and hasEquipRestrictions consult this so every equip path (HD Equip, steal, salvage)
+    // shares one predicate. Default true; Familiars override. Fate's Silence: subclass may
+    // return abilitiesAreBlanked() so blanking lifts the printed restriction.
+    public function canReceiveAttachments(): bool
+    {
+        return true;
+    }
+
+    // WHY: Performer gate for Risk/Scheme abilities (Orel "cannot perform abilities on
+    // risks and schemes"). Filters in RiskAction + in-hand/in-play performer args, and
+    // Theah::actionAvailableToPerformer. Character/Attachment Actions stay legal.
+    public function canPerformRiskAndSchemeAbilities(): bool
+    {
+        return true;
+    }
+
     // WHY: Play Brute is a High Drama menu action. Cards like Stefano (_05Coleman) cannot
     // enter play from hand except during a duel — so they must not appear in the Brute
     // picker. eventCheck still backstops other hand→play muster paths (Vittoria, etc.).
@@ -187,6 +205,18 @@ abstract class Character extends Card implements IHasTechniques
         {
             throw new UserException(sprintf(
                 $event->theah->game->translate("%s cannot be put into an Approach deck."),
+                $this->Name
+            ));
+        }
+
+        // WHY: Host-side "cannot be equipped" (Orel). canAttachTo / hasEquipRestrictions
+        // filter prompts; this backstops forced equip events that skip those gates.
+        if ($event instanceof EventAttachmentEquipped
+            && $event->characterId == $this->Id
+            && ! $this->canReceiveAttachments())
+        {
+            throw new UserException(sprintf(
+                $event->theah->game->translate("%s cannot be equipped."),
                 $this->Name
             ));
         }

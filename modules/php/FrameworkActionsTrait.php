@@ -575,6 +575,10 @@ trait FrameworkActionsTrait
 
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
+            // WHY: Orel canReceiveAttachments — mirror argsHighDramaEquipActionChoosePerformer.
+            if (! $character->canReceiveAttachments()) {
+                continue;
+            }
             $attachmentsAtLocation = $this->theah->getAvailableAttachmentsAtLocation($character->Location);
             if (count($attachmentsAtLocation) > 0 || $handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
@@ -591,6 +595,9 @@ trait FrameworkActionsTrait
         }
 
         foreach ($charactersAtHome as $character) {
+            if (! $character->canReceiveAttachments()) {
+                continue;
+            }
             if ($handHasAttachments) {
                 $charactersThatCanEquip[] = $character;
             }

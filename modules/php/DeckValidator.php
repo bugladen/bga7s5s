@@ -7,7 +7,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02032;
 
 class DeckValidator
 {
@@ -104,12 +103,6 @@ class DeckValidator
 
         foreach ($deck->approach_deck as $approachCard)
         {
-            if ($approachCard == '02032')
-            {
-                $errors[] = clienttranslate('02032 - Lucas Martinez "Damned" cannot be in an Approach deck.');
-                continue;
-            }
-
             $className = $game->getCardClassName($approachCard);
             if (! class_exists($className))
             {
@@ -132,9 +125,18 @@ class DeckValidator
                 $characterCount++;
             }
 
-            if ($card->hasTrait("Brute"))
+            // WHY: canEnterApproachDeck covers Brutes, Damned (_02032), Orel (_05Orel).
+            // Brute keeps its trait-specific message; others share a name-based ban.
+            if ($card instanceof Character && ! $card->canEnterApproachDeck())
             {
-                $errors[] = sprintf(clienttranslate('The approach card %s has the Brute trait, which is not allowed in the Approach deck.'), $approachCard);
+                if ($card->hasTrait("Brute"))
+                {
+                    $errors[] = sprintf(clienttranslate('The approach card %s has the Brute trait, which is not allowed in the Approach deck.'), $approachCard);
+                }
+                else
+                {
+                    $errors[] = sprintf(clienttranslate('%s cannot be in an Approach deck.'), $card->Name);
+                }
             }
 
             if (!$card->hasFaction($faction) && !$card->hasFaction("Neutral"))

@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01006;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05DabneyUS01;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Orel;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02044;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
@@ -802,6 +803,17 @@ trait UtilitiesTrait
             }
         }
 
+        // WHY: Orel — +1 to any pressure type at Orel's location (not Covert).
+        // Outside the per-stat loop (Loyal / Valeri shape). Separate from win-ties bit.
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::OREL_PRESSURE_TYPE))
+        {
+            $orel = $this->theah->getCardById($this->globals->get(Game::OREL_ID));
+            if ($orel !== null && isset($playerInfluences[$orel->ControllerId]))
+            {
+                $playerInfluences[$orel->ControllerId]['influence'] += 1;
+            }
+        }
+
         //Get the player with the most influence
         $maxInfluence = 0;
         $maxPlayerId = 0;
@@ -853,6 +865,7 @@ trait UtilitiesTrait
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::KASPARS_OCCUPATION_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::USSURAN_INTRIGUE_PRESSURE_TYPE)
             || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::SOLINE_PRESSURE_TYPE)
+            || $this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::OREL_WIN_TIES_PRESSURE_TYPE)
         )
         {
             //Ties win
@@ -1030,6 +1043,13 @@ trait UtilitiesTrait
 
     public function hasEquipRestrictions(Character $character, Attachment $attachment) : array
     {
+        // WHY: Host-side "cannot be equipped" (Orel) — catch paths that check
+        // hasEquipRestrictions without also calling canAttachTo.
+        if (! $character->canReceiveAttachments())
+        {
+            return [true, sprintf($this->translate("%s cannot be equipped."), $character->Name)];
+        }
+
         // WHY: Weapon/Armor/Attire/OffHand duplicates are no longer blocked here —
         // Reaction_AttachmentTypeLimit lets the player choose which to discard after equip.
         // OffHands still do not count against Weapon/Armor/Attire limits (handled in that reaction).
@@ -1278,6 +1298,18 @@ trait UtilitiesTrait
                 $controllerId = (int) $character->ControllerId;
                 if (array_key_exists($controllerId, $influenceByPlayer)) {
                     $influenceByPlayer[$controllerId] += 2;
+                }
+            }
+
+            // WHY: Orel +1 mid-pressure via OREL_PRESSURE_TYPE — standing chips recompute
+            // without uncontrolled gate (not Covert). Win-ties is mid-pressure only.
+            foreach ($this->theah->getCharactersAtLocation($location->Name) as $character) {
+                if (! ($character instanceof _05Orel) || ! $character->isControlled()) {
+                    continue;
+                }
+                $controllerId = (int) $character->ControllerId;
+                if (array_key_exists($controllerId, $influenceByPlayer)) {
+                    $influenceByPlayer[$controllerId] += 1;
                 }
             }
 
