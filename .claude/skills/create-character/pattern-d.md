@@ -169,6 +169,57 @@ On select: `createCardMovingEvent(..., $engage=false, …)` when Engage is not p
 
 For the *self-moves* analogue ("after this character moves to a new location, do X for nearby allies"), the receiver isn't a Reaction — it's a `handleEvent` on the card itself. See Pattern A "Location Technique grant aura" (`_01067` Jean Urbain, `_02022` Stranahan, `_03051` Yepikhodov).
 
+### Follow opposing character to their new location
+
+Printed shapes:
+
+- **Volk `_05Volk`:** `<b>Reaction:</b> After an opposing character moved • Move Volk to their new location.`
+- **Horatio `_01066`:** `<b>City Reaction:</b> After an opposing character moved to an adjacent location • Move Horatio to their new location.`
+
+This is **leave-from-here → follow**, not Ise's arrive-here → pull ally (`Reaction_03016b`). Listen on `EventCardMoved` (past-tense). Required gates:
+
+```php
+if (! ($event instanceof EventCardMoved) || ! $this->isAvailable()) return;
+
+$owner = $this->getOwningCharacter($event->theah);
+if ($owner === null) return;
+
+// WHY: Keep even when text is plain Reaction (not City Reaction). Opposing needs
+// same location; LOCATION_PLAYER_HOME is shared across players — without cardInCity,
+// a Home Owner treats every opponent leaving *their* Home as "opposing".
+if (! $event->theah->cardInCity($owner)) return;
+
+$character = $event->theah->getCardById($event->cardId);
+if (! ($character instanceof Character)) return;
+if ($character->ControllerId == 0 || $character->ControllerId == $owner->ControllerId) return;
+
+// WHY: They left Volk/Horatio's site. Arrival-only (toLocation == owner.Location)
+// would make "new location" equal current — useless Follow prompt.
+if ($event->fromLocation != $owner->Location) return;
+
+$toLocation = $event->toLocation;
+
+// Adjacent-only when printed ("to an adjacent location") — Horatio:
+// $adjacent = $event->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
+// if (! in_array($toLocation, $adjacent)) return;
+
+// Any dest when adjacent is NOT printed — Volk: city or Home; skip discard/locker
+if ($toLocation != Game::LOCATION_PLAYER_HOME && ! $event->theah->locationInCity($toLocation)) return;
+if ($toLocation == $owner->Location) return;
+
+$this->FollowedCharacterLocation = $toLocation;  // stash — performReaction may be later request
+$owner->IsUpdated = true;
+$event->theah->queueEvent(EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id));
+```
+
+**UI:** Follow + Pass buttons (no state / no JS). On Follow: `createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, $stashedDest, $engage=false, $owner->Id, $this->Id)`; `setUsed(true)` only on a real move.
+
+**Parse adjacent literally.** Copying Horatio onto a card that omits "adjacent" wrongly blocks non-adjacent follows (and often Home). Copying Volk onto Horatio wrongly allows non-adjacent follows.
+
+Contrast: `Reaction_03016b` gates `toLocation == owner.Location` (arrive); this pattern gates `fromLocation == owner.Location` (leave).
+
+Reference: `Reaction_05Volk` (any dest), `Reaction_01066` (adjacent).
+
 ### After a character equips an attachment at a location
 
 For "City Reaction: After a character equips an attachment at [The Grand Bazaar] • Draw a card" (`_03028` Térence). Listen on `EventAttachmentEquipped`. Required gates:
@@ -598,6 +649,8 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_04013` (Tomas — salvage attachment) | **Would-be-discard → equip paying costs.** Cancel both discard events; unequip-stash map for host identity; pick character + click-to-pay (`getEquipDiscount`); Decline re-queues discard via `cancelDeclinedByCardIds`. No `PAY_STATE_EQUIP_ATTACHMENT`. |
 | `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
 | `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
+| `Reaction_01066` (Horatio — follow adjacent) | **"After opposing moved to adjacent • Move Owner there."** Leave-from-here (`fromLocation == owner.Location`) + adjacent city gate; stash destination; Follow/Pass; Owner `createCardMovingEvent(engage=false)`. City Reaction. |
+| `Reaction_05Volk` (Volk — follow any dest) | Same leave-from-here / opposing / stash shape as Horatio **without** adjacent gate — any city or Home. Still `cardInCity` despite plain Reaction (shared Home). Prototype: no `clienttranslate`. Contrast Ise arrive-here. |
 | `Reaction_03040` (Soline el Gato — any character arrives) | **"After a character moves here"** without enemy gate — allies trigger too. Effect: button-per-other-city-location + Pass; `createCardMovingEvent(engage=false)` for Soline herself. Contrast `Reaction_03016b` (enemy-only) and `Reaction_01089` (adjacent-only after Action resolves). |
 | `Reaction_04003a` (Desideria — Thug destroy → hand) | **En Garde City Reaction** + duel/opponent cause gate + **deferred mid-duel Hand return**. `EventCharacterWounded` marks opponent lethal; Destroyed ORs `IN_DUEL`; locker/discard → hand; `stDuelEnd` flush. |
 | `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |

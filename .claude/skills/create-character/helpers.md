@@ -8,7 +8,7 @@
 - `$theah->getCharactersAtLocation(string $location, bool $includeUncontrolled = false): array` — all characters at a location (default excludes uncontrolled, which is usually what you want).
 - `$theah->getCharactersAtLocationByPlayerId(string $location, int $playerId, bool $includeUncontrolled = false): array` — friendly characters at a location.
 - `$theah->getCharactersAtHomeByPlayerId(int $playerId): array` — **your** characters at Home. Use this for Home hosts / Home-scoped counts. **Never** `getCharactersAtLocation(LOCATION_PLAYER_HOME)` — Home is a shared location string across players.
-- `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing = different controller AND same location.
+- `$theah->getOpposingCharactersAtLocation(string $location, int $playerId): array` — opposing = different controller AND same location. **Do not** use at `LOCATION_PLAYER_HOME` (shared string across players — false "opposing"). Follow Reactions (`Reaction_05Volk` / `Reaction_01066`) gate `cardInCity(owner)` + `fromLocation == owner.Location` instead of this helper for the leave-from-here trigger.
 - `$theah->getCharactersInPlayByPlayerId(int $playerId): array` — all characters in play controlled by a player.
 - `$theah->getCharactersInCityByPlayerId(int $playerId): array` — characters in city (not Home, not approach).
 - `$theah->getAdjacentCityLocations(string $location, bool $includeHome = true): array` — adjacency for move actions.
