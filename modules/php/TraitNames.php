@@ -150,6 +150,7 @@ class TraitNames
             "Oathsworn",
             "Ontoquas",
             "Orphan",
+            "Overthrow",
             "Pact",
             "Penance",
             "Performance",

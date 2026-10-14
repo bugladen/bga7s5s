@@ -88,23 +88,26 @@ Parse the bullet carefully. Three different shapes use similar wording:
 
 ### "If your participant has more / equal or greater <Stat> than the adversary" gate
 
-Parse the printed comparison literally — the operator is part of the card text:
+Parse the printed comparison literally — the operator **and which side has more** are part of the card text:
 
-| Card phrase | Operator |
+| Card phrase | Predicate |
 |---|---|
-| "more … than" / "greater … than" | `>` |
+| "your participant has more … than the adversary" / "more … than" (participant subject) | `$actor->ModifiedX > $adversary->ModifiedX` |
+| **"the adversary has more … than your participant"** | `$adversary->ModifiedX > $actor->ModifiedX` — **do not** invert to actor-greater (`_05Glass`) |
 | "equal or greater … than" / "equal or lower … than" (on the *target*) | `>=` / `<=` |
 
 ```php
 $actor = $theah->getDuelRoundActor();
 $adversary = $theah->getDuelRoundOpponent();
-// "more Influence than" → strict >
+// "participant has more Influence than adversary" → strict >
 return $actor->ModifiedInfluence > $adversary->ModifiedInfluence;
+// "adversary has more Influence than your participant" → inverted >
+return $adversary->ModifiedInfluence > $actor->ModifiedInfluence;
 // "equal or greater Influence than" → >=
 return $actor->ModifiedInfluence >= $adversary->ModifiedInfluence;
 ```
 
-Use **modified** stats (`ModifiedInfluence`, `ModifiedFinesse`, etc.), not the printed base — the comparison must honor live modifiers. Reference: `Maneuver_01115` (Finesse comparison), `Maneuver_03008` ("more" → `>`), `Maneuver_03033` ("equal or greater" → `>=`), `Technique_01196` (equal-or-greater Combat+Influence).
+Use **modified** stats (`ModifiedInfluence`, `ModifiedFinesse`, etc.), not the printed base — the comparison must honor live modifiers. Bullet-**If** comparisons are **availability filters** (hide when false), not silent resolve no-ops — same discipline as A.4 / A.6. Reference: `Maneuver_01115` (Finesse comparison), `Maneuver_03008` / `Maneuver_01033` (actor "more" → `>`), `Maneuver_05Glass` (adversary "more" → inverted `>`), `Maneuver_03033` ("equal or greater" → `>=`), `Technique_01196` (equal-or-greater Combat+Influence).
 
 When the resolve effect wounds the adversary, also gate availability on `! $theah->game->characterIsInDiscardOrLocker($adversary)` so the maneuver is not offered against an already-destroyed opponent.
 
@@ -416,7 +419,7 @@ if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
 }
 ```
 
-Reference: `Maneuver_03033` (Glorious — Gambling + Influence ≥ → wound), `Maneuver_01055` (Ranged Weapon → wound), `Maneuver_01033` (Influence > → move adversary Home), `Maneuver_03072` (Sabotage — destroy **all** engaged non-Fake attachments on adversary; snapshot list then unequip+discard; gate `! characterIsInDiscardOrLocker` + ≥1 engaged; contrast choose-one `Technique_02026b`).
+Reference: `Maneuver_03033` (Glorious — Gambling + Influence ≥ → wound), `Maneuver_05Glass` (plain Maneuver — **adversary** Influence `>` participant → wound; no Gambling), `Maneuver_01055` (Ranged Weapon → wound), `Maneuver_01033` (actor Influence > → move adversary Home), `Maneuver_03072` (Sabotage — destroy **all** engaged non-Fake attachments on adversary; snapshot list then unequip+discard; gate `! characterIsInDiscardOrLocker` + ≥1 engaged; contrast choose-one `Technique_02026b`).
 
 ### Pattern C.2 — Suppress end-of-round threat→wound conversion (with optional carry-forward)
 

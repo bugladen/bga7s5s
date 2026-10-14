@@ -351,7 +351,7 @@ Composition of Leader performer + wound cost + bullet-If availability + pressure
 - `stHighDramaPressureLocation` reads `PRESSURE_STAT` (default Influence) and `CHOSEN_PERFORMER` (or `CHOSEN_LOCATION` when performer is 0).
 - Hand-played Risks are discarded via `createCardDiscardedFromHandEvent` after `ActionTriggered` is queued — locker later moves the card from discard to locker; `createCardSentToLockerEvent` alone is enough (no separate remove-from-discard required).
 
-References: `_03067` / `Action_03067` / `State_highDramaPhase03067`, `Action_01141` / `Action_01206` (pressure → claim on success), `Action_03020` (Leader, no performer chooser), A.5 (claimability gate discipline — different trigger).
+References: `_03067` / `Action_03067` / `State_highDramaPhase03067`, `Action_01141` / `Action_01206` (pressure → claim on success), Pattern A.17 (fixed-stat pressure → claim **or** unclaim without Leader/wound/choose-stat/locker — `_01141` / `_05Glass`), `Action_03020` (Leader, no performer chooser), A.5 (claimability gate discipline — different trigger).
 
 ### Pattern A.9 — Opponent-controlled location • Engage an opposing character
 
@@ -522,6 +522,33 @@ For City Actions like **"City Action: Choose a controlled City location with no 
 Often pairs with pure-calc **" +N Thrust. If this location is uncontrolled, +N Riposte instead"** (`Maneuver_04060`) — exclusive calc branch on `getControllerForLocation($actor->Location) == 0`; not C.10 (always Riposte + claim/unclaim).
 
 References: `_04060` / `Action_04060` / `State_highDramaPhase04060`; filter sibling `Action_01086`; unclaim emit `Action_04039` / `Maneuver_04048b`.
+
+### Pattern A.17 — Fixed-stat pressure → claim or unclaim on success
+
+For City Actions like:
+
+- **"City Action: Pressure your performer's location with [Combat]. If successful, claim it."** — see `_01141` (Strong Hands).
+- **"City Action: Pressure your performer's location with [Finesse]. If successful, this location becomes uncontrolled."** — see `_05Glass` (Unseat).
+
+Same skeleton as A.8's pressure pipeline **without** Leader / wound / choose-stat / locker. Do **not** invent a GameState — go straight to shared `pressureLocation`.
+
+1. **`RiskCityAction`**, `RequiresPerformerSelected = true`. **No** Cesca — no printed character Target.
+2. **Performer filter:** `parent::getPerformersForAction` (city) then `canPressure(STAT_*)` for the printed pressure stat (excludes dashed). Grey Action when no such performer.
+3. **`EventActionTriggered`:** set `PRESSURING_PLAYER`, `PRESSURE_TYPE = NORMAL`, `PRESSURE_STAT` → `createPressureOccuringEvent` → `createTransitionEvent(..., "pressureLocation", $this->Id)`. Ability id in the 4th arg becomes `EventLocationPressureResult.abilityId`.
+4. **`EventLocationPressureResult` + `$event->abilityId == $this->Id`:**
+   - **Claim payoff** (`_01141`): on success, if `canLocationBeClaimedBy` → `createLocationClaimedEvent`; else notify-and-skip.
+   - **Unclaim payoff** (`_05Glass`): on success, if `getControllerForLocation != 0` **and** `canLocationBecomeUncontrolledBy` → `createLocationBecomesUncontrolledEvent`; else notify-and-skip (already uncontrolled = silent skip; Indomitable Will = notify). WHY explicit controller check: `canLocationBecomeUncontrolledBy` does **not** encode control state (same C.10 / `Maneuver_04048b` discipline).
+   - **Always** `createActionResolvedEvent` after success or fail (no Unique locker unless printed).
+5. **Do not grey** availability on claimability / controlled / `canBecomeUncontrolled` — pressure still plays; payoff is emit-only (A.8 / A.5 discipline).
+6. **No custom states / JS.**
+
+**WHY not A.8:** A.8 adds Leader + wound cost + location-count If + choose-stat + Unique locker. A.17 is the bare fixed-stat pressure → location-control change.
+
+**WHY not A.16 / C.10:** A.16 is a High Drama location picker with no pressure. C.10 unclaims the **duel** location from a Maneuver. A.17 pressures first, then changes control of the **performer's** location.
+
+**WHY not A.12:** A.12 is engage + choose-a-location-you-control to unclaim → claim performer location (cost/payoff pair, no pressure).
+
+References: `_01141` / `Action_01141` (Combat → claim); `_05Glass` / `Action_05Glass` (Finesse → unclaim); pressure pipeline A.8 / `Action_01206`; unclaim emit `Maneuver_04048b`.
 
 ### Common precondition predicates
 
