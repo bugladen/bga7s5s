@@ -89,7 +89,7 @@ class _02014 extends Scheme implements IHasActions
 
             if ($locationName == Game::LOCATION_CITY_FORUM)
             {
-                throw new UserException($game->translate("You cannot move Renown FROM The City Forum."), $locationName);
+                throw new UserException(sprintf($game->translate("You cannot move Renown FROM %s."), $locationName));
             }
 
             $location = $game->theah->getCityLocation($locationName);

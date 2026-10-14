@@ -156,6 +156,8 @@ class Game
     final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
     // WHY: Action_02001 Andriana issues Combat challenge after successful move; must match Game.php.
     final const ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
+    // WHY: Action_02013 Wilhelm Combat challenge-as-Sorcerer; must match Game.php.
+    final const WILHELM_DUNST_CHALLENGE_TYPE = 13;
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
@@ -195,6 +197,10 @@ class Game
     final const CAPTAINS_COAT_PRESSURE_TYPE = 2;
     final const PACK_TACTICS_PRESSURE_TYPE = 64;
     final const PULL_THE_STRAND_PRESSURE_TYPE = 128;
+    // WHY: Action_02014 Kaspar's Occupation succeeds on ties; must match Game.php.
+    final const KASPARS_OCCUPATION_PRESSURE_TYPE = 256;
+    // WHY: Reaction_02019 Trial of Faith OR's wound-count bonus onto pressure; must match Game.php.
+    final const TRIAL_OF_FAITH_PRESSURE_TYPE = 512;
 
     // WHY: Reaction_01203 / Reaction_04031 button labels read live threat from globals.
     final const CHALLENGER_THREAT = 'challengerThreat';
