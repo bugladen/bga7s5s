@@ -154,6 +154,8 @@ class Game
     final const VALERI_MIKHAILOV_CHALLENGE_TYPE = 10;
     // WHY: Action_01131 Iron and Velvet stamps this challenge type; must match Game.php.
     final const IRON_AND_VELVET_CHALLENGE_TYPE = 11;
+    // WHY: Action_02001 Andriana issues Combat challenge after successful move; must match Game.php.
+    final const ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;

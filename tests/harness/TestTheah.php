@@ -76,6 +76,19 @@ class TestTheah extends Theah
         return $this->duelActor;
     }
 
+    /**
+     * Stub for Technique_02003 (and similar) Sorcery combat-card gates.
+     * Real path SELECTs duel_round_combat_card — no MySQL in unit tests.
+     *
+     * @var list<\Bga\Games\SeventhSeaCityOfFiveSails\cards\Card>
+     */
+    public array $combatCardsForCurrentRound = [];
+
+    public function getCombatCardsForCurrentRound(): array
+    {
+        return $this->combatCardsForCurrentRound;
+    }
+
     // WHY: Real getDuelOpponentId / challenger / defender hit duel table in DB.
     public function getDuelOpponentId($actorId): int
     {
