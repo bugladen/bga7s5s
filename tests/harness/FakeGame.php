@@ -158,6 +158,8 @@ class Game
     final const ANDRIANA_DONDOLOS_CHALLENGE_TYPE = 12;
     // WHY: Action_02013 Wilhelm Combat challenge-as-Sorcerer; must match Game.php.
     final const WILHELM_DUNST_CHALLENGE_TYPE = 13;
+    // WHY: Action_02028 Battle of Wits Influence challenge; must match Game.php (=14).
+    final const BATTLE_OF_WITS_CHALLENGE_TYPE = 14;
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;

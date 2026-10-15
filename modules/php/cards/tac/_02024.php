@@ -143,7 +143,7 @@ class _02024 extends Scheme
 
             if (in_array($location->Name, $this->ReknownLocations))
             {
-                throw new UserException($game->translate("Renown has already been moved to Location %s"), $location->Name);
+                throw new UserException(sprintf($game->translate("Renown has already been moved to Location %s"), $location->Name));
             }
 
             $event = EventFactory::createReknownRemovedFromCardEvent($this->ControllerId, $this->Id, 1);
