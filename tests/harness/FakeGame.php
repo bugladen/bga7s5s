@@ -167,6 +167,8 @@ class Game
     // Must match Game.php — Action_04019; off auto-engage (attachment Engage only).
     final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;
     final const CELERITY_CHALLENGE_TYPE = 30;
+    // WHY: Action_05DabneyUS01 CAD Valeri post-move Back lock (refuse allowed). Must match Game.php.
+    final const VALERI_CHALLENGE_TYPE = 32;
     // Must match Game.php — Thug challenge never engages (off auto-engage list).
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CHALLENGE_STAT = 'ChallengeStat';

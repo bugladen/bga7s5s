@@ -167,6 +167,24 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         return $args;
     }
 
+    // WHY: Same gate as Andriana Action_02001. "05DabneyUS01_2" is TRANSITION_PRIORITY (9),
+    // so CardMoved reactions (Soline Reaction_03040, pri 6) resolve first and can yank the
+    // target off Valeri's landing spot before TECHNIQUE_AVAILABLE. stTechniqueAvailable
+    // calls this and challengeSkipped when false — challenge requires same location.
+    public function shouldIssueChallenge(Game $game): bool
+    {
+        $owner = $this->getOwningCharacter($game->theah);
+        $targetId = (int) $game->globals->get(Game::CHOSEN_TARGET);
+        $target = $game->theah->getCharacterById($targetId);
+
+        if ($owner === null || $target === null)
+        {
+            return false;
+        }
+
+        return $target->Location === $owner->Location;
+    }
+
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
         $owner = $this->getOwningCharacter($game->theah);
@@ -214,7 +232,8 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             $targetedEvent->batchId = $batchId;
             $game->theah->queueEvent($targetedEvent);
 
-            // createActionResolvedEvent() is queued by the challenge resolution flow.
+            // createActionResolvedEvent() is queued by the challenge resolution flow,
+            // or by stTechniqueAvailable → challengeSkipped when shouldIssueChallenge fails.
 
             $game->gamestate->nextState("opponentChosen");
         }
