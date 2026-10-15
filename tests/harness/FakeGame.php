@@ -177,6 +177,12 @@ class Game
     final const IN_DUEL = 'inDuel';
     final const DUEL_ID = 'duelId';
     final const DUEL_ROUND = 'duelRound';
+    // WHY: Gambling Maneuver/Technique gates (Maneuver_03023, etc.) read this. Must match Game.php.
+    final const DUEL_GAMBLED = 'duelGambled';
+    // WHY: Maneuver_03023 / Maneuver_02039 / Reaction_04046 stash next-round threat here.
+    // Must match Game.php.
+    final const PENDING_CHALLENGER_THREAT = 'pendingChallengerThreat';
+    final const PENDING_DEFENDER_THREAT = 'pendingDefenderThreat';
     // WHY: _01188 Vladislav sets DUEL_TYPE = VLADISLAV_DUEL_TYPE on round-1 NewRound so
     // the UI only offers End Duel. Must match Game.php.
     final const DUEL_TYPE = 'duelType';
