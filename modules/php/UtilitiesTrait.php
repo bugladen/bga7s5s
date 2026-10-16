@@ -31,6 +31,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
@@ -1335,9 +1336,10 @@ trait UtilitiesTrait
     }
 
     /**
-     * Events that change who is at a city location, Engaged state (pressure hooks),
-     * controller, or whether the location is controlled — so the Influence label
-     * should refresh (Valeri Covert +2 gates on uncontrolled).
+     * Events that change who is at a city location, a character's Influence,
+     * Engaged state (pressure hooks), controller, or whether the location is
+     * controlled — so the Influence label should refresh (Valeri Covert +2
+     * gates on uncontrolled; Aldo / Dandy rewrite Influence from Renown).
      */
     public function eventAffectsLocationInfluenceTotals($event): bool
     {
@@ -1352,6 +1354,7 @@ trait UtilitiesTrait
             || $event instanceof EventCardDiscardedFromPlay
             || $event instanceof EventCardRemovedFromPlay
             || $event instanceof EventCharacterDestroyed
+            || $event instanceof EventCharacterInfluenceModified
             || $event instanceof EventCardSentToLocker
             || $event instanceof EventLocationClaimed
             || $event instanceof EventLocationBecomesUncontrolled;

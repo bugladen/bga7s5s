@@ -415,6 +415,70 @@ WHY not just hook the post-tense `EventCardMoved` differently — there's no lat
 
 Reference: `_03026` Angeline (binary bonus), `_01037` Edeline (per-character count via `$adjustment` int).
 
+### ±N Influence per Renown at this location
+
+For **"<Owner> has −1 [Influence] for each Renown at his location"** (`_05Dandy` Claude). This is a standing stat on the card chip. Pressures then read `ModifiedInfluence`. It is **not** a pressure reaction.
+
+Do **not**:
+
+- Override `getInfluencePressureValue`, or set a flag on `EventPressureOccuring`. That is Aníbal `_01094` ("during pressures, +2 while Renown ≤ 1") and base Claude `_01184` ("during pressures, +1"). The chip stays at the printed number and the bonus exists only when a pressure is totaled.
+- Copy Aldo `_01007`'s `Influence + count`. Absolute assignment wipes attachment modifiers, and EventHub clamps `ModifiedInfluence` at 0 (`max(0, NewInfluence)`). If printed Influence is 4 and Renown is 10, the chip is 0. Restoring from the chip cannot get back to 4.
+
+Track two public ints, set `UnclampedInfluence = ModifiedInfluence` after `resetCard()`:
+
+- `AppliedRenownPenalty` — how much this passive is currently subtracting.
+- `UnclampedInfluence` — last intended Influence, which may be negative.
+
+```php
+$desired = /* Renown at $location, or 0 at Home / non-city / while blanked */;
+if ($desired === $this->AppliedRenownPenalty) return;
+
+$newUnclamped = $this->UnclampedInfluence + $this->AppliedRenownPenalty - $desired;
+$oldChip = $this->ModifiedInfluence;
+$reported = max(0, $newUnclamped);
+$this->UnclampedInfluence = $newUnclamped;
+$this->AppliedRenownPenalty = $desired;
+$this->ModifiedInfluence = $reported;   // write now; see WHY below
+$this->IsUpdated = true;
+
+if ($reported === $oldChip) return;     // still queue nothing
+
+// NewInfluence is the clamped chip, never a negative.
+$theah->queueEvent(EventFactory::createCharacterInfluenceModifiedEvent(
+    $this->ControllerId, $this->Id, $oldChip, $reported, $this->getInjectCode()
+));
+```
+
+WHY write the chip inside the sync, not only via the queued event: `EventCardMoved` can be processed before that modifier. If the chip still shows the old number, a Home restore sees "already printed" and skips, then the stale penalty event paints the city penalty back on. Writing immediately makes the next sync queue a real delta. The event is still queued so the client notif fires.
+
+WHY `getCityLocation` is gated: it throws when the name is not a city location. Home and non-city contribute 0. Check `LOCATION_PLAYER_HOME` / `locationInCity` first.
+
+Hooks:
+
+| Event | What to pass | Timing |
+|---|---|---|
+| `EventCardMoved` and `cardId == Id` | `$event->toLocation` | Hub has **not** written `Location` yet (`runEventHubAfterCards = true`). |
+| `EventCharacterMustered` and `characterId == Id` | `$event->location` | Destination is the authority. He may still report the faction deck on this object. Hub usually moves him first. |
+| `EventRenownAddedToLocation` / `EventRenownRemovedFromLocation` and `location == Location` | `$this->Location` | Hub already updated `CityLocation->Renown` (hub-before-cards). |
+| `onAbilitiesBlanked` / `onAbilitiesUnblanked` | `$this->Location` | Fate's Silence skips `handleEvent`. Wire these even on a Leader Silence cannot equip. |
+
+On `EventCharacterInfluenceModified` for this card: if `Reason !== getInjectCode()`, add `(NewInfluence − OldInfluence)` onto `UnclampedInfluence` and return. Own events already wrote Unclamped before they were queued; adding their delta applies the penalty twice. EventHub has already set the chip to `NewInfluence` before `handleEvent`.
+
+**Location Influence labels.** `eventAffectsLocationInfluenceTotals` already includes `EventCharacterInfluenceModified`, `EventCardMoved`, `EventCharacterMustered`, and `EventCharacterDestroyed`. The refresh runs after hub and cards, so a muster, a move, and a destroy recount with the chip just written and with him already at the new place or already in the locker. Renown add/remove is **not** on that list. The follow-up Influence event refreshes the labels, and only when the reported chip changed. If he is elsewhere, or the chip stays 0 while more Renown arrives, the labels correctly stay put. Do not add a second pressure-time adjustment in `getLocationInfluenceTotalsData`.
+
+Reference: `_05Dandy`. Contrast `_01007` Aldo (absolute +1 per Renown), `_01094` Aníbal and `_01184` (pressure-only).
+
+### Setup draw after the existing shuffle
+
+For **"During setup, draw N cards. *(After shuffling)*"** on a Leader (`_05Dandy`):
+
+- `handleEvent` on `EventTableSetup` when `ControllerId != 0`. Call `parent::handleEvent` first (scheme Panache / destroy).
+- Do **not** shuffle. `buildDecks` already shuffled the faction deck before `SETUP_TABLE`. The parenthetical is that order.
+- Cap: `$available = count($deck->getCardsInLocation($game->getPlayerFactionDeckName($this->ControllerId)))`. Draw `min(N, $available)` via `createCardDrawnEvent($this->ControllerId, $this->getInjectCode())`.
+- WHY `getCardsInLocation` not `countCardsInLocation`: the test deck stub only implements the former. An empty deck must not fall through into `playerDrawCard`, which reshuffles the discard.
+
+Reference: `_05Dandy`. Setup *choices* (reveal / search) stay the `_01006` state-machine shape.
+
 ### Multi-stat location aura — flag ±1, not absolute
 
 For text like Axelle `_04022` ("While you control a Duelist at this location, Axelle gains +1 Finesse and +1 Influence"):
@@ -1275,7 +1339,7 @@ Reference: `_05Overcoat` Varvara (CAD); Valeri sibling `_05DabneyUS01` (aura, no
 | `EventResolveManeuver` | A Maneuver is resolving (`$event->playerId` actor, `$event->adversaryId` opponent, `$event->maneuverId`) | "Adversary cannot perform Maneuvers" backstop — gate `adversaryId == Owner.Id`. `_04012` Raven (live line condition); `Technique_01186` Maryam (armed flag). |
 | `EventDuelCalculateCombatCardStats` | Combat card stats are being computed for a duel (`$event->gambled` is set from `duel_round.gambled`) | "+X to combat card stats" — `_01116` Yevgeni (every card); gambled-only — `_03037` Sanjay (`$event->gambled` gate); combat-card trait → Lethal — `_04041` Jak-Sen / `_02033` Rosa |
 | `EventChallengerSwapped` / `EventDefenderSwapped` | A challenge had its participant changed | Re-evaluate any duel-time modifier you applied, `_01089` |
-| `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006` |
+| `EventTableSetup` | Game setup | Initial decisions like "during setup, reveal X from your deck", `_01006`. **Draw N cards "(After shuffling)"** does not shuffle again and does not open a state — queue capped `createCardDrawnEvent`s. `_05Dandy`. |
 | `EventSchemeCardRevealed` | A scheme is revealed | Leaders react via the base `Leader::handleEvent`; only override if you have card-specific logic |
 | `EventCharacterDestroyed` | A character is destroyed (`runEventHubAfterCards = true`, so the destroyed character's `.Location` is STILL set during `handleEvent` — the locker move runs AFTER all card handlers). Look up via `getCharacterById($event->characterId)` and compare `.Location == $owner->Location` for "another character at this location" triggers. **After card handlers, EventHub recreates the card** (`instantiateCard`) — instance fields like `$AffectedCharacterId` are wiped. | Leaders have built-in renown-loss logic in `Leader::handleEvent` — don't reinvent. "After another character at this location is destroyed …" — `_03027` Odette, `Reaction_01013`. Duel-scoped debuffs that track instance state: clear **before** recreate (`_04043` Sango) — see "During a duel, Owner's adversary has −N[Stat]". |
 | `EventCardSentToLocker` | Card moved to locker without going through Destroy (`$event->cardId`, `$event->playerId`). **Destroy does not emit this** (EventHub). | Spend-to-locker / non-destroy locker paths. Pair with `EventCharacterDestroyed` when clearing leave-play auras/debuffs (`_04032` Giacinto, `_04043` Sango). |

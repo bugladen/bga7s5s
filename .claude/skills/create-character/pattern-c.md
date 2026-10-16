@@ -145,7 +145,27 @@ When Text has two separate `<b>City Action:</b>` (or Action) clauses, **do not**
 - Transition keys and state names: `"03038a"` / `"03038b"` / `"03038b_2"`; JS state names `highDramaPhase03038a` etc.
 - State IDs: append digit for which action — `HIGH_DRAMA_PLAYER_TURN_03038a = 4030381`, `…_03038b = 4030382`, `…_03038b_2 = 40303822` (same scheme as `01152a`/`01152b` = `4011521`/`4011522`)
 
-Reference: `_03038` Damya, `_01095` Patricia (`Action_01095a` / `Action_01095b`).
+Reference: `_03038` Damya, `_01095` Patricia (`Action_01095a` / `Action_01095b`). Two Actions on one card keep their own costs — do not collapse "Pay 1" and "Pay 2" into one number because they share a payment helper.
+
+### In-play Action: Pay N Wealth
+
+For **`<b>Action:</b> Pay [N Wealth] • <effect>`** on a character already in play (`Action_05Dandya` pay 1 then move; `Action_05Dandyb` pay 2 then Collect). This is not a Reaction and not an in-hand card.
+
+Do **not** transition into `PAY_STATE_IN_HAND_ACTION`. That state is the Risk/Scheme in-hand pipeline. In-play confirm never enters it. The cost is a faction-hand pick on the action's own state.
+
+Payment rule is `Game::isValidWealthPayment`: the selected total equals the cost, **or** equals `cost + 1` when a Wealth-trait card is included. A Wealth-trait card is worth 2; every other hand card is worth 1. For cost 2 the legal sets are two plain cards, one Wealth card, or one Wealth card plus one plain card. Two Wealth cards are 4 and are rejected.
+
+- Availability: `handWealthCount($playerId) >= $cost`, plus the effect's own gate (move: another city exists, including from Home — a plain Action is not a City Action; Collect: `cardInCity` and location `Renown > 0`).
+- WHY availability tests lie: `FakeGame::handWealthCount` always returns 99. An empty-hand failure has to be tested by calling the pay method, not `isAvailableToPlayer`.
+- Server: reject duplicate ids, cards not in that player's hand, and totals that fail `isValidWealthPayment`. Queue `createCardDiscardedFromHandEvent(..., $asPayment = true)` for each accepted card.
+- JS: `factionHand.setSelectionMode`. Cost 1 is `single` (any one card is a legal 1). Cost 2 or more is `multiple` — single-select cannot express two plain cards. Enable Confirm only when the total is legal. Read traits from `cardProperties` first; the hand-stock object can be stale. Plain-string status text when the card is a prototype with no `clienttranslate`.
+- After the discards are queued, return to `HIGH_DRAMA_PLAYER_TURN_EVENTS` (`nextState()` when `""` is the state's only transition) before the next picker. The cards have to leave the hand before a location choice. A one-step effect (Collect) can queue the Renown events in the same pay method, after the discards.
+- If the effect's precondition is gone by pay time (location Renown already 0), the payment still happened — confirm already `setUsed`. Notify and `createActionResolvedEvent`. Do not throw after taking the cards.
+- Zombie: do not submit a selection `queueWealthPayment` will throw. Prefer one Wealth card, else the first N plain cards. A short hand resolves the action without paying so a disconnected player does not stall the state.
+- Move with no printed Engage: `createCardMovingEvent(..., $engage = false)`. Destinations = city locations except current (`getCityLocations()`, not a hardcoded list).
+- Collect: `createRenownRemovedFromLocationEvent` then `createPlayerGainsReknownEvent` (Sanjay `Reaction_03037`). No `IAbilityThatTargetsCharacters` unless the text says "target".
+
+Reference: `DandyWealthPayment`, `Action_05Dandya`, `Action_05Dandyb`, `State_highDramaPhase05Dandya`. State ids for card 14: `4050141` (pay 1), `40501412` (location), `4050142` (pay 2) — Damya's `4` + card id + action digit. Register the transition names on `HIGH_DRAMA_PLAYER_TURN_EVENTS` in `states.inc.php`.
 
 ### Destroy an attachment — unequip + discard-from-play
 

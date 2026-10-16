@@ -164,6 +164,40 @@
                 }
             },
 
+            'highDramaPhase05Dandya': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    $('faction_hand_info').innerHTML = '(0 Wealth worth of cards selected)';
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
+            'highDramaPhase05Dandya_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    this.selectedCityLocations = [];
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.clientStateArgs.locationIds = args.args.args.locationIds || [];
+                    this.clientStateArgs.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'highDramaPhase05Dandyb': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    $('faction_hand_info').innerHTML = '(0 Wealth worth of cards selected)';
+                    // WHY: 2 Wealth is one Wealth card, two plain cards, or a Wealth
+                    // card plus one plain card. Single-select cannot express that.
+                    this.factionHand.setSelectionMode('multiple');
+                }
+            },
+
             'setupTable_05Gary': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');

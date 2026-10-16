@@ -563,6 +563,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 this.payForCard(item_id);
             },
 
+            'highDramaPhase05Dandya': () => {
+                this.updateDandyWealthPay();
+            },
+
+            'highDramaPhase05Dandyb': () => {
+                this.updateDandyWealthPay(2);
+            },
+
 
             'highDramaPhase01064': () => {
                 if (this.factionHand.getSelection().length > 0) {
@@ -1105,6 +1113,34 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
         const close = () => overlay.remove();
         dialog.querySelector('._7sfs-confirm-close').addEventListener('click', close);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    },
+
+    // WHY: Prototype CAD Dandy — plain string, no _() (hide from translators).
+    // A Wealth-trait card may overpay the cost by 1. Cost 1 is therefore any
+    // single hand card. Cost 2 is two plain cards, one Wealth card, or one
+    // Wealth card plus one plain card.
+    updateDandyWealthPay: function(cost)
+    {
+        if (cost === undefined) cost = 1;
+        var items = this.factionHand.getSelection();
+        let wealth = 0;
+        let hasWealth = false;
+        items.forEach((item) => {
+            const props = this.cardProperties[item.id];
+            const traits = (props && props.traits) ? props.traits : (item.traits || []);
+            const isWealth = traits.includes('Wealth');
+            if (isWealth) hasWealth = true;
+            wealth += isWealth ? 2 : 1;
+        });
+        $('faction_hand_info').innerHTML = items.length > 0
+            ? '(' + wealth + ' Wealth worth of cards selected)'
+            : '(0 Wealth worth of cards selected)';
+        const paid = wealth === cost || (hasWealth && wealth === cost + 1);
+        if (paid) {
+            dojo.removeClass('actFactionCardsSelected', 'disabled');
+        } else {
+            dojo.addClass('actFactionCardsSelected', 'disabled');
+        }
     },
 
     payForCard: function(item_id)

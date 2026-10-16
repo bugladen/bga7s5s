@@ -105,6 +105,21 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase05Dandya': () => {
+                this.addActionButton('actFactionCardsSelected', 'Confirm', () => this.onPaymentConfirmedFromCard());
+                dojo.addClass('actFactionCardsSelected', 'disabled');
+            },
+
+            'highDramaPhase05Dandya_2': () => {
+                this.addActionButton('actCityLocationsSelected', 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'highDramaPhase05Dandyb': () => {
+                this.addActionButton('actFactionCardsSelected', 'Confirm', () => this.onPaymentConfirmedFromCard());
+                dojo.addClass('actFactionCardsSelected', 'disabled');
+            },
+
             'setupTable_05Gary': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseListCardConfirmed());
                 this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });

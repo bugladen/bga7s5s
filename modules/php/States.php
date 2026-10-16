@@ -488,6 +488,10 @@ class States
         // CAD — Syrneth Secrets (_05William). Exp 5 + card 10.
         const HIGH_DRAMA_PLAYER_TURN_05WILLIAM = 405010;
             const HIGH_DRAMA_PLAYER_TURN_05WILLIAM_2 = 4050102;
+        // CAD — Claude de la Roche (_05Dandy). Exp 5 + card 14. Action a pay / location, action b pay.
+        const HIGH_DRAMA_PLAYER_TURN_05DANDYA = 4050141;
+            const HIGH_DRAMA_PLAYER_TURN_05DANDYA_2 = 40501412;
+        const HIGH_DRAMA_PLAYER_TURN_05DANDYB = 4050142;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;
