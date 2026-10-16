@@ -1317,16 +1317,32 @@ return declare('seventhseacityoffivesails.utilities', null, {
     splayAttachments: function( event )
     {
         const parent = event.target.parentElement;
+        // WHY: A highlighted choose-target owns this click (onCardInPlayClicked).
+        // That path opens the splay when the character is selected, so this toggle
+        // must not also run or it would close the stack on the same click.
         if (!dojo.hasClass(event.target, '_7sfs-selectable') && dojo.hasClass(parent, '_7sfs-attachment-container'))
         {
-            dojo.toggleClass(parent, '_7sfs-attachment-container-splayed');
-
-            //Query all sub elements of the parent with the class _7sfs-attached-card
-            const attachedCards = parent.querySelectorAll('._7sfs-attached-card');
-            attachedCards.forEach((card) => {
-                dojo.toggleClass(card, '_7sfs-attached-card-splayed');
-            });
+            this.toggleAttachmentSplay(parent);
         }
+    },
+
+    toggleAttachmentSplay: function( container )
+    {
+        dojo.toggleClass(container, '_7sfs-attachment-container-splayed');
+        container.querySelectorAll('._7sfs-attached-card').forEach((card) => {
+            dojo.toggleClass(card, '_7sfs-attached-card-splayed');
+        });
+    },
+
+    openAttachmentSplay: function( container )
+    {
+        if (!container || !dojo.hasClass(container, '_7sfs-attachment-container'))
+            return;
+
+        dojo.addClass(container, '_7sfs-attachment-container-splayed');
+        container.querySelectorAll('._7sfs-attached-card').forEach((card) => {
+            dojo.addClass(card, '_7sfs-attached-card-splayed');
+        });
     },
 
     createHiddenCard: function( divId, card, targetDiv, playerColor )

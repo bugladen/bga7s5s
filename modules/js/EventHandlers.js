@@ -923,6 +923,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
         const card = this.getCardPropertiesByDivId(divId);
         let image = $(id);
+        let selectedThisClick = false;
         if (dojo.hasClass(image, '_7sfs-selected')) 
         {
             dojo.removeClass(image, '_7sfs-selected');
@@ -939,12 +940,20 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
 
             dojo.addClass(image, '_7sfs-selected');
             this.selectedCards.push(card.id);
+            selectedThisClick = true;
         }
         else if (this.selectedCards.length < this.numberOfCardsSelectable) 
         {
             dojo.addClass(image, '_7sfs-selected');
             this.selectedCards.push(card.id);
+            selectedThisClick = true;
         }
+
+        // WHY: The choose highlight sits on the same image click that used to toggle
+        // the attachment stack, and that toggle bails while the card is selectable.
+        // Open the stack when the character is actually chosen so the attachments stay visible.
+        if (selectedThisClick)
+            this.openAttachmentSplay($(divId));
 
         //Enable the confirm button if we have at least once card selected
         if (this.selectedCards.length > 0) {
