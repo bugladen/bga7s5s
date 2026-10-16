@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\AttachmentReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -28,10 +29,14 @@ class Reaction_02016 extends AttachmentReaction
     private ?EventChallengeIssued $challengeIssuedEvent = null;
     private ?EventCharacterIntervened $characterIntervenedEvent = null;
     private ?EventCharacterTargeted $characterTargetedEvent = null;
-    private bool $isChallenger = false;
     private ?int $targetCharacterId = null;
 
     private bool $skipNextEvent = false;
+
+    // WHY: Target pick already offers Cross via EventCharacterTargeted. Decline re-queues
+    // that event (which consumes skipNextEvent). ChallengeIssued would otherwise prompt
+    // again for the same challenge once the technique id overwrites the ability id.
+    private bool $skipChallengeIssuedAfterTarget = false;
 
     public function __construct()
     {
@@ -74,23 +79,30 @@ class Reaction_02016 extends AttachmentReaction
         return $array;
     }
 
-    private function shouldReactToEvent(Theah $theah, int $sourceId, string $abilityId, ?int $targetCharacterId = null): bool
+    private function shouldReactToEvent(Theah $theah, int $sourceId, string $abilityId, ?int $targetCharacterId = null, int $initiatingPlayerId = 0): bool
     {
         if (! $this->ownerIsAttached($theah))
         {
             return false;
         }
 
-        $source = $theah->getCardById($sourceId);
+        $source = $sourceId != 0 ? $theah->getCardById($sourceId) : null;
+        $targetsCharacters = false;
+        $resolvedAction = null;
         if ($source)
         {
             $ability = $source->getAbilityById($abilityId);
-            if (! $ability instanceof IAbilityThatTargetsCharacters)
-            {
-                return false;
-            }
+            $targetsCharacters = $ability instanceof IAbilityThatTargetsCharacters;
         }
-        else
+        if (! $targetsCharacters)
+        {
+            // WHY: Basic Challenge is not printed on the performer. The framework picker
+            // emits EventCharacterTargeted with abilityId "BasicChallenge". That action
+            // lives on Theah, not a card, and other events can arrive with sourceId 0.
+            $resolvedAction = $theah->getInPlayActionById($abilityId);
+            $targetsCharacters = $resolvedAction instanceof IAbilityThatTargetsCharacters;
+        }
+        if (! $targetsCharacters)
         {
             return false;
         }
@@ -102,8 +114,21 @@ class Reaction_02016 extends AttachmentReaction
         }
 
         $owningCharacter = $this->getOwningCharacter($theah);
+        if ($owningCharacter === null)
+        {
+            return false;
+        }
 
-        if ($source->ControllerId == $owningCharacter->ControllerId)
+        $initiatorId = ($source !== null && $source->ControllerId != 0) ? $source->ControllerId : $initiatingPlayerId;
+        if ($initiatorId == 0 && $resolvedAction instanceof ICardAbility)
+        {
+            $owningCard = $resolvedAction->getOwningCard($theah);
+            if ($owningCard !== null)
+            {
+                $initiatorId = $owningCard->ControllerId;
+            }
+        }
+        if ($initiatorId == 0 || $initiatorId == $owningCharacter->ControllerId)
         {
             return false;
         }
@@ -138,7 +163,7 @@ class Reaction_02016 extends AttachmentReaction
         if ($event instanceof EventCardEngaged && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningAttachment($event->theah);
-            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->cardId))
+            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->cardId, $event->playerId))
             {
                 if ($this->skipNextEvent)
                 {
@@ -161,7 +186,7 @@ class Reaction_02016 extends AttachmentReaction
         if ($event instanceof EventCardEngarded && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningAttachment($event->theah);
-            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->cardId))
+            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->cardId, $event->playerId))
             {
                 if ($this->skipNextEvent)
                 {
@@ -184,7 +209,7 @@ class Reaction_02016 extends AttachmentReaction
         if ($event instanceof EventCardMoving && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningAttachment($event->theah);
-            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->cardId))
+            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->cardId, $event->initiatingPlayerId))
             {
                 if ($this->skipNextEvent)
                 {
@@ -231,7 +256,7 @@ class Reaction_02016 extends AttachmentReaction
         if ($event instanceof EventCharacterTargeted && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningAttachment($event->theah);
-            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->targetId))
+            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->targetId, $event->playerId))
             {
                 if ($this->skipNextEvent)
                 {
@@ -276,44 +301,69 @@ class Reaction_02016 extends AttachmentReaction
 
         if ($event instanceof EventChallengeIssued && $this->isAvailable() && !$event->canceled)
         {
-            $owner = $this->getOwningAttachment($event->theah);
-
             if (! $this->ownerIsAttached($event->theah))
             {
-                return false;
+                return;
+            }
+
+            $owner = $this->getOwningAttachment($event->theah);
+
+            // WHY: Same challenge already opened this reaction at target pick. Decline
+            // must not ask again when the challenge is issued.
+            if ($this->skipChallengeIssuedAfterTarget)
+            {
+                $this->skipChallengeIssuedAfterTarget = false;
+                $owner->IsUpdated = true;
+                return;
             }
 
             $owningCharacter = $this->getOwningCharacter($event->theah);
             $challenger = $event->theah->getCharacterById($event->challengerId);
             $defender = $event->theah->getCharacterById($event->defenderId);
-
-            if ($challenger->ControllerId != $owningCharacter->ControllerId && $defender->ControllerId != $owningCharacter->ControllerId)
+            if ($owningCharacter === null || $challenger === null || $defender === null)
             {
                 return;
-            }            
-
-            $participant = $challenger->ControllerId == $owningCharacter->ControllerId ? $challenger : $defender;
-            
-            if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $participant->Id))
-            {
-                if ($this->skipNextEvent)
-                {
-                    $this->skipNextEvent = false;
-                    $owner->IsUpdated = true;
-                    return;
-                }
-
-                $this->challengeIssuedEvent = clone $event;
-                unset($this->challengeIssuedEvent->theah);
-                $this->isChallenger = $participant->Id == $event->challengerId;
-                $this->targetCharacterId = $participant->Id;
-                $owner->IsUpdated = true;
-                $this->cancelHeldEvent($event);
-
-
-                $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->queueEvent($reactionTransitionEvent);
             }
+
+            // WHY: Being challenged is being targeted. The defender is that target —
+            // not whichever of your characters is in the challenge. Basic Challenge has
+            // sourceId 0, and activating a technique overwrites abilityId before
+            // stIssueChallenge, so shouldReactToEvent's ability lookup cannot be the gate.
+            // Premonition (Reaction_03006) and Vittoria (Reaction_01014) skip it for the same reason.
+            if ($defender->ControllerId != $owningCharacter->ControllerId)
+            {
+                return;
+            }
+            if ($defender->Location != $owningCharacter->Location)
+            {
+                return;
+            }
+            if ($defender->Id == $owningCharacter->Id)
+            {
+                return;
+            }
+
+            $initiatingControllerId = $challenger->ControllerId != 0 ? $challenger->ControllerId : $event->playerId;
+            if ($initiatingControllerId == 0 || $initiatingControllerId == $owningCharacter->ControllerId)
+            {
+                return;
+            }
+
+            if ($this->skipNextEvent)
+            {
+                $this->skipNextEvent = false;
+                $owner->IsUpdated = true;
+                return;
+            }
+
+            $this->challengeIssuedEvent = clone $event;
+            unset($this->challengeIssuedEvent->theah);
+            $this->targetCharacterId = $defender->Id;
+            $owner->IsUpdated = true;
+            $this->cancelHeldEvent($event);
+
+            $reactionTransitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+            $event->theah->queueEvent($reactionTransitionEvent);
         }
 
         if ($event instanceof EventCharacterIntervened && $this->isAvailable() && !$event->canceled)
@@ -394,6 +444,17 @@ class Reaction_02016 extends AttachmentReaction
 
         if ($this->characterTargetedEvent)
         {
+            // WHY: The global was written to the ally before this reaction. Rewrite it
+            // with the event so later steps follow the performer. Only when this event
+            // owns that global — it is the in-flight action, or the global still names
+            // the character we intercepted. An unrelated CHOSEN_TARGET stays put.
+            $chosenTarget = (int) $game->globals->get(Game::CHOSEN_TARGET, 0);
+            $chosenAction = (string) $game->globals->get(Game::CHOSEN_ACTION, '');
+            if ($chosenTarget === (int) $this->targetCharacterId
+                || ($chosenAction !== '' && $this->characterTargetedEvent->abilityId === $chosenAction))
+            {
+                $game->globals->set(Game::CHOSEN_TARGET, $characterId);
+            }
             $this->characterTargetedEvent->targetId = $characterId;
             $game->theah->queueEvent($this->characterTargetedEvent);
             $this->characterTargetedEvent = null;
@@ -401,18 +462,10 @@ class Reaction_02016 extends AttachmentReaction
 
         if ($this->challengeIssuedEvent)
         {
-            if ($this->isChallenger)
-            {
-                $game->globals->set(GAME::CHOSEN_PERFORMER, $characterId);
-                $this->challengeIssuedEvent->challengerId = $characterId;
-            }
-            else
-            {
-                $game->globals->set(GAME::CHOSEN_TARGET, $characterId);
-                $this->challengeIssuedEvent->defenderId = $characterId;
-            }
+            // The challenged character is the target. Redirect always rewrites the defender.
+            $game->globals->set(Game::CHOSEN_TARGET, $characterId);
+            $this->challengeIssuedEvent->defenderId = $characterId;
             $game->theah->queueEvent($this->challengeIssuedEvent);
-            $this->isChallenger = false;
             $this->challengeIssuedEvent = null;
         }
 
@@ -473,21 +526,35 @@ class Reaction_02016 extends AttachmentReaction
         }
         else if ($this->characterIntervenedEvent)
         {
-            // WHY: DUEL_DEFENDER was already swapped onto the intervener in actHighDramaChallengeActionIntervene
-            // before this event fired. Decline only needs to re-emit the canceled notify event as-is.
-            // releaseEvent would clobber oldTargetId. skipNextEvent prevents re-trigger on the same ally.
+            // WHY: actHighDramaChallengeActionIntervene already moved DUEL_DEFENDER onto the
+            // ally (newTargetId) before this event. Decline re-emits that notify as-is.
+            // releaseEvent would rewrite oldTargetId onto the wearer. skipNextEvent stops
+            // Cross from immediately re-intercepting the same ally. Decline is not using
+            // the reaction, so do not setUsed.
             $game->theah->queueEvent($this->characterIntervenedEvent);
             $this->characterIntervenedEvent = null;
             $this->skipNextEvent = true;
-            $this->setUsed($game->theah, true);
+            $owner = $this->getOwningAttachment($game->theah);
+            if ($owner)
+            {
+                $owner->IsUpdated = true;
+            }
         }
         else
         {
             // WHY: Intercept clones+cancels the original effect. Decline must re-release onto
             // the original target or the ability fizzles (e.g. Bleed Out wound vanishes).
             // skipNextEvent prevents Cross from immediately re-intercepting the same event.
+            $chosenAction = (string) $game->globals->get(Game::CHOSEN_ACTION, '');
+            $declinedChallengeTarget = $this->characterTargetedEvent !== null
+                && $chosenAction !== ''
+                && $this->characterTargetedEvent->abilityId === $chosenAction;
             $this->releaseEvent($game, $this->targetCharacterId);
             $this->skipNextEvent = true;
+            if ($declinedChallengeTarget)
+            {
+                $this->skipChallengeIssuedAfterTarget = true;
+            }
             $owner = $this->getOwningAttachment($game->theah);
             if ($owner)
             {
