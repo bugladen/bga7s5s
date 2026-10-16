@@ -24,6 +24,26 @@ Run the following git command while in the 7s5s folder to enable the pre-commit 
 
 SFTP Upload the entire project directory up into the BGA server.
 
+### SFTP Settings
+
+Use these ignore setttings in your sftp.json
+
+```
+    "ignore": [
+        "/.vscode",
+        "/.claude",
+        "/.git",
+        "/.githooks",
+        "/.cursor",
+        "/misc",
+        "/_results",
+        "/tests",
+        ".gitignore",
+        "_ide_helper.php",
+        "bga-framework.d.ts"
+    ],
+```
+
 
 ## State of the Project 
 
