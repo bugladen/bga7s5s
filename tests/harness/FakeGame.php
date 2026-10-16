@@ -211,6 +211,8 @@ class Game
     final const KASPARS_OCCUPATION_PRESSURE_TYPE = 256;
     // WHY: Reaction_02019 Trial of Faith OR's wound-count bonus onto pressure; must match Game.php.
     final const TRIAL_OF_FAITH_PRESSURE_TYPE = 512;
+    // WHY: Action_02035 Castillian Caper OR's this onto PRESSURE_TYPE before pressure; must match Game.php.
+    final const CASTILLIAN_CAPER_PRESSURE_TYPE = 1024;
 
     // WHY: Reaction_01203 / Reaction_04031 button labels read live threat from globals.
     final const CHALLENGER_THREAT = 'challengerThreat';
