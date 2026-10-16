@@ -1113,7 +1113,20 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const oldDivId = card.divId;
         const oldElement = $(oldDivId);
 
-        card.engaged = args.engage;
+        // WHY: cardMoved reports engaged state after the move, and createCard
+        // paints ._7sfs-engaged immediately. A character who becomes engaged
+        // as part of the move would appear already rotated. Hold the class
+        // off until they are in the destination so the same CSS transition
+        // as notif_cardEngaged can play. Already-engaged characters stay
+        // rotated for the whole slide.
+        const wasEngaged = !!card.engaged;
+        const animateEngage = card.type === 'Character'
+            && !!args.engage
+            && !wasEngaged
+            && this.animationManager
+            && this.animationManager.animationsActive();
+
+        card.engaged = animateEngage ? false : args.engage;
         card.location = args.toLocation;
         if (args.controllerId !== undefined) {
             card.controllerId = args.controllerId;
@@ -1134,6 +1147,47 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // Create the new card element at the destination
         this.createCard(cardId, card, targetId);
+
+        if (animateEngage) {
+            card.engaged = args.engage;
+            await this.animateEngageOnCard(card);
+        }
+    },
+
+    // WHY: Same rotate as notif_cardEngaged, but the node was just inserted.
+    // Two frames let the unrotated card paint first; otherwise the engaged
+    // class is present before first paint and the transition never runs.
+    animateEngageOnCard: async function( card )
+    {
+        const cardElement = $(`${card.divId}_image`);
+        if (!cardElement) {
+            return;
+        }
+
+        await new Promise((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+        });
+
+        await new Promise((resolve) => {
+            let settled = false;
+            const finish = () => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                cardElement.removeEventListener('transitionend', onEnd);
+                resolve();
+            };
+            const onEnd = (event) => {
+                if (event.target === cardElement && event.propertyName === 'transform') {
+                    finish();
+                }
+            };
+            cardElement.addEventListener('transitionend', onEnd);
+            dojo.addClass(cardElement, '_7sfs-engaged');
+            // CSS transition is 0.5s. Fallback if transitionend does not fire.
+            setTimeout(finish, 600);
+        });
     },
 
     notif_cardEngaged: function( notif )
