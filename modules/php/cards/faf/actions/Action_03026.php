@@ -167,7 +167,10 @@ class Action_03026 extends CharacterAction
             $game->theah->eventCheck($woundEvent);
             $game->theah->queueEvent($woundEvent);
 
-            EventFactory::createActionResolvedEvent($owner->ControllerId, $this->Id, $game->theah);
+            // WHY: The factory only takes the player id and does not queue. A 3-arg call
+            // fatal'd on PHP 8 and never published ActionResolved.
+            $resolved = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($resolved);
 
             $game->gamestate->nextState("targetChosen");
             return;
@@ -223,7 +226,9 @@ class Action_03026 extends CharacterAction
             }
             else
             {
-                EventFactory::createActionResolvedEvent($owner->ControllerId, $this->Id, $game->theah);
+                // WHY: Same factory shape as the wound step — one argument, then queue.
+                $resolved = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($resolved);
             }
 
             $game->gamestate->nextState("done");

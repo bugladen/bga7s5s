@@ -178,6 +178,13 @@ class Game
     final const VALERI_CHALLENGE_TYPE = 32;
     // WHY: Action_03008 Arrogant. Must match Game.php (34). Off the auto-engage list.
     final const ARROGANT_CHALLENGE_TYPE = 34;
+    // WHY: _03021 Cornered stamps this on refuse/intervene. Must match Game.php (20).
+    final const CORNERED_CHALLENGE_TYPE = 20;
+
+    // WHY: _03015 dusk Resolve and Reaction_03016a (stay in the city) read the phase.
+    // Must match Game.php. Tests set values via setGameStateValue.
+    final const TURN_PHASE = 'turnPhase';
+    final const DUSK = 5;
     // Must match Game.php — Thug challenge never engages (off auto-engage list).
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CHALLENGE_STAT = 'ChallengeStat';
@@ -382,6 +389,19 @@ class Game
     public function getActivePlayerId(): int
     {
         return $this->activePlayerId;
+    }
+
+    /** @var array<string, int> */
+    public array $gameStateValues = [];
+
+    public function getGameStateValue(string $key): int
+    {
+        return (int) ($this->gameStateValues[$key] ?? 0);
+    }
+
+    public function setGameStateValue(string $key, int $value): void
+    {
+        $this->gameStateValues[$key] = $value;
     }
 
     // WHY: Action_01095b's multi-player discard step (and other "each opponent discards" states)

@@ -10,6 +10,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\CityLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use ReflectionProperty;
 
 /**
@@ -99,9 +101,16 @@ class TestTheah extends Theah
         return 0;
     }
 
+    /**
+     * WHY: The default stub treats the actor as the challenger (Maneuver_03002 tests).
+     * Maneuver_03023's defender branch needs a challenger id that is not the actor.
+     * Null keeps the old behavior.
+     */
+    public ?int $duelChallengerIdOverride = null;
+
     public function getDuelChallengerId(): ?int
     {
-        return $this->duelActor?->Id;
+        return $this->duelChallengerIdOverride ?? $this->duelActor?->Id;
     }
 
     public function getDuelDefenderId(): int
@@ -156,6 +165,25 @@ class TestTheah extends Theah
     }
 
     // WHY: Real delete* hits DB; tests keep events in $queuedEvents only.
+    // WHY: Reaction_03020 cancels a renown move by deleting the add/remove rows that
+    // share the moving event's batch. Production hits the events table; tests only
+    // have $queuedEvents. Other batches stay.
+    public function deleteRenownAddedToLocationEventsByBatchId(int $batchId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            fn($event) => !($event instanceof EventRenownAddedToLocation && (int) $event->batchId === $batchId)
+        ));
+    }
+
+    public function deleteRenownRemovedFromLocationEventsByBatchId(int $batchId): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            fn($event) => !($event instanceof EventRenownRemovedFromLocation && (int) $event->batchId === $batchId)
+        ));
+    }
+
     public function deleteEventBatch(int $batchId): void
     {
         $this->queuedEvents = array_values(array_filter(
