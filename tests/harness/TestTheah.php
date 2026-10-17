@@ -140,6 +140,17 @@ class TestTheah extends Theah
                 usort($rows, static fn(array $a, array $b): int => $a['score'] <=> $b['score']);
                 return $rows;
             }
+
+            // WHY: _02053 walks discard piles in player-table order via getPlayerIds()['id'].
+            // Same playerNames order as the rest of the stub (1, then 2).
+            public function getPlayerIds(): array
+            {
+                $rows = [];
+                foreach ($this->game->playerNames as $playerId => $_) {
+                    $rows[] = ['id' => (int)$playerId];
+                }
+                return $rows;
+            }
         };
     }
 
