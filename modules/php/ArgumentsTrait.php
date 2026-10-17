@@ -697,14 +697,22 @@ trait ArgumentsTrait
 
     public function argsHighDramaChallengeActionChooseTarget(): array
     {
-        $playerId = (int)$this->getActivePlayerId();
         $this->theah->buildCity();
         $performerId = $this->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $this->theah->getCharacterById($performerId);
 
+        // WHY: Opponents of the challenger, not of whoever happens to be active.
+        // After Unyielding Loyalty the defender can still be active on this picker
+        // (see stTechniqueAvailable). Filtering on that id hides their own character
+        // and Justice Served Cold then rejects the challenger's characters too.
+        $chooserId = (int) ($performer->ControllerId ?? 0);
+        if ($chooserId === 0)
+        {
+            $chooserId = (int) $this->getActivePlayerId();
+        }
+
         $charactersAtLocation = $this->theah->getCharactersAtLocation($performer->Location);
-        //
-        $charactersAtLocation = array_values(array_filter($charactersAtLocation, fn($character) => $character->ControllerId && $character->ControllerId != $playerId));
+        $charactersAtLocation = array_values(array_filter($charactersAtLocation, fn($character) => $character->ControllerId && $character->ControllerId != $chooserId));
 
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         // WHY: Defending Honor validates the enemy performer at step 1; step 2 picks a

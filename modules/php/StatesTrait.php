@@ -815,6 +815,16 @@ trait StatesTrait
 
         if (count($techniques) > 0)
         {
+            // WHY: Target-chosen events are a game state. A reaction there (Unyielding
+            // Loyalty on Justice Served Cold) changeActivePlayer's to the reactor, and
+            // runEvents only restores CURRENT_PLAYER when the current state is
+            // activeplayer. Technique pick then opened for the defender, and Back
+            // landed them on choose-target with no legal character. Techniques belong
+            // to the challenger (Defending Honor included — "their choice").
+            if ($performer->ControllerId)
+            {
+                $this->gamestate->changeActivePlayer((int) $performer->ControllerId);
+            }
             $this->gamestate->nextState("hasTechique");
             return;
         }
