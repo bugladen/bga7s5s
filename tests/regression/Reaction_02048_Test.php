@@ -225,7 +225,7 @@ class Reaction_02048_Test extends TestCase
                 $reaction->handleEvent($event);
 
                 Assert::true($reaction->Used, 'used');
-                Assert::same(0, $world->game->globals->get(Game::CHOSEN_PERFORMER), 'no performer');
+                Assert::same(null, $world->game->globals->get(Game::CHOSEN_PERFORMER), 'challenger untouched');
                 Assert::same(1, $world->game->globals->get(Game::PRESSURING_PLAYER), 'player');
                 Assert::same(Game::NORMAL_PRESSURE_TYPE, $world->game->globals->get(Game::PRESSURE_TYPE), 'normal');
                 Assert::same(Game::LOCATION_CITY_DOCKS, $world->game->pressureLocationCalls[0]['location'], 'location');
@@ -251,6 +251,56 @@ class Reaction_02048_Test extends TestCase
                 $reaction->handleEvent($result);
 
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterTargeted::class), 'not re-emitted');
+                Assert::same(null, $world->game->globals->get(Game::CHALLENGE_CANCELLED), 'not a challenge');
+            },
+
+            // WHY: Target-chosen events end in stTechniqueAvailable, which reads CHOSEN_PERFORMER.
+            // Writing 0 there fatals. A special challenge type must also set CHALLENGE_CANCELLED
+            // before that state, because stIssueChallenge would clear the flag.
+            'paying during a challenge keeps the challenger and success cancels the challenge' => function () {
+                $world = new TestWorld();
+                [, $reaction, $friend, $enemyRisk] = $this->scene($world);
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $challenger->Id);
+                $world->game->globals->set(Game::CHALLENGE_TYPE, Game::JUSTICE_SERVED_COLD_CHALLENGE_TYPE);
+                $reaction->handleEvent($this->target($world, $friend->Id, $enemyRisk->Id));
+                $world->theah->takeQueuedEvents();
+
+                $paid = new EventRiskReactionTriggered();
+                $paid->internalId = $reaction->Id;
+                $paid->theah = $world->theah;
+                $reaction->handleEvent($paid);
+
+                Assert::same($challenger->Id, $world->game->globals->get(Game::CHOSEN_PERFORMER), 'performer kept');
+                Assert::same(null, $world->game->pressureLocationCalls[0]['performerId'], 'location pressure');
+
+                $result = new EventLocationPressureResult();
+                $result->abilityId = $reaction->Id;
+                $result->success = true;
+                $result->theah = $world->theah;
+                $reaction->handleEvent($result);
+
+                Assert::true((bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED), 'cancelled');
+                Assert::same($challenger->Id, $world->game->globals->get(Game::CHOSEN_PERFORMER), 'still the challenger');
+            },
+
+            'successful pressure on a held challenge sets CHALLENGE_CANCELLED' => function () {
+                $world = new TestWorld();
+                [, $reaction, $friend, $enemyRisk] = $this->scene($world);
+                $issued = new EventChallengeIssued();
+                $issued->defenderId = $friend->Id;
+                $issued->sourceId = $enemyRisk->Id;
+                $issued->theah = $world->theah;
+                $reaction->handleEvent($issued);
+                $world->theah->takeQueuedEvents();
+
+                $result = new EventLocationPressureResult();
+                $result->abilityId = $reaction->Id;
+                $result->success = true;
+                $result->theah = $world->theah;
+                $reaction->handleEvent($result);
+
+                Assert::true((bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED), 'cancelled');
             },
 
             'a later effect from the same risk is canceled after pressure succeeds' => function () {

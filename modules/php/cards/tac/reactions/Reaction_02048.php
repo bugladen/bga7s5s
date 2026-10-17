@@ -276,7 +276,10 @@ class Reaction_02048 extends RiskReaction
             $game = $event->theah->game;
             $owner = $this->getOwningCard($event->theah);
 
-            $game->globals->set(Game::CHOSEN_PERFORMER, 0);
+            // WHY: Pressure is location-only (null performer, performerId 0 on the
+            // events). CHOSEN_PERFORMER is the in-flight challenger when this pays
+            // inside target-chosen events (Justice Served Cold). Zeroing it made
+            // stTechniqueAvailable call getCardObjectFromDb(0) after endOfEvents.
             $game->globals->set(Game::PRESSURING_PLAYER, $owner->ControllerId);
             $game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
             $pressureStats = $game->theah->getPressureStats(null, $this->Location, Game::STAT_COMBAT);
@@ -309,6 +312,20 @@ class Reaction_02048 extends RiskReaction
             if ($event->success)
             {
                 $this->PressureSucceeded = true;
+
+                // WHY: Canceling the held event does not leave the challenge state
+                // machine. Target-chosen events always endOfEvents into technique
+                // available, and stIssueChallenge clears this flag, so it has to be
+                // set here — before the technique state — for a held CharacterTargeted.
+                // A held ChallengeIssued is already past that; check-cancelled reads
+                // the same flag. Normal challenge type stays untouched so a non-challenge
+                // targeting risk (Come Hither) does not poison the next challenge.
+                if ($this->challengeEvent !== null
+                    || ($this->characterTargetedEvent !== null
+                        && (int) $game->globals->get(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE) !== Game::NORMAL_CHALLENGE_TYPE))
+                {
+                    $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+                }
 
                 if ($this->attachmentEquippingEvent)
                 {

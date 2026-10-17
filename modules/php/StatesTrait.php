@@ -759,7 +759,17 @@ trait StatesTrait
 
     public function stTechniqueAvailable()
     {
-        $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        // WHY: Blood Like Winter pays inside target-chosen events, then endOfEvents
+        // lands here. A successful cancel sets CHALLENGE_CANCELLED; issuing anyway
+        // would play the effect that pressure just stopped. A missing performer
+        // (that same reaction used to write 0) fatals in getCardObjectFromDb.
+        $performerId = (int) $this->globals->get(GAME::CHOSEN_PERFORMER);
+        if ($this->globals->get(Game::CHALLENGE_CANCELLED, false) || $performerId === 0)
+        {
+            $this->skipChallengeBeforeTechnique($performerId);
+            return;
+        }
+
         $performer = $this->getCardObjectFromDb($performerId);
 
         // WHY: Move-then-challenge Actions queue TECHNIQUE_AVAILABLE at TRANSITION_PRIORITY
@@ -837,6 +847,34 @@ trait StatesTrait
         $this->gamestate->changeActivePlayer($target->ControllerId);
 
         $this->gamestate->nextState("noTechnique");
+    }
+
+    private function skipChallengeBeforeTechnique(int $performerId): void
+    {
+        $performer = $performerId !== 0 ? $this->theah->getCharacterById($performerId) : null;
+        $targetId = (int) $this->globals->get(GAME::CHOSEN_TARGET);
+        $target = $targetId !== 0 ? $this->theah->getCharacterById($targetId) : null;
+        $resolvedPlayerId = $performer !== null
+            ? (int) $performer->ControllerId
+            : (int) $this->globals->get(GAME::CURRENT_PLAYER);
+
+        $this->globals->delete(Game::CHALLENGE_CANCELLED);
+
+        if ($resolvedPlayerId)
+        {
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($resolvedPlayerId);
+            $this->theah->queueEvent($actionResolvedEvent);
+            $this->theah->runEvents(true);
+        }
+
+        $this->notifyAllPlayers("challengeCancelled", clienttranslate('Challenge was cancelled.'), [
+            "challengerId" => $performerId,
+            "defenderId" => $targetId,
+            "challengingPlayerId" => $performer?->ControllerId ?? 0,
+            "defendingPlayerId" => $target?->ControllerId ?? 0,
+        ]);
+
+        $this->gamestate->nextState('challengeSkipped');
     }
 
     public function stIssueChallenge()
