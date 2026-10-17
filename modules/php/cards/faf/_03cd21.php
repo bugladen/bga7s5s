@@ -66,8 +66,22 @@ class _03cd21 extends CityAttachment
             }
         }
 
+        // WHY: Defending Honor's printed target is the enemy who then issues the
+        // challenge, so they are the challenger, not the defender. defenderId-only
+        // misses that Risk. The targeting event is the moment the Forced must fire.
         if ($this->isAttached() && ! $this->hasCondition(Game::SILVER_SPINE_ABILITY_USED) &&
-            $event instanceof EventChallengeIssued && $event->defenderId == $this->AttachedToId && $event->sourceId != 0)
+            $event instanceof EventCharacterTargeted && $event->targetId == $this->AttachedToId && $event->sourceId != 0)
+        {
+            if ($this->isOpponentRiskTargetingCharacters($event, $event->sourceId))
+            {
+                $this->cancelRiskEffects($event, (int)$event->sourceId, true);
+                return;
+            }
+        }
+
+        if ($this->isAttached() && ! $this->hasCondition(Game::SILVER_SPINE_ABILITY_USED) &&
+            $event instanceof EventChallengeIssued && $event->sourceId != 0
+            && ($event->defenderId == $this->AttachedToId || $event->challengerId == $this->AttachedToId))
         {
             if ($this->isOpponentRiskTargetingCharacters($event, $event->sourceId))
             {
@@ -75,6 +89,8 @@ class _03cd21 extends CityAttachment
                 // WHY: EventHub skips ChallengeIssued side-effects when canceled, but the
                 // challenge state machine only aborts if CHALLENGE_CANCELLED is set
                 // (stChallengeActionCheckCancelled). Same signal as 01088 / 01032 / Vittoria.
+                // challengerId covers Defending Honor if the choose-target transition
+                // already ran (the targeted character is the one issuing the challenge).
                 $event->theah->game->globals->set(Game::CHALLENGE_CANCELLED, true);
                 $event->canceled = true;
                 return;
@@ -149,5 +165,30 @@ class _03cd21 extends CityAttachment
             "cardId" => $this->Id,
             "card_inject_code" => $this->getInjectCode(),
         ]);
+    }
+
+    // WHY: Forced, not a Reaction — no Decline. The first opponent Risk that
+    // targets the equipped character each Day cancels here with no player choice.
+    // $abortUnbatchedFollowUp is for Defending Honor: EventCharacterTargeted and
+    // the "01078" choose-target transition share no batchId, so deleteEventBatch
+    // leaves the challenge in the queue and the once-per-Day looks optional.
+    private function cancelRiskEffects(Event $event, int $sourceId, bool $abortUnbatchedFollowUp): void
+    {
+        $this->markAbilityUsed($event->theah->game);
+
+        if ($event->batchId)
+        {
+            $event->theah->deleteEventBatch($event->batchId);
+        }
+        elseif ($abortUnbatchedFollowUp)
+        {
+            $event->theah->deleteTransitionEventsBySourceId($sourceId);
+            $source = $event->theah->getCardById($sourceId);
+            $playerId = ($source && $source->ControllerId) ? (int)$source->ControllerId : (int)$event->playerId;
+            $resolved = EventFactory::createActionResolvedEvent($playerId);
+            $event->theah->queueEvent($resolved);
+        }
+
+        $event->canceled = true;
     }
 }

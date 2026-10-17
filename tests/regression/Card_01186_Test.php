@@ -14,6 +14,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01049;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01160;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01186;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
@@ -22,6 +24,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Card_01186_Test extends TestCase
 {
@@ -95,6 +98,27 @@ class Card_01186_Test extends TestCase
 
                 Assert::true($event->canceled, 'canceled');
                 Assert::true($maryam->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED), 'used');
+            },
+
+            // WHY: Defending Honor queues the choose-target transition with no batchId.
+            // Spending Imperviousness must remove that transition or the challenge still starts.
+            'unbatched EventCharacterTargeted strips the follow-up transition and resolves the action' => function () {
+                $world = new TestWorld();
+                [$maryam, $risk] = $this->scene($world);
+                $world->theah->queueEvent(EventFactory::createTransitionEvent($maryam->ControllerId, $risk->Id, '01078', 'ability'));
+
+                $event = new EventCharacterTargeted();
+                $event->targetId = $maryam->Id;
+                $event->sourceId = $risk->Id;
+                $event->playerId = $risk->ControllerId;
+                $event->theah = $world->theah;
+                $maryam->handleEvent($event);
+
+                Assert::true($event->canceled, 'canceled');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'transition removed');
+                $resolved = $world->theah->queuedOfType(EventActionResolved::class);
+                Assert::count(1, $resolved, 'action resolved');
+                Assert::same($risk->ControllerId, $resolved[0]->playerId, 'risk controller');
             },
 
             'cancels EventCardMoving from a targeting Risk' => function () {

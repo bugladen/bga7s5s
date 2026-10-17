@@ -98,6 +98,15 @@ class _01186 extends CityCharacter
                 {
                     $event->theah->deleteEventBatch($batchId);
                 }
+                else
+                {
+                    // WHY: Same Defending Honor hole as Silver Spine. The choose-target
+                    // transition is not batched with EventCharacterTargeted, so spending
+                    // Imperviousness here used to leave the challenge running.
+                    $event->theah->deleteTransitionEventsBySourceId((int)$event->sourceId);
+                    $resolved = EventFactory::createActionResolvedEvent((int)$source->ControllerId);
+                    $event->theah->queueEvent($resolved);
+                }
 
                 $event->canceled = true;
                 return;
