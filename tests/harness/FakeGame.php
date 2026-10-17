@@ -161,6 +161,8 @@ class Game
     // WHY: Action_02028 Battle of Wits Influence challenge; must match Game.php (=14).
     final const BATTLE_OF_WITS_CHALLENGE_TYPE = 14;
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
+    // WHY: Action_02049 Justice Served Cold. Must match Game.php (16, between Torvo 15 and Aja 18).
+    final const JUSTICE_SERVED_COLD_CHALLENGE_TYPE = 16;
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
     final const RAVEN_CHALLENGE_TYPE = 27;
@@ -213,6 +215,11 @@ class Game
     final const TRIAL_OF_FAITH_PRESSURE_TYPE = 512;
     // WHY: Action_02035 Castillian Caper OR's this onto PRESSURE_TYPE before pressure; must match Game.php.
     final const CASTILLIAN_CAPER_PRESSURE_TYPE = 1024;
+    // WHY: _02044 Solomonia ORs this onto PRESSURE_TYPE and stores her id. Must match Game.php.
+    final const SOLOMONIA_PRESSURE_TYPE = 2048;
+    final const SOLOMONIA_ID = 'solomoniaId';
+    // WHY: Reaction_02050 sets PRESSURE_TYPE to this (replaces, does not OR). Must match Game.php.
+    final const USSURAN_INTRIGUE_PRESSURE_TYPE = 4096;
 
     // WHY: Reaction_01203 / Reaction_04031 button labels read live threat from globals.
     final const CHALLENGER_THREAT = 'challengerThreat';
@@ -524,6 +531,9 @@ class Game
     /** @var list<array{id:int,deck:string,onTop:bool}> */
     public array $deckInserts = [];
 
+    /** @var list<string> locations passed to Deck::shuffle (Action_02045 search/pass). */
+    public array $deckShuffles = [];
+
     // WHY: Maneuver_01077 sinks unchosen reveal cards via insertCardOnExtremePosition;
     // Action_01038 only assigns the deck object. Record inserts for assert, no-op otherwise.
     /**
@@ -580,6 +590,12 @@ class Game
             public function getPlayerHand($playerId): array
             {
                 return $this->getCardsInLocation(Game::LOCATION_HAND, $playerId);
+            }
+
+            // WHY: Action_02045 shuffles the faction deck after the Dar Matushki / Poluchatel search.
+            public function shuffle($location): void
+            {
+                $this->game->deckShuffles[] = (string) $location;
             }
         };
     }

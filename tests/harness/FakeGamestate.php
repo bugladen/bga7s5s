@@ -7,6 +7,15 @@ class FakeGamestate
     /** @var list<string|null> */
     public array $transitions = [];
 
+    // WHY: _02046 Winter's Wind engages a muster only when the main state id's first two
+    // digits are 30–69 (High Drama). Tests set this; 0 is outside that band.
+    public ?int $currentMainStateId = 0;
+
+    public function getCurrentMainStateId(): ?int
+    {
+        return $this->currentMainStateId;
+    }
+
     public function nextState(?string $transition = null): void
     {
         $this->transitions[] = $transition;
