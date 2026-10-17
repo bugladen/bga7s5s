@@ -133,6 +133,9 @@ class Game
     final const ROLL_THE_BONES_CARD_ID = 'rollTheBonesCardId';
     final const GAMBLE_REVEAL_COUNT = 'gambleRevealCount';
     final const GAMBLE_REVEAL_EXPLANATIONS = 'gambleRevealExplanations';
+    // WHY: Devil Jonah's Bones (_03cd05) writes this when the equipped character
+    // chooses to reveal the gamble from the bottom. Real Game.php has the same constant.
+    final const GAMBLE_REVEAL_FROM_BOTTOM = 'gambleRevealFromBottom';
 
     final const CHALLENGE_TYPE = 'challengeType';
     final const NORMAL_CHALLENGE_TYPE = 0;

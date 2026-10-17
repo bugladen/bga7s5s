@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__);
 
+// WHY: Reaction_03cd10 walks TraitNames with mb_substr. This PHP build has no mbstring.
+// Trait names are ASCII, so substr is the same function. Unqualified calls fall back to global.
+if (!function_exists('mb_substr')) {
+    function mb_substr(string $string, int $start, ?int $length = null, ?string $encoding = null): string
+    {
+        unset($encoding);
+        return $length === null ? substr($string, $start) : substr($string, $start, $length);
+    }
+}
+
 require_once __DIR__ . '/stubs/bga.php';
 require_once __DIR__ . '/harness/FakeGlobals.php';
 require_once __DIR__ . '/harness/FakeNotify.php';
