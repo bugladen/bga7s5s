@@ -166,6 +166,8 @@ class Game
     final const TORVO_ESPADA_CHALLENGE_TYPE = 15;
     // WHY: Action_02049 Justice Served Cold. Must match Game.php (16, between Torvo 15 and Aja 18).
     final const JUSTICE_SERVED_COLD_CHALLENGE_TYPE = 16;
+    // WHY: Action_02061 Unsanctioned Duel. Must match Game.php (17).
+    final const UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
     final const RAVEN_CHALLENGE_TYPE = 27;
@@ -174,6 +176,8 @@ class Game
     final const CELERITY_CHALLENGE_TYPE = 30;
     // WHY: Action_05DabneyUS01 CAD Valeri post-move Back lock (refuse allowed). Must match Game.php.
     final const VALERI_CHALLENGE_TYPE = 32;
+    // WHY: Action_03008 Arrogant. Must match Game.php (34). Off the auto-engage list.
+    final const ARROGANT_CHALLENGE_TYPE = 34;
     // Must match Game.php — Thug challenge never engages (off auto-engage list).
     final const DON_CONSTANZO_CHALLENGE_TYPE = 19;
     final const CHALLENGE_STAT = 'ChallengeStat';
@@ -519,6 +523,14 @@ class Game
     public function getPlayerFactionDeckName(int $playerId): string
     {
         return 'Deck-' . $playerId;
+    }
+
+    // WHY: Reaction_03006 / Reaction_03007 sink a chosen hand card onto the faction deck.
+    // Real DeckTrait also refreshes the deck-count icon; tests only need the insert record
+    // (callers set Card->Location themselves).
+    public function insertCardOnPlayerFactionDeckExtreme(int $cardId, int $playerId, bool $onTop): void
+    {
+        $this->getGameDeckObject()->insertCardOnExtremePosition($cardId, $this->getPlayerFactionDeckName($playerId), $onTop);
     }
 
     public function getPlayerDiscardDeckName(int $playerId): string

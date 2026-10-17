@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01129;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\CityLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use ReflectionProperty;
 
 /**
@@ -425,6 +426,31 @@ class TestTheah extends Theah
         $events = $this->queuedEvents;
         $this->queuedEvents = [];
         return $events;
+    }
+
+    // WHY: Reaction_03001 treats a queued EventCardMoved as already in the city / already
+    // co-located. Production reads those rows from the events table; tests only have
+    // $queuedEvents. EventCardMoving does not count — the DB query is EventCardMoved.
+    public function getQueuedCardMoveDestination(int $cardId): ?string
+    {
+        foreach ($this->queuedEvents as $event) {
+            if ($event instanceof EventCardMoved && $event->cardId === $cardId) {
+                return $event->toLocation;
+            }
+        }
+        return null;
+    }
+
+    public function hasQueuedCardMoveToLocation(int $cardId, string $toLocation): bool
+    {
+        foreach ($this->queuedEvents as $event) {
+            if ($event instanceof EventCardMoved
+                && $event->cardId === $cardId
+                && $event->toLocation === $toLocation) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** @return list<Event> */

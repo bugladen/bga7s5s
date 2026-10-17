@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
@@ -13,7 +14,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Thomas;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\reactions\Reaction_03003;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Reaction_03003_Test extends TestCase
@@ -151,6 +155,92 @@ class Reaction_03003_Test extends TestCase
                 $reaction->handleEvent($event);
 
                 Assert::count(0, $world->theah->queuedEvents, 'enemy Thug ignored');
+            },
+
+            'decline spends the reaction and musters nothing' => function () {
+                $world = new TestWorld();
+                $don = $world->placeCharacter(new _03003(), Game::LOCATION_CITY_DOCKS, 1);
+                $buratino = $world->placeCharacter(new _01019(), Game::LOCATION_CITY_FORUM, 1);
+                $world->placeCharacter(new _01020(), $world->game->getPlayerDiscardDeckName(1), 1);
+                /** @var Reaction_03003 $reaction */
+                $reaction = $don->getReactions()[0];
+                $event = new EventCharacterDestroyed();
+                $event->characterId = $buratino->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'decline');
+                Assert::true($reaction->Used, 'spent');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterMustered::class), 'no muster');
+                Assert::same(['done'], $world->game->gamestate->transitions, 'done');
+            },
+
+            // WHY: Buratino's printed cost is 1, so the -1 discount is free and skips pay.
+            // Discard origin queues the leave-discard event before the Home muster.
+            'a free discard Thug is mustered at Home without a payment' => function () {
+                $world = new TestWorld();
+                $don = $world->placeCharacter(new _03003(), Game::LOCATION_CITY_DOCKS, 1);
+                $dante = $world->placeCharacter(new _01020(), Game::LOCATION_CITY_FORUM, 1);
+                $buratino = $world->placeCharacter(new _01019(), $world->game->getPlayerDiscardDeckName(1), 1);
+                /** @var Reaction_03003 $reaction */
+                $reaction = $don->getReactions()[0];
+                $event = new EventCharacterDestroyed();
+                $event->characterId = $dante->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                $buttons = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array("pickDiscard-{$buratino->Id}", $buttons, true), 'discard button');
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, "pickDiscard-{$buratino->Id}");
+                $removed = $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class);
+                $muster = $world->theah->queuedOfType(EventCharacterMustered::class);
+                Assert::same($buratino->Id, $removed[0]->cardId, 'left discard');
+                Assert::same($buratino->Id, $muster[0]->characterId, 'mustered');
+                Assert::same(Game::LOCATION_PLAYER_HOME, $muster[0]->location, 'home');
+                Assert::true($reaction->Used, 'spent');
+                Assert::count(0, $world->theah->queuedOfType(EventCardDiscardedFromHand::class), 'nothing paid');
+            },
+
+            // WHY: Dante costs 2, discounted to 1. One non-Wealth hand card completes payment.
+            // The chosen Thug is not itself a pay button when it came from hand.
+            'paying the discounted cost discards the payment then musters from hand' => function () {
+                $world = new TestWorld();
+                $don = $world->placeCharacter(new _03003(), Game::LOCATION_CITY_DOCKS, 1);
+                $destroyed = $world->placeCharacter(new GenericCharacter('Other', ['Thug']), Game::LOCATION_CITY_FORUM, 1);
+                $dante = $world->placeCharacter(new _01020(), Game::LOCATION_HAND, 1);
+                $pay = $world->placeCard(new \Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02061(), Game::LOCATION_HAND, 1);
+                /** @var Reaction_03003 $reaction */
+                $reaction = $don->getReactions()[0];
+                $event = new EventCharacterDestroyed();
+                $event->characterId = $destroyed->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, "pickHand-{$dante->Id}");
+                Assert::false($reaction->Used, 'still paying');
+                Assert::same(['done'], $world->game->gamestate->transitions, 'requeue ends the state');
+                $buttons = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array("pay-{$pay->Id}", $buttons, true), 'pay card');
+                Assert::false(in_array("pay-{$dante->Id}", $buttons, true), 'chosen Thug is not payment');
+                Assert::true(in_array('back', $buttons, true), 'back');
+
+                $world->game->gamestate->transitions = [];
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'back');
+                Assert::false($reaction->Used, 'back does not spend');
+                $pick = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array("pickHand-{$dante->Id}", $pick, true), 'returned to the picker');
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, "pickHand-{$dante->Id}");
+                $world->theah->takeQueuedEvents();
+                $reaction->performReaction($world->game, 0, $reaction->Id, "pay-{$pay->Id}");
+                $discarded = $world->theah->queuedOfType(EventCardDiscardedFromHand::class);
+                $muster = $world->theah->queuedOfType(EventCharacterMustered::class);
+                Assert::same($pay->Id, $discarded[0]->cardId, 'payment discarded');
+                Assert::true($discarded[0]->AsPayment, 'as payment');
+                Assert::same($dante->Id, $muster[0]->characterId, 'dante mustered');
+                Assert::count(0, $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class), 'hand origin');
+                Assert::true($reaction->Used, 'spent');
             },
         ];
     }
