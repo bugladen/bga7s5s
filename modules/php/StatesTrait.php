@@ -616,15 +616,20 @@ trait StatesTrait
         $this->theah->buildCity();
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
+        $capturedLocation = (string)$this->globals->get(GAME::CHOSEN_LOCATION, '');
         if ($performerId != 0)        
         {
             $performer = $this->getCardObjectFromDb($performerId);
-            $location = $performer->Location;
+            $location = $this->theah->resolvePressureLocation(
+                $performer,
+                (bool)$this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false),
+                $capturedLocation
+            );
         }
         else
         {
             $performer = null;
-            $location = $this->globals->get(GAME::CHOSEN_LOCATION);
+            $location = $capturedLocation;
         }
         
         if ($this->globals->get(Game::IS_BASIC_CLAIM_ACTION, false))

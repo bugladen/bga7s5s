@@ -1518,6 +1518,33 @@ class Theah
          $location == Game::LOCATION_CITY_GOVERNORS_GARDEN;
     }
 
+    /**
+     * City site a pressure resolution should total and claim.
+     *
+     * WHY: Basic Claim snapshots the site, then engages. Engage Forced (Blood in
+     * the Water) can destroy the performer into Discard before pressure math runs.
+     * Their Location is then Discard-N, and claiming that pile is not the action.
+     * Other pressure keeps the performer's current location, including a move to
+     * another city site. No performer means the caller already stored the site.
+     */
+    public function resolvePressureLocation(?Card $performer, bool $basicClaim, string $capturedLocation): string
+    {
+        if ($performer === null)
+        {
+            return $capturedLocation;
+        }
+
+        if ($basicClaim
+            && $performer instanceof Character
+            && $this->game->characterIsInDiscardOrLocker($performer)
+            && $this->locationInCity($capturedLocation))
+        {
+            return $capturedLocation;
+        }
+
+        return $performer->Location;
+    }
+
     public function playerCanMove($playerId): bool
     {
         $characters = $this->getCharactersInPlayByPlayerId($playerId);

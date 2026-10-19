@@ -870,6 +870,10 @@ trait FrameworkActionsTrait
 
         $this->globals->set(Game::PRESSURING_PLAYER, $activePlayerId);
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
+        // WHY: Engage runs (and Blood in the Water can destroy the performer into
+        // Discard) before stHighDramaPressureLocation. That state must pressure the
+        // city site they stood on when chosen, not wherever the wound sent them.
+        $this->globals->set(Game::CHOSEN_LOCATION, $performer->Location);
 
         $this->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
         $this->globals->set(Game::IS_BASIC_CLAIM_ACTION, true);
