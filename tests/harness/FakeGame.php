@@ -176,6 +176,10 @@ class Game
     final const SANJAY_CHALLENGE_TYPE = 22;
     // WHY: Action_03042. Engage is paid on the action, so this stays off auto-engage. Must match Game.php (23).
     final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
+    // WHY: Action_03057 sets this so a refused challenge can claim. Must match Game.php (24).
+    final const CENSURE_CHALLENGE_TYPE = 24;
+    // WHY: Action_03058 stays off the auto-engage list. Must match Game.php (33).
+    final const COURAGEOUS_CHALLENGE_TYPE = 33;
     final const RAVEN_CHALLENGE_TYPE = 27;
     // Must match Game.php — Action_04019; off auto-engage (attachment Engage only).
     final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;

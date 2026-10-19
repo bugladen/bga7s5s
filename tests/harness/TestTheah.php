@@ -294,6 +294,16 @@ class TestTheah extends Theah
         return $this->duelThreats[(int)$characterId] ?? 0;
     }
 
+    /** @var array<int,int> characterId => round-start threat (Maneuver_03070 excess). */
+    public array $startingDuelThreats = [];
+
+    // WHY: Real getStartingDuelThreat SELECTs duel_round. The DB stub's getObjectList
+    // returns player scores, so Comforting would always see excess 0. Unlisted ids are 0.
+    public function getStartingDuelThreat(int $characterId): int
+    {
+        return $this->startingDuelThreats[(int)$characterId] ?? 0;
+    }
+
     // WHY: Technique_01050 needs thrust >= 1; real path SELECTs duel_round.
     public function getCurrentRoundThrust(): int
     {
