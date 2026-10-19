@@ -21,8 +21,12 @@ class FakeGamestate
         $this->transitions[] = $transition;
     }
 
+    /** @var list<int> */
+    public array $activePlayerChanges = [];
+
     public function changeActivePlayer(int $playerId): void
     {
+        $this->activePlayerChanges[] = $playerId;
     }
 
     /** @var list<array{playerId:int,transition:string}> */

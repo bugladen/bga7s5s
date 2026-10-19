@@ -122,6 +122,8 @@ class Game
     final const FIRST_PLAYER = 'firstPlayer';
     // WHY: Action_01090 / Action_01093 / Action_01095b first-player override + extra action.
     final const EXTRA_ACTIONS = 'extraActions';
+    // WHY: Action_03032 locks the optional follow-up to the wounded performer. Must match Game.php.
+    final const EXTRA_ACTION_PERFORMER = 'extraActionPerformer';
     final const OVERRIDE_AS_NOT_FIRST_PLAYER = 'overrideAsNotFirstPlayer';
 
     // WHY: Maneuver_01114 Roll the Bones sets these before computing reveal count (globals, not instance flags).
@@ -170,6 +172,10 @@ class Game
     final const UNSANCTIONED_DUEL_CHALLENGE_TYPE = 17;
     final const AJA_CHALLENGE_TYPE = 18;
     final const SWORN_SWORDS_CHALLENGE_TYPE = 21;
+    // WHY: Action_03037. Kept off the auto-engage list. Must match Game.php (22).
+    final const SANJAY_CHALLENGE_TYPE = 22;
+    // WHY: Action_03042. Engage is paid on the action, so this stays off auto-engage. Must match Game.php (23).
+    final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
     final const RAVEN_CHALLENGE_TYPE = 27;
     // Must match Game.php — Action_04019; off auto-engage (attachment Engage only).
     final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;
@@ -234,6 +240,11 @@ class Game
     final const SOLOMONIA_ID = 'solomoniaId';
     // WHY: Reaction_02050 sets PRESSURE_TYPE to this (replaces, does not OR). Must match Game.php.
     final const USSURAN_INTRIGUE_PRESSURE_TYPE = 4096;
+    // WHY: Reaction_03035 ORs this onto PRESSURE_TYPE. Must match Game.php (8192).
+    final const LOYAL_PRESSURE_TYPE = 8192;
+    final const LOYAL_PLAYER_ID = 'loyalPlayerId';
+    // WHY: Action_03040 ORs this onto PRESSURE_TYPE. Must match Game.php (16384).
+    final const SOLINE_PRESSURE_TYPE = 16384;
 
     // WHY: Reaction_01203 / Reaction_04031 button labels read live threat from globals.
     final const CHALLENGER_THREAT = 'challengerThreat';
@@ -632,7 +643,27 @@ class Game
             {
                 $this->game->deckShuffles[] = (string) $location;
             }
+
+            // WHY: _03041 Forced and Action_03038a ask the deck how many cards can still be drawn.
+            // Unseeded locations read as empty so "no cards left" is the default.
+            public function countCardsInLocation($location): int
+            {
+                return (int) ($this->game->deckLocationCounts[(string) $location] ?? 0);
+            }
         };
+    }
+
+    /** @var array<string, int> Deck location => countCardsInLocation (faction deck / discard). */
+    public array $deckLocationCounts = [];
+
+    /** @var list<int> ids passed to actGambleCardChosen (Proper Drama steals the chooser). */
+    public array $gambleCardsChosen = [];
+
+    // WHY: The real chooser reads the BGA deck and writes duel_round. Tests only need
+    // proof that Maneuver_03047a handed the chosen id through after clearing its lock.
+    public function actGambleCardChosen(int $id): void
+    {
+        $this->gambleCardsChosen[] = $id;
     }
 
     /** @var list<array{playerId:int,performerId:int|null,location:string,pressureType:string}> */
@@ -660,6 +691,22 @@ class Game
         $id = (int)$this->globals->get('eventBatchId', 0) + 1;
         $this->globals->set('eventBatchId', $id);
         return $id;
+    }
+
+    // WHY: Action_03045 reads claim control. Real UtilitiesTrait stores it in globals.
+    public function getControllerLocationName($location): string
+    {
+        return 'Control_' . $location;
+    }
+
+    public function getControllerForLocation($location)
+    {
+        return $this->globals->get($this->getControllerLocationName($location)) ?? 0;
+    }
+
+    public function setControllerForLocation($location, $playerId): void
+    {
+        $this->globals->set($this->getControllerLocationName($location), $playerId);
     }
 
     // WHY: _01150 (and similar) walk loadPlayersBasicInfos and compare $player['player_id']
