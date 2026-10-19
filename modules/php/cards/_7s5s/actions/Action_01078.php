@@ -111,11 +111,14 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
                 "target_inject_code" => $performer->getInjectCode(),
             ]);
 
+            // WHY: The picker transition is not queued here. Unyielding Loyalty cancels
+            // this targeting and deleteEventBatch's the sibling. Queuing "01078" now
+            // left that transition behind, so the challenge picker still opened after
+            // the cost was paid. It is emitted only when this event survives (below).
+            $batchId = $game->getNextEventBatchId();
             $eventCharacterTargeted = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $eventCharacterTargeted->batchId = $batchId;
             $event->theah->queueEvent($eventCharacterTargeted);
-
-            $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, "01078", $this->Id);
-            $event->theah->queueEvent($transitionEvent);
 
             // createActionResolvedEvent() is called when the challenge is resolved
         }
@@ -124,10 +127,26 @@ class Action_01078 extends RiskAction implements IAbilityThatTargetsCharacters
         // issue the challenge). If a reaction (e.g. Vittoria) redirects the target, the
         // re-queued EventCharacterTargeted carries the new targetId — keep CHOSEN_PERFORMER
         // in sync so the downstream challenge state uses the right performer/location.
+        //
+        // WHY the transition lives here: Pass / redirect re-deliver this event, so the
+        // picker is rebuilt for the (possibly new) performer. A paid cancel does not
+        // re-deliver, so the challenge never starts. Same batch as the targeting event
+        // so a same-pass cancel still strips a transition this handler already queued.
         if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
         {
             $game = $event->theah->game;
             $game->globals->set(Game::CHOSEN_PERFORMER, $event->targetId);
+            $performer = $event->theah->getCharacterById($event->targetId);
+            if ($performer === null)
+            {
+                return;
+            }
+
+            $owner = $this->getOwningCard($event->theah);
+            $event->theah->deleteQueuedTransitionsNamed("01078");
+            $transitionEvent = EventFactory::createTransitionEvent($performer->ControllerId, $owner->Id, "01078", $this->Id);
+            $transitionEvent->batchId = $event->batchId;
+            $event->theah->queueEvent($transitionEvent);
         }
     }
 }

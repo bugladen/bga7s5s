@@ -169,9 +169,10 @@ class _03cd21 extends CityAttachment
 
     // WHY: Forced, not a Reaction — no Decline. The first opponent Risk that
     // targets the equipped character each Day cancels here with no player choice.
-    // $abortUnbatchedFollowUp is for Defending Honor: EventCharacterTargeted and
-    // the "01078" choose-target transition share no batchId, so deleteEventBatch
-    // leaves the challenge in the queue and the once-per-Day looks optional.
+    // $abortUnbatchedFollowUp is for Defending Honor. The picker transition is
+    // emitted only when the targeting event survives, and it shares that batch.
+    // deleteEventBatch strips it when this handler runs second. Always resolve
+    // the Risk too: a batch-only cancel left the action with no resolved event.
     private function cancelRiskEffects(Event $event, int $sourceId, bool $abortUnbatchedFollowUp): void
     {
         $this->markAbilityUsed($event->theah->game);
@@ -180,7 +181,11 @@ class _03cd21 extends CityAttachment
         {
             $event->theah->deleteEventBatch($event->batchId);
         }
-        elseif ($abortUnbatchedFollowUp)
+        // WHY not elseif: Defending Honor now batches the targeting event and only
+        // emits "01078" when that event survives. A batch delete removes the picker
+        // if this handler already queued it, and the action still has to resolve —
+        // otherwise the Risk ends with no "action resolved" and no challenge.
+        if ($abortUnbatchedFollowUp)
         {
             $event->theah->deleteTransitionEventsBySourceId($sourceId);
             $source = $event->theah->getCardById($sourceId);

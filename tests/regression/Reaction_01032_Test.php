@@ -12,10 +12,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01032;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01032;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use ReflectionProperty;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
@@ -327,6 +330,123 @@ class Reaction_01032_Test extends TestCase
 
                 Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'not armed');
                 Assert::true($reaction->Used, 'used');
+            },
+
+            // WHY: Move Along / Servo / Aja / Defending Honor's ally never emit
+            // CharacterTargeted for the defender. Technique activation stamps the
+            // issued event with the technique id. CHOSEN_ACTION is still the action.
+            'offers on a challenge issued after a technique when CHOSEN_ACTION still targets' => function () {
+                $world = new TestWorld();
+                $ul = $world->placeCard(new _01032(), Game::LOCATION_HAND, 1);
+                $victim = $world->placeCharacter(new GenericCharacter('Victim'), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('RH', ['Red Hand']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $prop = new ReflectionProperty(Theah::class, 'Actions');
+                $prop->setAccessible(true);
+                $actions = $prop->getValue($world->theah);
+                $actions[] = new BasicChallengeAction();
+                $prop->setValue($world->theah, $actions);
+                $world->game->globals->set(Game::CHOSEN_ACTION, 'BasicChallenge');
+
+                /** @var Reaction_01032 $reaction */
+                $reaction = $ul->getReactions()[0];
+
+                $event = new EventChallengeIssued();
+                $event->playerId = 2;
+                $event->challengerId = $foe->Id;
+                $event->defenderId = $victim->Id;
+                $event->sourceId = $foe->Id;
+                $event->abilityId = 'Technique_03050';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'held');
+                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'offer');
+            },
+
+            'does not offer on an issued challenge whose action is not a targeting ability' => function () {
+                $world = new TestWorld();
+                $ul = $world->placeCard(new _01032(), Game::LOCATION_HAND, 1);
+                $victim = $world->placeCharacter(new GenericCharacter('Victim'), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('RH', ['Red Hand']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::CHOSEN_ACTION, 'not-a-targeting-action');
+
+                /** @var Reaction_01032 $reaction */
+                $reaction = $ul->getReactions()[0];
+
+                $event = new EventChallengeIssued();
+                $event->playerId = 2;
+                $event->challengerId = $foe->Id;
+                $event->defenderId = $victim->Id;
+                $event->sourceId = $foe->Id;
+                $event->abilityId = 'Technique_03050';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::false($event->canceled, 'not a targeting challenge');
+                Assert::count(0, $world->theah->queuedEvents, 'no offer');
+            },
+
+            // WHY: Defending Honor emits the picker only after targeting survives.
+            // Paying UL drops that event outside state 4511, so the Risk must resolve here.
+            'paying to cancel Defending Honor performer targeting resolves the Risk' => function () {
+                $world = new TestWorld();
+                $ul = $world->placeCard(new _01032(), Game::LOCATION_HAND, 1);
+                $performer = $world->placeCharacter(new GenericCharacter('Performer'), Game::LOCATION_CITY_DOCKS, 1);
+                $rh = $world->placeCharacter(
+                    new GenericCharacter('RH', ['Red Hand']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $risk = $world->placeCard(new _01078(), Game::LOCATION_HAND, 2);
+                /** @var Action_01078 $action */
+                $action = $risk->getActions()[0];
+
+                /** @var Reaction_01032 $reaction */
+                $reaction = $ul->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $performer->Id;
+                $event->sourceId = $risk->Id;
+                $event->abilityId = $action->Id;
+                $event->batchId = 9;
+                $event->theah = $world->theah;
+                $world->theah->queueEvent($event);
+                $transition = \Bga\Games\SeventhSeaCityOfFiveSails\EventFactory::createTransitionEvent(1, $risk->Id, '01078', $action->Id);
+                $transition->batchId = 9;
+                $world->theah->queueEvent($transition);
+
+                $reaction->handleEvent($event);
+
+                $pickers = array_filter(
+                    $world->theah->queuedOfType(EventTransition::class),
+                    fn($queued) => $queued->transition === '01078'
+                );
+                Assert::count(0, $pickers, 'picker stripped');
+
+                $world->theah->takeQueuedEvents();
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                $triggered->theah = $world->theah;
+                $reaction->handleEvent($triggered);
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'destroy-' . $rh->Id);
+
+                $resolved = $world->theah->queuedOfType(EventActionResolved::class);
+                Assert::count(1, $resolved, 'resolved');
+                Assert::same(2, $resolved[0]->playerId, 'risk controller');
+                Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'not in the picker');
             },
 
             'cost discard hand Thug' => function () {

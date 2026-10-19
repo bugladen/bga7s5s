@@ -16,5 +16,12 @@ CHOSEN_ACTION match alone is true for Press the Advantage and every other target
 
 Pass and "no Red Hand/Thug left" still releaseEvent and do not set the flag.
 
-## Left alone
-If the player passes UL at target pick and Daichi then activates Technique_03050, EventChallengeIssued's abilityId is the technique (actHighDramaChallengeActionTechniqueActivated overwrites TRANSITION_INTERNAL_ID). shouldReactToEvent misses that. Target-pick is the printed window and now actually stops the duel when paid. Do not "fix" issue-time by treating every technique id as a targeting ability.
+## Later gaps (same day)
+
+Shared picker pay is not the only hole.
+
+Defending Honor queued "01078" beside EventCharacterTargeted with no shared batch. UL paid on the performer, deleteEventBatch had nothing to strip, and the picker still opened. The ally pick still does not emit CharacterTargeted (the ability target is the enemy performer). Fix: batch the targeting event, and emit "01078" only when that event survives. Pass / Vittoria redirect re-deliver it and rebuild the picker for the (new) performer. A paid cancel does not re-deliver. That pay is outside the challenge machine, so UL also queues ActionResolved for the Risk — Silver Spine already did, and a batch-only cancel had stopped doing it once the event gained a batchId. Spine now deletes the batch and still resolves.
+
+Hub-exit challenges (Move Along, Servo, Valeri Mikhailov, Aja, Don Constanzo, Sworn Swords, Sanjay, Danilo, Raven, Wilhelm, Torvo, Rattle the Rigging) and Defending Honor's ally never get that target-pick window. Issue-time already canceled when the stamped ability was still the action. Activating a technique overwrites TRANSITION_INTERNAL_ID, so abilityId was the technique and UL stayed silent. CHOSEN_ACTION is still the issuing action (technique activation does not clear it — Move Along's check-cancelled comment already relies on that). ChallengeIssued now falls back to CHOSEN_ACTION when the stamp is not a targeting ability. Paying still sets CHALLENGE_CANCELLED via the held ChallengeIssued, which check-cancelled already honors.
+
+Did not treat every technique id as targeting. A CHOSEN_ACTION that is not a targeting ability still does not offer. Andriana / CAD Valeri were already gated on the pull or the targeting event and were left alone.

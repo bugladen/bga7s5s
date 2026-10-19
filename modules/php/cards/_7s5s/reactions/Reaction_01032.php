@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -142,6 +143,26 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         }
 
         return false;
+    }
+
+    // Hub-exit challenges (Move Along, Servo, Aja, Defending Honor's ally, …) never
+    // emit EventCharacterTargeted for the defender. The issue event is the window.
+    // Activating a technique overwrites TRANSITION_INTERNAL_ID, so abilityId is the
+    // technique and the targeting check misses. CHOSEN_ACTION is still the action.
+    private function challengeIsOpposingTarget(EventChallengeIssued $event): bool
+    {
+        if ($this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
+        {
+            return true;
+        }
+
+        $chosenAction = (string) $event->theah->game->globals->get(Game::CHOSEN_ACTION, '');
+        if ($chosenAction === '' || $chosenAction === $event->abilityId)
+        {
+            return false;
+        }
+
+        return $this->shouldReactToEvent($event->theah, $event->sourceId, $chosenAction, $event->playerId);
     }
     
     private function thugsInHand(Theah $theah): bool
@@ -339,7 +360,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
                 $challenger = $event->theah->getCharacterById($event->challengerId);
                 if ($defender !== null && $challenger !== null &&
                     ($owner->ControllerId == $defender->ControllerId || $owner->ControllerId == $challenger->ControllerId) &&
-                    $this->shouldReactToEvent($event->theah, $event->sourceId, $event->abilityId, $event->playerId))
+                    $this->challengeIsOpposingTarget($event))
                 {
                     $this->interceptEvent($event, 'challengeIssuedEvent');
                 }
@@ -445,13 +466,14 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         // NORMAL for the whole turn, so a flag set on those cancels would make the
         // next basic challenge skip in stTechniqueAvailable. Only the target-pick
         // reaction (4511) is the window before the duel is issued.
+        $targeted = $this->characterTargetedEvent;
         $cancelsInFlightChallenge = $this->challengeIssuedEvent !== null;
         if (! $cancelsInFlightChallenge
             && $state === States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS
-            && $this->characterTargetedEvent !== null)
+            && $targeted !== null)
         {
             $chosenAction = (string) $game->globals->get(Game::CHOSEN_ACTION, '');
-            if ($chosenAction !== '' && $this->characterTargetedEvent->abilityId === $chosenAction)
+            if ($chosenAction !== '' && $targeted->abilityId === $chosenAction)
             {
                 $cancelsInFlightChallenge = true;
             }
@@ -469,6 +491,22 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
             $game->globals->set(Game::CHALLENGE_CANCELLED, true);
         }
         $this->challengeIssuedEvent = null;
+
+        // WHY: Defending Honor's picker is emitted only if this targeting survives.
+        // Paying here is outside the challenge machine (not state 4511), so nothing
+        // else queues ActionResolved and the Risk would end in silence. The shared
+        // picker path resolves inside skipChallengeBeforeTechnique instead.
+        if ($targeted !== null
+            && $state !== States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS)
+        {
+            $source = $game->theah->getCardById($targeted->sourceId);
+            $ability = $source?->getAbilityById($targeted->abilityId);
+            if ($ability instanceof Action_01078)
+            {
+                $playerId = ($source->ControllerId) ? (int) $source->ControllerId : (int) $targeted->playerId;
+                $game->theah->queueEvent(EventFactory::createActionResolvedEvent($playerId));
+            }
+        }
     }
 
     private function finalize(Theah $theah): void

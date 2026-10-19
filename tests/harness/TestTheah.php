@@ -192,6 +192,17 @@ class TestTheah extends Theah
         ));
     }
 
+    // WHY: Production deletes the events-table row. Defending Honor re-emits "01078"
+    // when a canceled targeting event is passed back; tests only have $queuedEvents.
+    public function deleteQueuedTransitionsNamed(string $transitionName): void
+    {
+        $this->queuedEvents = array_values(array_filter(
+            $this->queuedEvents,
+            fn($event) => !($event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition
+                && $event->transition === $transitionName)
+        ));
+    }
+
     public function deleteTransitionEvents(string $reactionId): void
     {
         $this->queuedEvents = array_values(array_filter(

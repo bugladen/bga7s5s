@@ -145,7 +145,7 @@ class Action_01078_Test extends TestCase
                 Assert::false($action->isValidTargetForAbility($world->game, $pacifist)[0], 'cannot challenge');
             },
 
-            'trigger sets DEFENDING_HONOR challenge type and queues Targeted then transition 01078' => function () {
+            'trigger sets DEFENDING_HONOR and queues Targeted; the picker waits until that survives' => function () {
                 $world = new TestWorld();
                 [$risk, $action, , $enemy] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $enemy->Id);
@@ -160,18 +160,37 @@ class Action_01078_Test extends TestCase
                 Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
                 Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
                 Assert::same(1, $targeted[0]->playerId, 'targeting player is the Risk controller');
+                Assert::true($targeted[0]->batchId !== null && $targeted[0]->batchId !== 0, 'batch for cancel');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no picker yet');
+
+                $delivered = $targeted[0];
+                $world->theah->takeQueuedEvents();
+                $action->handleEvent($delivered);
 
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'transition');
                 Assert::same('01078', $transitions[0]->transition, 'name');
                 Assert::same(2, $transitions[0]->playerId, 'handed to the enemy player to pick the challenge target');
                 Assert::same($action->Id, $transitions[0]->internalId, 'internal id');
+                Assert::same($delivered->batchId, $transitions[0]->batchId, 'same batch');
+            },
 
-                Assert::same(
-                    [EventCharacterTargeted::class, EventTransition::class],
-                    array_map(fn($e) => $e::class, $world->theah->queuedEvents),
-                    'Targeted before transition so reactions can redirect'
-                );
+            'a canceled targeting event does not open the challenge picker' => function () {
+                $world = new TestWorld();
+                [$risk, $action, , $enemy] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $enemy->Id);
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 1;
+                $event->targetId = $enemy->Id;
+                $event->sourceId = $risk->Id;
+                $event->abilityId = $action->Id;
+                $event->canceled = true;
+                $event->batchId = 4;
+                $event->theah = $world->theah;
+                $action->handleEvent($event);
+
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'picker stays closed');
             },
 
             // WHY: createActionResolvedEvent is raised only when the challenge itself resolves, not here.
@@ -217,7 +236,9 @@ class Action_01078_Test extends TestCase
                 $action->handleEvent($event);
 
                 Assert::same($other->Id, $world->game->globals->get(Game::CHOSEN_PERFORMER), 'synced');
-                Assert::count(0, $world->theah->queuedEvents, 'sync queues nothing');
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'picker follows the new performer');
+                Assert::same($other->ControllerId, $transitions[0]->playerId, 'their controller');
             },
 
             'canceled EventCharacterTargeted does not change CHOSEN_PERFORMER' => function () {
