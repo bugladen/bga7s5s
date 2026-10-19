@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
@@ -431,8 +432,31 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         throw new UserException($game->translate('Invalid choice.'));
     }
 
-    private function clearEvents(Game $game)
+    private function clearEvents(Game $game, int $state = 0)
     {
+        // WHY: Paying drops the held event and does not re-queue it. A framework
+        // challenge is not a sibling of EventCharacterTargeted — target pick only
+        // queues that event, then endOfEvents always enters stTechniqueAvailable
+        // and issues the duel (Daichi 03050 still reached his technique window).
+        // That gate aborts only when CHALLENGE_CANCELLED is set.
+        //
+        // WHY the state id, not CHOSEN_ACTION alone: Press the Advantage and other
+        // targeting actions also match CHOSEN_ACTION. CHALLENGE_TYPE is already
+        // NORMAL for the whole turn, so a flag set on those cancels would make the
+        // next basic challenge skip in stTechniqueAvailable. Only the target-pick
+        // reaction (4511) is the window before the duel is issued.
+        $cancelsInFlightChallenge = $this->challengeIssuedEvent !== null;
+        if (! $cancelsInFlightChallenge
+            && $state === States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS
+            && $this->characterTargetedEvent !== null)
+        {
+            $chosenAction = (string) $game->globals->get(Game::CHOSEN_ACTION, '');
+            if ($chosenAction !== '' && $this->characterTargetedEvent->abilityId === $chosenAction)
+            {
+                $cancelsInFlightChallenge = true;
+            }
+        }
+
         $this->engagedEvent = null;
         $this->engardedEvent = null;
         $this->cardMovingEvent = null;
@@ -440,7 +464,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         $this->characterHealedEvent = null;
         $this->characterTargetedEvent = null;
 
-        if ($this->challengeIssuedEvent != null)
+        if ($cancelsInFlightChallenge)
         {
             $game->globals->set(Game::CHALLENGE_CANCELLED, true);
         }
@@ -532,7 +556,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         if ($this->stage === 'cost')
         {
             $this->payCost($game, $reactionId);
-            $this->clearEvents($game);
+            $this->clearEvents($game, $state);
             $this->finalize($game->theah);
             $game->gamestate->nextState('done');
             return;

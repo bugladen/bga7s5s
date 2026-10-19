@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
@@ -12,9 +13,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01032;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01032;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use ReflectionProperty;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
@@ -225,6 +231,102 @@ class Reaction_01032_Test extends TestCase
                 Assert::same($rh->Id, $world->theah->queuedOfType(EventCharacterDestroyed::class)[0]->characterId, 'destroy');
                 Assert::true($reaction->Used, 'used');
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'wound stays canceled');
+                Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'not a challenge');
+            },
+
+            // WHY: Daichi (03050) basic challenge. UL pays on EventCharacterTargeted
+            // before technique / ChallengeIssued. Without CHALLENGE_CANCELLED,
+            // stTechniqueAvailable still issues the duel.
+            'paying to cancel an in-flight challenge target sets CHALLENGE_CANCELLED' => function () {
+                $world = new TestWorld();
+                $ul = $world->placeCard(new _01032(), Game::LOCATION_HAND, 1);
+                $victim = $world->placeCharacter(new GenericCharacter('Victim'), Game::LOCATION_CITY_DOCKS, 1);
+                $rh = $world->placeCharacter(
+                    new GenericCharacter('RH', ['Red Hand']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $daichi = $world->placeCharacter(new GenericCharacter('Daichi'), Game::LOCATION_CITY_DOCKS, 2);
+                $prop = new ReflectionProperty(Theah::class, 'Actions');
+                $prop->setAccessible(true);
+                $actions = $prop->getValue($world->theah);
+                $actions[] = new BasicChallengeAction();
+                $prop->setValue($world->theah, $actions);
+                $world->game->globals->set(Game::CHOSEN_ACTION, 'BasicChallenge');
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                /** @var Reaction_01032 $reaction */
+                $reaction = $ul->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $victim->Id;
+                $event->sourceId = $daichi->Id;
+                $event->abilityId = 'BasicChallenge';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                $triggered->theah = $world->theah;
+                $reaction->handleEvent($triggered);
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction(
+                    $world->game,
+                    States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS,
+                    $reaction->Id,
+                    'destroy-' . $rh->Id
+                );
+
+                Assert::true((bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'cancelled');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterTargeted::class), 'target stays canceled');
+                Assert::count(0, $world->theah->queuedOfType(EventChallengeIssued::class), 'not reissued');
+            },
+
+            // WHY: Same target event outside the challenge picker must not arm the flag.
+            // A leftover true skips the next basic challenge in stTechniqueAvailable.
+            'paying to cancel a non-challenge target does not set CHALLENGE_CANCELLED' => function () {
+                $world = new TestWorld();
+                $ul = $world->placeCard(new _01032(), Game::LOCATION_HAND, 1);
+                $victim = $world->placeCharacter(new GenericCharacter('Victim'), Game::LOCATION_CITY_DOCKS, 1);
+                $rh = $world->placeCharacter(
+                    new GenericCharacter('RH', ['Red Hand']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $prop = new ReflectionProperty(Theah::class, 'Actions');
+                $prop->setAccessible(true);
+                $actions = $prop->getValue($world->theah);
+                $actions[] = new BasicChallengeAction();
+                $prop->setValue($world->theah, $actions);
+                $world->game->globals->set(Game::CHOSEN_ACTION, 'BasicChallenge');
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                /** @var Reaction_01032 $reaction */
+                $reaction = $ul->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $victim->Id;
+                $event->sourceId = $foe->Id;
+                $event->abilityId = 'BasicChallenge';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                $triggered->theah = $world->theah;
+                $reaction->handleEvent($triggered);
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'destroy-' . $rh->Id);
+
+                Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'not armed');
+                Assert::true($reaction->Used, 'used');
             },
 
             'cost discard hand Thug' => function () {
