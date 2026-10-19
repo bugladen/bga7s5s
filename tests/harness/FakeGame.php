@@ -256,6 +256,9 @@ class Game
     // WHY: Reaction_04020 ORs this onto PRESSURE_TYPE and stores the opponent. Must match Game.php (32768).
     final const VANTAGE_POINT_PRESSURE_TYPE = 32768;
     final const VANTAGE_POINT_PLAYER_ID = 'vantagePointPlayerId';
+    // WHY: Reaction_04035 ORs this onto PRESSURE_TYPE and stores the pressuring player. Must match Game.php (65536).
+    final const MEETING_OF_THE_MINDS_PRESSURE_TYPE = 65536;
+    final const MEETING_OF_THE_MINDS_PLAYER_ID = 'meetingOfTheMindsPlayerId';
     // WHY: Reaction_04010 Use writes the actor's controller so the gamble hub can see it.
     final const UNRAVEL_THE_THREAD_CONTROLLER_ID = 'unravelTheThreadControllerId';
 

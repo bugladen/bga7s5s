@@ -23,7 +23,7 @@ Local PHP regression tests live under `tests/` (no PHPUnit). **When you change g
 php tests/run.php
 ```
 
-Suites are in `tests/regression/*_Test.php`. Currently covers cards `_01006`–`_01206`, `_02001`–`_02061`, faction `_03001`–`_03073` and `_04001`–`_04020`, and city-deck `_03cd01`–`_03cd21` and `_04cd01`–`_04cd29` and their Action/Reaction/Technique/Maneuver composites.
+Suites are in `tests/regression/*_Test.php`. Currently covers cards `_01006`–`_01206`, `_02001`–`_02061`, faction `_03001`–`_03073` and `_04001`–`_04040`, and city-deck `_03cd01`–`_03cd21` and `_04cd01`–`_04cd29` and their Action/Reaction/Technique/Maneuver composites.
 
 ## Architecture
 
