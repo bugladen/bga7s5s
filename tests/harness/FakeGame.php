@@ -178,6 +178,10 @@ class Game
     final const WHEN_LEAST_EXPECTED_CHALLENGE_TYPE = 23;
     // WHY: Action_03057 sets this so a refused challenge can claim. Must match Game.php (24).
     final const CENSURE_CHALLENGE_TYPE = 24;
+    // WHY: Action_04002 keys intervene wound-or-draw. Must match Game.php (25).
+    final const DANILO_CHALLENGE_TYPE = 25;
+    // WHY: Action_04009. Off auto-engage; the defender is the challenger. Must match Game.php (26).
+    final const RATTLE_THE_RIGGING_CHALLENGE_TYPE = 26;
     // WHY: Action_03058 stays off the auto-engage list. Must match Game.php (33).
     final const COURAGEOUS_CHALLENGE_TYPE = 33;
     final const RAVEN_CHALLENGE_TYPE = 27;
@@ -249,6 +253,11 @@ class Game
     final const LOYAL_PLAYER_ID = 'loyalPlayerId';
     // WHY: Action_03040 ORs this onto PRESSURE_TYPE. Must match Game.php (16384).
     final const SOLINE_PRESSURE_TYPE = 16384;
+    // WHY: Reaction_04020 ORs this onto PRESSURE_TYPE and stores the opponent. Must match Game.php (32768).
+    final const VANTAGE_POINT_PRESSURE_TYPE = 32768;
+    final const VANTAGE_POINT_PLAYER_ID = 'vantagePointPlayerId';
+    // WHY: Reaction_04010 Use writes the actor's controller so the gamble hub can see it.
+    final const UNRAVEL_THE_THREAD_CONTROLLER_ID = 'unravelTheThreadControllerId';
 
     // WHY: Reaction_01203 / Reaction_04031 button labels read live threat from globals.
     final const CHALLENGER_THREAT = 'challengerThreat';

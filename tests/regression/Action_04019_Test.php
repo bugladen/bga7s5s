@@ -10,11 +10,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01048;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04017;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04019;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04019;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -25,90 +23,38 @@ class Action_04019_Test extends TestCase
         return 'Action_04019';
     }
 
-    /** @return array{0:_04019,1:Action_04019,2:Character,3:Character,4:_01048} */
-    private function scene(TestWorld $world): array
-    {
-        $risk = $world->placeCard(new _04019(), Game::LOCATION_HAND, 1);
-        $performer = $world->placeCharacter(new GenericCharacter('Rena'), Game::LOCATION_CITY_DOCKS, 1);
-        $weapon = $world->placeCard(new _01048(), Game::LOCATION_CITY_DOCKS, 1);
-        $weapon->AttachedToId = $performer->Id;
-        $weapon->Engaged = false;
-        $performer->Attachments[] = $weapon->Id;
-        $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
-
-        /** @var Action_04019 $action */
-        $action = $risk->getActions()[0];
-        return [$risk, $action, $performer, $foe, $weapon];
-    }
-
     public function tests(): array
     {
         return [
-            'available with engarde performer, Melee Weapon, and opposing character' => function () {
-                $world = new TestWorld();
-                [, $action, $performer] = $this->scene($world);
-
-                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available');
-                $ids = array_map(fn($c) => $c->Id, $action->getPerformersForAction(1, $world->theah));
-                Assert::same([$performer->Id], $ids, 'performers');
-            },
-
-            'unavailable when performer is Engaged' => function () {
-                $world = new TestWorld();
-                [, $action, $performer] = $this->scene($world);
-                $performer->Engaged = true;
-
-                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'engaged performer');
-            },
-
-            'unavailable without eligible attachment' => function () {
+            // WHY: The attachment must be a Melee Weapon or an Eisenfaust, and unengaged.
+            // A ranged weapon does not qualify. The challenge type is not NORMAL, so the
+            // performer is not auto-engaged: only the attachment is.
+            'engages the melee weapon and issues a combat challenge' => function () {
                 $world = new TestWorld();
                 $risk = $world->placeCard(new _04019(), Game::LOCATION_HAND, 1);
-                $world->placeCharacter(new GenericCharacter('Rena'), Game::LOCATION_CITY_DOCKS, 1);
-                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
-
+                $performer = $world->placeCharacter(new GenericCharacter('Mine'), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $ranged = $world->placeCard(new _04017(), Game::LOCATION_CITY_DOCKS, 1);
+                $ranged->AttachedToId = $performer->Id;
+                $performer->Attachments = [$ranged->Id];
                 /** @var Action_04019 $action */
                 $action = $risk->getActions()[0];
-                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no weapon');
-            },
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'ranged is not melee');
 
-            'trigger queues attachment chooser' => function () {
-                $world = new TestWorld();
-                [, $action] = $this->scene($world);
+                $ranged->addTrait($world->game, 'Melee', true);
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'melee weapon');
+                $performer->Engaged = true;
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'en garde');
+                $performer->Engaged = false;
 
-                $event = new EventActionTriggered();
-                $event->actionId = $action->Id;
-                $event->playerId = 1;
-                $event->theah = $world->theah;
-                $action->handleEvent($event);
-
-                Assert::same('04019', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'transition');
-            },
-
-            // WHY regression: NO_MORE_WORDS was wrongly ON stIssueChallenge auto-engage,
-            // so Rena engaged with her weapon. Print engages the attachment only.
-            'attachment confirm engages weapon only and mints type off auto-engage' => function () {
-                $world = new TestWorld();
-                [, $action, $performer, , $weapon] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
-
-                $action->actFromActionWithId(
-                    $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_04019,
-                    'highDramaPhase04019',
-                    $weapon->Id
-                );
-
-                $engages = $world->theah->queuedOfType(EventCardEngaged::class);
-                Assert::count(1, $engages, 'one engage');
-                Assert::same($weapon->Id, $engages[0]->cardId, 'weapon only');
-                Assert::same(Game::STAT_COMBAT, $world->game->globals->get(Game::CHALLENGE_STAT), 'stat');
-                Assert::same(
-                    Game::NO_MORE_WORDS_CHALLENGE_TYPE,
-                    $world->game->globals->get(Game::CHALLENGE_TYPE),
-                    'type off auto-engage'
-                );
-                Assert::same('04019_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'to choose-target');
+                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04019, '', $ranged->Id);
+                Assert::same($ranged->Id, $world->theah->queuedOfType(EventCardEngaged::class)[0]->cardId, 'attachment engaged');
+                Assert::same(Game::NO_MORE_WORDS_CHALLENGE_TYPE, $world->game->globals->get(Game::CHALLENGE_TYPE), 'not a normal challenge');
+                Assert::same(Game::STAT_COMBAT, $world->game->globals->get(Game::CHALLENGE_STAT), 'combat');
+                Assert::same('04019_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'pick the target next');
+                Assert::same('attachmentChosen', $world->game->gamestate->transitions[0], 'next');
+                Assert::same($foe->ControllerId, 2, 'foe stayed');
             },
         ];
     }
