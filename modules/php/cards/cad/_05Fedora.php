@@ -22,18 +22,18 @@ class _05Fedora extends Brute implements IHasManeuvers
 
         $this->Name = "Ariella";
         $this->Title = "Crook";
-        $this->Image = "05Fedora.v3.jpg";
+        $this->Image = "05Fedora.v4.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 6;
 
         $this->initializeFaction("Vodacce");
 
-        $this->WealthCost = 2;
+        $this->WealthCost = 1;
 
         $this->Resolve = 2;
         $this->Combat = 3;
-        $this->Finesse = 1;
+        $this->Finesse = 0;
         $this->Influence = 0;
         $this->DashedInfluence = true;
 

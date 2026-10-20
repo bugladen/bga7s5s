@@ -22,18 +22,18 @@ class _05Henry extends Brute implements IHasManeuvers
 
         $this->Name = "Carlo";
         $this->Title = "Blackguard";
-        $this->Image = "05Henry.v3.1.jpg";
+        $this->Image = "05Henry.v4.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 4;
 
         $this->initializeFaction("Vodacce");
 
-        $this->WealthCost = 0;
+        $this->WealthCost = 1;
 
         $this->Resolve = 2;
         $this->Combat = 2;
-        $this->Finesse = 0;
+        $this->Finesse = 1;
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
