@@ -120,6 +120,45 @@
                 }
             },
 
+            'highDramaPhase05Teens': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Teens_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Teens_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Teens_4': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.getCards().forEach((card) => {
+                        const cardElement = this.factionHand.getCardElement(card);
+                        if (cardElement && dojo.hasClass(cardElement, '_7sfs-unselectable')) {
+                            dojo.removeClass(cardElement, '_7sfs-unselectable');
+                            dojo.destroy(`${cardElement.id}_wealth_cost`);
+                        }
+                    });
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
             'duelChooseTechnique_05Cooper': () => {
                 if (this.isCurrentPlayerActive())
                 {

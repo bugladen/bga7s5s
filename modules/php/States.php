@@ -492,6 +492,11 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_05DANDYA = 4050141;
             const HIGH_DRAMA_PLAYER_TURN_05DANDYA_2 = 40501412;
         const HIGH_DRAMA_PLAYER_TURN_05DANDYB = 4050142;
+        // CAD - Smash and Grab (_05Teens). Exp 5 + card 19. Target / attachment / equip target / pay.
+        const HIGH_DRAMA_PLAYER_TURN_05TEENS = 405019;
+            const HIGH_DRAMA_PLAYER_TURN_05TEENS_2 = 4050192;
+            const HIGH_DRAMA_PLAYER_TURN_05TEENS_3 = 4050193;
+            const HIGH_DRAMA_PLAYER_TURN_05TEENS_4 = 4050194;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;

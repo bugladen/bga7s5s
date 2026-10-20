@@ -96,6 +96,28 @@
                 this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' });
             },
 
+            // WHY: No Back on any Teens state - the performer was engaged at announce.
+            'highDramaPhase05Teens': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase05Teens_2': () => {
+                (args.args.attachments || []).forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', { id: attachment.id }));
+                });
+            },
+
+            'highDramaPhase05Teens_3': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+            },
+
+            'highDramaPhase05Teens_4': () => {
+                this.addActionButton(`actPayForCards`, 'Confirm', () => this.onPaymentConfirmedFromCard());
+            },
+
             'duelChooseTechnique_05Cooper': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
