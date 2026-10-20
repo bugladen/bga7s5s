@@ -203,6 +203,8 @@ class Game
     final const VALERI_CHALLENGE_TYPE = 32;
     // WHY: Action_03008 Arrogant. Must match Game.php (34). Off the auto-engage list.
     final const ARROGANT_CHALLENGE_TYPE = 34;
+    // WHY: Action_05Hulk. Engage paid at announce; refuse blocked. Must match Game.php (35).
+    final const RAGE_CHALLENGE_TYPE = 35;
     // WHY: _03021 Cornered stamps this on refuse/intervene. Must match Game.php (20).
     final const CORNERED_CHALLENGE_TYPE = 20;
 

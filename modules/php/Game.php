@@ -309,6 +309,10 @@ class Game extends \Bga\GameFramework\Table
     final const COURAGEOUS_CHALLENGE_TYPE = 33;
     // WHY: Arrogant (_03008) — same never-engage seat as Courageous (no Engage printed).
     final const ARROGANT_CHALLENGE_TYPE = 34;
+    // WHY: Rage (_05Hulk) — Engage is paid at announce, so stay off stIssueChallenge
+    // auto-engage and off Unsanctioned's stSetupChallenge engage. Refuse is blocked
+    // (not Aja/Celerity, which gate Finesse). Must match the JS constant (35).
+    final const RAGE_CHALLENGE_TYPE = 35;
 
     //Duel global variables
     //Duel Names

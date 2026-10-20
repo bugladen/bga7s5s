@@ -161,6 +161,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.VALERI_CHALLENGE_TYPE = 32;
             this.COURAGEOUS_CHALLENGE_TYPE = 33;
             this.ARROGANT_CHALLENGE_TYPE = 34;
+            this.RAGE_CHALLENGE_TYPE = 35;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;

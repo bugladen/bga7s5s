@@ -1449,6 +1449,11 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Stand Your Ground: Refusing a Challenge is not allowed."));
         }
 
+        if ($challengeType == Game::RAGE_CHALLENGE_TYPE)
+        {
+            throw new UserException(clienttranslate("Rage: Refusing a Challenge is not allowed."));
+        }
+
         $this->theah->buildCity();
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);
         $targetId = $this->globals->get(GAME::CHOSEN_TARGET);

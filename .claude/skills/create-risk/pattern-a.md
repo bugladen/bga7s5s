@@ -550,6 +550,39 @@ Same skeleton as A.8's pressure pipeline **without** Leader / wound / choose-sta
 
 References: `_01141` / `Action_01141` (Combat → claim); `_05Glass` / `Action_05Glass` (Finesse → unclaim); pressure pipeline A.8 / `Action_01206`; unclaim emit `Maneuver_04048b`.
 
+### Pattern A.18 — Engage + (wound unless trait) • unrefusable Combat challenge • adversary's first combat card −N [Parry] • cannot be cancelled
+
+For City Actions like **"City Action: Engage your performer. Wound them unless they are a Berserker • They issue an unrefusable [Combat] challenge to target opposing character. The adversary's first combat has -2 [Parry]. These effects cannot be cancelled."** — see `_05Hulk` (Rage).
+
+Composition of A.14 (engage-at-announce, own challenge type off auto-engage, cannot-cancel) + Unsanctioned `_02061` / Stand Your Ground `_04045` (unrefusable) + Rattle `_04009` (first-combat-card stat sticky, but a *penalty on the adversary*, not a bonus on your Duelist).
+
+1. **`RiskCityAction implements IAbilityThatTargetsCharacters`**, `RequiresPerformerSelected = true`; Risk `implements IRiskThatTargetsCharacters` (printed "target").
+2. **Performer filter:** `! Engaged` (engage cost) + `canChallenge` + `! DashedCombat` (Combat challenge) + ≥1 opposing at location. Do **not** gate on the Berserker clause — it is a cost waiver, not a performer gate.
+3. **`announceAction` pays BOTH costs before `parent::announceAction`:** `createCardEngagedEvent` (if not already Engaged) **and** the conditional wound (`! $performer->hasTrait("Berserker")` → `eventCheck` + `queueEvent` of `createCharacterBeingWoundedEvent`, source = the Risk, 4th arg `$this->Id`). WHY announce: Night of Drinking cancel deletes `ActionTriggered`; "all costs are still paid" (same discipline as A.3 / A.5 / A.14). A Berserker **still engages** — only the wound is waived. "Wound them **unless** they are X" before the `•` is a cost, not an effect branch.
+4. **Own `*_CHALLENGE_TYPE` constant** (fresh int, next free after `ARROGANT_CHALLENGE_TYPE = 34` → Rage is `35`). **Do NOT reuse `UNSANCTIONED_DUEL_CHALLENGE_TYPE`** even though both are "unrefusable Combat" — `stSetupChallenge` **engages the performer again** for that type (Engage was paid there, not at announce), so reuse double-engages. Do not reuse Aja/Celerity (Finesse/intervene gates). Keep it **off** `stIssueChallenge`'s auto-engage list. `EventActionTriggered` sets `CHALLENGE_TYPE` + `CHALLENGE_STAT = STAT_COMBAT` → `createTransitionEvent(..., "NNNNN", $this->Id)`; wire `"NNNNN" => HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET` in `states.inc.php`. Back is NORMAL-only on choose-target, so it is correctly hidden after the irreversible engage+wound.
+5. **"Unrefusable" is a 6-place checklist** (miss one and the card half-works):
+   - `Game.php` constant + `tests/harness/FakeGame.php` mirror + `seventhseacityoffivesails.js` constant (all must match).
+   - `FrameworkActionsTrait::actHighDramaChallengeActionReject` — `throw UserException` for the type.
+   - `ZombieTrait` default accept-challenge branch — add the type so a zombie **accepts** instead of throwing on Reject.
+   - `modules/js/OnUpdateActionButtons.js` `highDramaChallengeActionAcceptChallenge` — add the type to the `btnRefuse` disabled list.
+   Intervene stays legal ("intervening accepts the challenge" is the stock rule; do not add an intervene gate unless printed).
+6. **First-combat −N [Parry] on the adversary (stickies on the Action):**
+   - Public `int $FirstCombatParryCharacterId = 0` on the Action; every write also sets `$owner->IsUpdated = true` (Risk is in the discard by duel time; `buildCity` reloads it — a non-persisted field is lost).
+   - **Arm on `EventChallengeIssued`**, not `EventActionTriggered` (adversary not chosen yet) and not `EventChallengeAccepted` (never fires on intervene). Gate: `! $event->canceled`, `CHALLENGE_TYPE == own type`, **and `$this->Id == globals CHOSEN_ACTION`** (WHY: `CHALLENGE_TYPE` is table-global and starter decks ship two copies — without the id gate every copy in the world arms; `EventChallengeIssued.abilityId` is `TRANSITION_INTERNAL_ID`, which a technique can overwrite, so use `CHOSEN_ACTION`). Store `$event->defenderId`.
+   - **Follow an intervener:** on `EventCharacterIntervened` when `oldTargetId == stored` (and type matches) → store `newTargetId`. The adversary is whoever actually duels.
+   - **Apply on `EventDuelCalculateCombatCardStats`** when `actorId == stored`: `$event->removeParry(N)` (negatives are allowed — see the `removeParry` WHY in `EventDuelCalculateCombatCardStats`), add an `explanations[]` line, `recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, …)` unless `dashedParry` (reload-safe label, same as `_04009`), then clear the sticky. Other actors (the performer) are untouched and the arm survives their cards.
+   - **Clear unused arm** on `EventDuelEnd` and on `EventActionResolved` **only when `! IN_DUEL`** (refused/cancelled/fizzled challenge must not leak into a later duel; a mid-duel resolve must not wipe it before the adversary's first card).
+   - "The adversary's first combat" = first **combat card** of that character (no separate first-round hook). Parry on a 0-Parry card goes negative; effective values are floored at apply time.
+7. **"These effects cannot be cancelled."** → `Risk::effectsCannotBeCancelled()` returns `true` (`Reaction_01109` already skips). Not flavor text.
+8. **Plain strings for CAD prototype** — no `clienttranslate` on Names, notifies, `UserException` text inside `cards/cad/` (the shared `FrameworkActionsTrait` throw keeps `clienttranslate` — that file is not CAD).
+9. **No GameState, no new JS handler** beyond the refuse-disable line.
+
+**WHY not A.14:** A.14 is Finesse + intervene-only gate and refuse stays legal. A.18 is Combat + refuse blocked, plus a Parry penalty sticky and a conditional wound cost.
+**WHY not B.3 / `_04009`:** B.3 forces the *enemy* to challenge *your* fixed performer. A.18 is your performer challenging a Target.
+**WHY not A.6:** A.6 never engages and is refusable.
+
+References: `_05Hulk` / `Action_05Hulk`; engage-at-announce `Action_04047` / `Action_03021`; unrefusable siblings `Action_02061` / `Action_04045` (note the Unsanctioned `stSetupChallenge` engage); first-combat-card sticky `Action_04009`; cancel hook `Risk::effectsCannotBeCancelled`. Test: `tests/regression/Action_05Hulk_Test.php` (`$performer->addTrait($world->game, 'Berserker', true)` — `addTrait` takes the game first).
+
 ### Common precondition predicates
 
 A few wordings recur often:
