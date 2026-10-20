@@ -54,6 +54,26 @@ class Action_05DabneyUS01_Test extends TestCase
                 Assert::true($action->isAvailableToPlayer(1, $world->theah), 'adjacent foe');
             },
 
+            // WHY: PTv0.4 print — "opposing non-Leader". Availability, args ids, and validation must agree.
+            'unavailable when the only adjacent enemy is a Leader' => function () {
+                $world = new TestWorld();
+                $valeri = $world->placeCharacter(new _05DabneyUS01(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Boss', ['Leader']), Game::LOCATION_CITY_FORUM, 2);
+                $action = $valeri->getActions()[0];
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'leader only');
+            },
+
+            'isValidTargetForAbility rejects Leaders and accepts non-Leaders' => function () {
+                $world = new TestWorld();
+                [$valeri, $foe, $action] = $this->scene($world);
+                $boss = $world->placeCharacter(new GenericCharacter('Boss', ['Leader']), Game::LOCATION_CITY_FORUM, 2);
+
+                [$ok] = $action->isValidTargetForAbility($world->game, $foe);
+                Assert::true($ok, 'non-leader ok');
+                [$ok] = $action->isValidTargetForAbility($world->game, $boss);
+                Assert::false($ok, 'leader rejected');
+            },
+
             // WHY: No Engage printed — engaged Valeri remains eligible (trichotomy c).
             'available when Valeri is engaged' => function () {
                 $world = new TestWorld();

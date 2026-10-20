@@ -22,7 +22,7 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
 
             // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
             description: '${actplayer} is choosing options to perform a Technique.',
-            // WHY: ${technique_choices} swaps when combat card(s) have dashed Riposte/Parry.
+            // WHY: ${technique_choices} swaps when combat card(s) have dashed Riposte.
             descriptionMyTurn: 'Valeri Mikhailov' . ': ${you} must choose ${technique_choices}: ',
             transitions: [
                 "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
@@ -34,34 +34,17 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
     {
         $this->game->theah->buildCity();
 
-        // WHY: EventHub zeroes Technique Riposte/Parry when every combat card this round
-        // is dashed on that axis — hide the option so the player is not offered a no-op.
+        // WHY: EventHub zeroes Technique Riposte when every combat card this round
+        // is DashedRiposte — hide the option so the player is not offered a no-op.
         $riposteAvailable = ! $this->game->theah->currentRoundCombatCardsHaveDashedRiposte();
-        $parryAvailable = ! $this->game->theah->currentRoundCombatCardsHaveDashedParry();
 
         // WHY: Prototype CAD — plain English fragments, no clienttranslate / no i18n arg
         // (hide from translators). Still use fixed strings (not sprintf) so the prompt reads cleanly.
-        if ($parryAvailable && $riposteAvailable)
-        {
-            $techniqueChoices = '+1 Parry, +1 Riposte, or Lethal';
-        }
-        else if ($parryAvailable)
-        {
-            $techniqueChoices = '+1 Parry or Lethal';
-        }
-        else if ($riposteAvailable)
-        {
-            $techniqueChoices = '+1 Riposte or Lethal';
-        }
-        else
-        {
-            $techniqueChoices = 'Lethal';
-        }
+        $techniqueChoices = $riposteAvailable ? '+1 Riposte or Lethal' : 'Lethal';
 
         return [
             'technique_choices' => $techniqueChoices,
             'riposteAvailable' => $riposteAvailable,
-            'parryAvailable' => $parryAvailable,
         ];
     }
 
@@ -73,16 +56,10 @@ class State_duelChooseTechnique_05DabneyUS01 extends GameState
 
     public function zombie(int $playerId): void
     {
-        // WHY: Default Choice is Riposte — fall back Parry, then Lethal, when dashed.
+        // WHY: Default Choice is Riposte — fall back to Lethal when dashed.
         if (! $this->game->theah->currentRoundCombatCardsHaveDashedRiposte())
         {
             $this->game->gamestate->nextState();
-            return;
-        }
-
-        if (! $this->game->theah->currentRoundCombatCardsHaveDashedParry())
-        {
-            $this->game->actFromCardWithId((string) Technique_05DabneyUS01::CHOICE_PARRY);
             return;
         }
 

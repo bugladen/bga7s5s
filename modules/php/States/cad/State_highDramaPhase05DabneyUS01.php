@@ -21,7 +21,7 @@ class State_highDramaPhase05DabneyUS01 extends GameState
 
             // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
             description: '${actplayer} is choosing options to perform an Action.',
-            descriptionMyTurn: 'Valeri Mikhailov' . ': ${you} must choose an opposing character to challenge at an adjacent location:',
+            descriptionMyTurn: 'Valeri Mikhailov' . ': ${you} must choose an opposing non-Leader to challenge at an adjacent location:',
             transitions: [
                 "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "opponentChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,

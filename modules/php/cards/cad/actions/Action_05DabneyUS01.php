@@ -21,7 +21,7 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
     {
         parent::__construct();
 
-        $this->Name = "Move to Adjacent Location; Issue Combat Challenge";
+        $this->Name = "Move to Adjacent Location; Issue Combat Challenge (Non-Leader)";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -47,10 +47,11 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         foreach ($adjacentLocations as $adjacentLocation)
         {
             $opposingCharacters = $theah->getCharactersAtLocation($adjacentLocation);
-            // WHY: Any opposing character (including Leaders) — print reverted from PTv0.4 non-Leader gate.
+            // WHY: Print targets opposing non-Leader only (PTv0.4 re-print). Same gate in
+            // availability, args ids, and isValidTargetForAbility so UI and server agree.
             $opposingCharacters = array_filter(
                 $opposingCharacters,
-                fn($c) => $c->isNotControlledByPlayer($playerId)
+                fn($c) => $c->isNotControlledByPlayer($playerId) && ! $c->hasTrait("Leader")
             );
             if (count($opposingCharacters) > 0)
             {
@@ -152,7 +153,7 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
                 $opposingCharacters = $game->theah->getCharactersAtLocation($adjacentLocation);
                 $opposingCharacters = array_filter(
                     $opposingCharacters,
-                    fn($c) => $c->isNotControlledByPlayer($owner->ControllerId)
+                    fn($c) => $c->isNotControlledByPlayer($owner->ControllerId) && ! $c->hasTrait("Leader")
                 );
                 foreach ($opposingCharacters as $opposingCharacter)
                 {
@@ -191,6 +192,11 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         if ($character->ControllerId == $owner->ControllerId || $character->ControllerId == 0)
         {
             return [false, "Target must be controlled by an opponent."];
+        }
+
+        if ($character->hasTrait("Leader"))
+        {
+            return [false, "Target must be a non-Leader character."];
         }
 
         $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);

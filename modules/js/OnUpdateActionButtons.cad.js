@@ -81,12 +81,8 @@
             },
 
             'duelChooseTechnique_05DabneyUS01': () => {
-                // WHY: EventHub zeroes Technique Parry/Riposte when combat card(s) have
-                // dashed that axis — hide the option so it is not offered as a no-op.
-                if (args.parryAvailable)
-                {
-                    this.addActionButton(`btnParry`, '+1 Parry', () => this.bgaPerformAction('actFromCardWithId', { id: 1 }));
-                }
+                // WHY: EventHub zeroes Technique Riposte when combat card(s) have
+                // dashed Riposte — hide the option so it is not offered as a no-op.
                 if (args.riposteAvailable)
                 {
                     this.addActionButton(`btnRiposte`, '+1 Riposte', () => this.bgaPerformAction('actFromCardWithId', { id: 0 }));
@@ -95,7 +91,7 @@
             },
 
             'highDramaChallengeActionResolveTechnique_05DabneyUS01': () => {
-                // WHY: Technique is duel-only (Parry replaced Thrust — no challenge-useful
+                // WHY: Technique is duel-only (no challenge-useful
                 // choice). Pass out if a stale transition lands here.
                 this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' });
             },

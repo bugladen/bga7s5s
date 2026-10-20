@@ -16,7 +16,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Technique_05DabneyUS01 extends Technique
 {
     public const CHOICE_RIPOSTE = 0;
-    public const CHOICE_PARRY = 1;
+    // WHY: Id 1 (former Parry) is intentionally unused — print is now Riposte or Lethal only.
+    // Lethal stays 2 so any persisted Choice / stale client id keeps its meaning.
     public const CHOICE_LETHAL = 2;
 
     // WHY: Public so IsUpdated on the owner persists the choice across Resolve → Calculate.
@@ -26,7 +27,7 @@ class Technique_05DabneyUS01 extends Technique
     {
         parent::__construct();
 
-        $this->Name = "+1 Parry, +1 Riposte, or gain Lethal";
+        $this->Name = "+1 Riposte or gain Lethal";
         $this->Choice = self::CHOICE_RIPOSTE;
     }
 
@@ -43,9 +44,9 @@ class Technique_05DabneyUS01 extends Technique
             return false;
         }
 
-        // WHY: Parry / Riposte need EventDuelCalculateTechniqueValues; Lethal on challenge
+        // WHY: Riposte needs EventDuelCalculateTechniqueValues; Lethal on challenge
         // was already a no-op (threat at stat cap / RH). With Thrust gone there is no
-        // challenge-useful choice — duel-only like Technique_PlusOneParry.
+        // challenge-useful choice — duel-only.
         if (! $theah->game->globals->get(Game::IN_DUEL, false))
         {
             return false;
@@ -93,16 +94,7 @@ class Technique_05DabneyUS01 extends Technique
             $owner = $this->getOwningCharacter($event->theah);
             $inject = $owner !== null ? $owner->getInjectCode() : $this->Name;
 
-            if ($this->Choice == self::CHOICE_PARRY)
-            {
-                $event->parry += 1;
-                $event->explanations[] = sprintf(
-                    "%s: Technique [%s] adds +1 Parry.",
-                    $inject,
-                    $this->Name
-                );
-            }
-            else if ($this->Choice == self::CHOICE_RIPOSTE)
+            if ($this->Choice == self::CHOICE_RIPOSTE)
             {
                 $event->riposte += 1;
                 $event->explanations[] = sprintf(
@@ -149,14 +141,14 @@ class Technique_05DabneyUS01 extends Technique
         parent::actFromTechniqueWithId($game, $state, $stateName, $id);
 
         // WHY: Challenge picker state kept registered but technique is duel-only now
-        // (Parry replaced Thrust — no challenge-useful choice). Still accept the state
+        // (no challenge-useful choice). Still accept the state
         // id so a stale transition cannot soft-lock; reject non-duel choices below.
         if ($state == States::DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01
             || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05DABNEYUS01)
         {
             $owner = $this->getOwningCharacter($game->theah);
 
-            if ($id != self::CHOICE_RIPOSTE && $id != self::CHOICE_PARRY && $id != self::CHOICE_LETHAL)
+            if ($id != self::CHOICE_RIPOSTE && $id != self::CHOICE_LETHAL)
             {
                 throw new \Bga\GameFramework\UserException("Invalid Technique choice.");
             }
@@ -174,28 +166,13 @@ class Technique_05DabneyUS01 extends Technique
                 throw new \Bga\GameFramework\UserException("Riposte is not available — the combat card has dashed Riposte.");
             }
 
-            // WHY: Mirror Riposte — EventHub zeroes Technique Parry when every combat card
-            // this round is DashedParry.
-            if ($id == self::CHOICE_PARRY
-                && $game->theah->currentRoundCombatCardsHaveDashedParry())
-            {
-                throw new \Bga\GameFramework\UserException("Parry is not available — the combat card has dashed Parry.");
-            }
-
             $this->Choice = $id;
             if ($owner !== null)
             {
                 $owner->IsUpdated = true;
             }
 
-            if ($this->Choice == self::CHOICE_PARRY)
-            {
-                $game->notify->all("message", '${player_name} chooses +1 Parry for ${owner_inject_code}\'s Technique.', [
-                    "player_name" => $game->getActivePlayerName(),
-                    "owner_inject_code" => $owner !== null ? $owner->getInjectCode() : $this->Name,
-                ]);
-            }
-            else if ($this->Choice == self::CHOICE_RIPOSTE)
+            if ($this->Choice == self::CHOICE_RIPOSTE)
             {
                 $game->notify->all("message", '${player_name} chooses +1 Riposte for ${owner_inject_code}\'s Technique.', [
                     "player_name" => $game->getActivePlayerName(),
