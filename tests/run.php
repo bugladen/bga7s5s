@@ -26,9 +26,10 @@ if ($argc > 1) {
     }
 } else {
     // Suites live in tests/regression/ (non-card suites) and per-expansion
-    // subfolders: core (01), tac (02), faf (03), bas (04), cad (05).
+    // subfolders: core (01), tac (02), faf (03), bas (04), cad (05), plus framework
+    // (state-machine / trait tests such as StatesTrait).
     $files = glob(__DIR__ . '/regression/*_Test.php') ?: [];
-    foreach (['core', 'tac', 'faf', 'bas', 'cad'] as $expansion) {
+    foreach (['core', 'tac', 'faf', 'bas', 'cad', 'framework'] as $expansion) {
         $files = array_merge($files, glob(__DIR__ . "/regression/{$expansion}/*_Test.php") ?: []);
     }
     sort($files);

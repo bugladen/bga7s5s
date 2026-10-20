@@ -68,6 +68,64 @@ class TestTheah extends Theah
     public function buildCity(): void
     {
         // no-op — tests manage cards/locations explicitly
+        $this->buildCityCalls++;
+    }
+
+    // WHY: Theah::$Actions is private and only filled by the real buildCity (no-op here).
+    // StatesTrait::stHighDramaInPlayActionDispatch looks actions up with getInPlayActionById.
+    public function registerTheahAction(\Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action $action): void
+    {
+        $prop = new ReflectionProperty(Theah::class, 'Actions');
+        $prop->setAccessible(true);
+        $actions = $prop->getValue($this);
+        $actions[] = $action;
+        $prop->setValue($this, $actions);
+    }
+
+    private function worldCardsProperty(): ReflectionProperty
+    {
+        $prop = new ReflectionProperty(Theah::class, 'cards');
+        $prop->setAccessible(true);
+        return $prop;
+    }
+
+    // WHY: Models a card that has left the city (destroyed to Locker/Discard). The real
+    // buildCity only loads in-play cards, so such cards are absent from $cards but still
+    // readable from the DB. Tests register the DB side with FakeGame::registerDbCard.
+    public function removeCardFromWorld(Card $card): void
+    {
+        $prop = $this->worldCardsProperty();
+        $cards = $prop->getValue($this);
+        unset($cards[$card->Id]);
+        $prop->setValue($this, $cards);
+    }
+
+    // WHY: Real getCardById falls back to a DB read for cards outside the city. The harness has no
+    // MySQL, so fall back to FakeGame's in-memory "DB" (dbCards) instead.
+    public function getCardById($cardId): ?Card
+    {
+        if ($cardId == 0) {
+            return null;
+        }
+        $cards = $this->worldCardsProperty()->getValue($this);
+        if (array_key_exists($cardId, $cards)) {
+            return $cards[$cardId];
+        }
+        return $this->game->getCardObjectFromDb($cardId);
+    }
+
+    /** @var int buildCity invocations (StatesTrait states rebuild the city before acting). */
+    public int $buildCityCalls = 0;
+
+    /** @var list<bool> $skipTransitions argument of each runEvents call. */
+    public array $runEventsCalls = [];
+
+    // WHY: Real runEvents drains the events DB table. StatesTrait states (stRunEvents,
+    // stRecruitUndoEngage, stDuskPhaseDiscardEvents, ...) only need to prove they drained the
+    // queue, so record the call and leave $queuedEvents intact for assertions.
+    public function runEvents(bool $skipTransitions = false)
+    {
+        $this->runEventsCalls[] = $skipTransitions;
     }
 
     public function getDuelRoundOpponent(): ?Character

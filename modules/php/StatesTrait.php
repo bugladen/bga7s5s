@@ -463,9 +463,16 @@ trait StatesTrait
         $sql = "SELECT player_id, player_name, leader_card_id as leaderId FROM player ORDER BY turn_order";
         $players = $this->getCollectionFromDb($sql);
         foreach ( $players as $playerId => $player ) {
+            // WHY: Reset per player. Without this a player with no Leader card inherited the
+            // previous player's cap (or hit an undefined variable on the first row).
+            $crewCap = null;
             $leader = $this->theah->getCardById($player['leaderId']);
             if ($leader instanceof Leader)
                 $crewCap = $leader->CrewCap;
+
+            // WHY: No Leader means no cap to compare against; reporting "limit of 0" would be misleading.
+            if ($crewCap === null)
+                continue;
 
             $characterCount = $this->theah->getCharacterCountByPlayerId($playerId);
             if ($characterCount > $crewCap) {
@@ -474,7 +481,7 @@ trait StatesTrait
                     'crewcap' => $crewCap
                 ]);
             } else {
-                $this->notifyAllPlayers("message", clienttranslate('<span style=${player_name} is under their Crew Cap limit of ${crewcap}'), [
+                $this->notifyAllPlayers("message", clienttranslate('${player_name} is under their Crew Cap limit of ${crewcap}'), [
                     'player_name' => $player['player_name'],
                     'crewcap' => $crewCap
                 ]);
@@ -997,6 +1004,21 @@ trait StatesTrait
         $cancelled = ($target !== null && $target->ControllerId == 0)
             || $this->globals->get(Game::CHALLENGE_CANCELLED, false);
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        // WHY: A target destroyed before this gate (Stiletto) is not in the city any more, so
+        // $target is null. The branches below still need the defending player to hand control to;
+        // dereferencing $target->ControllerId warned and called changeActivePlayer(null).
+        // Resolve the controller from the target or its ChallengeIssued snapshot.
+        // If no controller can be found at all, cancel rather than strand the game.
+        $targetControllerId = null;
+        if (! $cancelled && ! $accepted)
+        {
+            $targetControllerId = $this->getChallengeTargetControllerId($targetId, $target);
+            if ($targetControllerId === null)
+            {
+                $cancelled = true;
+            }
+        }
+
         // WHY: Cancel before Accept — otherwise leftover CHALLENGE_ACCEPTED or a SETUP
         // intervene (Mourad / Heroic Intervention) ignores 01088 cancel after pay.
         if ($cancelled)
@@ -1063,14 +1085,34 @@ trait StatesTrait
                 $this->globals->set(Game::TRANSITION_INTERNAL_ID, $action->Id);
             }
 
-            $this->gamestate->changeActivePlayer($target->ControllerId);
+            $this->gamestate->changeActivePlayer($targetControllerId);
             $this->gamestate->nextState("moveAlongChoice");
         }
         else
         {
-            $this->gamestate->changeActivePlayer($target->ControllerId);
+            $this->gamestate->changeActivePlayer($targetControllerId);
             $this->gamestate->nextState("notCancelled");
         }
+    }
+
+    /**
+     * Controller of the challenged character, even if it has since left the city.
+     * Order: live target (Theah::getCardById already falls back to the DB row, so a destroyed
+     * target normally resolves here), then the ChallengeIssued last-known snapshot. Null only when
+     * the target id matches no card at all.
+     */
+    private function getChallengeTargetControllerId($targetId, ?\Bga\Games\SeventhSeaCityOfFiveSails\cards\Character $target): ?int
+    {
+        if ($target !== null)
+        {
+            return (int) $target->ControllerId;
+        }
+        if (! $targetId)
+        {
+            return null;
+        }
+        $lastKnown = $this->getChallengeLastKnownCharacter((int) $targetId);
+        return $lastKnown !== null ? (int) $lastKnown->ControllerId : null;
     }
 
     public function stHighDramaChallengeActionResolveTechnique(): void
@@ -1620,9 +1662,11 @@ trait StatesTrait
             $this->globals->delete(Game::DUEL_MANUEVER_ID);
             // WHY: Maneuver consumed; clear so the hub does not re-offer it.
             $this->globals->delete(Game::DUEL_PENDING_MANEUVER_CARD);
-            
-            $this->gamestate->nextState();
         }
+
+        // WHY: This is a "game" state with a single "" transition. nextState() used to sit
+        // inside the if, so reaching here with no maneuver id left the machine stalled.
+        $this->gamestate->nextState();
     }
 
     //Handles whether special conditions (like Broken Time) exist for another combat card

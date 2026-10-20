@@ -39,6 +39,17 @@ spl_autoload_register(function (string $class) use ($root): void {
         return;
     }
 
+    // WHY: tests/regression/framework suites run the real StatesTrait on a FakeGame subclass.
+    if ($class === 'Bga\\Games\\SeventhSeaCityOfFiveSails\\Tests\\Harness\\StatesTraitGame') {
+        require_once __DIR__ . '/harness/StatesTraitGame.php';
+        return;
+    }
+
+    if ($class === 'Bga\\Games\\SeventhSeaCityOfFiveSails\\Tests\\Harness\\GenericScheme') {
+        require_once __DIR__ . '/harness/GenericScheme.php';
+        return;
+    }
+
     if ($class === 'Bga\\Games\\SeventhSeaCityOfFiveSails\\Tests\\Harness\\GenericCharacter') {
         require_once __DIR__ . '/harness/GenericCharacter.php';
         return;
@@ -46,6 +57,17 @@ spl_autoload_register(function (string $class) use ($root): void {
 
     if ($class === 'Bga\\Games\\SeventhSeaCityOfFiveSails\\Tests\\Harness\\GenericLeader') {
         require_once __DIR__ . '/harness/GenericLeader.php';
+        return;
+    }
+
+    // WHY: StatesTrait suites add more Generic* fixtures; any other Tests\Harness class
+    // resolves to its same-named file in tests/harness without a new entry here.
+    $harnessPrefix = 'Bga\\Games\\SeventhSeaCityOfFiveSails\\Tests\\Harness\\';
+    if (str_starts_with($class, $harnessPrefix)) {
+        $harnessFile = __DIR__ . '/harness/' . substr($class, strlen($harnessPrefix)) . '.php';
+        if (is_file($harnessFile)) {
+            require_once $harnessFile;
+        }
         return;
     }
 

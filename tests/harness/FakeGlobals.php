@@ -16,6 +16,12 @@ class FakeGlobals
         $this->values[$key] = $value;
     }
 
+    // WHY: StatesTrait (DEBUG_INCLUDE_CITY_CARD, FIRST_PLAYER) branches on existence, not value.
+    public function has(string $key): bool
+    {
+        return array_key_exists($key, $this->values);
+    }
+
     public function delete(string $key): void
     {
         unset($this->values[$key]);

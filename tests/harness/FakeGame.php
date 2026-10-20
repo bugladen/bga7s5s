@@ -63,6 +63,29 @@ class Game
     final const ADRIFT_IN_THE_WIND_CONDITION = "Finesse Modified by Adrift in the Wind";
     final const DEAL_WITH_THE_DEVIL = "Deal with the Devil";
 
+    // WHY: StatesTrait regression suites (tests/regression/framework) exercise these state-machine
+    // globals / phase ids / victory types. Values must match Game.php.
+    final const DAWN = 1;
+    final const PLANNING = 2;
+    final const HIGH_DRAMA = 3;
+    final const PLUNDER = 4;
+    final const VICTORY_DOMINANCE = 2;
+    final const VICTORY_ECONOMIC = 3;
+    final const VICTORY_FIFTH_DAY = 4;
+    final const USER_PREFERENCES_AUTO_ACKNOWLEDGE_CARD_REVEALS = 110;
+    final const DAY = "day";
+    final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
+    final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";
+    final const IS_BASIC_CLAIM_ACTION = "isBasicClaimAction";
+    final const NORMAL_EQUIP_TYPE = 0;
+    final const PERFORMER_PARLEYED = "performerParleyed";
+    final const DEFENDER_THREAT_IS_LETHAL = "defenderThreatIsLethal";
+    final const DUEL_CURRENT_PLAYER = "duelCurrentPlayer";
+    final const DUEL_MANUEVER_ID = "duelManeuverId";
+    final const DUEL_PENDING_MANEUVER_CARD = "duelPendingManeuverCard";
+    final const REACTION_ID = "reactionId";
+    final const TRANSITION_SOURCE_ID = "transitionSourceId";
+
     final const PLAYER_COUNT = 'playerCount';
     final const STAT_COMBAT = 'Combat';
     final const STAT_INFLUENCE = 'Influence';

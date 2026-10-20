@@ -29,6 +29,15 @@ namespace {
         }
     }
 
+    // WHY: StatesTrait::stPlanningPhaseDetermineFirstPlayer picks a random tied player with the
+    // BGA global bga_rand(). Tests only assert the winner is one of the tied players.
+    if (!function_exists('bga_rand')) {
+        function bga_rand(int $min, int $max): int
+        {
+            return random_int($min, $max);
+        }
+    }
+
     if (!function_exists('totranslate')) {
         function totranslate(string $text): string
         {
