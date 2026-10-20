@@ -918,6 +918,9 @@ return declare('seventhseacityoffivesails.utilities', null, {
             row(_('Name'), _(card.name)),
             row(_('Title'), _(card.title)),
             row(_('Type'), _(card.type)),
+            // WHY: wealthCost is only serialized for IWealthCost cards (Faction/City characters);
+            // Leaders omit it, so gate on presence rather than showing an empty Cost line.
+            ...(card.wealthCost != null && card.wealthCost !== '' ? [row(_('Cost'), card.wealthCost)] : []),
         ];
 
         rows.push(
