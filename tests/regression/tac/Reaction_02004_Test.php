@@ -179,7 +179,7 @@ class Reaction_02004_Test extends TestCase
             },
 
             'source draws on LocationPressureResult not LocationPressured' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/tac/reactions/Reaction_02004.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/tac/reactions/Reaction_02004.php');
                 Assert::contains('EventLocationPressureResult', $src, 'Result');
                 Assert::notContains('EventLocationPressured', $src, 'not Pressured');
                 Assert::contains("\$this->location = '';", $src, 'pass clears');

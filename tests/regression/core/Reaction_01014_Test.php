@@ -279,7 +279,7 @@ class Reaction_01014_Test extends TestCase
 
             // WHY regression: audit 2026-03-31 — moveHome only if Thug was actually targeted
             'source gates moveHome on thugWasTargeted' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/_7s5s/reactions/Reaction_01014.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/_7s5s/reactions/Reaction_01014.php');
                 Assert::contains('$thugWasTargeted', $src, 'thugWasTargeted flag');
                 Assert::contains('if ($thugWasTargeted)', $src, 'moveHome gated');
                 Assert::contains('deleteEventBatch', $src, 'cancelHeldEvent clears batch');

@@ -233,7 +233,7 @@ class Card_02015_Test extends TestCase
             },
 
             'do-as-much-as-possible WHY pinned in source' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/tac/_02015.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/tac/_02015.php');
                 Assert::contains('do-as-much-as-possible', $src, 'WHY comment');
                 Assert::contains('requiredLocationCount', $src, 'required count');
             },

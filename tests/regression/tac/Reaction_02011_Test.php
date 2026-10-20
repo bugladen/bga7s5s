@@ -187,7 +187,7 @@ class Reaction_02011_Test extends TestCase
 
             'source-lock WHYs for Action vs Technique copy and challenge Techniques' => function () {
                 $src = file_get_contents(
-                    dirname(__DIR__, 2) . '/modules/php/cards/tac/reactions/Reaction_02011.php'
+                    dirname(__DIR__, 3) . '/modules/php/cards/tac/reactions/Reaction_02011.php'
                 );
                 Assert::contains('originalAttachmentId = $source->Id', $src, 'Action keeps attachment');
                 Assert::contains('WHY no originalAttachmentId', $src, 'Technique omits');

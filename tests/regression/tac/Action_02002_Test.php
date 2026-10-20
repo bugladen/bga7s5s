@@ -130,7 +130,7 @@ class Action_02002_Test extends TestCase
             },
 
             'source peeks getCardsOnTopOfPlayerFactionDeck with count 3' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/tac/actions/Action_02002.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/tac/actions/Action_02002.php');
                 Assert::contains('getCardsOnTopOfPlayerFactionDeck($id, 3)', $src, 'peek top 3');
                 Assert::contains('createSorcererAbilityStartEvent', $src, 'Start');
                 Assert::contains('createSorcererAbilityPlayedEvent', $src, 'Played');

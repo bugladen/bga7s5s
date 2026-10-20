@@ -379,7 +379,7 @@ class Action_01072_Test extends TestCase
             // WHY: FakeGame has no UtilitiesTrait, so the "non-Mercenaries only" filter and
             // "ties succeed" rule for REPUTATION_MERITEE_PRESSURE_TYPE are source-locked.
             'pressure resolution excludes Mercenaries and wins ties for REPUTATION_MERITEE' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/UtilitiesTrait.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/UtilitiesTrait.php');
                 Assert::contains(
                     'isGlobalFlagSet(Game::PRESSURE_TYPE, Game::REPUTATION_MERITEE_PRESSURE_TYPE))',
                     $src,

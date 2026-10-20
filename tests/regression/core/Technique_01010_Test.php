@@ -106,7 +106,7 @@ class Technique_01010_Test extends TestCase
             },
 
             'source uses location-scoped Strega check not in-play-wide' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/_7s5s/techniques/Technique_01010.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/_7s5s/techniques/Technique_01010.php');
                 Assert::contains('getCharactersAtLocationByPlayerId', $src, 'location-scoped helper');
                 Assert::notContains('getCharactersInPlayByPlayerId', $src, 'must not use in-play-wide helper');
                 // Both getArgs and actFromTechnique paths

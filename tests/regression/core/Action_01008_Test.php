@@ -40,7 +40,7 @@ class Action_01008_Test extends TestCase
             'source requires Sorcerer Ability Start/Played events on all resolve paths' => function () {
                 // WHY: Cesca audit — Sorcery draw + Pass paths used to skip sorcerer events,
                 // so Reaction_01008 never saw 2 of 3 outcomes.
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/_7s5s/actions/Action_01008.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/_7s5s/actions/Action_01008.php');
                 Assert::contains('createSorcererAbilityStartEvent', $src, 'Start event present');
                 Assert::contains('createSorcererAbilityPlayedEvent', $src, 'Played event present');
                 Assert::contains('createActionResolvedEvent', $src, 'ActionResolved present');

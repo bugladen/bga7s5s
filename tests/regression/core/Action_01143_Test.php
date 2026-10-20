@@ -122,7 +122,7 @@ class Action_01143_Test extends TestCase
             // WHY: FakeGame has no UtilitiesTrait; "You succeed even if tied" for this pressure
             // lives in Game::pressureLocation / UtilitiesTrait and is source-locked here.
             'pressure resolution lets CONTEMPT_AND_HATRED pressure win ties' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/UtilitiesTrait.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/UtilitiesTrait.php');
                 $tiesWin = (int)strpos($src, '//Ties win');
                 Assert::true($tiesWin > 0, 'tie-win branch present');
                 $conditionStart = (int)strrpos(substr($src, 0, $tiesWin), 'if (');

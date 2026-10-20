@@ -103,7 +103,7 @@ class Technique_01011_Test extends TestCase
             },
 
             'source filters own controller on both event paths' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/_7s5s/techniques/Technique_01011.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/_7s5s/techniques/Technique_01011.php');
                 Assert::same(2, substr_count($src, 'ControllerId == $actor->ControllerId'), 'both paths own Red Hands');
             },
         ];

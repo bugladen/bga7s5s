@@ -70,7 +70,7 @@ class Reaction_01008_Test extends TestCase
             },
 
             'trigger paths gate on isCopyable so uncopyable abilities never open the window' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/_7s5s/reactions/Reaction_01008.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/_7s5s/reactions/Reaction_01008.php');
                 Assert::contains('&& $this->isCopyable($ability)', $src, 'SorcererAbilityPlayed gated');
                 Assert::contains('Action_01025', $src, 'Fate\'s Burden excluded in comments/list');
                 Assert::contains('Action_01161', $src, 'Boon excluded in comments');
@@ -79,7 +79,7 @@ class Reaction_01008_Test extends TestCase
             },
 
             'isCopyable allow-list classes appear in performReaction' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/_7s5s/reactions/Reaction_01008.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/_7s5s/reactions/Reaction_01008.php');
                 // Match from private function through its closing brace before announceReaction
                 $start = strpos($src, 'private function isCopyable');
                 $end = strpos($src, 'private function announceReaction', $start);

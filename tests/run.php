@@ -9,7 +9,7 @@ declare(strict_types=1);
  *   php tests/run.php
  *
  * Or a single suite file:
- *   php tests/run.php tests/regression/Card_01006_Test.php
+ *   php tests/run.php tests/regression/core/Card_01006_Test.php
  */
 
 require_once __DIR__ . '/bootstrap.php';
@@ -25,7 +25,12 @@ if ($argc > 1) {
         $files[] = $argv[$i];
     }
 } else {
+    // Suites live in tests/regression/ (non-card suites) and per-expansion
+    // subfolders: core (01), tac (02), faf (03), bas (04), cad (05).
     $files = glob(__DIR__ . '/regression/*_Test.php') ?: [];
+    foreach (['core', 'tac', 'faf', 'bas', 'cad'] as $expansion) {
+        $files = array_merge($files, glob(__DIR__ . "/regression/{$expansion}/*_Test.php") ?: []);
+    }
     sort($files);
 }
 

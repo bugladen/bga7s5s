@@ -183,7 +183,7 @@ class Card_02005_Test extends TestCase
             },
 
             'source uses 3 + Strega count for peek' => function () {
-                $src = file_get_contents(dirname(__DIR__, 2) . '/modules/php/cards/tac/_02005.php');
+                $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/tac/_02005.php');
                 Assert::contains('$count = 3 + count($characters)', $src, 'peek formula');
                 Assert::contains('getCardsOnTopOfPlayerFactionDeck($id, $count)', $src, 'deck peek');
                 Assert::contains('You must sink at least one card.', $src, 'sink ≥1');
