@@ -200,4 +200,39 @@ No applied-flag needed — evaluated at gamble time. Unconditional "when equippe
 
 **Both halves can stack on one card** (`_04006`): +1 Finesse (more gambles allowed) **and** +1 card revealed per gamble — they are separate systems; implementing only one is wrong when both are printed.
 
+### Covert passive ("Covert - … reveals an additional card when they gamble")
+
+Printed *italic* `Covert -` (not `<b>Covert Action:</b>`) plus the Reminder "(Covert Abilities may only be used at uncontrolled locations.)" means the always-on gamble +1 only applies while the equipped character is at an **uncontrolled City location**. Same override as the unconditional gamble +1, with the Covert gate added **inside** it:
+
+```php
+public function getNumberOfGambleCardsToReveal(Theah $theah, Character $actor, array &$explanations): int
+{
+    $count = parent::getNumberOfGambleCardsToReveal($theah, $actor, $explanations);
+
+    if (! $this->isAttached() || $actor->Id != $this->AttachedToId)
+    {
+        return $count;
+    }
+    if (! $theah->cardInCity($actor))
+    {
+        return $count;
+    }
+    // WHY cardInCity first: getCityLocation() THROWS for Home / non-City names.
+    if ($theah->getCityLocation($actor->Location)->isControlled())
+    {
+        return $count;
+    }
+
+    $explanations[] = sprintf("%s (Covert): +1 …", $this->getInjectCode());
+    return $count + 1;
+}
+```
+
+- **WHY no duel-state gate:** "when they gamble" is already scoped by who the actor is; unlike `_04006` there is no "while the adversary is wounded". Do not add `IN_DUEL`.
+- **WHY evaluate at gamble time (no flag / event listener):** control of the location can flip mid-duel; recomputing on each reveal-count call is always correct and needs no clear-up.
+- **WHY `cardInCity` before `getCityLocation`:** `Theah::getCityLocation` throws for Home. Home has no control track, so Covert never applies there (consistent with `Action_05Forsythe`, Overcoat, Valeri).
+- The Covert gate belongs on passive Covert text even if the Reminder is trimmed from the Text string — the keyword *Covert* is what matters.
+
+Reference: `cad/_05Robin.php`.
+
 References: `bas/_04006.php` (canonical attachment B'''), `bas/_04017.php` (always-on gamble + Technique combo), `_04001` (flag + wound delta — character host), `_01101` (always-on gamble +1), `_03004` (duel Finesse recomputed from dueling line).

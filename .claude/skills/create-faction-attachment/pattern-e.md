@@ -97,6 +97,20 @@ When printed text is simply **`<b>Gambling Technique:</b> +1[Parry]`** (or Thrus
 
 Reference: `Technique_04055b` (Sturdy Shield). Engage sibling on the same card: `Technique_04055a` (Pompon copy — no `DUEL_GAMBLED`).
 
+### "If your combat card is a <Trait> or <Trait> card • +N [Stat]" (free Technique)
+
+Printed: **`<b>Technique:</b> If your combat card is a Flourish or Stealth card • +1[Thrust].`** (`Technique_05Robin`; Character sibling `Technique_03050`.)
+
+1. Own `Technique_NNNNN` class. **No engage cost** printed → do not engage the attachment, do not gate `! $attachment->Engaged`.
+2. The "If …" precedes the bullet, so it is the **availability gate** (contrast the Resolve-time "If your participant is a Trait…" effect gate above, which sits *after* the bullet). `isAvailableToPlayer`: parent → `IN_DUEL` → `getDuelRoundActor()->Id === owner->Id` → loop `$theah->getCombatCardsForCurrentRound()` and return true when a combat card with `ControllerId == $owner->ControllerId` has **any** listed trait (`hasTrait` OR).
+3. Calculate: `EventDuelCalculateTechniqueValues` → `thrust += N` + explanation.
+4. `IN_DUEL` is mandatory: "your combat card" does not exist at challenge time, so no `EventGenerateChallengeThreat` branch (unlike `Technique_PlusOneThrust`).
+5. **Do not** `new Technique_PlusOneThrust()` + `setId`: it has no combat-card trait gate and would be offered every round.
+6. The attachment itself may be the combat card (Rogue's Cowl is Stealth) — the loop covers that automatically; no special case.
+7. Add `// EventTechniqueCanceled handler not needed` (pre-commit). Base `Technique` already `setUsed` on Activated / resets on DuelEnd; `Technique_03050`'s extra `setUsed` in Calculate is unnecessary.
+
+Trait names must exist in `TraitNames::$TraitsJson` (`Flourish`, `Stealth` already do).
+
 ### Deferred EndOfRound ("At the end of your round, …")
 
 When the Technique effect fires **after the round ends** (not during CalculateValues / Resolve), use a public `$IsActive` flag — **not** a `Game::*_CONDITION` (that is for remainder-of-duel restrictions like Harpoon).

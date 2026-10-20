@@ -38,6 +38,8 @@ The framework hydrates each ability separately. No cross-talk needed between the
 
 **Academic equip + two City Actions:** `_04036` (Ciphered Tome) hosts Pattern A Academic dual-gate, `Action_04036a` (renown relocate from host location — dest picker, `_04034` batch), and `Action_04036b` (move performer to a slot with strictly more Renown). No cross-talk. Separate GameStates because dest filters and resolve differ. Both "Engage this card" — `$attachment->Engaged` is the only shared gate. Home omitted on b: no Renown track, filter cannot match.
 
+**Passive Covert gamble +1 + combat-card-trait Technique (no equip restriction):** `_05Robin` — attachment class holds the Covert-gated `getNumberOfGambleCardsToReveal` override (Pattern B) and registers `Technique_05Robin` (Pattern E, availability gate on `getCombatCardsForCurrentRound()` traits). The two halves are independent — the Covert gate must **not** leak into the Technique, and the Technique's duel/combat-card gate must not leak into the gamble override. No GameState / JS.
+
 **Academic equip + Covert Action (adjacent Renown in):** `_05Forsythe` (Syrneth Morosometer) hosts Pattern A Academic dual-gate and `Action_05Forsythe` — Covert uncontrolled gate + Engage this card on resolve + from-adjacent Renown picker to host location. Direction inverted from `Action_04036a`. No pressure/claim (unlike Character Overcoat). Prototype CAD plain strings; one HD GameState.
 
 **Finesse-threshold equip + ignore-wound Reaction:** `_04053` (Leather Spaulders) hosts Pattern A `ModifiedFinesse >= 2` dual-gate and `Reaction_04053` (Cascade ignore-wound gates + engage cost). No Technique/Action; no GameState. Same Risk→Attachment cost swap shape as Pompon vs Objection.

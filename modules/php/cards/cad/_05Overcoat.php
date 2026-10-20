@@ -41,7 +41,8 @@ class _05Overcoat extends Character implements IHasActions
             "Ussura"
         ];
 
-        $this->Text = "<p><i>Covert</i> - [Influence] pressures at this location cannot succeed.</p>
+        $this->Text = "<p><i>Covert</i> - [Influence] pressures at this location cannot succeed.
+<br>(<i>Covert Abilities may only be used at uncontrolled locations.</i>)</p>
 <p><b>Covert Action:</b> Engage Varvara • Pressure this location with Resolve. If successful, either move an adjacent Renown to this location or claim it.</p>";
 
         $this->resetCard();
