@@ -107,7 +107,15 @@ class Reaction_05Gary extends CardReaction
             return;
         }
 
-        // WHY: Printed "a character at this location" — same city/home site as Rena.
+        // WHY: OwnerId, not ControllerId. City characters stay OwnerId 0 after recruit,
+        // so controlling one is not ownership. Opponent characters are out even at
+        // this location. A character this player owns still qualifies if control has moved.
+        if ($victim->OwnerId != $owner->ControllerId)
+        {
+            return;
+        }
+
+        // WHY: Same city/home site as Rena. Ownership alone is not enough.
         if ($victim->Location != $owner->Location)
         {
             return;

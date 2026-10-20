@@ -18,4 +18,12 @@ performReaction is outside runEvents. IsUpdated is only flushed at the end of an
 
 ## Prompt
 
-Description now appends "of {victim Name}" from savedWoundEvent so the player can pass Sibella and still catch Katain. Printed text is any character at the location, including the opponent — do not narrow it to allies.
+Description now appends "of {victim Name}" from savedWoundEvent so the player can pass the held victim and still catch the next one.
+
+## Ownership filter (user override)
+
+User later said the reaction triggers only on characters owned by the controlling player. That overrides the printed "any character at this location, including the opponent" reading above. Do not widen it back.
+
+Check is `$victim->OwnerId != $owner->ControllerId`, not ControllerId. City deck cards are created OwnerId 0 / ControllerId 0, and recruit only writes ControllerId. A recruited city character the player controls is not owned by them. A faction character they own still qualifies if control has moved. Location check stays: ownership alone is not enough, and Rena herself is still skipped so the redirect cannot loop.
+
+Card text on `_05Gary` now says "a character you own at this location" so the UI matches. Tests: opponent at the location is ignored; ControllerId match with OwnerId 0 is ignored; the stack-ahead / pass / accept cases use two characters that player owns. The original Sibella-then-Katain playtest no longer offers on Sibella (she is not owned by Rena's player).

@@ -26,8 +26,8 @@ class _05Gary extends Leader implements IHasReactions
 
         $this->Name = "Rena Klingenhalter";
         $this->Title = "Collected";
-        $this->Image = "05Gary.v3.jpg";
-        $this->FlippedImage = "05GaryFlipped.v3.jpg";
+        $this->Image = "05Gary.v4.jpg";
+        $this->FlippedImage = "05GaryFlipped.v4.jpg";
         $this->IsDoubleSided = true;
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
@@ -35,7 +35,7 @@ class _05Gary extends Leader implements IHasReactions
 
         $this->initializeFaction("Eisen");
 
-        $this->Resolve = 10;
+        $this->Resolve = 8;
         $this->Combat = 2;
         $this->Finesse = 3;
         $this->Influence = 2;
@@ -51,7 +51,7 @@ class _05Gary extends Leader implements IHasReactions
         ];
 
         $this->Text = "<p>During setup, reveal an attachment from your deck and equip it to Rena, at -1 cost.</p>
-<p>Reaction: When a character at this location would suffer a wound • Wound Rena instead</p>
+<p>Reaction: When your character at this location would suffer a wound • Wound Rena instead</p>
 <p>Forced: When Rena has four or more wounds • Flip her.</p>";
 
         $this->resetCard();

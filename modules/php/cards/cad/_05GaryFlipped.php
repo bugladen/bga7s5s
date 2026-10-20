@@ -21,8 +21,8 @@ class _05GaryFlipped extends Leader implements IHasReactions
 
         $this->Name = "Rena Klingenhalter";
         $this->Title = "Wrathful";
-        $this->Image = "05GaryFlipped.v3.jpg";
-        $this->FlippedImage = "05Gary.v3.jpg";
+        $this->Image = "05GaryFlipped.v4.jpg";
+        $this->FlippedImage = "05Gary.v4.jpg";
         $this->IsDoubleSided = true;
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
@@ -30,7 +30,7 @@ class _05GaryFlipped extends Leader implements IHasReactions
 
         $this->initializeFaction("Eisen");
 
-        $this->Resolve = 10;
+        $this->Resolve = 8;
         $this->Combat = 3;
         $this->Finesse = 3;
         $this->Influence = 1;
@@ -47,7 +47,7 @@ class _05GaryFlipped extends Leader implements IHasReactions
         ];
 
         $this->Text = "<p>When Rena's combat card is an attachment, it gains +1[Parry] and +1[Thrust].</p>
-<p>Reaction: When an opposing character is destroyed • En garde Rena.</p>
+<p>Reaction: When Rena's adversary is destroyed • Claim this location.</p>
 <p>Technique: Destroy an attachment equipped to Rena • +1[Thrust]. She heals a wound.</p>";
 
         $this->resetCard();
