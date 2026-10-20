@@ -55,6 +55,9 @@ class Game
     final const GIACINTO_INFLUENCE_REDUCTION_CONDITION = "Influence Reduced by Giacinto";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     final const TOMOE_SANGO_CONDITION = "Finesse Modified by Tomoe Sango";
+    // WHY: _04043 destroy recreates the card and wipes AffectedCharacterId. stDuelEnd
+    // flushes the adversary -1 through this global. Must match Game.php.
+    final const TOMOE_SANGO_PENDING_DEBUFF_CHARACTER_ID = "tomoeSangoPendingDebuffCharacterId";
     final const EPEE_SANGLANTE_CONDITION = "Influence Modified by Épée Sanglante";
     final const FORGED_FOR_BATTLE_CONDITION = "Finesse Modified by Forged for Battle";
     final const ADRIFT_IN_THE_WIND_CONDITION = "Finesse Modified by Adrift in the Wind";
@@ -71,6 +74,8 @@ class Game
     final const NORMAL_RECRUIT_TYPE = 0;
     final const KASPAR_RECRUIT_TYPE = 1;
     final const CIRILO_RECRUIT_TYPE = 2;
+    // WHY: Action_04059 stamps this so the recruit flow still offers Parley. Must match Game.php (3).
+    final const SILVER_TONGUE_RECRUIT_TYPE = 3;
 
     final const CONSTANZO_ID = 'constanzoId';
     // WHY: Reaction_01184 / Inauguration Day store the card whose location defines the
@@ -187,7 +192,13 @@ class Game
     final const RAVEN_CHALLENGE_TYPE = 27;
     // Must match Game.php — Action_04019; off auto-engage (attachment Engage only).
     final const NO_MORE_WORDS_CHALLENGE_TYPE = 28;
+    // WHY: Action_04045. Off auto-engage; the scheme is identified by this type plus
+    // challenger controller. Must match Game.php (29).
+    final const STAND_YOUR_GROUND_CHALLENGE_TYPE = 29;
     final const CELERITY_CHALLENGE_TYPE = 30;
+    // WHY: Action_04057. Off auto-engage, and not NORMAL so Back stays hidden after the
+    // stat is chosen. Must match Game.php (31).
+    final const HONORABLE_CHALLENGE_TYPE = 31;
     // WHY: Action_05DabneyUS01 CAD Valeri post-move Back lock (refuse allowed). Must match Game.php.
     final const VALERI_CHALLENGE_TYPE = 32;
     // WHY: Action_03008 Arrogant. Must match Game.php (34). Off the auto-engage list.

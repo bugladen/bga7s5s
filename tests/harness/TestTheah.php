@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\CityLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPlayerGainsReknown;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
 use ReflectionProperty;
@@ -174,6 +175,55 @@ class TestTheah extends Theah
             $this->queuedEvents,
             fn($event) => !($event instanceof EventRenownAddedToLocation && (int) $event->batchId === $batchId)
         ));
+    }
+
+    // WHY: Reaction_04056b mutates queued Collect rows before they apply. Production
+    // updates the events table; tests only have $queuedEvents.
+    public function decrementFirstQueuedPlayerGainsReknown(int $playerId, int $delta = 1): bool
+    {
+        if ($playerId <= 0 || $delta <= 0) {
+            return false;
+        }
+        foreach ($this->queuedEvents as $event) {
+            if ($event instanceof EventPlayerGainsReknown
+                && $event->playerId === $playerId
+                && $event->amount >= $delta) {
+                $event->amount -= $delta;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function decrementFirstQueuedRenownRemovedFromLocation(string $location, int $delta = 1): bool
+    {
+        if ($location === '' || $delta <= 0) {
+            return false;
+        }
+        foreach ($this->queuedEvents as $event) {
+            if ($event instanceof EventRenownRemovedFromLocation
+                && $event->location === $location
+                && $event->amount >= $delta) {
+                $event->amount -= $delta;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function hasQueuedPlayerGainsReknownForPlayer(int $playerId): bool
+    {
+        if ($playerId <= 0) {
+            return false;
+        }
+        foreach ($this->queuedEvents as $event) {
+            if ($event instanceof EventPlayerGainsReknown
+                && $event->playerId === $playerId
+                && $event->amount > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function deleteRenownRemovedFromLocationEventsByBatchId(int $batchId): void
