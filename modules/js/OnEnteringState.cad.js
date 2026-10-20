@@ -204,6 +204,11 @@
                     dojo.removeClass('chooseList', 'hidden');
                     $('choose_container_name').innerHTML = 'Attachments in Your Faction Deck';
 
+                    // WHY: chooseList is a shared stock. A prior state can leave cards
+                    // here if its leave handler never ran (reconnect, or a state that
+                    // fills the list without clearing it). Leave-time removeAll is not
+                    // enough; wipe before painting Rena's setup attachments.
+                    this.chooseList.removeAll();
                     args.args._private.args.attachments.forEach((card) => {
                         this.addCardToDeck(this.chooseList, card);
                     });
