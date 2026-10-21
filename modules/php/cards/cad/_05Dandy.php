@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\cad;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Dandya;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Dandyb;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
@@ -28,6 +29,12 @@ class _05Dandy extends Leader implements IHasActions
     // the penalty back when Renown drops.
     public int $AppliedRenownPenalty = 0;
     public int $UnclampedInfluence = 0;
+    // HOW much InfluenceModifier is already inside UnclampedInfluence.
+    // Equip adds the modifier onto ModifiedInfluence and does not emit
+    // EventCharacterInfluenceModified, so a later Renown sync would rebuild
+    // the chip without it. Crystal Eye's +1 then cancels a Renown coming off:
+    // the chip stays put and no log line is queued.
+    public int $TrackedAttachmentInfluence = 0;
 
     public function __construct()
     {
@@ -85,6 +92,8 @@ class _05Dandy extends Leader implements IHasActions
             }
             return;
         }
+
+        $this->foldAttachmentInfluence($event->theah, true);
 
         if ($this->abilitiesAreBlanked())
         {
@@ -166,12 +175,20 @@ class _05Dandy extends Leader implements IHasActions
         return max(0, $theah->getCityLocation($location)->Renown);
     }
 
+    public function repairAttachmentInfluence(Theah $theah): void
+    {
+        $this->foldAttachmentInfluence($theah, true);
+    }
+
     private function syncRenownPenalty(Theah $theah, string $location): void
     {
         if ($this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
         {
             return;
         }
+
+        // Blanking calls sync without going through handleEvent.
+        $this->foldAttachmentInfluence($theah, false);
 
         $desired = 0;
         if (! $this->abilitiesAreBlanked())
@@ -196,6 +213,68 @@ class _05Dandy extends Leader implements IHasActions
         $this->IsUpdated = true;
 
         if ($reported === $oldChip)
+        {
+            return;
+        }
+
+        $influenceEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $oldChip,
+            $reported,
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($influenceEvent);
+    }
+
+    // null: an Influence lock owns the chip. Do not rebuild over it.
+    private function attachmentInfluenceSum(Theah $theah): ?int
+    {
+        $sum = 0;
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if (! $attachment instanceof Attachment)
+            {
+                continue;
+            }
+            if ($attachment->InfluenceLocked)
+            {
+                return null;
+            }
+            $sum += $attachment->InfluenceModifier;
+        }
+
+        return $sum;
+    }
+
+    private function foldAttachmentInfluence(Theah $theah, bool $announce): void
+    {
+        if ($this->DashedInfluence || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+
+        $sum = $this->attachmentInfluenceSum($theah);
+        if ($sum === null)
+        {
+            return;
+        }
+
+        $delta = $sum - $this->TrackedAttachmentInfluence;
+        if ($delta === 0)
+        {
+            return;
+        }
+
+        $this->UnclampedInfluence += $delta;
+        $this->TrackedAttachmentInfluence = $sum;
+        $oldChip = $this->ModifiedInfluence;
+        $reported = max(0, $this->UnclampedInfluence);
+        $this->ModifiedInfluence = $reported;
+        $this->IsUpdated = true;
+
+        if (! $announce || $reported === $oldChip)
         {
             return;
         }

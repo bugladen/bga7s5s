@@ -464,6 +464,8 @@ Hooks:
 
 On `EventCharacterInfluenceModified` for this card: if `Reason !== getInjectCode()`, add `(NewInfluence − OldInfluence)` onto `UnclampedInfluence` and return. Own events already wrote Unclamped before they were queued; adding their delta applies the penalty twice. EventHub has already set the chip to `NewInfluence` before `handleEvent`.
 
+Attachment equip does **not** emit that event. `addAttachment` adds `InfluenceModifier` onto `ModifiedInfluence` only. Fold the equipped sum into `UnclampedInfluence` before the Renown sync, and remember how much is already folded (`TrackedAttachmentInfluence` on `_05Dandy`). Otherwise the next sync rebuilds the chip without the attachment. Crystal Eye's +1 then cancels a Renown coming off: the chip stays put and no log line is queued. An Influence lock owns the chip — do not fold over it. A table that already lost the +1 heals on the next `buildCity` (`repairAttachmentInfluence`).
+
 **Location Influence labels.** `eventAffectsLocationInfluenceTotals` already includes `EventCharacterInfluenceModified`, `EventCardMoved`, `EventCharacterMustered`, and `EventCharacterDestroyed`. The refresh runs after hub and cards, so a muster, a move, and a destroy recount with the chip just written and with him already at the new place or already in the locker. Renown add/remove is **not** on that list. The follow-up Influence event refreshes the labels, and only when the reported chip changed. If he is elsewhere, or the chip stays 0 while more Renown arrives, the labels correctly stay put. Do not add a second pressure-time adjustment in `getLocationInfluenceTotalsData`.
 
 Reference: `_05Dandy`. Contrast `_01007` Aldo (absolute +1 per Renown), `_01094` Aníbal and `_01184` (pressure-only).

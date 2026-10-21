@@ -23,6 +23,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05DabneyUS01;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Orel;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02044;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventApproachCharacterPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
@@ -1355,6 +1358,9 @@ trait UtilitiesTrait
             || $event instanceof EventCardRemovedFromPlay
             || $event instanceof EventCharacterDestroyed
             || $event instanceof EventCharacterInfluenceModified
+            || $event instanceof EventAttachmentEquipped
+            || $event instanceof EventAttachmentUnequipped
+            || $event instanceof EventAttachmentMoved
             || $event instanceof EventCardSentToLocker
             || $event instanceof EventLocationClaimed
             || $event instanceof EventLocationBecomesUncontrolled;

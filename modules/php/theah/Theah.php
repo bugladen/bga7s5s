@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01188;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01129;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Dandy;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05SnowWhite;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02003;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\Action;
@@ -151,6 +152,27 @@ class Theah
         $this->backfillLeshiyeOfTheWoodFlags();
 
         $this->cityBuilt = true;
+        $this->repairDandyAttachmentInfluence();
+    }
+
+    // WHY: Equip writes InfluenceModifier onto the chip and does not emit
+    // EventCharacterInfluenceModified. Claude's Renown tracker never saw Crystal
+    // Eye, so collecting the Renown rebuilt Influence without the +1 and queued
+    // no log line. Heal that gap the next time the city is loaded, and persist
+    // it so a second load does not queue the correction again.
+    private function repairDandyAttachmentInfluence(): void
+    {
+        foreach ($this->cards as $card) {
+            if (! $card instanceof _05Dandy) {
+                continue;
+            }
+
+            $card->repairAttachmentInfluence($this);
+            if ($card->IsUpdated) {
+                $card->IsUpdated = false;
+                $this->db->updateCardObject($card);
+            }
+        }
     }
 
     // WHY: card_location is the authority for which pile a card sits in — the UI and

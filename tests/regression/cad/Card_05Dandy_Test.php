@@ -11,10 +11,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01200;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Dandy;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Dandya;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Dandyb;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
@@ -324,6 +327,95 @@ class Card_05Dandy_Test extends TestCase
                 Assert::true($rejected, 'underpay rejected');
                 Assert::count(0, $world->theah->queuedOfType(EventCardDiscardedFromHand::class), 'not discarded');
                 Assert::count(0, $world->theah->queuedOfType(EventRenownRemovedFromLocation::class), 'not collected');
+            },
+
+            'crystal eye at zero renown raises Influence to 5' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $eye = $world->placeCard(new _01200(), Game::LOCATION_CITY_DOCKS, 1);
+                $claude->addAttachment($world->theah, $eye);
+
+                $equipped = new EventAttachmentEquipped();
+                $equipped->characterId = $claude->Id;
+                $equipped->attachmentId = $eye->Id;
+                $world->fireOn($claude, $equipped);
+
+                Assert::same(5, $claude->ModifiedInfluence, 'chip');
+                Assert::same(5, $claude->UnclampedInfluence, 'tracker includes the +1');
+                Assert::same(1, $claude->TrackedAttachmentInfluence, 'folded');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterInfluenceModified::class), 'equip already wrote the chip');
+            },
+
+            'collecting the renown while crystal eye is equipped logs the increase' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 1);
+                $added = new EventRenownAddedToLocation();
+                $added->location = Game::LOCATION_CITY_DOCKS;
+                $world->fireOn($claude, $added);
+                $world->theah->takeQueuedEvents();
+
+                $eye = $world->placeCard(new _01200(), Game::LOCATION_CITY_DOCKS, 1);
+                $claude->addAttachment($world->theah, $eye);
+                $equipped = new EventAttachmentEquipped();
+                $equipped->characterId = $claude->Id;
+                $equipped->attachmentId = $eye->Id;
+                $world->fireOn($claude, $equipped);
+                Assert::same(4, $claude->ModifiedInfluence, '4 - 1 renown + 1 crystal eye');
+
+                $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 0);
+                $removed = new EventRenownRemovedFromLocation();
+                $removed->location = Game::LOCATION_CITY_DOCKS;
+                $world->fireOn($claude, $removed);
+
+                $mods = $world->theah->queuedOfType(EventCharacterInfluenceModified::class);
+                Assert::count(1, $mods, 'log line');
+                Assert::same(4, $mods[0]->OldInfluence, 'old');
+                Assert::same(5, $mods[0]->NewInfluence, 'printed plus crystal eye');
+                Assert::same(5, $claude->ModifiedInfluence, 'chip');
+            },
+
+            'a chip that already lost crystal eye to a renown sync is repaired' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $eye = $world->placeCard(new _01200(), Game::LOCATION_CITY_DOCKS, 1);
+                $claude->addAttachment($world->theah, $eye);
+                // The renown sync overwrote the chip from Unclamped and dropped the +1.
+                $claude->UnclampedInfluence = 4;
+                $claude->ModifiedInfluence = 4;
+                $claude->TrackedAttachmentInfluence = 0;
+                $claude->AppliedRenownPenalty = 0;
+
+                $claude->repairAttachmentInfluence($world->theah);
+
+                $mods = $world->theah->queuedOfType(EventCharacterInfluenceModified::class);
+                Assert::count(1, $mods, 'correction');
+                Assert::same(4, $mods[0]->OldInfluence, 'old');
+                Assert::same(5, $mods[0]->NewInfluence, 'new');
+                Assert::same(5, $claude->ModifiedInfluence, 'chip');
+                Assert::same(1, $claude->TrackedAttachmentInfluence, 'folded once');
+            },
+
+            'unequipping crystal eye removes the +1 from the tracker' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $eye = $world->placeCard(new _01200(), Game::LOCATION_CITY_DOCKS, 1);
+                $claude->addAttachment($world->theah, $eye);
+                $equipped = new EventAttachmentEquipped();
+                $equipped->characterId = $claude->Id;
+                $equipped->attachmentId = $eye->Id;
+                $world->fireOn($claude, $equipped);
+                $world->theah->takeQueuedEvents();
+
+                $claude->removeAttachment($world->theah, $eye);
+                $unequipped = new EventAttachmentUnequipped();
+                $unequipped->characterId = $claude->Id;
+                $unequipped->attachmentId = $eye->Id;
+                $world->fireOn($claude, $unequipped);
+
+                Assert::same(4, $claude->ModifiedInfluence, 'back to printed');
+                Assert::same(4, $claude->UnclampedInfluence, 'tracker');
+                Assert::same(0, $claude->TrackedAttachmentInfluence, 'cleared');
             },
         ];
     }
