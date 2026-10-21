@@ -2,7 +2,7 @@
 
 /**
  * BGA framework: Gregory Isabelli & Emmanuel Colin & BoardGameArena
- * SeventhSeaCityOfFiveSails implementation : © Edward Mittelstedt bugbucket@comcast.net
+ * SeventhSeaCityOfFiveSails implementation : Ã‚Â© Edward Mittelstedt bugbucket@comcast.net
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See https://en.doc.boardgamearena.com/Studio for more information.
@@ -56,7 +56,7 @@ trait FrameworkActionsTrait
     public function actHighDramaPass(): void
     {
         // WHY: EXTRA_ACTION_PERFORMER locks *who* may act, not *whether* they must act.
-        // Bloody Entrance (and Pattern A.2) grants an optional follow-up — Pass is allowed.
+        // Bloody Entrance (and Pattern A.2) grants an optional follow-up Ã¢â‚¬â€ Pass is allowed.
         // Lock clears in stNextPlayer's else branch when EXTRA_ACTIONS is already 0.
 
         $playerId = $this->getActivePlayerId();
@@ -90,7 +90,7 @@ trait FrameworkActionsTrait
         }
 
         // WHY: CAD Valeri (Action_05DabneyUS01) already moved before technique pick.
-        // Back → CHOOSE_TARGET is the generic adjacent-target UI and can stick the game.
+        // Back Ã¢â€ â€™ CHOOSE_TARGET is the generic adjacent-target UI and can stick the game.
         if ($stateName === "highDramaChallengeActionActivateTechnique"
             && $this->globals->get(Game::CHALLENGE_TYPE) == Game::VALERI_CHALLENGE_TYPE)
         {
@@ -98,7 +98,7 @@ trait FrameworkActionsTrait
         }
 
         // WHY: Move Along entered TECHNIQUE_AVAILABLE from its own target picker, not
-        // HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET — Back would land on the wrong UI.
+        // HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET Ã¢â‚¬â€ Back would land on the wrong UI.
         if ($stateName === "highDramaChallengeActionActivateTechnique"
             && $this->globals->get(Game::CHALLENGE_TYPE) == Game::MOVE_ALONG_CHALLENGE_TYPE)
         {
@@ -217,8 +217,10 @@ trait FrameworkActionsTrait
 
         $this->theah->buildCity();
         foreach ($locations as $location) {
-            $locationCheck = $this->theah->getCityLocation($location);
-            if ($locationCheck === null)
+            // WHY array_key_exists, not a null check on getCityLocation(): that method never returns
+            // null, it throws a bare \Exception, which BGA reports as an unexpected error instead of
+            // a clean "does not exist" message for a bad client-supplied location.
+            if ( ! array_key_exists($location, $this->theah->getCityLocations()))
             {
                 throw new UserException(sprintf($this->translate("Location %s does not exist."), $location));
             }
@@ -345,7 +347,7 @@ trait FrameworkActionsTrait
 
         $this->theah->buildCity();
         // WHY: Player Home is a valid Move destination (adjacent from any city location) but
-        // is not in cityLocations — getCityLocation() would throw a fatal Exception.
+        // is not in cityLocations Ã¢â‚¬â€ getCityLocation() would throw a fatal Exception.
         if ($location !== Game::LOCATION_PLAYER_HOME && ! $this->theah->locationInCity($location))
         {
             throw new UserException(sprintf($this->translate("Location %s does not exist."), $location));
@@ -532,10 +534,14 @@ trait FrameworkActionsTrait
             ]);
         }
 
+        // WHY recruit first: actRecruitMercenary validates the payment and throws on a bad one.
+        // Queue ActionResolved only after it succeeds so a rejected payment never leaves a
+        // resolution event behind (the DB rollback is not the only line of defence).
+        $this->actRecruitMercenary($recruitId, $payWithCards);
+
         $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
         $this->theah->queueEvent($actionResolvedEvent);
 
-        $this->actRecruitMercenary($recruitId, $payWithCards);
         $this->globals->set(GAME::PASS_COUNT, 0);
         $this->gamestate->nextState("mercenaryPaidFor");
     }
@@ -575,7 +581,7 @@ trait FrameworkActionsTrait
 
         $charactersThatCanEquip = [];
         foreach ($characters as $character) {
-            // WHY: Orel canReceiveAttachments — mirror argsHighDramaEquipActionChoosePerformer.
+            // WHY: Orel canReceiveAttachments Ã¢â‚¬â€ mirror argsHighDramaEquipActionChoosePerformer.
             if (! $character->canReceiveAttachments()) {
                 continue;
             }
@@ -1299,7 +1305,7 @@ trait FrameworkActionsTrait
             }
         }
 
-        // WHY: Basic Challenge always uses Combat — mirror Claim's DashedInfluence reject.
+        // WHY: Basic Challenge always uses Combat Ã¢â‚¬â€ mirror Claim's DashedInfluence reject.
         if ($performer->DashedCombat)
         {
             throw new UserException(clienttranslate("Performer cannot Challenge because it has a Dashed Combat."));
@@ -1353,7 +1359,7 @@ trait FrameworkActionsTrait
 
         $this->globals->set(GAME::CHOSEN_TARGET, $character->Id);
 
-        // WHY: Framework challenge picker never fired EventCharacterTargeted — only
+        // WHY: Framework challenge picker never fired EventCharacterTargeted Ã¢â‚¬â€ only
         // ChallengeIssued later (after technique). Vittoria/UL/Premonition "when
         // targeted" missed Stand Your Ground / Unsanctioned / scheme challenges when
         // the only redirect piece was a hand Thug (ChallengeIssued still works for
@@ -1436,7 +1442,7 @@ trait FrameworkActionsTrait
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::EPEE_SANGLANTE_CHALLENGE_TYPE)
         {
-            throw new UserException(clienttranslate("Épée Sanglante: Refusing a Challenge is not allowed."));
+            throw new UserException(clienttranslate("Ãƒâ€°pÃƒÂ©e Sanglante: Refusing a Challenge is not allowed."));
         }
 
         if ($challengeType == Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE)
@@ -1484,21 +1490,21 @@ trait FrameworkActionsTrait
             throw new UserException(clienttranslate("Aja: Only characters with 3 Finesse or more may refuse this challenge."));
         }
 
-        // WHY: Mōri Daichi — refuse locked by relative Combat for ANY challenge type
+        // WHY: MÃ…Âri Daichi Ã¢â‚¬â€ refuse locked by relative Combat for ANY challenge type
         // involving him (not a dedicated CHALLENGE_TYPE; applies when he is challenged too).
         if (_03050::challengeRefusalBlocked($refuseCheckChallenger, $refuseCheckDefender))
         {
-            throw new UserException(clienttranslate("Mōri Daichi: This challenge cannot be refused (greater Combat)."));
+            throw new UserException(clienttranslate("MÃ…Âri Daichi: This challenge cannot be refused (greater Combat)."));
         }
 
-        // WHY: Knives Out — characters at its location cannot refuse (any challenge type).
-        // Use live $target (not last-known): destroyed defenders are out of city → gate off.
+        // WHY: Knives Out Ã¢â‚¬â€ characters at its location cannot refuse (any challenge type).
+        // Use live $target (not last-known): destroyed defenders are out of city Ã¢â€ â€™ gate off.
         if ($target !== null && _04cd09::challengeRefusalBlocked($this->theah, $target))
         {
             throw new UserException(clienttranslate("Knives Out: Characters at this location cannot refuse challenges."));
         }
 
-        // WHY: When Least Expected — Duelist performer can only refuse by discarding a card.
+        // WHY: When Least Expected Ã¢â‚¬â€ Duelist performer can only refuse by discarding a card.
         // Route to hand-picker when hand nonempty; block refuse when empty.
         if ($challengeType == Game::WHEN_LEAST_EXPECTED_CHALLENGE_TYPE && $performer->hasTrait("Duelist"))
         {
@@ -1590,7 +1596,7 @@ trait FrameworkActionsTrait
      * or they leave her location. ChallengeIssued already happened, so this grant
      * is not cleared by the challenge that is underway.
      * Stays on the duel hub so Technique/Maneuver can be chosen afterward.
-     * Daniella need not be the actor — only at the actor's location (same controller).
+     * Daniella need not be the actor Ã¢â‚¬â€ only at the actor's location (same controller).
      */
     public function actDuelActionConsiderAdversarySorcerer()
     {
@@ -1793,7 +1799,7 @@ trait FrameworkActionsTrait
         $actor = $this->theah->getDuelRoundActor();
         $gambleCheck = EventFactory::createDuelAttemptGambleEvent($actor->Id);
         $this->theah->eventCheck($gambleCheck);
-        // WHY: Always the duel-round actor's deck/events — not getActivePlayerId().
+        // WHY: Always the duel-round actor's deck/events Ã¢â‚¬â€ not getActivePlayerId().
         // Proper Drama (03047a) can make the Maneuver owner the active chooser while
         // the gambled card still comes from the actor's faction deck.
         $playerId = $actor->ControllerId;
@@ -1805,7 +1811,7 @@ trait FrameworkActionsTrait
         }
 
         // WHY: card_location is authoritative (same as argsDuelChooseGambleCard / discard
-        // repair). Serialized Location can lag after Hand→Faction sinks that only called
+        // repair). Serialized Location can lag after HandÃ¢â€ â€™Faction sinks that only called
         // insertCardOnExtremePosition (Premonition / Matushka's Shears historically).
         if ($deckCard['location'] != $deckName) {
             throw new UserException(clienttranslate("Card is not in your faction deck."));
@@ -1856,8 +1862,8 @@ trait FrameworkActionsTrait
         $gambleType = $this->globals->get(Game::GAMBLE_TYPE, Game::GAMBLE_TYPE_NORMAL);
         // WHY: Only NORMAL gambles write duel_round.gambled=1. ROLL_THE_DICE (01114)
         // and FREE (01135 forced) still set DUEL_GAMBLED so gambling effects apply,
-        // but leave the column alone: hand→FREE stays NULL (no Finesse spend);
-        // voluntary-gamble→Mireli-cancel→FREE keeps the existing 1 (replacement
+        // but leave the column alone: handÃ¢â€ â€™FREE stays NULL (no Finesse spend);
+        // voluntary-gambleÃ¢â€ â€™Mireli-cancelÃ¢â€ â€™FREE keeps the existing 1 (replacement
         // inherits the spent gamble).
         if ($gambleType == Game::GAMBLE_TYPE_NORMAL)
         {
@@ -1877,7 +1883,7 @@ trait FrameworkActionsTrait
         if ($gambleType == Game::GAMBLE_TYPE_ROLL_THE_DICE)
         {
             // WHY: For Roll the Bones (01114) the chosen card is NOT played as a
-            // combat card — its combat values are added to 01114 (in stApplyCombatCardStats)
+            // combat card Ã¢â‚¬â€ its combat values are added to 01114 (in stApplyCombatCardStats)
             // and the card itself is sunk along with the other revealed cards. So we
             // skip CombatCardAnnouncedEvent, do not move it to the dueling line, and
             // never offer its maneuvers.
@@ -1934,7 +1940,7 @@ trait FrameworkActionsTrait
         // WHY: Commit at play time; Maneuver is offered later from the hub.
         $this->globals->set(Game::DUEL_PENDING_MANEUVER_CARD, $card->Id);
 
-        // Restore actor as active before leaving — chooser may have been the
+        // Restore actor as active before leaving Ã¢â‚¬â€ chooser may have been the
         // Proper Drama Maneuver owner, not the gambling player.
         $this->gamestate->changeActivePlayer($playerId);
 
@@ -1970,7 +1976,9 @@ trait FrameworkActionsTrait
             $gambleAllowedByCardEffects = true;
             try {
                 $this->theah->eventCheck(EventFactory::createDuelAttemptGambleEvent($actor->Id));
-            } catch (UserException|UserException $e) {
+            } catch (UserException|\BgaUserException $e) {
+                // WHY both: cards signal "no gambling" with either exception class; catching only
+                // one let the other escape and wrongly blocked End Round.
                 $gambleAllowedByCardEffects = false;
             }
 
@@ -2230,7 +2238,9 @@ trait FrameworkActionsTrait
         $this->theah->buildCity();
 
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+        // WHY '' default: an unset id made substr/strpos receive null (deprecated) and would
+        // later fail the string type of reactionFromCard anyway.
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
 
         //Pull the source id of the internal id
         if ($sourceId != Game::THEAH_ID)
@@ -2276,7 +2286,7 @@ trait FrameworkActionsTrait
         $playerId = $this->getActivePlayerId();
         
         $sourceId = $this->globals->get(Game::TRANSITION_SOURCE_ID);
-        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID);
+        $internalId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, ''); // '' avoids null reaching substr/strpos
 
         //Pull the source id of the internal id
         if ($sourceId != Game::THEAH_ID)
@@ -2437,7 +2447,7 @@ trait FrameworkActionsTrait
 
         // WHY: Promote chosen reaction(s) so stRunEvents drains them first via
         // getNextEventByRunImmediately. Multiple RiskReactions for one player share
-        // one button — all their transition events are marked immediate together.
+        // one button Ã¢â‚¬â€ all their transition events are marked immediate together.
         // Demote siblings so pay (REACTION_PRIORITY) runs before chooseNext again.
         foreach ($chosenIds as $eventId)
         {

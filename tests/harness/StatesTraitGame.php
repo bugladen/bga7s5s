@@ -75,6 +75,9 @@ class StatesTraitGame extends Game
     /** @var array<int, string> playerId => stored deck_source (tournament restore) */
     public array $tournamentDecks = [];
 
+    /** @var list<array{playerId:int,key:string,value:mixed}> tournament game data written by actPickDeck */
+    public array $tournamentStores = [];
+
     public object $cards;
 
     public function __construct()
@@ -119,6 +122,12 @@ class StatesTraitGame extends Game
                     public function retrievePlayerGameData(int $playerId, string $key): ?string
                     {
                         return $this->game->tournamentDecks[$playerId] ?? null;
+                    }
+
+                    // WHY: actPickDeck stores the picked deck for tournament play; record it.
+                    public function storePlayerGameData(int $playerId, string $key, mixed $value): void
+                    {
+                        $this->game->tournamentStores[] = ['playerId' => $playerId, 'key' => $key, 'value' => $value];
                     }
                 };
             }

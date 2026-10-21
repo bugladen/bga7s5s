@@ -63,6 +63,31 @@ class Assert
         }
     }
 
+    /**
+     * Run $fn and require it to throw an exception whose message contains $needle.
+     *
+     * WHY: FrameworkActionsTrait act* handlers signal every illegal move with
+     * UserException / BgaUserException (two unrelated classes), so the helper accepts any
+     * Throwable and only pins the message. Returns the exception for extra assertions.
+     */
+    public static function throws(callable $fn, string $needle, string $message): \Throwable
+    {
+        try {
+            $fn();
+        } catch (AssertionFailedException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            if (!str_contains($e->getMessage(), $needle)) {
+                throw new AssertionFailedException(
+                    $message . sprintf(" (expected message containing '%s', got '%s' [%s])", $needle, $e->getMessage(), $e::class)
+                );
+            }
+            return $e;
+        }
+
+        throw new AssertionFailedException($message . " (expected an exception containing '$needle', none thrown)");
+    }
+
     private static function export(mixed $value): string
     {
         if (is_object($value)) {

@@ -33,6 +33,8 @@ class Game
     final const LOCATION_DUELING_LINE = 'Dueling Line';
 
     final const PLAYERS_THAT_USED_OLES_INN = 'playersThatUsedOlesInn';
+    // WHY mirrored: FrameworkActionsTrait::actPayForReaction reads/clears this global.
+    final const INVALID_PAY_CARD_IDS = "invalidPayCardIds";
     final const PLAYERS_THAT_USED_GOVERNORS_GARDEN = 'playersThatUsedGovernorsGarden';
 
     final const FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
@@ -595,7 +597,10 @@ class Game
 
     // WHY: Reaction_01144 pay step calls FrameworkActionsTrait::actRecruitMercenary (DB + wealth).
     // Record the call so unit tests assert wiring without BGA Deck / player wealth tables.
-    public function actRecruitMercenary(int $recruitId, string $payWithCards): void
+    // WHY no `: void`: the real FrameworkActionsTrait::actRecruitMercenary has no return type, and
+    // FrameworkActionsGame (tests/regression/framework) overrides this stub with the trait.
+    // PHP rejects a trait method without `: void` overriding a parent that declares it.
+    public function actRecruitMercenary(int $recruitId, string $payWithCards)
     {
         $this->recruitMercenaryCalls[] = [
             'recruitId' => $recruitId,
@@ -713,7 +718,8 @@ class Game
 
     // WHY: The real chooser reads the BGA deck and writes duel_round. Tests only need
     // proof that Maneuver_03047a handed the chosen id through after clearing its lock.
-    public function actGambleCardChosen(int $id): void
+    // WHY no `: void`: same trait-override compatibility as actRecruitMercenary above.
+    public function actGambleCardChosen(int $id)
     {
         $this->gambleCardsChosen[] = $id;
     }

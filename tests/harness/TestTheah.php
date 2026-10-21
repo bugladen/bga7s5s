@@ -55,8 +55,25 @@ class TestTheah extends Theah
         array_unshift($this->queuedEvents, $event);
     }
 
+    /**
+     * WHY: Real eventCheck lets cards veto an event by throwing. Tests skip the card walk, so a
+     * suite that needs to prove "the handler asked for permission and honoured a veto" installs
+     * a hook here (it may throw). Null = no veto, which is what every existing suite relies on.
+     *
+     * @var null|\Closure(Event):void
+     */
+    public ?\Closure $eventCheckHook = null;
+
+    /** @var list<Event> every event passed to eventCheck (permission asked, queued or not). */
+    public array $checkedEvents = [];
+
     public function eventCheck(Event $event): void
     {
+        $this->checkedEvents[] = $event;
+        if ($this->eventCheckHook !== null) {
+            ($this->eventCheckHook)($event);
+        }
+
         // WHY: Real Theah::eventCheck walks DB-backed cards. Tests skip that walk, but
         // Borets (Maneuver_01129) arms a global lock checked *before* the card walk —
         // Risk may already be in The Locker / absent from $cards. Keep that gate live.
@@ -80,6 +97,17 @@ class TestTheah extends Theah
         $actions = $prop->getValue($this);
         $actions[] = $action;
         $prop->setValue($this, $actions);
+    }
+
+    // WHY: Same as registerTheahAction for Theah-owned Reactions (Theah::$Reactions is private and
+    // filled by the real buildCity). FrameworkActionsTrait::actReactionForState looks them up by id.
+    public function registerTheahReaction(\Bga\Games\SeventhSeaCityOfFiveSails\theah\Reaction $reaction): void
+    {
+        $prop = new ReflectionProperty(Theah::class, 'Reactions');
+        $prop->setAccessible(true);
+        $reactions = $prop->getValue($this);
+        $reactions[] = $reaction;
+        $prop->setValue($this, $reactions);
     }
 
     private function worldCardsProperty(): ReflectionProperty
@@ -608,6 +636,56 @@ class TestTheah extends Theah
             }
         }
         return false;
+    }
+
+    // ---- queued reaction choice (actChooseNextReaction) -------------------------------
+    // WHY: The real helpers SELECT/UPDATE the events table. In memory an event's "id" is its
+    // spl_object_id (stable across deletions, unlike an array index), priority ordering is by
+    // (priority, queue order) exactly like `ORDER BY event_priority, event_id`.
+
+    public function getHighestQueuedEventPriority(): ?int
+    {
+        if ($this->queuedEvents === []) {
+            return null;
+        }
+        return min(array_map(fn(Event $e) => $e->priority, $this->queuedEvents));
+    }
+
+    /** @return array<int, array{eventId:int, event:\Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition}> */
+    public function getQueuedReactionTransitionEvents(?int $priority = null): array
+    {
+        $found = [];
+        foreach ($this->queuedEvents as $event) {
+            if (!$event instanceof \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition
+                || $event->transition !== 'reaction') {
+                continue;
+            }
+            if ($priority !== null && $event->priority !== $priority) {
+                continue;
+            }
+            $found[] = ['eventId' => spl_object_id($event), 'event' => $event];
+        }
+        usort($found, fn($a, $b) => $a['event']->priority <=> $b['event']->priority);
+        return $found;
+    }
+
+    public function setEventRunImmediately(int $eventId): void
+    {
+        foreach ($this->queuedEvents as $event) {
+            if (spl_object_id($event) === $eventId) {
+                $event->runImmediately = true;
+            }
+        }
+    }
+
+    public function deferOtherQueuedReactionTransitions(array $exceptEventIds): void
+    {
+        $except = array_map('intval', $exceptEventIds);
+        foreach ($this->getQueuedReactionTransitionEvents() as $entry) {
+            if (!in_array($entry['eventId'], $except, true)) {
+                $entry['event']->priority = Event::DEFERRED_REACTION_PRIORITY;
+            }
+        }
     }
 
     /** @return list<Event> */

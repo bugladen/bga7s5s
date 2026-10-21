@@ -40,6 +40,13 @@ for file in $staged_files; do
 
     content=$(cat "$file")
 
+    # WHY: harness fixtures extend card bases (RiskReaction, RiskAction,
+    # FactionAttachment) so framework tests can call them. They are not card
+    # implementations, and the greps below false-positive (no hand gate, no
+    # Riposte assignment, no createActionResolvedEvent). Regression doubles
+    # under tests/regression stay checked. The raw moveCard ban still applies.
+    if [[ "$file" != tests/harness/* ]]; then
+
     # Check if the class implements ISorcererAbility
     if echo "$content" | grep -qE 'class\s+\w+.*implements.*ISorcererAbility'; then
         
@@ -183,6 +190,8 @@ for file in $staged_files; do
             echo -e "  Class extends FactionAttachment but does not set ${YELLOW}\$this->Riposte =${NC}"
             errors_found=1
         fi
+    fi
+
     fi
 
     # Forbid raw deck-component moveCard outside DeckTrait.
