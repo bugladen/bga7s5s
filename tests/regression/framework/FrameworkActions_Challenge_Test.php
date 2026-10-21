@@ -180,8 +180,9 @@ class FrameworkActions_Challenge_Test extends TestCase
             // ---- Target --------------------------------------------------------------------------------
 
             'actHighDramaChallengeActionTargetChosen records the target and moves on' => function () {
-                [$game, , $defender] = $this->challengeScene();
+                [$game, $challenger, $defender] = $this->challengeScene();
                 $game->globals->set(Game::CHOSEN_TARGET, 0);
+                $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
                 $this->registerBasicChallenge($game);
                 $game->globals->set(Game::CHOSEN_ACTION, 'BasicChallenge');
 
@@ -190,6 +191,15 @@ class FrameworkActions_Challenge_Test extends TestCase
                 Assert::same($defender->Id, $game->globals->get(Game::CHOSEN_TARGET), 'recorded');
                 Assert::count(0, $game->queued(EventCharacterTargeted::class), 'a plain challenge does not target through an ability');
                 Assert::same(['targetChosen'], $game->gamestate->transitions, 'transition');
+                // WHY: Unyielding Loyalty opens on the next state, before the challenge is
+                // issued. The log has to name the challenger, the target, and the stat now.
+                Assert::count(1, $game->notify->messages, 'one log line');
+                Assert::contains('has chosen', $game->notify->messages[0]['message'], 'chosen');
+                Assert::contains('to Challenge', $game->notify->messages[0]['message'], 'challenge');
+                Assert::contains('Combat stat', $game->notify->messages[0]['message'], 'duel stat');
+                Assert::same('message', $game->notify->messages[0]['type'], 'log only, no duel markers');
+                Assert::same($challenger->getInjectCode(), $game->notify->messages[0]['args']['challenger_inject_code'], 'challenger');
+                Assert::same($defender->getInjectCode(), $game->notify->messages[0]['args']['defender_inject_code'], 'defender');
             },
 
             'actHighDramaChallengeActionTargetChosen refuses an unknown character' => function () {
@@ -217,11 +227,13 @@ class FrameworkActions_Challenge_Test extends TestCase
                 $owner->addAction($targeting, $game, false);
                 $game->place($owner, Game::LOCATION_CITY_FORUM, 1);
                 $game->globals->set(Game::CHOSEN_ACTION, $targeting->Id);
+                $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_FINESSE);
 
                 $targeting->verdict = [false, 'That target is not allowed.'];
                 Assert::throws(fn() => $game->actHighDramaChallengeActionTargetChosen($defender->Id), 'That target is not allowed.', 'invalid target');
                 Assert::same(0, $game->globals->get(Game::CHOSEN_TARGET), 'not recorded');
                 Assert::count(0, $game->queued(EventCharacterTargeted::class), 'not announced');
+                Assert::count(0, $game->notify->messages, 'a refused target is not logged');
 
                 $targeting->verdict = [true, ''];
                 $game->actHighDramaChallengeActionTargetChosen($defender->Id);
@@ -235,6 +247,7 @@ class FrameworkActions_Challenge_Test extends TestCase
                 Assert::same($targeting->Id, $targeted[0]->abilityId, 'ability');
                 Assert::same(1, $targeted[0]->batchId, 'own event batch');
                 Assert::same(['targetChosen'], $game->gamestate->transitions, 'transition');
+                Assert::contains('Finesse stat', $game->notify->messages[0]['message'], 'duel stat before reactions');
             },
 
             'actHighDramaChallengeActionTargetChosen prefers the transition source over the performer' => function () {
@@ -274,6 +287,7 @@ class FrameworkActions_Challenge_Test extends TestCase
                 Assert::same($defender->Id, $game->globals->get(Game::CHOSEN_TARGET), 'recorded');
                 Assert::count(0, $game->queued(EventCharacterTargeted::class), 'not announced');
                 Assert::same(['targetChosen'], $game->gamestate->transitions, 'transition');
+                Assert::contains('has chosen', $game->notify->messages[0]['message'], 'challenge intent still logged');
             },
 
             // ---- Technique -----------------------------------------------------------------------------

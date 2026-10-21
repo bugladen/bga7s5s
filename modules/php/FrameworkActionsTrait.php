@@ -1384,7 +1384,53 @@ trait FrameworkActionsTrait
             $this->theah->queueEvent($targeted);
         }
 
+        // WHY: Unyielding Loyalty (and other target-chosen reactions) run on
+        // EventCharacterTargeted, before stIssueChallenge. The "has chosen … to
+        // Challenge" line lived on EventChallengeIssued, so the log still showed
+        // only the previous action when the cancel was offered. Duel markers stay
+        // on the issued notification; this is the log line only. Technique is not
+        // chosen yet, so that sentence still waits for the real issue.
+        $this->announcePendingChallenge($character->Id);
+
         $this->gamestate->nextState("targetChosen");
+    }
+
+    private function announcePendingChallenge(int $defenderId): void
+    {
+        $performerId = (int) $this->globals->get(Game::CHOSEN_PERFORMER, 0);
+        $performer = $performerId !== 0 ? $this->theah->getCharacterById($performerId) : null;
+        $defender = $this->theah->getCharacterById($defenderId);
+        if ($performer === null || $defender === null)
+        {
+            return;
+        }
+
+        $playerId = (int) $this->globals->get(Game::CURRENT_PLAYER, 0);
+        if ($playerId === 0)
+        {
+            $playerId = (int) $this->getActivePlayerId();
+        }
+
+        $message = clienttranslate('${player_name} has chosen ${challenger_inject_code} to Challenge ${defender_inject_code}. ');
+        $statUsed = $this->globals->get(Game::CHALLENGE_STAT, '');
+        switch ($statUsed)
+        {
+            case Game::STAT_COMBAT:
+                $message .= clienttranslate('<br>The Duel will use the Combat stat. ');
+                break;
+            case Game::STAT_FINESSE:
+                $message .= clienttranslate('<br>The Duel will use the Finesse stat. ');
+                break;
+            case Game::STAT_INFLUENCE:
+                $message .= clienttranslate('<br>The Duel will use the Influence stat. ');
+                break;
+        }
+
+        $this->notifyAllPlayers("message", $message, [
+            "player_name" => $this->getPlayerNameById($playerId),
+            "challenger_inject_code" => $performer->getInjectCode(),
+            "defender_inject_code" => $defender->getInjectCode(),
+        ]);
     }
 
     public function actHighDramaChallengeActionTechniqueActivated(string $techniqueId)
