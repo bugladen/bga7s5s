@@ -769,6 +769,31 @@ No state / no JS. Owner need not be a duel participant — only present at the d
 
 Reference: `Reaction_04031`; fuller sibling `Reaction_01203`.
 
+### Challenge issued here or adjacent → wound one participant
+
+For Eleanor `_05Sniper`: **"<b>Reaction:</b> When a challenge is issued at this location or an adjacent one • Wound the challenger or the challenged character."**
+
+**Trigger:** `EventChallengeIssued` (Odette `Reaction_03027b` — issued, before intervention). Not `EventChallengeAccepted`. Fields: `$event->challengerId`, `$event->defenderId`. The challenge location is the challenger's `Location` (both participants are there when it is issued). Skip `$event->canceled`.
+
+**Not a City Reaction.** Gate `cardInPlay` (city or Home), not `cardInCity`. Also skip discard/locker. `isAvailable()` — once per day, not Continuous.
+
+**Range:**
+
+- Same location, including both at Home.
+- Or `in_array($challengeLocation, $theah->getAdjacentCityLocations($owner->Location, false), true)`.
+
+WHY `includeHome = false`: other "adjacent location" reactions treat Home as not adjacent to a city. A challenge at Home is in range only when Eleanor is also at Home. From Home, that call still returns the outer cities (Docks, Forum, Bazaar in a 2-player game), so she sees those. 2-player Docks is adjacent to Forum only — not Bazaar.
+
+**Valid target:** at least one of the two is still a character and not discard/locker. Hide the prompt when neither can be wounded.
+
+**Buttons:** stash both ids on the Reaction (`IsUpdated` on the owner) — the issued event is gone when buttons render. One button per woundable id (`wound-{id}`) plus Pass. Pass does not `setUsed`. Choosing a wound queues `createCharacterBeingWoundedEvent` (source = owner id, ability = reaction id) after `eventCheck`, then `setUsed`. Reject an id that is not one of the two stashed ids. No `IAbilityThatTargetsCharacters` — the text says "wound", not "target". Not `ISorcererAbility`.
+
+She may wound herself when she is a participant. The text does not exclude that.
+
+No states / no JS.
+
+Reference: `Reaction_05Sniper`.
+
 ### End of High Drama → claim uncontrolled location
 
 For Tomoe Sango `_04043`: **"En Garde Reaction: At the end of High Drama, if Sango's location is uncontrolled • Claim her location."**

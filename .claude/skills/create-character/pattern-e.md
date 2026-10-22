@@ -201,6 +201,16 @@ A technique can handle BOTH events if it's usable in both contexts (see `Techniq
 
 References: `Technique_GainLethal` (generic two-pipeline helper), `Technique_01049` (in-duel + city-context), `Technique_03002` (Aja, in-duel only via Gambling Technique gate).
 
+**Printed text is only "Technique: Gain Lethal."** Subclass `Technique_GainLethal` and do not copy the two handlers. Override `isAvailableToPlayer`: when `Game::IN_DUEL`, the duel actor must be the owner; when not in a duel, return the parent result so challenge threat still works. The generic's `isAvailableToPlayer` does not check the actor — without the override, asking Eleanor for techniques during someone else's round still lists Gain Lethal.
+
+Pre-commit greps `extends Technique` with no word boundary, so `extends Technique_GainLethal` matches. Keep `// EventTechniqueCanceled handler not needed` even when you do not override `handleEvent`.
+
+Prototype cards that must not add `clienttranslate`: the generic constructor sets `clienttranslate("Gain Lethal")`. Overwrite `$this->Name` with a plain string after `parent::__construct()`.
+
+Stranahan `_02022` does `new Technique_GainLethal()` plus `setId("Technique_02022")` because that technique is also granted onto other Musketeers. Use that shape for a grant. Use the subclass when the technique is only hers and needs the actor gate.
+
+No states / no JS. Reference: `Technique_05Sniper`.
+
 ### `EventDuelCalculateTechniqueValues` field shape
 
 Unlike `EventDuelCalculateCombatCardStats` (which exposes `addRiposte`/`addParry`/`addThrust`/`removeRiposte`/etc. methods and respects `dashedX` flags), `EventDuelCalculateTechniqueValues` has plain int fields `$riposte`/`$parry`/`$thrust` you mutate directly:

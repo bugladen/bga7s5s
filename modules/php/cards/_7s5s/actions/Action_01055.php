@@ -30,20 +30,12 @@ class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCharacte
         $validPerformers = [];
         foreach ($characters as $character)
         {
-            $weapons = 0;
-            foreach ($character->Attachments as $attachmentId)
-            {
-                $attachment = $theah->getAttachmentById($attachmentId);
-                if ($attachment && $attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged"))
-                {
-                    $weapons++;
-                }
-            }
-
             $opposingCharacters = $theah->getCharactersAtLocation($character->Location);
             $opposingCharacters = array_filter($opposingCharacters, fn($character) => $character->isNotControlledByPlayer($playerId));
 
-            if ($weapons > 0 && (count($opposingCharacters) > 0))
+            // WHY: countsAsEquippedWithRangedWeapon so a fiction (Eleanor) satisfies
+            // "if your performer is equipped with a Ranged Weapon" for this player.
+            if ($character->countsAsEquippedWithRangedWeapon($theah, $playerId) && (count($opposingCharacters) > 0))
             {
                 $validPerformers[] = $character;
             }

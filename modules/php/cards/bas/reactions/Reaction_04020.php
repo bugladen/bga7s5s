@@ -482,7 +482,7 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
                 {
                     continue;
                 }
-                if (! $this->hasRangedWeaponEquipped($character, $theah))
+                if (! $this->hasRangedWeaponEquipped($character, $theah, $ownerPlayerId))
                 {
                     continue;
                 }
@@ -493,18 +493,10 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         return $performers;
     }
 
-    private function hasRangedWeaponEquipped(Character $character, Theah $theah): bool
+    private function hasRangedWeaponEquipped(Character $character, Theah $theah, int $actingPlayerId): bool
     {
-        foreach ($character->Attachments as $attachmentId)
-        {
-            $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment && $attachment->hasTrait('Weapon') && $attachment->hasTrait('Ranged'))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        // WHY: Character hook — real Weapon+Ranged, or a controller fiction such as Eleanor.
+        return $character->countsAsEquippedWithRangedWeapon($theah, $actingPlayerId);
     }
 
     /**

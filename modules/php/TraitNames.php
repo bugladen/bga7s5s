@@ -110,6 +110,7 @@ class TraitNames
             "Highland Marches",
             "Holy",
             "Honor",
+            "Höpken",
             "Hound",
             "Hubris",
             "Hunt",

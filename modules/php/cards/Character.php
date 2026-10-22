@@ -700,6 +700,28 @@ abstract class Character extends Card implements IHasTechniques
         return false;
     }
 
+    // WHY: "equipped with a Ranged Weapon" gates (Long Shot, Vantage Point) used to
+    // walk Attachments inline. A character can count as equipped without a real
+    // attachment (Eleanor). $actingPlayerId is the player using the ability —
+    // fictions that say "while using your abilities" only apply for that player.
+    // A real Weapon+Ranged attachment still counts for anyone. This does not
+    // invent an attachment that can be engaged or destroyed.
+    public function countsAsEquippedWithRangedWeapon(Theah $theah, int $actingPlayerId = 0): bool
+    {
+        foreach ($this->Attachments as $attachmentId)
+        {
+            $attachment = $theah->getAttachmentById($attachmentId);
+            if ($attachment instanceof Attachment
+                && $attachment->hasTrait("Weapon")
+                && $attachment->hasTrait("Ranged"))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function hasEngardeWeaponEquipped(Theah $theah): bool
     {
         foreach ($this->Attachments as $attachmentId)

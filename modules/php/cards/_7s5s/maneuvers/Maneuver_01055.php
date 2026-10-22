@@ -34,21 +34,16 @@ class Maneuver_01055 extends Maneuver implements IRangedAbility
             return false;
         }
 
-        foreach ($actor->Attachments as $attachmentId)
-        {
-            $attachment = $theah->getAttachmentById($attachmentId);
-            if ($attachment && $attachment->hasTrait("Weapon") && $attachment->hasTrait("Ranged"))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        // WHY: same fiction hook as the City Action — participant may count as
+        // equipped without a real Ranged Weapon when this player is using the Maneuver.
+        return $actor->countsAsEquippedWithRangedWeapon($theah, $playerId);
     }
 
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // EventManeuverCanceled handler not needed
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

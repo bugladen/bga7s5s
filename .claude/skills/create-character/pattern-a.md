@@ -189,6 +189,37 @@ WHY count-transition instead of a `$WeaponBonusApplied` bool: Offhand / multi-We
 
 Use `createCharacterCombatModifiedEvent` or `createCharacterFinesseModifedEvent` (framework typo `Modifed`). Do not invent a Weapon-specific helper.
 
+Contrast **"you may consider <Owner> equipped with a Ranged Weapon"** below — that is not a stat and not a count of real Weapons.
+
+### Consider equipped with a Ranged Weapon
+
+For **"While using your abilities, you may consider <Owner> to be equipped with a Ranged Weapon"** (`_05Sniper` Eleanor):
+
+This is a boolean fiction for "if equipped with a Ranged Weapon" gates. It is **not** a FakeAttachment (those show up for unequip, engage, destroy, and opponent checks) and **not** Rena's Weapon count-transition (that changes a stat while a real Weapon is attached).
+
+`Character::countsAsEquippedWithRangedWeapon(Theah $theah, int $actingPlayerId = 0)` walks Attachments for Weapon **and** Ranged and returns true for any checker. Override on the card:
+
+1. Call `parent::` first — a real gun still counts for opponents and while blanked.
+2. Then the fiction, only when all of these hold:
+   - `!$this->abilitiesAreBlanked()` (Fate's Silence drops the sentence; the real gun above remains)
+   - `$this->isControlled()` and `$actingPlayerId === $this->ControllerId` — "while using **your** abilities." Opponent checks pass their own id and must not see the fiction.
+   - not `characterIsInDiscardOrLocker`
+   - `$theah->cardInPlay($this)` — city or Home. Hand does not count.
+
+"May" is the permission to satisfy those gates. Do **not** add a choice prompt. Every current gate is a benefit. A prompt belongs only if some future ability is worse when she counts as equipped.
+
+**Call sites that must use the method** (pass the player who is using the ability):
+
+- `Action_01055` Long Shot performers
+- `Maneuver_01055` duel participant
+- `Reaction_04020` Vantage Point performers (`$ownerPlayerId`)
+
+A new "if your performer/participant is equipped with a Ranged Weapon" check goes through this method. Do **not** copy the old attachment loop.
+
+**Do not route engage / destroy / pick-this-attachment through it.** Katain `Technique_02011` lists Katain's real unengaged Weapon+Ranged attachments and then `createCardEngagedEvent` on the chosen id. Eleanor has no card to engage, and that technique does not call `countsAsEquippedWithRangedWeapon`. Wiring the fiction into Katain would offer a technique that cannot pay its cost.
+
+Reference: `_05Sniper`.
+
 ### Dynamic stat bonuses tied to the dueling line
 
 For text like "Elena has +1[Finesse] for each **Sorcery** in her dueling line" — the bonus changes round-to-round as cards enter the dueling line. There is no event fired when a card enters `LOCATION_DUELING_LINE` (`FrameworkActionsTrait::actDuelActionChooseCombatCard` and the maneuver paths call `$this->cards->moveCard(...)` directly, bypassing the `EventCardMoved` path). So we recompute at duel-round boundaries instead.
