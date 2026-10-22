@@ -143,6 +143,10 @@ trait StatesTrait
 
         if ($action !== null && $action->RequiresPerformerSelected)
         {
+            // WHY: The trigger stays queued until the performer is confirmed. Mark that
+            // so a later Back + new performer can tell "trigger still waiting" from
+            // "trigger already consumed, reopen the action UI".
+            $this->globals->set(Game::IN_PLAY_ACTION_TRIGGER_PENDING, 1);
             $this->gamestate->nextState("requiresPerformerSelected");
             return;
         }
@@ -2115,6 +2119,9 @@ trait StatesTrait
         $this->globals->delete(GAME::CHOSEN_MANEUVER);
         $this->globals->delete(Game::TRANSITION_SOURCE_ID);
         $this->globals->delete(Game::TRANSITION_INTERNAL_ID);
+        $this->globals->delete(Game::IN_PLAY_ACTION_TRIGGER_PENDING);
+        $this->globals->delete(Game::IN_PLAY_ACTION_ENTRY_TRANSITION);
+        $this->globals->delete(Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID);
         $this->globals->delete(Game::REACTION_ID);
         $this->globals->delete(Game::REVEALED_CARDS);
         $this->globals->delete(Game::ABNORMAL_FLOW);

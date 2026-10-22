@@ -982,7 +982,39 @@ trait FrameworkActionsTrait
         }
 
         $this->globals->set(GAME::CHOSEN_PERFORMER, $performer->Id);
+
+        // WHY: First Confirm still has the dispatch's EventActionTriggered queued, and
+        // that trigger opens the action UI. Back from that UI (Midnight Shipment and
+        // the other performer actions) returns here after the trigger was consumed.
+        // An empty event queue then endOfEvents → next player, and the action does
+        // nothing. Re-queue the entry transition so the UI opens again for the new
+        // performer. Do not re-fire EventActionTriggered: some actions wound or set
+        // challenge state in that handler, and that work already happened.
+        if ($this->globals->get(Game::IN_PLAY_ACTION_TRIGGER_PENDING, 0))
+        {
+            $this->globals->delete(Game::IN_PLAY_ACTION_TRIGGER_PENDING);
+        }
+        else
+        {
+            $this->requeueInPlayActionEntryTransition();
+        }
+
         $this->gamestate->nextState("inPlayActionPerformerChosen");
+    }
+
+    private function requeueInPlayActionEntryTransition(): void
+    {
+        $transition = (string) $this->globals->get(Game::IN_PLAY_ACTION_ENTRY_TRANSITION, '');
+        if ($transition === '')
+        {
+            return;
+        }
+
+        $playerId = (int) $this->globals->get(Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID, 0);
+        $sourceId = (int) $this->globals->get(Game::TRANSITION_SOURCE_ID, 0);
+        $internalId = (string) $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+        $event = EventFactory::createTransitionEvent($playerId, $sourceId, $transition, $internalId);
+        $this->theah->queueEvent($event);
     }
 
     public function actHighDramaChooseInHandActionStart()

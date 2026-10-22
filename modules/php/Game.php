@@ -261,6 +261,12 @@ class Game extends \Bga\GameFramework\Table
     final const CHALLENGE_ACCEPTED = "challengeAccepted";
     final const TRANSITION_SOURCE_ID = "transitionSourceId";
     final const TRANSITION_INTERNAL_ID = "transitionInternalId";
+    // WHY: Dispatch queues EventActionTriggered and then waits for a performer.
+    // The first Confirm runs that trigger (which opens the action UI). Back and a
+    // second Confirm have no trigger left; these remember the UI to reopen.
+    final const IN_PLAY_ACTION_TRIGGER_PENDING = "inPlayActionTriggerPending";
+    final const IN_PLAY_ACTION_ENTRY_TRANSITION = "inPlayActionEntryTransition";
+    final const IN_PLAY_ACTION_ENTRY_PLAYER_ID = "inPlayActionEntryPlayerId";
     final const REACTION_ID = "reactionId";
     final const REVEALED_CARDS = "revealedCards";
     final const ABNORMAL_FLOW = "abnormalFlow";

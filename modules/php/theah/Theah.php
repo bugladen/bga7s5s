@@ -608,6 +608,23 @@ class Theah
                 $this->game->globals->set(Game::TRANSITION_SOURCE_ID, $event->sourceId);
                 $this->game->globals->set(Game::TRANSITION_INTERNAL_ID, $event->internalId);
 
+                // WHY: In-play actions that need a performer open their UI from this
+                // events state. Remember that transition so Back + a new performer
+                // can return here. Framework hops (reaction, pay, endOfEvents) are
+                // not action UIs and must not replace the remembered one.
+                $state = $this->game->gamestate->getCurrentMainState();
+                $stateName = $state->name ?? '';
+                $frameworkTransitions = [
+                    'reaction', 'pay', 'chooseNext', 'endOfEvents', 'endOfGame',
+                    'pressureLocation', 'inHandActionChoosePerformer', 'inHandActionPay',
+                ];
+                if ($stateName === 'highDramaPlayerTurnEvents'
+                    && ! in_array($event->transition, $frameworkTransitions, true))
+                {
+                    $this->game->globals->set(Game::IN_PLAY_ACTION_ENTRY_TRANSITION, $event->transition);
+                    $this->game->globals->set(Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID, $event->playerId);
+                }
+
                 // WHY: Assassination (sole Leader-holder, 2p or multiplayer) ends via
                 // EventTransition from Leader.php, not goToEndOfGame().
                 if ($event->transition === 'endOfGame') {

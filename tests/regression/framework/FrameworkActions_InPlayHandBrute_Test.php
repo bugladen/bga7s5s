@@ -26,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskPlayed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 /** FrameworkActionsTrait: In-Play Actions, In-Hand (Risk) Actions and Brutes. */
 class FrameworkActions_InPlayHandBrute_Test extends TestCase
@@ -203,6 +204,46 @@ class FrameworkActions_InPlayHandBrute_Test extends TestCase
 
                 Assert::same($other->Id, $game->globals->get(Game::CHOSEN_PERFORMER), 'recorded');
                 Assert::same(['inPlayActionPerformerChosen'], $game->gamestate->transitions, 'transition');
+                Assert::count(0, $game->queued(EventTransition::class), 'no resume without a remembered entry');
+            },
+
+            // WHY: First Confirm still has EventActionTriggered queued by dispatch.
+            // Re-queueing the previous action's entry here would skip that trigger.
+            'actHighDramaInPlayActionPerformerChosen leaves the pending trigger alone' => function () {
+                [$game] = $this->inPlayScene();
+                $other = $game->place(new GenericCharacter('Other'), Game::LOCATION_CITY_FORUM, 1);
+                $game->globals->set(Game::IN_PLAY_ACTION_TRIGGER_PENDING, 1);
+                $game->globals->set(Game::IN_PLAY_ACTION_ENTRY_TRANSITION, '01148');
+
+                $game->actHighDramaInPlayActionPerformerChosen($other->Id);
+
+                Assert::false($game->globals->has(Game::IN_PLAY_ACTION_TRIGGER_PENDING), 'pending consumed');
+                Assert::count(0, $game->queued(EventTransition::class), 'stale entry not replayed');
+                Assert::same(['inPlayActionPerformerChosen'], $game->gamestate->transitions, 'transition');
+            },
+
+            // WHY: Back from highDramaPhase01149 (and the other performer UIs) returns
+            // to choose-performer after the trigger was consumed. Confirm must reopen
+            // that UI. An empty queue endOfEvents-advances the turn and the action
+            // resolves as a no-op.
+            'actHighDramaInPlayActionPerformerChosen reopens the action after Back' => function () {
+                [$game, $owner] = $this->inPlayScene();
+                $other = $game->place(new GenericCharacter('Other'), Game::LOCATION_CITY_FORUM, 1);
+                $game->globals->set(Game::IN_PLAY_ACTION_ENTRY_TRANSITION, '01149');
+                $game->globals->set(Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID, 1);
+                $game->globals->set(Game::TRANSITION_SOURCE_ID, $owner->Id);
+                $game->globals->set(Game::TRANSITION_INTERNAL_ID, 'action-01149');
+
+                $game->actHighDramaInPlayActionPerformerChosen($other->Id);
+
+                $transitions = $game->queued(EventTransition::class);
+                Assert::count(1, $transitions, 'entry requeued');
+                Assert::same('01149', $transitions[0]->transition, 'midnight shipment');
+                Assert::same(1, $transitions[0]->playerId, 'player');
+                Assert::same($owner->Id, $transitions[0]->sourceId, 'source');
+                Assert::same('action-01149', $transitions[0]->internalId, 'internal');
+                Assert::same($other->Id, $game->globals->get(Game::CHOSEN_PERFORMER), 'new performer');
+                Assert::same(['inPlayActionPerformerChosen'], $game->gamestate->transitions, 'events will apply it');
             },
 
             'actHighDramaInPlayActionPerformerChosen refuses an unknown performer and honours the lock' => function () {

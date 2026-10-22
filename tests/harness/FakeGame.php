@@ -135,6 +135,10 @@ class Game
     // WHY: Action/Maneuver_01113 pay step reads the attachment's printed cost from globals.
     final const CHOSEN_CARD_COST = 'chosenCardCost';
     final const TRANSITION_INTERNAL_ID = 'transitionInternalId';
+    // WHY: Back from an in-play performer UI reopens that UI. Must match Game.php.
+    final const IN_PLAY_ACTION_TRIGGER_PENDING = "inPlayActionTriggerPending";
+    final const IN_PLAY_ACTION_ENTRY_TRANSITION = "inPlayActionEntryTransition";
+    final const IN_PLAY_ACTION_ENTRY_PLAYER_ID = "inPlayActionEntryPlayerId";
     final const ABNORMAL_FLOW = 'abnormalFlow';
     // WHY: Maneuver_01077 parks the chosen combat card then sets NEXT_COMBAT_CARD + ABNORMAL_FLOW.
     final const NEXT_COMBAT_CARD = 'nextCombatCard';

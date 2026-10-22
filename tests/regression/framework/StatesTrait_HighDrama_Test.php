@@ -137,6 +137,7 @@ class StatesTrait_HighDrama_Test extends TestCase
                 $game->stHighDramaInPlayActionDispatch();
 
                 Assert::count(1, $game->queued(EventActionTriggered::class), 'event still queued');
+                Assert::same(1, $game->globals->get(Game::IN_PLAY_ACTION_TRIGGER_PENDING), 'trigger still waiting on the performer');
                 Assert::same(['requiresPerformerSelected'], $game->gamestate->transitions, 'transition');
             },
 
@@ -439,6 +440,7 @@ class StatesTrait_HighDrama_Test extends TestCase
                     Game::CHOSEN_MANEUVER, Game::TRANSITION_SOURCE_ID, Game::TRANSITION_INTERNAL_ID, Game::REACTION_ID,
                     Game::REVEALED_CARDS, Game::ABNORMAL_FLOW, Game::DISCOUNT, Game::PRESSURE_BONUS, Game::LOYAL_PLAYER_ID,
                     Game::VANTAGE_POINT_PLAYER_ID, Game::MEETING_OF_THE_MINDS_PLAYER_ID, Game::SMUGGLED_ITEM_ATTACHMENT_ID,
+                    Game::IN_PLAY_ACTION_TRIGGER_PENDING, Game::IN_PLAY_ACTION_ENTRY_TRANSITION, Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID,
                 ] as $key) {
                     $game->globals->set($key, 'dirty');
                 }
@@ -454,6 +456,7 @@ class StatesTrait_HighDrama_Test extends TestCase
                     Game::CHOSEN_MANEUVER, Game::TRANSITION_SOURCE_ID, Game::TRANSITION_INTERNAL_ID, Game::REACTION_ID,
                     Game::REVEALED_CARDS, Game::ABNORMAL_FLOW, Game::DISCOUNT, Game::PRESSURE_BONUS, Game::LOYAL_PLAYER_ID,
                     Game::VANTAGE_POINT_PLAYER_ID, Game::MEETING_OF_THE_MINDS_PLAYER_ID, Game::SMUGGLED_ITEM_ATTACHMENT_ID,
+                    Game::IN_PLAY_ACTION_TRIGGER_PENDING, Game::IN_PLAY_ACTION_ENTRY_TRANSITION, Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID,
                 ] as $key) {
                     Assert::false($game->globals->has($key), "{$key} deleted");
                 }
