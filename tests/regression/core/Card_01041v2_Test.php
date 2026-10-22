@@ -32,7 +32,7 @@ class Card_01041v2_Test extends TestCase
                 Assert::same(4, $rosine->Resolve, 'Resolve');
                 Assert::same(2, $rosine->Combat, 'Combat');
                 Assert::same(2, $rosine->Finesse, 'Finesse');
-                Assert::same(2, $rosine->Influence, 'Influence');
+                Assert::same(1, $rosine->Influence, 'Influence');
                 Assert::true($rosine->hasTrait('Academic'), 'Academic');
                 Assert::true($rosine->hasFaction('Eisen'), 'Eisen');
                 Assert::instanceOf(Action_01041v2::class, $rosine->getActions()[0], 'Action_01041v2');
