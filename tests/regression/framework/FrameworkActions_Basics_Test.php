@@ -10,6 +10,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\FrameworkActionsGame;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericLeader;
+use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericRisk;
+use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericRiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
@@ -34,6 +36,19 @@ class FrameworkActions_Basics_Test extends TestCase
     {
         $event = EventFactory::createTransitionEvent($playerId, 100 + $playerId, 'reaction', $internalId);
         $event->priority = $priority ?? Event::REACTION_PRIORITY;
+        $game->theah->queueEvent($event);
+        return $event;
+    }
+
+    /** An in-hand Risk whose Reaction transition is queued for choose-next. */
+    private function queuedHandRisk(FrameworkActionsGame $game, int $playerId, string $name): EventTransition
+    {
+        $risk = new GenericRisk($name);
+        $risk->addReaction(new GenericRiskReaction(), $game, false);
+        $game->place($risk, Game::LOCATION_HAND, $playerId);
+        $reaction = $risk->getReactions()[0];
+        $event = EventFactory::createTransitionEvent($playerId, $risk->Id, 'reaction', $reaction->Id);
+        $event->priority = Event::REACTION_PRIORITY;
         $game->theah->queueEvent($event);
         return $event;
     }
@@ -495,6 +510,88 @@ class FrameworkActions_Basics_Test extends TestCase
                 Assert::same(Event::DEFERRED_REACTION_PRIORITY, $c->priority, 'other deferred');
                 Assert::same(Event::REACTION_PRIORITY, $a->priority, 'a untouched');
                 Assert::same(Event::REACTION_PRIORITY, $b->priority, 'b untouched');
+            },
+
+            'opponent in-hand reactions share one button' => function () {
+                $game = new FrameworkActionsGame();
+                $game->globals->set(Game::FIRST_PLAYER, 1);
+                $fp = $this->queuedHandRisk($game, 1, 'FP Risk');
+                $a = $this->queuedHandRisk($game, 2, 'Hidden A');
+                $b = $this->queuedHandRisk($game, 2, 'Hidden B');
+
+                $choices = $game->buildChooseNextReactionChoices();
+                Assert::count(2, $choices, 'opponent risks collapse to one button');
+                Assert::same(
+                    'Player One - FP Risk - In-Hand - Test Risk Reaction',
+                    $choices[0]['label'],
+                    'First Player still sees their own card'
+                );
+                Assert::same([spl_object_id($fp)], $choices[0]['eventIds'], 'FP button is one reaction');
+                Assert::same('Player Two - Risk Reaction', $choices[1]['label'], 'opponent label stays fogged');
+                Assert::same(
+                    [spl_object_id($a), spl_object_id($b)],
+                    $choices[1]['eventIds'],
+                    'one click releases both opponent reactions'
+                );
+
+                $fogLabels = array_column($game->buildChooseNextReactionChoices(true), 'label');
+                Assert::same([
+                    'Player One - Risk Reaction',
+                    'Player Two - Risk Reaction',
+                ], $fogLabels, 'public log hides every risk name');
+            },
+
+            'a lone opponent in-hand reaction keeps the fogged label' => function () {
+                $game = new FrameworkActionsGame();
+                $game->globals->set(Game::FIRST_PLAYER, 1);
+                $only = $this->queuedHandRisk($game, 2, 'Only One');
+
+                $choices = $game->buildChooseNextReactionChoices();
+                Assert::count(1, $choices, 'one button');
+                Assert::same('Player Two - Risk Reaction', $choices[0]['label'], 'fogged');
+                Assert::same([spl_object_id($only)], $choices[0]['eventIds'], 'one event');
+            },
+
+            'hand reactions from one player are released without a First Player choice' => function () {
+                $game = new FrameworkActionsGame();
+                $a = $this->queuedHandRisk($game, 2, 'Hidden A');
+                $b = $this->queuedHandRisk($game, 2, 'Hidden B');
+                $queued = $game->theah->getQueuedReactionTransitionEvents();
+
+                Assert::true($game->theah->releaseHandReactionsFromOnePlayer($queued), 'released');
+                Assert::true($a->runImmediately && $b->runImmediately, 'both run in queue order');
+                Assert::same(Event::REACTION_PRIORITY, $a->priority, 'a not deferred');
+                Assert::same(Event::REACTION_PRIORITY, $b->priority, 'b not deferred');
+            },
+
+            'hand reactions from different players still need a First Player choice' => function () {
+                $game = new FrameworkActionsGame();
+                $a = $this->queuedHandRisk($game, 1, 'Mine');
+                $b = $this->queuedHandRisk($game, 2, 'Theirs');
+
+                Assert::false(
+                    $game->theah->releaseHandReactionsFromOnePlayer($game->theah->getQueuedReactionTransitionEvents()),
+                    'two players'
+                );
+                Assert::false($a->runImmediately || $b->runImmediately, 'nothing released');
+            },
+
+            'a hand reaction mixed with an in-play reaction still needs a First Player choice' => function () {
+                $game = new FrameworkActionsGame();
+                $hand = $this->queuedHandRisk($game, 2, 'From Hand');
+                $board = new GenericRisk('On the table');
+                $board->addReaction(new GenericRiskReaction(), $game, false);
+                $game->place($board, Game::LOCATION_CITY_DOCKS, 2);
+                $reaction = $board->getReactions()[0];
+                $played = EventFactory::createTransitionEvent(2, $board->Id, 'reaction', $reaction->Id);
+                $played->priority = Event::REACTION_PRIORITY;
+                $game->theah->queueEvent($played);
+
+                Assert::false(
+                    $game->theah->releaseHandReactionsFromOnePlayer($game->theah->getQueuedReactionTransitionEvents()),
+                    'not all in hand'
+                );
+                Assert::false($hand->runImmediately || $played->runImmediately, 'nothing released');
             },
 
             'actChooseNextReaction coerces string ids from the client' => function () {

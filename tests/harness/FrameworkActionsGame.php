@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\ArgumentsTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\FrameworkActionsTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
@@ -18,6 +19,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 class FrameworkActionsGame extends StatesTraitGame
 {
     use FrameworkActionsTrait;
+    // WHY: choose-next button labels live on ArgumentsTrait. FakeGame does not include that trait.
+    use ArgumentsTrait;
 
     /** @var int result of `SELECT count(gambled) FROM duel_round ...` (gambles already spent this duel) */
     public int $gamblesCount = 0;

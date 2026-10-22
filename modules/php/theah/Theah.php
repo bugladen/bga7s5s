@@ -493,6 +493,14 @@ class Theah
                     $firstPlayerId = (int)$this->game->globals->get(Game::FIRST_PLAYER, 0);
                     if (count($reactions) > 1 && $firstPlayerId)
                     {
+                        // WHY: Every reaction is in one player's hand, so the choose
+                        // screen would be a single combined button. Release them in
+                        // queue order and keep draining instead of asking First Player.
+                        if ($this->releaseHandReactionsFromOnePlayer($reactions))
+                        {
+                            continue;
+                        }
+
                         $this->game->gamestate->changeActivePlayer($firstPlayerId);
                         // WHY: Opponents only see the status bar; log the same fogged
                         // button labels so everyone knows what is on the table.
@@ -2171,6 +2179,56 @@ class Theah
     public function setEventRunImmediately(int $eventId): void
     {
         $this->db->setEventRunImmediately($eventId);
+    }
+
+    /**
+     * One player's hand reactions have no order for First Player to pick.
+     * Mark every transition runImmediately so they resolve in queue order.
+     *
+     * WHY this lives on Theah: runEvents decides it before any choose-next args
+     * are built, using the same queue helpers as the rest of reaction ordering.
+     *
+     * @param array<int, array{eventId: int, event: \Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition}> $reactions
+     */
+    public function releaseHandReactionsFromOnePlayer(array $reactions): bool
+    {
+        if (count($reactions) < 2)
+        {
+            return false;
+        }
+
+        $playerId = null;
+        foreach ($reactions as $entry)
+        {
+            $event = $entry['event'];
+            $eventPlayerId = (int)$event->playerId;
+            if ($playerId === null)
+            {
+                $playerId = $eventPlayerId;
+            }
+            elseif ($eventPlayerId !== $playerId)
+            {
+                return false;
+            }
+
+            // Framework reactions and anything no longer in hand still need an order.
+            if ((int)$event->sourceId === Game::THEAH_ID)
+            {
+                return false;
+            }
+
+            $card = $this->getCardById($event->sourceId);
+            if ($card === null || $card->Location !== Game::LOCATION_HAND)
+            {
+                return false;
+            }
+        }
+
+        foreach ($reactions as $entry)
+        {
+            $this->setEventRunImmediately((int)$entry['eventId']);
+        }
+        return true;
     }
 
     public function deferOtherQueuedReactionTransitions(array $exceptEventIds): void

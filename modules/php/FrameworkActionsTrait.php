@@ -2525,8 +2525,8 @@ trait FrameworkActionsTrait
 
         // WHY: Promote chosen reaction(s) so stRunEvents drains them first via
         // getNextEventByRunImmediately. Multiple RiskReactions for one player share
-        // one button Ã¢â‚¬â€ all their transition events are marked immediate together.
-        // Demote siblings so pay (REACTION_PRIORITY) runs before chooseNext again.
+        // one button, so all of that player's transition events are marked immediate
+        // together. Demote siblings so pay (REACTION_PRIORITY) runs before chooseNext again.
         foreach ($chosenIds as $eventId)
         {
             $this->theah->setEventRunImmediately($eventId);
