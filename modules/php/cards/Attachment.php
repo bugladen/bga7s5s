@@ -92,9 +92,10 @@ abstract class Attachment extends Card implements IWealthCost
         return $character->canReceiveAttachments();
     }
 
-    // WHY: Default true. Kaspar's Panzerhand (_01047) overrides when printed text
-    // blocks moving while equipped. Take-control steal flows (unequip → hand → equip)
-    // filter with this; discard-pile retrieval is not "moving" an equipped attachment.
+    // WHY: Default true. Printed "cannot be moved" while equipped (Kaspar's Panzerhand
+    // _01047, Syrneth Hand _01204) overrides false. Take-control steal flows
+    // (unequip → hand → equip) filter with this; discard-pile retrieval is not
+    // "moving" an equipped attachment. Dying-host unequip is a separate eventCheck.
     public function canBeMoved(): bool
     {
         return true;

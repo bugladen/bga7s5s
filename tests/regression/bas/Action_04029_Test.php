@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericLeader;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01204;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04017;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04023;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04027;
@@ -89,6 +90,35 @@ class Action_04029_Test extends TestCase
                     $threw = true;
                 }
                 Assert::true($threw, 'short payment');
+            },
+
+            // WHY: "cannot be moved" is the steal lock. Syrneth Hand must not be a target.
+            'refuses an attachment that cannot be moved' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04029(), Game::LOCATION_HAND, 1);
+                $merchant = $world->placeCharacter(new _04023(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $hand = $world->placeCard(new _01204(), Game::LOCATION_CITY_DOCKS, 2);
+                // WHY: zero the equip cost so a wealth shortfall cannot hide a missing canBeMoved gate.
+                $hand->WealthCost = 0;
+                $hand->AttachedToId = $foe->Id;
+                $foe->Attachments = [$hand->Id];
+                /** @var Action_04029 $action */
+                $action = $risk->getActions()[0];
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $merchant->Id);
+
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no legal steal');
+                $args = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029, '');
+                Assert::same([], $args['attachments'], 'Syrneth Hand hidden');
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029, '', $hand->Id);
+                } catch (UserException) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'act refused');
+                Assert::same(2, $hand->ControllerId, 'control unchanged');
             },
         ];
     }

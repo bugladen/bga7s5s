@@ -48,6 +48,15 @@ class _01204 extends CityAttachment implements IHasTechniques
         ];
     }
 
+    // WHY: Printed "cannot be destroyed or moved" is the steal lock. Take-control
+    // flows (A Fine Addition, Robbery, Ratón) filter canBeMoved() and never emit
+    // EventAttachmentMoved, so the unequip eventCheck below never sees them.
+    // Dying-host unequip stays on that eventCheck; this predicate is the chooser gate.
+    public function canBeMoved(): bool
+    {
+        return false;
+    }
+
     public function eventCheck(Event $event)
     {
         if ($event instanceof EventAttachmentUnequipped && $event->attachmentId == $this->Id)

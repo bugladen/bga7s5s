@@ -51,6 +51,7 @@ class Card_01204_Test extends TestCase
                 Assert::true($hand->hasTrait('Artifact'), 'Artifact');
                 Assert::true($hand->hasTrait('Syrneth'), 'Syrneth');
                 Assert::true($hand->hasTrait('Unique'), 'Unique');
+                Assert::false($hand->canBeMoved(), 'cannot be moved');
                 Assert::instanceOf(Technique_01204::class, $hand->getTechniques()[0], 'Technique');
             },
 
