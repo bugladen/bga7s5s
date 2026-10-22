@@ -761,6 +761,21 @@ return declare('seventhseacityoffivesails.notifications', null, {
             });
         }
 
+        // WHY: Equip stripped a host who still listed this attachment (unequip was
+        // swallowed, e.g. Syrneth Hand). Stats and the attached-card list must update,
+        // but the card is already in hand or about to land on the new character —
+        // reparenting here would plant a city-row copy beside that equip.
+        if (args.statCorrection)
+        {
+            const attachmentElement = attachment.divId ? $(attachment.divId) : null;
+            if (attachmentElement && characterElement && characterElement.contains(attachmentElement))
+            {
+                dojo.destroy(attachment.divId);
+                attachment.divId = null;
+            }
+            return;
+        }
+
         // WHY: Reparent the live node (don't destroy/recreate). Destroy+recreate
         // left a city orphan when cardDiscardedFromPlay raced ahead of unequip
         // (same MEDIUM event priority, unordered until DB FIFO fix) — discard

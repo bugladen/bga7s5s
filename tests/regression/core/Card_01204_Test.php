@@ -14,6 +14,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01204;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01204;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 
 class Card_01204_Test extends TestCase
@@ -85,6 +87,90 @@ class Card_01204_Test extends TestCase
                 $event->theah = $world->theah;
                 $hand->eventCheck($event);
                 Assert::true(true, 'dying host may unequip');
+            },
+
+            // WHY: A Fine Addition unequips then equips. Hand rejects the unequip and
+            // queueEvent swallows it, so the old host kept +1 Combat after the equip.
+            // Equip must take the modifier with the card even though it cannot normally be moved.
+            'equipping onto a new character removes +1 Combat from the previous host' => function () {
+                $world = new TestWorld();
+                $host = $world->placeCharacter(new GenericCharacter('Yevgeni'), Game::LOCATION_CITY_DOCKS, 1);
+                $thief = $world->placeCharacter(new GenericCharacter('Thief'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var _01204 $hand */
+                $hand = $world->placeCard(new _01204(), Game::LOCATION_CITY_DOCKS, 1);
+                $host->addAttachment($world->theah, $hand);
+                $hand->AttachedToId = $host->Id;
+
+                Assert::same($host->Combat + 1, $host->ModifiedCombat, 'host has +1');
+
+                $event = new EventAttachmentEquipped();
+                $event->playerId = 2;
+                $event->characterId = $thief->Id;
+                $event->attachmentId = $hand->Id;
+                $event->theah = $world->theah;
+                $world->theah->handleEvent($event);
+
+                Assert::same($host->Combat, $host->ModifiedCombat, 'host lost +1');
+                Assert::false(in_array($hand->Id, $host->Attachments, false), 'host no longer lists it');
+                Assert::same($thief->Combat + 1, $thief->ModifiedCombat, 'new host has +1');
+                Assert::true(in_array($hand->Id, $thief->Attachments, false), 'new host lists it');
+                Assert::same($thief->Id, $hand->AttachedToId, 'equipped to new host');
+
+                $correction = null;
+                foreach ($world->game->notify->messages as $message) {
+                    if ($message['type'] === 'attachmentUnequipped' && ($message['args']['statCorrection'] ?? false)) {
+                        $correction = $message;
+                    }
+                }
+                Assert::true($correction !== null, 'old host stat notif');
+                Assert::same($host->Id, $correction['args']['characterId'], 'correction target');
+                Assert::same($host->Combat, $correction['args']['modifiedCombat'], 'correction combat');
+            },
+
+            // STOPGAP remove-after-deploy: Syrneth Hand former-host heal.
+            // Delete this test with repairAttachmentModifiersOnFormerHosts.
+            'reload strips +1 Combat from a former host who still lists the hand' => function () {
+                $world = new TestWorld();
+                $host = $world->placeCharacter(new GenericCharacter('Yevgeni'), Game::LOCATION_CITY_DOCKS, 1);
+                $thief = $world->placeCharacter(new GenericCharacter('Thief'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var _01204 $hand */
+                $hand = $world->placeCard(new _01204(), Game::LOCATION_CITY_DOCKS, 2);
+                $host->addAttachment($world->theah, $hand);
+                $thief->addAttachment($world->theah, $hand);
+                $hand->AttachedToId = $thief->Id;
+
+                $repair = new \ReflectionMethod($world->theah, 'repairAttachmentModifiersOnFormerHosts');
+                $repair->setAccessible(true);
+                $repair->invoke($world->theah);
+
+                Assert::same($host->Combat, $host->ModifiedCombat, 'former host healed');
+                Assert::false(in_array($hand->Id, $host->Attachments, false), 'former host cleared');
+                Assert::same($thief->Combat + 1, $thief->ModifiedCombat, 'current host keeps +1');
+                Assert::true(in_array($hand->Id, $thief->Attachments, false), 'current host still lists it');
+                Assert::same([], $world->game->notify->messages, 'silent heal');
+            },
+
+            'moving the hand transfers +1 Combat from the old host to the new host' => function () {
+                $world = new TestWorld();
+                $host = $world->placeCharacter(new GenericCharacter('Yevgeni'), Game::LOCATION_CITY_DOCKS, 1);
+                $next = $world->placeCharacter(new GenericCharacter('Next'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var _01204 $hand */
+                $hand = $world->placeCard(new _01204(), Game::LOCATION_CITY_DOCKS, 1);
+                $host->addAttachment($world->theah, $hand);
+                $hand->AttachedToId = $host->Id;
+
+                $event = new EventAttachmentMoved();
+                $event->playerId = 2;
+                $event->attachmentId = $hand->Id;
+                $event->fromCharacterId = $host->Id;
+                $event->toCharacterId = $next->Id;
+                $event->theah = $world->theah;
+                $world->theah->handleEvent($event);
+
+                Assert::same($host->Combat, $host->ModifiedCombat, 'old host printed combat');
+                Assert::false(in_array($hand->Id, $host->Attachments, false), 'old host cleared');
+                Assert::same($next->Combat + 1, $next->ModifiedCombat, 'new host +1');
+                Assert::true(in_array($hand->Id, $next->Attachments, false), 'new host lists it');
             },
         ];
     }

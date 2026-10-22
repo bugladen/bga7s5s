@@ -153,6 +153,28 @@ class Theah
 
         $this->cityBuilt = true;
         $this->repairDandyAttachmentInfluence();
+        // STOPGAP remove-after-deploy: Syrneth Hand former-host heal.
+        // Delete this call with repairAttachmentModifiersOnFormerHosts once every
+        // in-flight table has loaded or ended. Search that phrase for the other sites.
+        $this->repairAttachmentModifiersOnFormerHosts();
+    }
+
+    // STOPGAP remove-after-deploy: Syrneth Hand former-host heal.
+    // Tables already saved with an attachment listed on two characters. The next
+    // load strips everyone except AttachedToId and writes the character back.
+    // Idempotent. Delete this method, the buildCity call above, the $notify
+    // argument and the silent updateCardObject block in
+    // releaseAttachmentStillOnOtherCharacters, and the Card_01204 test
+    // "reload strips +1 Combat from a former host who still lists the hand".
+    // Leave the equip-time strip. That path is the ongoing fix.
+    private function repairAttachmentModifiersOnFormerHosts(): void
+    {
+        foreach ($this->cards as $card) {
+            if (! $card instanceof Attachment || (int) $card->AttachedToId === 0) {
+                continue;
+            }
+            $this->releaseAttachmentStillOnOtherCharacters($card, (int) $card->AttachedToId, false);
+        }
     }
 
     // WHY: Equip writes InfluenceModifier onto the chip and does not emit
