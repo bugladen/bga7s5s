@@ -1064,6 +1064,7 @@ $machinestates = [
                 "01034" => States::HIGH_DRAMA_PLAYER_TURN_01034,
                 "01034_2" => States::HIGH_DRAMA_PLAYER_TURN_01034_2,
                 "01035" => States::HIGH_DRAMA_PLAYER_TURN_01035,
+                "01035v2" => States::HIGH_DRAMA_PLAYER_TURN_01035V2,
                 "01036" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
                 "01038" => States::HIGH_DRAMA_PLAYER_TURN_01038,
                 "01041" => States::HIGH_DRAMA_PLAYER_TURN_01041,
@@ -2322,7 +2323,9 @@ $machinestates = [
                     "mercenaryPaidFor" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
                     "back" => States::HIGH_DRAMA_RECRUIT_UNDO_ENGAGE_TO_MERC,
                     "backKaspar" => States::HIGH_DRAMA_PLAYER_TURN_01035_4,
-                    "backKasparRecruit" => States::HIGH_DRAMA_PLAYER_TURN_01035_3
+                    "backKasparRecruit" => States::HIGH_DRAMA_PLAYER_TURN_01035_3,
+                    "backKasparV2" => States::HIGH_DRAMA_PLAYER_TURN_01035V2_4,
+                    "backKasparV2Recruit" => States::HIGH_DRAMA_PLAYER_TURN_01035V2_3
                 ]
             ],
 

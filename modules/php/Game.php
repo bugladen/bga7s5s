@@ -190,6 +190,9 @@ class Game extends \Bga\GameFramework\Table
     final const CIRILO_RECRUIT_TYPE = 2;
     // WHY: Silver Tongue (_04059) — Parley Yes/No like NORMAL, but do not Engage on Parley.
     final const SILVER_TONGUE_RECRUIT_TYPE = 3;
+    // WHY: Kaspar clone (_01035v2). Same recruit rules as KASPAR_RECRUIT_TYPE, but Back on
+    // pay must return to the v2 states, not 01035_3 / 01035_4.
+    final const KASPAR_V2_RECRUIT_TYPE = 4;
 
     //Pressure global variables
     final const PRESSURING_PLAYER = "pressuringPlayer";

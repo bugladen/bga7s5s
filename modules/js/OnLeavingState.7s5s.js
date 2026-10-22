@@ -412,6 +412,31 @@
                 this.chooseList.setSelectionMode(0);
             },
 
+            'highDramaPhase01035v2' : () => {
+                let card = this.cardProperties[this.clientStateArgs.kasparId];
+                let image = $(`${card.divId}_image`);
+                dojo.removeClass(image, '_7sfs-chosen');
+
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+
+            'highDramaPhase01035v2_3' : () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+
+            'highDramaPhase01035v2_4' : () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+                this.chooseList.setSelectionMode(0);
+            },
+
             'highDramaPhase01038' : () => {
                 dojo.addClass('choose_container', 'hidden');
                 dojo.addClass('chooseList', 'hidden');

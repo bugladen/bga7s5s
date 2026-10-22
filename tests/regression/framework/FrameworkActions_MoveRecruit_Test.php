@@ -378,7 +378,7 @@ class FrameworkActions_MoveRecruit_Test extends TestCase
             },
 
             'actHighDramaRecruitActionMercenaryChosen: Kaspar and Cirilo recruits skip the Parley gate and the engage' => function () {
-                foreach ([Game::KASPAR_RECRUIT_TYPE, Game::CIRILO_RECRUIT_TYPE] as $type) {
+                foreach ([Game::KASPAR_RECRUIT_TYPE, Game::KASPAR_V2_RECRUIT_TYPE, Game::CIRILO_RECRUIT_TYPE] as $type) {
                     [$game, , $merc] = $this->recruitScene(false);
                     $game->globals->set(Game::RECRUIT_TYPE, $type);
                     $game->globals->set(Game::PERFORMER_PARLEYED, true);

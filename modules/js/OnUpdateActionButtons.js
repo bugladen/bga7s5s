@@ -150,6 +150,12 @@ onUpdateActionButtons: function( stateName, args )
                 const backTransition = args.negotiable ? 'backKaspar' : 'backKasparRecruit';
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBackWithTransition', { transition: backTransition}), { id: 'actBack', color: 'alert' });
             }
+            else if (args.recruitType == this.KASPAR_V2_RECRUIT_TYPE)
+            {
+                // WHY: Same Negotiable split as Kaspar, aimed at the _01035v2 states.
+                const backTransition = args.negotiable ? 'backKasparV2' : 'backKasparV2Recruit';
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBackWithTransition', { transition: backTransition}), { id: 'actBack', color: 'alert' });
+            }
             this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onRecruitCharacterConfirmed());
         },
 
@@ -157,7 +163,8 @@ onUpdateActionButtons: function( stateName, args )
             this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
             args._private.actions.forEach((action, index) => {
                 const perform = () => this.bgaPerformAction('actHighDramaInPlayActionChosen', { actionId: action.id});
-                // WHY: Kaspar (Action_01035) engages + reveals on confirm — warn when picking the action, before that commit.
+                // WHY: Kaspar (Action_01035 and Action_01035v2) engages + reveals on confirm — warn when picking the action, before that commit.
+                // includes('Action_01035') matches both class ids ({id}_Action_01035 and {id}_Action_01035v2).
                 const onClick = String(action.id).includes('Action_01035')
                     ? () => this.withCrewCapWarning(perform)
                     : perform;

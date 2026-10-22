@@ -250,6 +250,7 @@ trait ZombieTrait
                 case "highDramaPhase01029": // The Pressure Is On
                 case "highDramaPhase01035_3": // Kaspar recruit choice
                 case "highDramaPhase01035_4": // Kaspar parley choice
+                case "highDramaPhase01035v2_3": // Kaspar v2 recruit choice
                 case "highDramaPhase01038_3": // Otto Streit attachment choice
                 case "highDramaPhase01180": // Kaj Kousei
                 case "highDramaPhase01180_2": // Kaj Kousei
@@ -269,6 +270,12 @@ trait ZombieTrait
                 case "highDramaPhase01205_2": // Kidnap location
                     // Default action: Pass or take first available option
                     $this->gamestate->nextState("pass");
+                    break;
+
+                case "highDramaPhase01035v2_4": // Kaspar v2 parley choice
+                    // WHY: No Parley. Bare nextState("pass") is not a transition on this state,
+                    // and Parley would open the City Reaction the zombie should not take.
+                    $this->actFromCardWithId(0);
                     break;
 
                 // Challenge Action States
@@ -364,6 +371,7 @@ trait ZombieTrait
 
                 case "highDramaPhase01008": // Cesca Del Rosso
                 case "highDramaPhase01035": // Kaspar
+                case "highDramaPhase01035v2": // Kaspar v2
                 case "highDramaPhase01038": // Otto Streit
                 case "highDramaPhase01180": // Kaj Kousei
                 case "highDramaPhase01192": // Gustavo

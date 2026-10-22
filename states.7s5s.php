@@ -708,6 +708,62 @@ $machinestates += [
         ]
     ],
 
+    States::HIGH_DRAMA_PLAYER_TURN_01035V2 => [
+        "name" => "highDramaPhase01035v2",
+        "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
+        "descriptionmyturn" => clienttranslate('Kaspar') . clienttranslate(': ${you} must acknowledge revealed cards:'),
+        "type" => "multipleactiveplayer",
+        "args" => "argsForState",
+        "action" => "stMultiPlayerInitCardRevealAcknowledge",
+        "possibleactions" => [
+            "actMultipleOk",
+        ],
+        "transitions" => ["multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01035V2_2]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01035V2_2 => [
+        "name" => "highDramaPhase01035v2_2",
+        "type" => "game",
+        "action" => "stFromCard",
+        "transitions" => [
+            "found" => States::HIGH_DRAMA_PLAYER_TURN_01035V2_3,
+            "notFound" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01035V2_3 => [
+        "name" => "highDramaPhase01035v2_3",
+        "description" => clienttranslate('${actplayer} is choosing whether to recruit the revealed mercenary.'),
+        "descriptionmyturn" => clienttranslate('Kaspar') . clienttranslate(': ${you} must choose whether to recruit the revealed mercenary:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actFromCardWithId",
+            "actFromCardPass"
+        ],
+        "transitions" => [
+            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+            "recruit" => States::HIGH_DRAMA_PLAYER_TURN_01035V2_4,
+            "recruitNoParley" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
+        ]
+    ],
+    States::HIGH_DRAMA_PLAYER_TURN_01035V2_4 => [
+        "name" => "highDramaPhase01035v2_4",
+        "description" => clienttranslate('${actplayer} is choosing whether to parley with the revealed mercenary.'),
+        "descriptionmyturn" => clienttranslate('Kaspar') . clienttranslate(': ${you} must choose whether to parley with the revealed mercenary:'),
+        "type" => "activeplayer",
+        "args" => "argsForState",
+        "possibleactions" => [
+            "actBack",
+            "actFromCardWithId"
+        ],
+        "transitions" => [
+            "back" => States::HIGH_DRAMA_PLAYER_TURN_01035V2_3,
+            // WHY: Parley must pass through recruit events so the City Reaction can
+            // fire on EventEnteringPayState before stRecruitComputeDiscount locks the cost.
+            "parleyChosen" => States::HIGH_DRAMA_RECRUIT_ACTION_CHOOSE_MERCENARY_EVENTS,
+            "noParley" => States::HIGH_DRAMA_RECRUIT_ACTION_PAY_FOR_MERCENARY
+        ]
+    ],
+
     States::HIGH_DRAMA_PLAYER_TURN_01038 => [
         "name" => "highDramaPhase01038",
         "description" => clienttranslate('Your opponent(s) must acknowledge revealed cards.'),

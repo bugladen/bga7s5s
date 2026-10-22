@@ -125,6 +125,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.KASPAR_RECRUIT_TYPE = 1;
             this.CIRILO_RECRUIT_TYPE = 2;
             this.SILVER_TONGUE_RECRUIT_TYPE = 3;
+            this.KASPAR_V2_RECRUIT_TYPE = 4;
 
             //Equip types
             this.NORMAL_EQUIP_TYPE = 0;

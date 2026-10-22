@@ -220,6 +220,11 @@ class States
             const HIGH_DRAMA_PLAYER_TURN_01035_2 = 4010352;
             const HIGH_DRAMA_PLAYER_TURN_01035_3 = 4010353;
             const HIGH_DRAMA_PLAYER_TURN_01035_4 = 4010354;
+        // Clone of Kaspar (_01035v2). Ids sit past 4010354 so they do not collide with the original substates.
+        const HIGH_DRAMA_PLAYER_TURN_01035V2 = 40103520;
+            const HIGH_DRAMA_PLAYER_TURN_01035V2_2 = 40103522;
+            const HIGH_DRAMA_PLAYER_TURN_01035V2_3 = 40103523;
+            const HIGH_DRAMA_PLAYER_TURN_01035V2_4 = 40103524;
         const HIGH_DRAMA_PLAYER_TURN_01038 = 401038;
             const HIGH_DRAMA_PLAYER_TURN_01038_2 = 4010382;
             const HIGH_DRAMA_PLAYER_TURN_01038_3 = 4010383;

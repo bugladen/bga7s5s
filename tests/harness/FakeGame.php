@@ -101,6 +101,8 @@ class Game
     final const CIRILO_RECRUIT_TYPE = 2;
     // WHY: Action_04059 stamps this so the recruit flow still offers Parley. Must match Game.php (3).
     final const SILVER_TONGUE_RECRUIT_TYPE = 3;
+    // WHY: Action_01035v2. Must match Game.php (4). Back routes to the v2 states.
+    final const KASPAR_V2_RECRUIT_TYPE = 4;
 
     final const CONSTANZO_ID = 'constanzoId';
     // WHY: Reaction_01184 / Inauguration Day store the card whose location defines the

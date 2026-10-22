@@ -307,6 +307,21 @@
                 this.addActionButton(`actNoParley`, _('No Parley'), () => this.bgaPerformAction('actFromCardWithId', {id: 0})) 
             },
 
+            'highDramaPhase01035v2': () => {
+                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
+            },
+
+            'highDramaPhase01035v2_3': () => {
+                this.addActionButton(`actRecruit`, _('Recruit'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}))
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' })
+            },
+
+            'highDramaPhase01035v2_4': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actParley`, _('Parley'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}))
+                this.addActionButton(`actNoParley`, _('No Parley'), () => this.bgaPerformAction('actFromCardWithId', {id: 0}))
+            },
+
             'highDramaPhase01038': () => {
                 this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
             },
