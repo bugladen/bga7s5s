@@ -1,0 +1,209 @@
+<?php
+
+namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
+
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01041v2;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\ActionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterRecruited;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+
+class _01041v2 extends Character implements IHasActions
+{
+    use ActionTrait;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->Name = clienttranslate("Rosine Friese");
+        $this->Image = "01041v2.jpg";
+        $this->ExpansionName = "_7s5s";
+        $this->ExpansionNumber = 1;
+        $this->CardNumber = 41;
+
+        $this->initializeFaction("Eisen");
+        $this->Title = clienttranslate("Esoteric Pathologist");
+        $this->Resolve = 4;
+        $this->Combat = 2;
+        $this->Finesse = 2;
+        $this->Influence = 1;
+
+        $this->Traits = [
+            clienttranslate("Academic"),
+            clienttranslate("Eisen"),
+        ];
+
+        $this->Text = clienttranslate("<p>While Rosine is opposing a Sorcerer, she gains +1 [Influence].</p><p><b>City Action:</b> Target an opposing non-Leader character with equal or lower [Influence] • Engage them. If they are a Sorcerer, move them Home.</p>");
+
+        $this->resetCard();
+
+        $this->Actions = [
+            new Action_01041v2(),
+        ];
+    }
+
+    private function updateInfluence(Theah $theah, int $adjustment = 0)
+    {
+
+        $influenceEvent = EventFactory::createCharacterInfluenceModifiedEvent(
+            $this->ControllerId, 
+            $this->Id, 
+            $this->ModifiedInfluence, 
+            $this->ModifiedInfluence + $adjustment, 
+            $this->getInjectCode()
+        );
+        $theah->queueEvent($influenceEvent);
+    }
+
+    public function getOpposingSorcererCount(Theah $theah, string $location): int
+    {
+        // WHY: LOCATION_PLAYER_HOME is a single shared string for every player's home,
+        // so getCharactersAtLocation aggregates home characters across all players.
+        // Rosine's passive only applies in the city, so treat home as having no opposing
+        // sorcerers regardless of who is there.
+        if ($location == Game::LOCATION_PLAYER_HOME)
+        {
+            return 0;
+        }
+        $sorcerers = $theah->getCharactersAtLocation($location);
+        $sorcerers = array_filter($sorcerers, fn($character) => $character->hasTrait("Sorcerer") && $character->isNotControlledByPlayer($this->ControllerId));
+        return count($sorcerers);
+    }
+
+    // WHY: No apply flag — infer from opposing count. Blank removes +1 if aura was live;
+    // unblank re-adds when still opposing a Sorcerer.
+    public function onAbilitiesBlanked(Theah $theah): void
+    {
+        if ($this->ControllerId == 0)
+        {
+            return;
+        }
+        if ($this->getOpposingSorcererCount($theah, $this->Location) >= 1)
+        {
+            $this->updateInfluence($theah, -1);
+        }
+    }
+
+    public function onAbilitiesUnblanked(Theah $theah): void
+    {
+        if ($this->IsDying || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+        if ($this->getOpposingSorcererCount($theah, $this->Location) >= 1)
+        {
+            $this->updateInfluence($theah, 1);
+        }
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        if ($this->abilitiesAreBlanked())
+        {
+            return;
+        }
+
+        // WHY: Must handle home→city self-moves. After dusk everyone is at
+        // LOCATION_PLAYER_HOME; the next High Drama move into a city with an opposing
+        // Sorcerer is how the aura re-applies. getOpposingSorcererCount short-circuits
+        // home to 0, so from=home is safe (fromCount always 0; +1 only when toCount>=1).
+        // Muster into the city is still covered by EventCharacterMustered below.
+        if ($event instanceof EventCardMoved && $event->cardId == $this->Id)
+        {
+            if ($this->getOpposingSorcererCount($event->theah, $event->fromLocation) == 0 && $this->getOpposingSorcererCount($event->theah, $event->toLocation) >= 1)
+            {
+                $this->updateInfluence($event->theah, 1);
+            }
+            else if ($this->getOpposingSorcererCount($event->theah, $event->fromLocation) >= 1 && $this->getOpposingSorcererCount($event->theah, $event->toLocation) == 0)
+            {
+                $this->updateInfluence($event->theah, -1);
+            }
+        }
+
+        // WHY: Once Rosine is at home, her passive is inactive. The remaining handlers
+        // compare $this->Location with event locations; because LOCATION_PLAYER_HOME is
+        // shared, those equality checks would falsely match opposing characters at other
+        // players' homes (notably during dusk when everyone routes to "Player Home").
+        // Self-move stays above this guard: EventCardMoved runs before Location updates,
+        // so at handler time she is still at her old location when leaving the city.
+        if ($this->Location == Game::LOCATION_PLAYER_HOME)
+        {
+            return;
+        }
+
+        // WHY: EventCardMoved fires for attachments too; getCharacterById is null for them
+        // (same guard as _01071 / _01119). Without it, moving an attachment at Rosine's
+        // location fatals on hasTrait().
+        if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->toLocation == $this->Location)
+        {
+            $character = $event->theah->getCharacterById($event->cardId);
+            if ($character && $character->hasTrait("Sorcerer") && $character->ControllerId != $this->ControllerId && $this->getOpposingSorcererCount($event->theah, $event->toLocation) == 0)
+            {
+                $this->updateInfluence($event->theah, 1);
+            }
+        }
+        
+        if ($event instanceof EventCardMoved && $event->cardId != $this->Id && $event->fromLocation == $this->Location)
+        {
+            $character = $event->theah->getCharacterById($event->cardId);
+            if ($character && $character->hasTrait("Sorcerer") && $character->ControllerId != $this->ControllerId && $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
+            {
+                $this->updateInfluence($event->theah, -1);
+            }
+        }
+
+        if ($event instanceof EventCharacterMustered && $event->characterId == $this->Id)
+        {
+            if ($this->getOpposingSorcererCount($event->theah, $event->location) >= 1)
+            {
+                $this->updateInfluence($event->theah, 1);
+            }
+        }
+
+        if ($event instanceof EventCharacterMustered && $event->characterId != $this->Id)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($character && $event->location == $this->Location && 
+                $character->hasTrait("Sorcerer") && 
+                $character->isNotControlledByPlayer($this->ControllerId) &&
+                $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
+            {
+                $this->updateInfluence($event->theah, 1);
+            }
+        }
+
+        if ($event instanceof EventCharacterDestroyed && $event->characterId != $this->Id)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($character && $character->Location == $this->Location && 
+                $character->hasTrait("Sorcerer") && 
+                $character->isNotControlledByPlayer($this->ControllerId) &&
+                $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
+            {
+                $this->updateInfluence($event->theah, -1);
+            }
+        }
+
+        if ($event instanceof EventCharacterRecruited)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            if ($character && $character->Location == $this->Location && 
+                $character->hasTrait("Sorcerer") && 
+                $character->isNotControlledByPlayer($this->ControllerId) &&
+                $this->getOpposingSorcererCount($event->theah, $this->Location) == 1)
+            {
+                $this->updateInfluence($event->theah, 1);
+            }
+        }
+    }
+}

@@ -461,6 +461,15 @@
                     this.clientStateArgs = {};
                 }
             },
+
+            'highDramaPhase01041v2': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
     
             'highDramaPhase01044' : () => 
             {
