@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01049;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01204;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01073;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01096;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01096;
@@ -428,6 +429,19 @@ class Technique_01096_Test extends TestCase
                 Assert::count(1, $args['attachments'], 'illegal hat filtered out');
                 Assert::same($flint->Id, $args['attachments'][0]['id'], 'Flintlock id');
                 Assert::same($flint->Name, $args['attachments'][0]['name'], 'Flintlock name');
+            },
+
+            // WHY: "cannot be moved" means cannot be stolen. Syrneth Hand stays on the adversary.
+            'chooser args omit attachments that cannot be moved' => function () {
+                $world = new TestWorld();
+                [, $foe, $technique, $flint] = $this->duel($world);
+                $this->equip($world, $foe, new _01204());
+                $world->theah->duelActor = $foe;
+
+                $args = $technique->getArgsFromTechnique($world->game, States::DUEL_END_OF_ROUND_01096, 'duelEndOfRound_01096');
+
+                Assert::count(1, $args['attachments'], 'Syrneth Hand filtered');
+                Assert::same($flint->Id, $args['attachments'][0]['id'], 'Flintlock remains');
             },
 
             'chooser args are empty without a duel round actor' => function () {

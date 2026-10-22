@@ -64,7 +64,9 @@ class Technique_01096 extends Technique
     private function attachmentIsLegalForRaton(Theah $theah, Character $raton, Attachment $attachment): bool
     {
         [$hasRestrictions] = $theah->game->hasEquipRestrictions($raton, $attachment);
-        if ($hasRestrictions || ! $attachment->canAttachTo($raton))
+        // WHY: "cannot be moved" means cannot be stolen (Syrneth Hand, Panzerhand).
+        // Same gate as Maneuver_01113 / Action_04029.
+        if ($hasRestrictions || ! $attachment->canAttachTo($raton) || ! $attachment->canBeMoved())
         {
             return false;
         }
