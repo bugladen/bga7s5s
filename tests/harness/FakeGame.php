@@ -71,9 +71,20 @@ class Game
     final const PLANNING = 2;
     final const HIGH_DRAMA = 3;
     final const PLUNDER = 4;
+    final const VICTORY_ASSASSINATION = 1;
     final const VICTORY_DOMINANCE = 2;
     final const VICTORY_ECONOMIC = 3;
     final const VICTORY_FIFTH_DAY = 4;
+    // WHY: UtilitiesTrait::recordEndOfGameStats / recordCharactersAtEndOfDayStat. Must match Game.php.
+    final const STAT_DAY_ENDED = "day_ended";
+    final const STAT_VICTORY_TYPE = "victory_type";
+    final const STAT_RENOWN_ENDED = "renown_ended";
+    final const STAT_CHARACTERS_DAY_1 = "characters_day_1";
+    final const STAT_CHARACTERS_DAY_2 = "characters_day_2";
+    final const STAT_CHARACTERS_DAY_3 = "characters_day_3";
+    final const STAT_CHARACTERS_DAY_4 = "characters_day_4";
+    final const STAT_CHARACTERS_DAY_5 = "characters_day_5";
+    final const CHARACTERS_END_OF_DAY_RECORDED = "charactersEndOfDayRecorded";
     final const USER_PREFERENCES_AUTO_ACKNOWLEDGE_CARD_REVEALS = 110;
     final const DAY = "day";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";

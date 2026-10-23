@@ -61,7 +61,8 @@ class Game extends \Bga\GameFramework\Table
     //Player stats
     final const STAT_RENOWN_ENDED = "renown_ended"; //The renown that the player ended the game with
     final const STAT_LEADER = "leader"; //Which Leader the player brought
-    // Characters controlled in play at end of each day (set in stDuskEndOfDay)
+    // Characters controlled in play at end of each day.
+    // Written at Dusk end-of-day, and again from recordEndOfGameStats if that day never reached Dusk.
     final const STAT_CHARACTERS_DAY_1 = "characters_day_1";
     final const STAT_CHARACTERS_DAY_2 = "characters_day_2";
     final const STAT_CHARACTERS_DAY_3 = "characters_day_3";
@@ -70,6 +71,9 @@ class Game extends \Bga\GameFramework\Table
     final const STAT_WOUNDS_RECEIVED = "wounds_received"; // Total wounds applied to the player's characters
     final const STAT_CHARACTERS_SENT_TO_LOCKER = "characters_sent_to_locker"; // Characters sent to The Locker
     final const STAT_CREW_CAP_OVERAGE_LOCKER = "crew_cap_overage_locker"; // Characters sunk for crew cap during Planning
+    // Day number already stored by recordCharactersAtEndOfDayStat. A later game-end
+    // call on that same day must not replace the Dusk count (Brutes leave after it).
+    final const CHARACTERS_END_OF_DAY_RECORDED = "charactersEndOfDayRecorded";
     // WHY: BGA stats are int/float/bool only. Leader names display via value_labels;
     // indices here must stay in lockstep with stats.json value_labels for id 12.
     final const LEADER_STAT_LABELS = [

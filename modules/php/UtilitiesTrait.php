@@ -59,6 +59,11 @@ trait UtilitiesTrait
      */
     public function recordEndOfGameStats(int $victoryType): void
     {
+        // WHY: Dominance, economic, and fifth-day victories fire in Plunder, and
+        // assassination can fire any time. Dusk end-of-day is the other writer, and
+        // those endings never reach it. The helper no-ops when this day was already snapshotted.
+        $this->recordCharactersAtEndOfDayStat();
+
         $this->bga->tableStats->set(Game::STAT_DAY_ENDED, (int) $this->getGameStateValue(Game::DAY));
         $this->bga->tableStats->set(Game::STAT_VICTORY_TYPE, $victoryType);
 
@@ -70,11 +75,18 @@ trait UtilitiesTrait
 
     /**
      * Store each player's controlled-in-play character count for the current day.
-     * Count is taken at dusk end-of-day before Brute discard events are queued.
+     * Dusk calls this before Brute discard events are queued. Game end calls it too,
+     * so a day that ends in Plunder or by assassination still has a count.
+     * A second call on the same day is ignored: end-of-day discards must not replace the Dusk snapshot.
      */
     public function recordCharactersAtEndOfDayStat(): void
     {
-        $statName = match ((int) $this->getGameStateValue(Game::DAY)) {
+        $day = (int) $this->getGameStateValue(Game::DAY);
+        if ((int) $this->globals->get(Game::CHARACTERS_END_OF_DAY_RECORDED, 0) === $day) {
+            return;
+        }
+
+        $statName = match ($day) {
             1 => Game::STAT_CHARACTERS_DAY_1,
             2 => Game::STAT_CHARACTERS_DAY_2,
             3 => Game::STAT_CHARACTERS_DAY_3,
@@ -91,6 +103,8 @@ trait UtilitiesTrait
             $count = count($this->theah->getCharactersInPlayByPlayerId($playerId));
             $this->bga->playerStats->set($statName, $count, $playerId);
         }
+
+        $this->globals->set(Game::CHARACTERS_END_OF_DAY_RECORDED, $day);
     }
 
     function dbGetAuxScore($player_id) 
