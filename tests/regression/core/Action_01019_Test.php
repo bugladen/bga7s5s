@@ -89,6 +89,8 @@ class Action_01019_Test extends TestCase
 
                 Assert::same($buratino->Id, $world->theah->queuedOfType(EventCharacterDestroyed::class)[0]->characterId, 'destroy');
                 Assert::same($foe->Id, $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0]->characterId, 'wound');
+                Assert::contains('targets ${target_inject_code}', $world->game->notify->messages[0]['message'], 'log names the target');
+                Assert::same($foe->getInjectCode(), $world->game->notify->messages[0]['args']['target_inject_code'], 'target inject');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
                 Assert::same(['characterChosen'], $world->game->gamestate->transitions, 'nextState');
             },

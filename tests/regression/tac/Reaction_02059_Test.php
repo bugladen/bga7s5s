@@ -74,6 +74,11 @@ class Reaction_02059_Test extends TestCase
                     array_column($reaction->getReactionButtonProperties($world->theah), 'reaction'),
                     'buttons'
                 );
+                Assert::contains(
+                    'Mine',
+                    $reaction->getReactionDescription($world->theah),
+                    'prompt names the wounded character'
+                );
             },
 
             'a second wound while one is held is left alone' => function () {
@@ -152,6 +157,8 @@ class Reaction_02059_Test extends TestCase
                 Assert::true($reaction->Used, 'used');
                 Assert::true($event->canceled, 'wound stays canceled');
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'not re-emitted');
+                Assert::contains('ignore the wound on ${character_inject_code}', $world->game->notify->messages[0]['message'], 'log names who was spared');
+                Assert::same($character->getInjectCode(), $world->game->notify->messages[0]['args']['character_inject_code'], 'spared character');
             },
 
             // WHY: Decline re-emits the clone, which was taken before cancel. skipNextEvent

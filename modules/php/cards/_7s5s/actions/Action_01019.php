@@ -107,6 +107,13 @@ class Action_01019 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($errorMessage);
             }
 
+            // WHY: Quick Reflexes cancels the wound before it is logged. Name the
+            // target here so the log shows who was chosen.
+            $game->notify->all("message", clienttranslate('${owner_inject_code} targets ${target_inject_code} to be wounded.'), [
+                "owner_inject_code" => $owner->getInjectCode(),
+                "target_inject_code" => $target->getInjectCode(),
+            ]);
+
             $owner->unEquipAllAttachments($game->theah);
             $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
             $game->theah->queueEvent($event);

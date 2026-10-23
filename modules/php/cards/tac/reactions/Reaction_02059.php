@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -24,14 +25,36 @@ class Reaction_02059 extends RiskReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may ignore a wound from an opponent\'s ability: ');
+        $base = parent::getReactionDescription($theah);
+        $character = $this->targetedCharacter($theah);
+        if ($character !== null)
+        {
+            return $base . sprintf(
+                $theah->game->translate('${you} may ignore a wound on %s from an opponent\'s ability: '),
+                $theah->game->translate($character->Name)
+            );
+        }
+
+        return $base . $theah->game->translate('${you} may ignore a wound from an opponent\'s ability: ');
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
 
-        $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Ignore Wound'), 'ignoreWound');
+        $character = $this->targetedCharacter($theah);
+        if ($character !== null)
+        {
+            $array[] = $this->createButtonProperty(
+                $theah->game,
+                sprintf($theah->game->translate('Ignore Wound on %s'), $theah->game->translate($character->Name)),
+                'ignoreWound'
+            );
+        }
+        else
+        {
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Ignore Wound'), 'ignoreWound');
+        }
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
 
         return $array;
@@ -94,9 +117,11 @@ class Reaction_02059 extends RiskReaction
             $game = $event->theah->game;
             $owner = $this->getOwningCard($game->theah);
 
-            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to ignore the wound.'), [
+            $character = $this->targetedCharacter($game->theah);
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to ignore the wound on ${character_inject_code}.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "character_inject_code" => $character?->getInjectCode() ?? '',
             ]);
 
             $this->savedWoundEvent = null;
@@ -134,5 +159,18 @@ class Reaction_02059 extends RiskReaction
         }
 
         $game->gamestate->nextState("done");
+    }
+
+    // WHY: The wound is canceled before it is logged, so the prompt is the
+    // only place the reacting player learns who was targeted.
+    private function targetedCharacter(Theah $theah): ?Character
+    {
+        if ($this->savedWoundEvent === null)
+        {
+            return null;
+        }
+
+        $character = $theah->getCharacterById($this->savedWoundEvent->characterId);
+        return $character instanceof Character ? $character : null;
     }
 }
