@@ -28,6 +28,11 @@ class State_duelResolveManeuver_02038 extends GameState
             initialPrivate: null,
         );
     }
+
+    public function getArgs(): array
+    {
+        return $this->game->argsForState();
+    }
     
     #[PossibleAction]
     public function actFromCardWithId(string $id): void

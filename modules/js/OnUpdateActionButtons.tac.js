@@ -273,7 +273,10 @@
             },
 
             'duelResolveManeuver_02038': () => {
-                this.addActionButton('actSufferWound', _('Suffer a Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                // WHY: A destroyed adversary cannot suffer a wound to stop the draw.
+                if (args.args.canTakeWound) {
+                    this.addActionButton('actSufferWound', _('Suffer a Wound'), () => this.bgaPerformAction('actFromCardWithId', {id: 1}));
+                }
                 this.addActionButton('actLetDraw', _('Let Opponent Draw'), () => this.bgaPerformAction('actFromCardWithId', {id: 2}));
             },
 

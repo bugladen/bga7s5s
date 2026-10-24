@@ -126,6 +126,69 @@ class Maneuver_02038_Test extends TestCase
                 Assert::same([null], $world->game->gamestate->transitions, 'next');
             },
 
+            'destroyed adversary cannot suffer a wound, so the owner draws' => function () {
+                $world = new TestWorld();
+                [$risk, $pirate, , , $foe] = $this->scene($world);
+                $world->game->discardOrLockerByCardId[$foe->Id] = true;
+
+                $event = new EventResolveManeuver();
+                $event->maneuverId = $pirate->Id;
+                $event->theah = $world->theah;
+                $pirate->handleEvent($event);
+
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no choice');
+                $draws = $world->theah->queuedOfType(EventCardDrawn::class);
+                Assert::count(1, $draws, 'draw');
+                Assert::same($risk->ControllerId, $draws[0]->playerId, 'owner');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
+            },
+
+            'args hide the wound when the adversary is already destroyed' => function () {
+                $world = new TestWorld();
+                [, $pirate, , , $foe] = $this->scene($world);
+                $world->game->discardOrLockerByCardId[$foe->Id] = true;
+
+                $args = $pirate->getArgsFromManeuver(
+                    $world->game,
+                    States::DUEL_RESOLVE_MANEUVER_02038,
+                    'duelResolveManeuver_02038'
+                );
+
+                Assert::false($args['canTakeWound'], 'destroyed');
+            },
+
+            'args offer the wound when the adversary is alive' => function () {
+                $world = new TestWorld();
+                [, $pirate] = $this->scene($world);
+
+                $args = $pirate->getArgsFromManeuver(
+                    $world->game,
+                    States::DUEL_RESOLVE_MANEUVER_02038,
+                    'duelResolveManeuver_02038'
+                );
+
+                Assert::true($args['canTakeWound'], 'alive');
+            },
+
+            'choosing the wound while destroyed draws instead' => function () {
+                $world = new TestWorld();
+                [$risk, $pirate, , , $foe] = $this->scene($world);
+                $world->game->discardOrLockerByCardId[$foe->Id] = true;
+
+                $pirate->actFromManeuverWithId(
+                    $world->game,
+                    States::DUEL_RESOLVE_MANEUVER_02038,
+                    'duelResolveManeuver_02038',
+                    1
+                );
+
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
+                $draws = $world->theah->queuedOfType(EventCardDrawn::class);
+                Assert::count(1, $draws, 'draw');
+                Assert::same($risk->ControllerId, $draws[0]->playerId, 'owner');
+                Assert::same([null], $world->game->gamestate->transitions, 'next');
+            },
+
             'choosing the draw lets the maneuver owner draw' => function () {
                 $world = new TestWorld();
                 [$risk, , $duelist] = $this->scene($world);
