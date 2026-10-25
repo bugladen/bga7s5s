@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
@@ -266,6 +267,37 @@ class Reaction_01053_Test extends TestCase
                 $later = $this->woundEvent($world, $mine->Id);
                 $reaction->handleEvent($later);
                 Assert::false($later->canceled, 'hold released after resolution');
+            },
+
+            // WHY: Pull the Strand targets the character you wound. The cancel sweep
+            // matches that id, so queueing the cost wound first deletes it. The only
+            // performer at the location is often the target itself.
+            'cost paid still wounds the targeted character and cancels Pull' => function () {
+                $world = new TestWorld();
+                [$hex, $reaction, $mine, $sorcery, $ability] = $this->scene($world);
+                $reaction->handleEvent($this->sorcererStart($world, $sorcery, $ability, $mine->Id));
+                $reaction->performReaction($world->game, 0, $reaction->Id, "cancel-{$mine->Id}");
+                $world->theah->takeQueuedEvents();
+
+                $world->theah->queueEvent(EventFactory::createTransitionEvent($sorcery->ControllerId, $sorcery->Id, '01030_2', $ability->Id));
+                $world->theah->queueEvent($this->woundEvent($world, $mine->Id));
+
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                $triggered->reactionId = "cancel-{$mine->Id}";
+                $triggered->theah = $world->theah;
+                $reaction->handleEvent($triggered);
+
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'sorcerer wound cleared, cost wound kept');
+                Assert::same($mine->Id, $wounds[0]->characterId, 'targeted performer wounded');
+                Assert::same(1, $wounds[0]->wounds, 'one wound');
+                Assert::same($hex->Id, $wounds[0]->sourceId, 'source Hexenjagd');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'Pull transition cancelled');
+                Assert::true($reaction->Used, 'used');
+
+                $reaction->handleEvent($wounds[0]);
+                Assert::false($wounds[0]->canceled, 'cost wound is not held');
             },
 
             'decline releases held effects' => function () {

@@ -270,21 +270,26 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
     
                 $target = $game->theah->getCardById($this->TargetId);
                 $owner = $game->theah->getCardById($this->OwnerId);
-    
+
+                // WHY: The cost is "wound your performer at that location," and Pull the
+                // Strand's target is usually that same character. deleteEventsTargetingCard
+                // matches any queued *Id equal to the target, so the cost wound has to be
+                // queued after the sweep. Release the hold first too: while holdingEffects
+                // is set, a wound on the target is intercepted and never applied.
+                $game->theah->deleteEventsTargetingCard($this->TargetId);
+                $game->theah->deleteTransitionEventsBySourceId($this->SourceId);
+                $this->clearEvents($game);
+                $this->holdingEffects = false;
+
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
 
-                $game->theah->deleteEventsTargetingCard($this->TargetId);
-                $game->theah->deleteTransitionEventsBySourceId($this->SourceId);
-    
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction to cancel the Sorcerer Ability Targeting ${card_inject_code}.'), [
                     "reaction_inject_code" => $owner->getInjectCode(),
                     "player_name" => $game->getActivePlayerName(),
                     "card_inject_code" => $target->getInjectCode(),
                 ]);
-    
-                $this->clearEvents($game);
-                $this->holdingEffects = false;
+
                 $this->setUsed($game->theah, true);
             }
         }        
