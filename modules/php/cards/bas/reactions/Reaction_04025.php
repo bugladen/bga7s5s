@@ -13,6 +13,11 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_04025 extends CardReaction
 {
+    // WHY: chosenCard is a shared slot. Cat's Embargo writes a single card id into it
+    // during planningPhaseEnd_01098_2, which can run after Look and before this pick.
+    // json_decode of that id is the integer itself, and count() then fatals.
+    public const LOOKED_CARDS = 'reaction04025LookedCards';
+
     public function __construct()
     {
         parent::__construct();
@@ -107,17 +112,7 @@ class Reaction_04025 extends CardReaction
         if ($reactionId == 'look')
         {
             $merchantCount = $this->countControlledMerchants($game->theah, $owner->ControllerId);
-            $lookCount = 3 + $merchantCount;
-
-            $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($owner->ControllerId, $lookCount);
-            $cards = [];
-            foreach ($deckCards as $deckCard)
-            {
-                $card = $game->getCardObjectFromDb($deckCard['id']);
-                $cards[] = $card->getPropertyArray($game);
-            }
-
-            $game->globals->set(Game::CHOSEN_CARD, json_encode($cards));
+            $cards = $this->peekFactionDeck($game, $owner->ControllerId);
 
             $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} looks at the top ${count} cards of their deck (${merchant_count} Merchant(s)).'), [
                 "card_inject_code" => $owner->getInjectCode(),
@@ -144,6 +139,8 @@ class Reaction_04025 extends CardReaction
                 return;
             }
 
+            $this->rememberLookedCards($game, $cards);
+
             // WHY: 4th arg = reaction Id so actFromCardWithIds routes to this reaction (03052).
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04025", $this->Id);
             $game->theah->queueEvent($transition);
@@ -158,8 +155,7 @@ class Reaction_04025 extends CardReaction
 
         if ($state == States::PLANNING_PHASE_END_04025)
         {
-            // WHY: Object decode like 03052 / 02005 — property arrays use ->id after json_decode.
-            $cards = json_decode($game->globals->get(Game::CHOSEN_CARD)) ?: [];
+            $cards = $this->lookedCards($game);
             $args['cards'] = $cards;
             $args['cardsToDraw'] = min(2, count($cards));
         }
@@ -174,8 +170,8 @@ class Reaction_04025 extends CardReaction
         if ($state == States::PLANNING_PHASE_END_04025)
         {
             $owner = $this->getOwningCard($game->theah);
-            $originalCards = json_decode($game->globals->get(Game::CHOSEN_CARD)) ?: [];
-            $originalIds = array_map(fn($card) => (int) $card->id, $originalCards);
+            $originalCards = $this->lookedCards($game);
+            $originalIds = array_map(fn($card) => (int) (is_array($card) ? $card['id'] : $card->id), $originalCards);
             $drawCount = min(2, count($originalIds));
 
             if (count($ids) != $drawCount)
@@ -198,8 +194,90 @@ class Reaction_04025 extends CardReaction
     }
 
     /**
+     * Looked-at cards for the pick state. Ignores chosenCard: that global may hold
+     * Cat's Embargo's revealed card id (an int) while this state is waiting.
+     *
+     * @return array<int, object>
+     */
+    public function lookedCards(Game $game): array
+    {
+        $stored = self::decodeCardList($game->globals->get(self::LOOKED_CARDS));
+        if ($stored !== [])
+        {
+            return $stored;
+        }
+
+        $owner = $this->getOwningCard($game->theah);
+        if ($owner === null)
+        {
+            return [];
+        }
+
+        // The pick has not moved these cards yet, so the top of the deck is still the look.
+        $cards = $this->peekFactionDeck($game, $owner->ControllerId);
+        if ($cards === [])
+        {
+            return [];
+        }
+
+        return $this->rememberLookedCards($game, $cards);
+    }
+
+    /**
+     * @return array<int, object>
+     */
+    public static function decodeCardList(mixed $raw): array
+    {
+        if (is_array($raw))
+        {
+            $raw = json_encode($raw);
+        }
+        if (! is_string($raw) || $raw === '')
+        {
+            return [];
+        }
+
+        $decoded = json_decode($raw);
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function peekFactionDeck(Game $game, int $controllerId): array
+    {
+        $merchantCount = $this->countControlledMerchants($game->theah, $controllerId);
+        $lookCount = 3 + $merchantCount;
+        $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($controllerId, $lookCount);
+        $cards = [];
+        foreach ($deckCards as $deckCard)
+        {
+            $card = $game->getCardObjectFromDb($deckCard['id']);
+            if ($card === null)
+            {
+                continue;
+            }
+            $cards[] = $card->getPropertyArray($game);
+        }
+
+        return $cards;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $cards
+     * @return array<int, object>
+     */
+    private function rememberLookedCards(Game $game, array $cards): array
+    {
+        $encoded = json_encode($cards);
+        $game->globals->set(self::LOOKED_CARDS, $encoded);
+
+        return self::decodeCardList($encoded);
+    }
+
+    /**
      * @param array<int> $drawIds
-     * @param array<object>|array<int, array<string, mixed>> $lookedCards from CHOSEN_CARD or fresh property arrays
+     * @param array<object>|array<int, array<string, mixed>> $lookedCards
      */
     private function drawIdsAndSinkRest(Game $game, int $playerId, array $drawIds, array $lookedCards): void
     {

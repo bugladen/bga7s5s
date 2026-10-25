@@ -59,9 +59,15 @@ class Reaction_04025_Test extends TestCase
                 $reaction->performReaction($world->game, 0, '', 'look');
                 Assert::true($reaction->Used, 'look spends');
                 Assert::same('04025', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'pick two');
+                // Cat's Embargo (planningPhaseEnd_01098_2) stores the revealed card id here.
+                $world->game->globals->set(Game::CHOSEN_CARD, 57);
                 $args = $reaction->getArgsFromReaction($world->game, States::PLANNING_PHASE_END_04025, '');
                 Assert::same(2, $args['cardsToDraw'], 'draw two');
                 Assert::count(4, $args['cards'], '3 + 1 merchant');
+
+                $world->game->globals->delete(Reaction_04025::LOOKED_CARDS);
+                $rebuilt = $reaction->getArgsFromReaction($world->game, States::PLANNING_PHASE_END_04025, '');
+                Assert::count(4, $rebuilt['cards'], 'deck still holds the look after chosenCard was overwritten');
 
                 $threw = false;
                 try {

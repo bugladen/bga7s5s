@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\States\bas;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04025;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
@@ -44,7 +45,14 @@ class State_planningPhaseEnd_04025 extends GameState
     public function zombie(int $playerId): void
     {
         // Auto-draw the first cardsToDraw looked-at cards.
-        $cards = json_decode($this->game->globals->get(Game::CHOSEN_CARD)) ?: [];
+        // WHY: lookedCards rebuilds from the deck when chosenCard still holds Embargo's card id.
+        $sourceId = (int) $this->game->globals->get(Game::TRANSITION_SOURCE_ID);
+        $card = $this->game->theah->getCardById($sourceId);
+        $internalId = (string) $this->game->globals->get(Game::TRANSITION_INTERNAL_ID, '');
+        $reaction = $card?->getReactionById($internalId);
+        $cards = $reaction instanceof Reaction_04025
+            ? $reaction->lookedCards($this->game)
+            : Reaction_04025::decodeCardList($this->game->globals->get(Reaction_04025::LOOKED_CARDS));
         $drawCount = min(2, count($cards));
         $ids = [];
         for ($i = 0; $i < $drawCount; $i++)
