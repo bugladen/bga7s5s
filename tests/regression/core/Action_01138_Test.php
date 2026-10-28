@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01138_Test extends TestCase
@@ -145,14 +146,47 @@ class Action_01138_Test extends TestCase
                 Assert::false(in_array($far->Id, $args['ids'], true), 'far excluded');
             },
 
-            // WHY: already-engaged performer cannot choose engage — auto wound path.
-            'choosing a target while engaged moves, wounds, and resolves via wound transition' => function () {
+            // WHY: Come Hither / Amour — act queues only CharacterTargeted so Cross/UL can
+            // intercept before move/wound. Effects emit when that event survives.
+            'choosing a target queues only CharacterTargeted and announces' => function () {
+                $world = new TestWorld();
+                [$risk, $action, $performer, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+
+                $this->act($world, $action, States::HIGH_DRAMA_PLAYER_TURN_01138, $foe->Id);
+
+                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'foe');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
+                Assert::same([null], $world->game->gamestate->transitions, 'to events');
+
+                $msgs = array_filter(
+                    $world->game->notify->messages,
+                    fn($n) => ($n['type'] ?? '') === 'message'
+                        && str_contains((string) ($n['message'] ?? ''), 'targeting')
+                );
+                Assert::true(count($msgs) >= 1, 'chat names target');
+            },
+
+            // WHY: already-engaged performer cannot choose engage — auto wound on survive.
+            'surviving CharacterTargeted while engaged moves, wounds, and resolves' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $foe] = $this->scene($world);
                 $performer->Engaged = true;
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
-                $this->act($world, $action, States::HIGH_DRAMA_PLAYER_TURN_01138, $foe->Id);
+                $event = new EventCharacterTargeted();
+                $event->abilityId = $action->Id;
+                $event->targetId = $foe->Id;
+                $event->sourceId = $risk->Id;
+                $event->playerId = 1;
+                $event->theah = $world->theah;
+                $action->handleEvent($event);
 
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
                 Assert::count(1, $moves, 'move');
@@ -165,20 +199,47 @@ class Action_01138_Test extends TestCase
                 Assert::same($foe->Id, $wounds[0]->characterId, 'foe');
                 Assert::same($risk->Id, $wounds[0]->sourceId, 'source');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['wound'], $world->game->gamestate->transitions, 'wound');
             },
 
-            'choosing a target while en garde stores CHOSEN_TARGET and goes to manipulate' => function () {
+            'surviving CharacterTargeted while en garde transitions to engage chooser' => function () {
                 $world = new TestWorld();
-                [, $action, $performer, $foe] = $this->scene($world);
+                [$risk, $action, $performer, $foe] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
-                $this->act($world, $action, States::HIGH_DRAMA_PLAYER_TURN_01138, $foe->Id);
+                $event = new EventCharacterTargeted();
+                $event->abilityId = $action->Id;
+                $event->targetId = $foe->Id;
+                $event->sourceId = $risk->Id;
+                $event->playerId = 1;
+                $event->theah = $world->theah;
+                $action->handleEvent($event);
 
                 Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
                 Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move yet');
                 Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
-                Assert::same(['manipulate'], $world->game->gamestate->transitions, 'manipulate');
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'chooser');
+                Assert::same('01138_2', $transitions[0]->transition, 'name');
+                Assert::same($risk->Id, $transitions[0]->sourceId, 'source');
+            },
+
+            'canceled CharacterTargeted queues no effects or engage chooser' => function () {
+                $world = new TestWorld();
+                [$risk, $action, $performer, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+
+                $event = new EventCharacterTargeted();
+                $event->abilityId = $action->Id;
+                $event->targetId = $foe->Id;
+                $event->sourceId = $risk->Id;
+                $event->playerId = 1;
+                $event->canceled = true;
+                $event->theah = $world->theah;
+                $action->handleEvent($event);
+
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no chooser');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
             },
 
             'manipulate engage moves performer, engages, and sends foe Home' => function () {

@@ -139,6 +139,19 @@ class Reaction_02016_Test extends TestCase
                 }
             },
 
+            // WHY: reacting player must see who was targeted before deciding Cross.
+            'description names the targeted character' => function () {
+                $world = new TestWorld();
+                [, $reaction, , $ally] = $this->scene($world);
+                $this->targetProp($reaction)->setValue($reaction, $ally->Id);
+
+                Assert::contains(
+                    'Ally',
+                    $reaction->getReactionDescription($world->theah),
+                    'status bar names target'
+                );
+            },
+
             // WHY: opponent ability targeting your character at location (not already the performer).
             'offers on EventCharacterBeingWounded from opponent IAbilityThatTargetsCharacters' => function () {
                 $world = new TestWorld();

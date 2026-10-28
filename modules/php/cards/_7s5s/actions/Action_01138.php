@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -80,6 +81,48 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01138", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        // WHY: Come Hither (01162) / Amour (01104) — do not queue move/wound/engage-chooser
+        // beside the cancel hook. Cross of the Martyrs / UL intercept EventCharacterTargeted;
+        // if effects already ran, opponents never saw who was targeted before reacting.
+        // Pass / NoD re-queue this event; this handler emits the package again.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $game->globals->set(Game::CHOSEN_TARGET, $event->targetId);
+
+            $owner = $this->getOwningCard($event->theah);
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCharacterById($performerId);
+            $target = $event->theah->getCharacterById($event->targetId);
+
+            if ($owner === null || $performer === null || $target === null)
+            {
+                return;
+            }
+
+            // WHY: already-engaged performer cannot choose engage — auto wound path.
+            if ($performer->Engaged)
+            {
+                $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
+                $moveEvent->batchId = $batchId;
+                $event->theah->queueEvent($moveEvent);
+
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent->batchId = $batchId;
+                $event->theah->queueEvent($woundEvent);
+
+                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+                $event->theah->queueEvent($actionResolvedEvent);
+            }
+            else
+            {
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01138_2", $this->Id);
+                $event->theah->queueEvent($transition);
+            }
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -141,41 +184,31 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
                 throw new UserException($game->translate("Character not found"));
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
-
             [$isValid, $errorMessage] = $this->isValidTargetForAbility($game, $target);
             if (! $isValid)
             {
                 throw new UserException($errorMessage);
             }
 
-            if ($performer->Engaged)
-            {
-                $owner = $this->getOwningCard($game->theah);
+            $owner = $this->getOwningCard($game->theah);
 
-                $batchId = $game->getNextEventBatchId();
+            $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
 
-                //Move Performer to Target's Location
-                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
-                $moveEvent->batchId = $batchId;
-                $game->theah->queueEvent($moveEvent);
+            // WHY: Cross of the Martyrs (and similar) decide before effects. Name the
+            // target in chat when chosen — same pattern as Action_04040 / announcePendingChallenge.
+            $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "card_inject_code" => $owner->getInjectCode(),
+                "character_inject_code" => $target->getInjectCode(),
+            ]);
 
-                //Wound Target
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-                $woundEvent->batchId = $batchId;
-                $game->theah->queueEvent($woundEvent);
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
-
-                $game->gamestate->nextState("wound");
-            }
-            else
-            {
-                $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
-                $game->gamestate->nextState("manipulate");
-            }
+            $game->gamestate->nextState();
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_01138_2)

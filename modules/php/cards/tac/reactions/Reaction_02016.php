@@ -59,7 +59,21 @@ class Reaction_02016 extends AttachmentReaction
 
     public function getReactionDescription(Theah $theah): string
     {
-        return parent::getReactionDescription($theah) . $theah->game->translate('${you} may wound your performer to become the new target: ');
+        // WHY: Status bar is the only place the reacting player may see who was targeted
+        // when the ability logged nothing (or logged before they looked). Name the target
+        // so Cross of the Martyrs can be decided against the printed "when … targets"
+        // trigger — chat OR status bar; this covers every Cross offer path.
+        $target = $this->targetCharacterId
+            ? $theah->getCharacterById($this->targetCharacterId)
+            : null;
+        $targetName = $target
+            ? $theah->game->translate($target->Name)
+            : $theah->game->translate('a character');
+
+        return parent::getReactionDescription($theah) . sprintf(
+            $theah->game->translate('${you} may wound your performer to become the new target instead of %s: '),
+            $targetName
+        );
     }
 
     public function getReactionButtonProperties(Theah $theah): array
