@@ -445,6 +445,27 @@ class Game
         return $attachments;
     }
 
+    // WHY: Theah::playerCanEquip / characterCanEquip fall through to hand when no city
+    // attachment sits at the character's site. Real method walks BGA Deck; FakeGame has
+    // getAttachmentsInHand already.
+    // WHY no `: bool`: UtilitiesTrait and FrameworkActionsGame omit the return type;
+    // adding it here fatals when FrameworkActionsGame overrides.
+    public function handHasAttachments(int $playerId)
+    {
+        return $this->getAttachmentsInHand($playerId) !== [];
+    }
+
+    // WHY: Theah::applyAbsentActorBaseChallengeThreat prefers the Accept-time snapshot
+    // over a DB rehydrate. Card suites rarely need this; Theah regression sets
+    // $challengeLastKnownById when testing the snapshot branch.
+    /** @var array<int, Character> */
+    public array $challengeLastKnownById = [];
+
+    public function getChallengeLastKnownCharacter(int $characterId): ?Character
+    {
+        return $this->challengeLastKnownById[$characterId] ?? null;
+    }
+
     public function notifyAllPlayers(string $type, string $message, array $args = []): void
     {
         $this->notify->all($type, $message, $args);
@@ -794,6 +815,11 @@ class Game
         $this->globals->set($this->getControllerLocationName($location), $playerId);
     }
 
+    // WHY: Theah::isPlayerZombie caches from loadPlayersBasicInfos['player_zombie'].
+    // Empty by default so existing suites stay non-zombie.
+    /** @var array<int, bool> playerId => zombie */
+    public array $playerZombies = [];
+
     // WHY: _01150 (and similar) walk loadPlayersBasicInfos and compare $player['player_id']
     // to ControllerId — BGA rows include that key; omitting it made every player look like
     // an opponent (undefined != controller).
@@ -805,6 +831,9 @@ class Game
                 'player_id' => $id,
                 'player_name' => $name,
             ];
+            if (!empty($this->playerZombies[$id])) {
+                $infos[$id]['player_zombie'] = 1;
+            }
         }
         return $infos;
     }
@@ -886,6 +915,18 @@ class Game
     public function setCanBecomeUncontrolledForLocation(string $location, bool $canBecomeUncontrolled): void
     {
         $this->globals->set('CanBecomeUncontrolled_' . $location, $canBecomeUncontrolled);
+    }
+
+    // WHY: Theah::buildCityLocation hydrates from these. Defaults match CityLocation ctor
+    // (claimable / can-become-uncontrolled true) when unset.
+    public function getCanBeClaimedForLocation(string $location): bool
+    {
+        return (bool) ($this->globals->get('CanBeClaimed_' . $location) ?? true);
+    }
+
+    public function getCanBecomeUncontrolledForLocation(string $location): bool
+    {
+        return (bool) ($this->globals->get('CanBecomeUncontrolled_' . $location) ?? true);
     }
 
     /** @var list<array{className:string,originalCardId:int,location:string,ownerId:int,controllerId:int,targetId:int,abilityId:string}> */
