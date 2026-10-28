@@ -51,6 +51,14 @@ class TestWorld
         }
     }
 
+    // WHY: Card suites use fire() (card handlers only). EventHub suites need the central
+    // Theah::handleEvent path — TestTheah stubs queue/run, not the hub itself.
+    public function applyHub(Event $event): void
+    {
+        $event->theah = $this->theah;
+        $this->theah->handleEvent($event);
+    }
+
     public function fireOn(Card $card, Event $event): void
     {
         $event->theah = $this->theah;

@@ -381,19 +381,35 @@ class Game
 
     // WHY: Character::handleEvent(EventCharacterWounded) bumps $game->bga->playerStats;
     // _01069 tests need the non-ignored (parent) wound path to run without BGA.
+    // EventHub CharacterDestroyed / CardSentToLocker also inc STAT_CHARACTERS_SENT_TO_LOCKER.
     public object $bga;
     final const STAT_WOUNDS_RECEIVED = 'wounds_received';
+    // WHY: Must match Game.php — EventHub locker paths. Value is the BGA table_stats name.
+    final const STAT_CHARACTERS_SENT_TO_LOCKER = 'characters_sent_to_locker';
+
+    /** @var list<array{name:string,delta:int,playerId:int|null}> */
+    public array $playerStatIncs = [];
 
     public function __construct()
     {
-        $this->bga = new class {
+        $game = $this;
+        $this->bga = new class($game) {
             public object $playerStats;
 
-            public function __construct()
+            public function __construct(Game $game)
             {
-                $this->playerStats = new class {
+                $this->playerStats = new class($game) {
+                    public function __construct(private Game $game)
+                    {
+                    }
+
                     public function inc(string $name, int $delta = 1, ?int $playerId = null): void
                     {
+                        $this->game->playerStatIncs[] = [
+                            'name' => $name,
+                            'delta' => $delta,
+                            'playerId' => $playerId,
+                        ];
                     }
                 };
             }
@@ -426,6 +442,72 @@ class Game
             return 0;
         }
         return (int)$this->theah->getCityLocation($location)->Renown;
+    }
+
+    // WHY: EventHub RenownAdded does getRenown + setReknown, THEN cityLocations += amount.
+    // Real UtilitiesTrait setReknown writes globals only — if FakeGame also wrote
+    // CityLocation here, the hub's += would double-count. getRenown still reads
+    // CityLocation (setLocationRenown / seed); hub maintains that property itself.
+    public function setReknownForLocation($location, $reknown): void
+    {
+        $this->globals->set('Reknown_' . $location, (int) $reknown);
+    }
+
+    // WHY: EventHub CharacterDestroyed / CardRemovedFromPlay (city-deck) recreate via
+    // instantiateCard after stripping the leading `_` of production class names
+    // (substr after last `\`, +2). That breaks harness Generic* ("enericCharacter").
+    // `$cardRecreateById` lets EventHub suites supply a factory keyed by card id.
+    /** @var array<int, callable(): Card> */
+    public array $cardRecreateById = [];
+
+    public function instantiateCard(string $cardClass, ?int $id = null): Card
+    {
+        if ($id !== null && isset($this->cardRecreateById[$id])) {
+            $card = ($this->cardRecreateById[$id])();
+            $card->setId($id);
+            return $card;
+        }
+
+        $fqcn = "\\Bga\\Games\\SeventhSeaCityOfFiveSails\\cards\\_7s5s\\_{$cardClass}";
+        if (!class_exists($fqcn)) {
+            throw new \RuntimeException("instantiateCard: unknown class {$cardClass}");
+        }
+        /** @var Card $card */
+        $card = new $fqcn();
+        if ($id) {
+            $card->setId($id);
+        }
+        return $card;
+    }
+
+    // WHY: EventHub CharacterDestroyed clears Challenger/Defender markers on the survivor
+    // when a challenge participant dies before IN_DUEL. Mirror UtilitiesTrait without
+    // pulling the whole trait onto FakeGame.
+    /** @var list<array{challengerId:int|null,defenderId:int|null}> */
+    public array $clearChallengeMarkerCalls = [];
+
+    public function clearChallengeParticipantMarkers(?int $challengerId, ?int $defenderId): void
+    {
+        $this->clearChallengeMarkerCalls[] = [
+            'challengerId' => $challengerId,
+            'defenderId' => $defenderId,
+        ];
+        if ($challengerId && $this->theah !== null) {
+            $challenger = $this->theah->getCardById($challengerId);
+            if ($challenger !== null) {
+                $challenger->removeCondition(self::DUEL_CHALLENGER);
+            }
+        }
+        if ($defenderId && $this->theah !== null) {
+            $defender = $this->theah->getCardById($defenderId);
+            if ($defender !== null) {
+                $defender->removeCondition(self::DUEL_DEFENDER);
+            }
+        }
+        $this->notify->all('challengeMarkersCleared', '', [
+            'challengerId' => $challengerId ?? 0,
+            'defenderId' => $defenderId ?? 0,
+        ]);
     }
 
     // WHY: Action_01187 (Smuggled Item) gates on hand attachments via UtilitiesTrait.

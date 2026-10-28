@@ -248,6 +248,19 @@ class TestTheah extends Theah
                 }
                 return $rows;
             }
+
+            // WHY: EventHub PlayerGains/LosesReknown goes through Theah::getDBObject(),
+            // not Game::getPlayerReknown. Production DB helper hits the player table;
+            // mirror FakeGame::$playerScores so hub tests can assert renown mutation.
+            public function getPlayerReknown($playerId): int
+            {
+                return $this->game->getPlayerReknown((int) $playerId);
+            }
+
+            public function setPlayerReknown($playerId, $reknown): void
+            {
+                $this->game->setPlayerReknown((int) $playerId, (int) $reknown);
+            }
         };
     }
 
