@@ -28,6 +28,9 @@ class FrameworkActionsGame extends StatesTraitGame
     /** @var int result of `SELECT count(*) FROM duel_round_combat_card ...` */
     public int $combatCardCount = 0;
 
+    /** @var int result of `SELECT count(*) FROM duel_round_technique ... technique_is_main = 1` */
+    public int $playedTechniquesCount = 0;
+
     /**
      * cardId => location the BGA Deck row says the card is in. WHY: actGambleCardChosen trusts
      * the deck row over the serialized card; tests make them disagree to prove the repair.
@@ -99,8 +102,8 @@ class FrameworkActionsGame extends StatesTraitGame
         };
     }
 
-    // WHY: StatesTraitGame only routes the duel-state SQL shapes. The act* handlers add two more
-    // count queries; everything else falls through to the parent routing.
+    // WHY: StatesTraitGame only routes the duel-state SQL shapes. ArgumentsTrait::argsChooseDuelAction
+    // and act* handlers add count queries; everything else falls through to the parent routing.
     public function getUniqueValueFromDB(string $sql): mixed
     {
         if (preg_match('/count\s*\(\s*gambled\s*\)\s+from\s+duel_round/i', $sql)) {
@@ -109,12 +112,15 @@ class FrameworkActionsGame extends StatesTraitGame
         if (preg_match('/count\s*\(\s*\*\s*\)\s+from\s+duel_round_combat_card/i', $sql)) {
             return $this->combatCardCount;
         }
+        if (preg_match('/count\s*\(\s*\*\s*\)\s+from\s+duel_round_technique/i', $sql)) {
+            return $this->playedTechniquesCount;
+        }
         return parent::getUniqueValueFromDB($sql);
     }
 
     // WHY mirrored instead of `use UtilitiesTrait`: importing the whole trait would override every
     // FakeGame stub the card suites rely on (loadPlayersBasicInfos, pressureLocation, ...). These
-    // three are tiny and mirror UtilitiesTrait line for line; keep them in sync if it changes.
+    // four are tiny and mirror UtilitiesTrait line for line; keep them in sync if it changes.
 
     public function getExtraActionPerformerId(): ?int
     {
@@ -129,6 +135,20 @@ class FrameworkActionsGame extends StatesTraitGame
         if ($lockedId !== null && $lockedId !== $characterId) {
             throw new \Bga\GameFramework\UserException($this->translate("You must perform this action with the same character."));
         }
+    }
+
+    /**
+     * @param int[] $performerIds
+     * @return int[]
+     */
+    public function filterPerformerIdsForExtraAction(array $performerIds): array
+    {
+        $lockedId = $this->getExtraActionPerformerId();
+        if ($lockedId === null) {
+            return $performerIds;
+        }
+
+        return in_array($lockedId, $performerIds, true) ? [$lockedId] : [];
     }
 
     public function handHasAttachments(int $playerId)

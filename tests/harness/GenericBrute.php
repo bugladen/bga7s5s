@@ -11,6 +11,7 @@ class GenericBrute extends Brute
     {
         parent::__construct();
         $this->Name = $name;
+        $this->Title = '';
         $this->Image = 'test.jpg';
         $this->ExpansionName = '_test';
         $this->ExpansionNumber = 0;
