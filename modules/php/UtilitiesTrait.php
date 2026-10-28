@@ -173,30 +173,10 @@ trait UtilitiesTrait
         // Count fixes applied for debugging
         $fixCount = 0;
 
-        // Fix 1: Correct string length declarations that don't match actual content
-        $fixed = preg_replace_callback(
-            '/s:(\d+):"([^"]*)";/',
-            function ($matches) use (&$fixCount) {
-                $declaredLength = (int)$matches[1];
-                $actualContent = $matches[2];
-                $actualLength = strlen($actualContent);
-                
-                if ($declaredLength !== $actualLength) {
-                    $fixCount++;
-                    return 's:' . $actualLength . ':"' . $actualContent . '";';
-                }
-                
-                return $matches[0];
-            },
-            $data
-        );
-
-        // Check if preg_replace failed
-        if ($fixed === null) {
-            throw new \Exception("Failed to fix serialized data: regex error. PCRE error code: " . preg_last_error());
-        }
-
-        // Fix 2: Corrupted protected property names (missing \0*\0)
+        // WHY: Protected-property repair MUST run before length repair. Corrupted dumps keep
+        // the original length (including two null bytes) but show "*Prop" without \0*\0.
+        // Length-first "fixes" that to strlen("*Prop"), which drops the +2 signal this pass needs.
+        // Fix 1: Corrupted protected property names (missing \0*\0)
         // Pattern: s:XX:"*PropertyName"; where XX is 2 more than visible length
         $fixed = preg_replace_callback(
             '/s:(\d+):"\*([A-Za-z_][A-Za-z0-9_]*)";/',
@@ -213,6 +193,29 @@ trait UtilitiesTrait
                 }
                 
                 // No fix needed, return original
+                return $matches[0];
+            },
+            $data
+        );
+
+        // Check if preg_replace failed
+        if ($fixed === null) {
+            throw new \Exception("Failed to fix serialized data: regex error. PCRE error code: " . preg_last_error());
+        }
+
+        // Fix 2: Correct remaining string length declarations that don't match actual content
+        $fixed = preg_replace_callback(
+            '/s:(\d+):"([^"]*)";/',
+            function ($matches) use (&$fixCount) {
+                $declaredLength = (int)$matches[1];
+                $actualContent = $matches[2];
+                $actualLength = strlen($actualContent);
+                
+                if ($declaredLength !== $actualLength) {
+                    $fixCount++;
+                    return 's:' . $actualLength . ':"' . $actualContent . '";';
+                }
+                
                 return $matches[0];
             },
             $fixed

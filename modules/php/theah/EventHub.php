@@ -2505,11 +2505,7 @@ trait EventHub
     // WHY: See EventAttachmentEquipped. statCorrection tells the client to update the
     // old host's chips and drop the attachment from that character without parking a
     // new city-row copy — the card is already in hand or about to be equipped elsewhere.
-    // STOPGAP remove-after-deploy: Syrneth Hand former-host heal.
-    // $notify and the silent updateCardObject block below exist only for
-    // repairAttachmentModifiersOnFormerHosts. Delete both once that heal is gone,
-    // and always send the attachmentUnequipped notification. Keep this method.
-    private function releaseAttachmentStillOnOtherCharacters(Attachment $attachment, int $keepingCharacterId, bool $notify = true): void
+    private function releaseAttachmentStillOnOtherCharacters(Attachment $attachment, int $keepingCharacterId): void
     {
         foreach ($this->cards as $card) {
             if (! $card instanceof Character || $card->Id == $keepingCharacterId) {
@@ -2521,20 +2517,18 @@ trait EventHub
 
             $card->removeAttachment($this, $attachment);
 
-            if ($notify) {
-                $this->game->notify->all("attachmentUnequipped", clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.'), [
-                    "player_id" => $card->ControllerId,
-                    "attachment_inject_code" => $attachment->getInjectCode(),
-                    "character_inject_code" => $card->getInjectCode(),
-                    "attachmentId" => $attachment->Id,
-                    "characterId" => $card->Id,
-                    "modifiedResolve" => $card->ModifiedResolve,
-                    "modifiedCombat" => $card->ModifiedCombat,
-                    "modifiedFinesse" => $card->ModifiedFinesse,
-                    "modifiedInfluence" => $card->ModifiedInfluence,
-                    "statCorrection" => true,
-                ]);
-            }
+            $this->game->notify->all("attachmentUnequipped", clienttranslate('${attachment_inject_code} has been unequipped from ${character_inject_code}.'), [
+                "player_id" => $card->ControllerId,
+                "attachment_inject_code" => $attachment->getInjectCode(),
+                "character_inject_code" => $card->getInjectCode(),
+                "attachmentId" => $attachment->Id,
+                "characterId" => $card->Id,
+                "modifiedResolve" => $card->ModifiedResolve,
+                "modifiedCombat" => $card->ModifiedCombat,
+                "modifiedFinesse" => $card->ModifiedFinesse,
+                "modifiedInfluence" => $card->ModifiedInfluence,
+                "statCorrection" => true,
+            ]);
 
             if ($card->Wounds >= $card->ModifiedResolve && ! $card->IsDying) {
                 $card->IsDying = true;
@@ -2546,14 +2540,6 @@ trait EventHub
                     sprintf($this->game->translate("Has unequipped %s"), $attachment->Name)
                 );
                 $this->queueEvent($destroyEvent);
-            }
-
-            // STOPGAP remove-after-deploy: Syrneth Hand former-host heal.
-            // buildCity repair has no later runEvents pass to flush IsUpdated.
-            // Delete this save with the $notify parameter. The equip path leaves the flag.
-            if (! $notify && $card->IsUpdated) {
-                $card->IsUpdated = false;
-                $this->db->updateCardObject($card);
             }
         }
     }

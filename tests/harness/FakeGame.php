@@ -314,6 +314,16 @@ class Game
     // WHY: Reaction_04035 ORs this onto PRESSURE_TYPE and stores the pressuring player. Must match Game.php (65536).
     final const MEETING_OF_THE_MINDS_PRESSURE_TYPE = 65536;
     final const MEETING_OF_THE_MINDS_PLAYER_ID = 'meetingOfTheMindsPlayerId';
+    // WHY: UtilitiesTrait pressure / standing-influence paths. Must match Game.php.
+    final const VALERI_PRESSURE_TYPE = 131072;
+    final const VALERI_ID = 'valeriId';
+    final const OVERCOAT_PRESSURE_TYPE = 262144;
+    final const OREL_PRESSURE_TYPE = 524288;
+    final const OREL_ID = 'orelId';
+    final const OREL_WIN_TIES_PRESSURE_TYPE = 1048576;
+    final const EVENT_BATCH_ID = 'eventBatchId';
+    final const CHALLENGE_LAST_KNOWN_CHALLENGER = 'challengeLastKnownChallenger';
+    final const CHALLENGE_LAST_KNOWN_DEFENDER = 'challengeLastKnownDefender';
     // WHY: Reaction_04010 Use writes the actor's controller so the gamble hub can see it.
     final const UNRAVEL_THE_THREAD_CONTROLLER_ID = 'unravelTheThreadControllerId';
 

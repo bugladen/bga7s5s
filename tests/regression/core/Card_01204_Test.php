@@ -127,29 +127,6 @@ class Card_01204_Test extends TestCase
                 Assert::same($host->Combat, $correction['args']['modifiedCombat'], 'correction combat');
             },
 
-            // STOPGAP remove-after-deploy: Syrneth Hand former-host heal.
-            // Delete this test with repairAttachmentModifiersOnFormerHosts.
-            'reload strips +1 Combat from a former host who still lists the hand' => function () {
-                $world = new TestWorld();
-                $host = $world->placeCharacter(new GenericCharacter('Yevgeni'), Game::LOCATION_CITY_DOCKS, 1);
-                $thief = $world->placeCharacter(new GenericCharacter('Thief'), Game::LOCATION_CITY_DOCKS, 2);
-                /** @var _01204 $hand */
-                $hand = $world->placeCard(new _01204(), Game::LOCATION_CITY_DOCKS, 2);
-                $host->addAttachment($world->theah, $hand);
-                $thief->addAttachment($world->theah, $hand);
-                $hand->AttachedToId = $thief->Id;
-
-                $repair = new \ReflectionMethod($world->theah, 'repairAttachmentModifiersOnFormerHosts');
-                $repair->setAccessible(true);
-                $repair->invoke($world->theah);
-
-                Assert::same($host->Combat, $host->ModifiedCombat, 'former host healed');
-                Assert::false(in_array($hand->Id, $host->Attachments, false), 'former host cleared');
-                Assert::same($thief->Combat + 1, $thief->ModifiedCombat, 'current host keeps +1');
-                Assert::true(in_array($hand->Id, $thief->Attachments, false), 'current host still lists it');
-                Assert::same([], $world->game->notify->messages, 'silent heal');
-            },
-
             'moving the hand transfers +1 Combat from the old host to the new host' => function () {
                 $world = new TestWorld();
                 $host = $world->placeCharacter(new GenericCharacter('Yevgeni'), Game::LOCATION_CITY_DOCKS, 1);

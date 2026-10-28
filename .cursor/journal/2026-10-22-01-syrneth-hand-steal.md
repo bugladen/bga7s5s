@@ -27,6 +27,6 @@ Fix: `EventHub::releaseAttachmentStillOnOtherCharacters` runs at the start of eq
 
 ## What is safe to delete later
 
-Only the load-time heal. Search `remove-after-deploy: Syrneth Hand former-host heal`. That marks `repairAttachmentModifiersOnFormerHosts`, its `buildCity` call, the `$notify` argument and silent `updateCardObject` block, and the "reload strips +1 Combat" test. Once those games have loaded (the heal persists) or ended, delete those sites.
+**Done 2026-10-28.** Load-time heal removed — see `2026-10-28-01-syrneth-hand-stopgap-removal.md`.
 
-Do not delete `releaseAttachmentStillOnOtherCharacters`, the equip call, or `statCorrection`. Syrneth Hand still rejects unequip and `queueEvent` still swallows it, so a future move that equips anyway still depends on the strip at equip time.
+Kept: `releaseAttachmentStillOnOtherCharacters`, the equip call, and `statCorrection`. Syrneth Hand still rejects unequip and `queueEvent` still swallows it, so a future move that equips anyway still depends on the strip at equip time.
