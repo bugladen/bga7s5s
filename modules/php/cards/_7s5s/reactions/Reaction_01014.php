@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
@@ -614,8 +615,30 @@ class Reaction_01014 extends CardReaction
         }
     }
 
-    private function cancelEvents(Game $game): void
+    private function cancelEvents(Game $game, int $state = 0): void
     {
+        // WHY: Capture before nulling. Unconditional CHALLENGE_CANCELLED (old behavior)
+        // poisoned the next hub-exit challenge (Sanjay 03037, Move Along, etc.) at
+        // stTechniqueAvailable — that gate reads the flag before stIssueChallenge
+        // resets it. Same lesson as UL (01032) / Blood Like Winter (02048) /
+        // Cross of the Martyrs (01053): only arm the flag when an in-flight
+        // challenge is actually being aborted.
+        // ChallengeIssued path normally releaseEvent's (never cancelEvents), but
+        // keep the check for safety. CharacterTargeted during 4511 is the real
+        // case — failed Thug redirect must skip technique like UL pay-to-cancel.
+        $cancelsInFlightChallenge = $this->challengeIssuedEvent !== null;
+        $targeted = $this->characterTargetedEvent;
+        if (! $cancelsInFlightChallenge
+            && $targeted !== null
+            && $state === States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS)
+        {
+            $chosenAction = (string) $game->globals->get(Game::CHOSEN_ACTION, '');
+            if ($chosenAction !== '' && $targeted->abilityId === $chosenAction)
+            {
+                $cancelsInFlightChallenge = true;
+            }
+        }
+
         $this->engagedEvent = null;
         $this->engardedEvent = null;
         $this->cardMovingEvent = null;
@@ -625,7 +648,11 @@ class Reaction_01014 extends CardReaction
         $this->isChallenger = false;
         $this->challengeIssuedEvent = null;
         $this->characterIntervenedEvent = null;
-        $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+
+        if ($cancelsInFlightChallenge)
+        {
+            $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -694,7 +721,7 @@ class Reaction_01014 extends CardReaction
                             $game->notify->all("message", clienttranslate('${character_inject_code} is not a valid target for the ability. The ability has been canceled.'), [
                                 "character_inject_code" => $character->getInjectCode(),
                             ]);
-                            $this->cancelEvents($game);
+                            $this->cancelEvents($game, $state);
                         }
                     }
                     else if ($this->characterIntervenedEvent)
@@ -704,7 +731,7 @@ class Reaction_01014 extends CardReaction
                     }
                     else
                     {
-                        $this->cancelEvents($game);
+                        $this->cancelEvents($game, $state);
                     }
                 }
 

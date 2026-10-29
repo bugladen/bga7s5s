@@ -348,7 +348,10 @@ class Reaction_03031 extends RiskReaction
         $this->cardMovingEvent = null;
         $this->characterWoundedEvent = null;
         $this->characterIntervenedEvent = null;
-        $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+        // WHY: Do not set CHALLENGE_CANCELLED. Altruistic only redirects wound/move/
+        // engage — never holds ChallengeIssued. An unconditional flag here poisoned
+        // the next hub-exit challenge at stTechniqueAvailable (same Vittoria /
+        // UL lesson, journal 2026-10-19 / Sanjay report).
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void

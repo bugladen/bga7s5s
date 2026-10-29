@@ -144,7 +144,10 @@ class Reaction_03031_Test extends TestCase
                 $triggered->internalId = $reaction->Id;
                 $triggered->reactionId = 'redirect-' . $ally->Id;
                 $reaction->handleEvent($triggered);
-                Assert::true((bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED), 'canceled');
+                // WHY: Must not arm CHALLENGE_CANCELLED — Altruistic never holds a
+                // challenge. A sticky true kills the next hub-exit challenge at
+                // stTechniqueAvailable (Sanjay / Vittoria lesson).
+                Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'not a challenge');
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'not redirected');
                 Assert::true($reaction->Used, 'still spent');
             },

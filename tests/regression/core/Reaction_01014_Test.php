@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
+use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
@@ -16,12 +17,15 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01014;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04045;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04045;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Thomas;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
+use ReflectionProperty;
 
 class Reaction_01014_Test extends TestCase
 {
@@ -358,6 +362,88 @@ class Reaction_01014_Test extends TestCase
 
                 Assert::false($event->canceled, 'own source ignored');
                 Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no reaction');
+            },
+
+            // WHY: Unconditional CHALLENGE_CANCELLED in cancelEvents poisoned the next
+            // hub-exit challenge (Sanjay 03037) at stTechniqueAvailable after a prior
+            // non-challenge redirect failed Thug validation. Mirror UL 01032.
+            'invalid Thug redirect on a wound does not set CHALLENGE_CANCELLED' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $thug = $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 2);
+                $sibellaAction = $sibella->getActions()[0];
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterBeingWounded();
+                $event->characterId = $vittoria->Id;
+                $event->sourceId = $sibella->Id;
+                $event->abilityId = $sibellaAction->Id;
+                $event->wounds = 1;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                // WHY: Move Thug off-location so Sibella's same-location gate fails.
+                // UI buttons would not offer this; performReaction still accepts the id.
+                $thug->Location = Game::LOCATION_CITY_FORUM;
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'putIntoPlay-' . $thug->Id);
+
+                Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'not armed');
+                Assert::true($reaction->Used, 'spent');
+            },
+
+            // WHY: Failed redirect during framework challenge target-pick (4511) must
+            // still arm the flag so stTechniqueAvailable skips — same as UL pay-cancel.
+            'invalid Thug redirect during challenge target-pick sets CHALLENGE_CANCELLED' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $thug = $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 2);
+                $prop = new ReflectionProperty(Theah::class, 'Actions');
+                $prop->setAccessible(true);
+                $actions = $prop->getValue($world->theah);
+                $actions[] = new BasicChallengeAction();
+                $prop->setValue($world->theah, $actions);
+                $world->game->globals->set(Game::CHOSEN_ACTION, 'BasicChallenge');
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $challenger->Id);
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $vittoria->Id;
+                $event->sourceId = $challenger->Id;
+                $event->abilityId = 'BasicChallenge';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                $thug->Location = Game::LOCATION_CITY_FORUM;
+
+                $reaction->performReaction(
+                    $world->game,
+                    States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS,
+                    $reaction->Id,
+                    'putIntoPlay-' . $thug->Id
+                );
+
+                Assert::true((bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'cancelled');
+                Assert::true($reaction->Used, 'spent');
             },
         ];
     }
