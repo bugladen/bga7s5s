@@ -91,6 +91,7 @@ class Game extends \Bga\GameFramework\Table
         11 => 'Valeri Mikhailov',
         12 => 'Don Vissenta Scarpa',
         13 => 'Rena Klingenhalter',
+        14 => 'Claude de la Roche',
     ];
 
     //Card locations
