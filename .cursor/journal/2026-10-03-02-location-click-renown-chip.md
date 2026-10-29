@@ -10,7 +10,7 @@ Renown chips live *inside* the city image:
 
 ```html
 <div id="dock-image" class="_7sfs-city-image" data-location="...">
-  <div id="dock-reknown" class="_7sfs-city-reknown-chip">...</div>
+  <div id="dock-reknown" class="_7sfs-city-renown-chip">...</div>
 </div>
 ```
 

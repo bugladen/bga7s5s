@@ -131,9 +131,9 @@
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                        const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown > 0) return;
+                        const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
+                        const renown = parseInt(renownElement.innerHTML);
+                        if (renown > 0) return;
     
                         this.makeCityLocationSelectable(location);
                     });
@@ -167,9 +167,9 @@
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                        const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown == 0) return;
+                        const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
+                        const renown = parseInt(renownElement.innerHTML);
+                        if (renown == 0) return;
     
                         this.makeCityLocationSelectable(location);
                         count++;
@@ -289,9 +289,9 @@
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                        const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown == 0) return;
+                        const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
+                        const renown = parseInt(renownElement.innerHTML);
+                        if (renown == 0) return;
     
                         this.makeCityLocationSelectable(location);
                         count++;
@@ -341,9 +341,9 @@
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                        const reknown = parseInt(reknownElement.innerHTML);
-                        if (location == 'forum-image' || reknown === 0)
+                        const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
+                        const renown = parseInt(renownElement.innerHTML);
+                        if (location == 'forum-image' || renown === 0)
                             return;
 
                         this.makeCityLocationSelectable(location);
@@ -388,9 +388,9 @@
                     this.numberOfCityLocationsSelectable = 1;
                     locations.forEach((location) => {
                         const imageElement = $(location);
-                        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                        const reknown = parseInt(reknownElement.innerHTML);
-                        if (reknown == 0) return;
+                        const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
+                        const renown = parseInt(renownElement.innerHTML);
+                        if (renown == 0) return;
     
                         this.makeCityLocationSelectable(location);
                         count++;

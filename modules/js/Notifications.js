@@ -1757,7 +1757,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         debug( notif );
 
         const args = notif.args;
-        const element = $(`${args.player_id}-score-reknown`);
+        const element = $(`${args.player_id}-score-renown`);
         // Pulse the element before changing the value
         if (element && this.animationManager && this.animationManager.animationsActive()) {
             await element.animate([
@@ -1831,12 +1831,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         //Find the image element with the attribute data-location that matches arg.location
         const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
-        //Find the element with the class _7sfs-city-reknown-chip that is a child of the element's parent
-        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+        //Find the element with the class _7sfs-city-renown-chip that is a child of the element's parent
+        const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
         
         // Pulse the element before changing the value
-        if (reknownElement && this.animationManager && this.animationManager.animationsActive()) {
-            await reknownElement.animate([
+        if (renownElement && this.animationManager && this.animationManager.animationsActive()) {
+            await renownElement.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
                 { transform: 'scale(1)' }
@@ -1846,8 +1846,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }).finished;
         }
         
-        const reknown = parseInt(reknownElement.innerHTML) + args.amount;
-        reknownElement.innerHTML = reknown;
+        const renown = parseInt(renownElement.innerHTML) + args.amount;
+        renownElement.innerHTML = renown;
     },
 
     notif_renownRemovedFromLocation: async function( notif )
@@ -1858,12 +1858,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         //Find the image element with the attribute data-location that matches arg.location
         const imageElement = dojo.query(`[data-location="${args.location}"]`)[0];
-        //Find the element with the class _7sfs-city-reknown-chip that is a child of the element's parent
-        const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
+        //Find the element with the class _7sfs-city-renown-chip that is a child of the element's parent
+        const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
         
         // Pulse the element before changing the value
-        if (reknownElement && this.animationManager && this.animationManager.animationsActive()) {
-            await reknownElement.animate([
+        if (renownElement && this.animationManager && this.animationManager.animationsActive()) {
+            await renownElement.animate([
                 { transform: 'scale(1)' },
                 { transform: 'scale(1.4)' },
                 { transform: 'scale(1)' }
@@ -1873,8 +1873,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             }).finished;
         }
         
-        const reknown = parseInt(reknownElement.innerHTML) - args.amount;
-        reknownElement.innerHTML = reknown;
+        const renown = parseInt(renownElement.innerHTML) - args.amount;
+        renownElement.innerHTML = renown;
     },
 
     notif_firstPlayer: async function( notif )

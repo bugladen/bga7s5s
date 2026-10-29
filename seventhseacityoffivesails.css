@@ -664,7 +664,7 @@ body._7sfs-halloween {
     margin-top: 10px;
 }
 
-._7sfs-reknown-chip {
+._7sfs-renown-chip {
     background-image: url('img/boardResources.jpg');
     background-size: calc(var(--jpg-board-resource-width) * .5) calc(var(--jpg-board-resource-height) * .5);
     background-position: 0px 0px;
@@ -677,13 +677,13 @@ body._7sfs-halloween {
     text-align:center;
     color: black;
 }
-._7sfs-card-reknown-chip {
+._7sfs-card-renown-chip {
     position: absolute;
     left: 35px;
     top: 35px;
     z-index: 20;
 }
-._7sfs-city-reknown-chip {
+._7sfs-city-renown-chip {
     position:absolute;
     left: 5px;
     top: 5px;
@@ -1080,7 +1080,7 @@ body._7sfs-halloween {
     display: none;
 }
 
-._7sfs-score-reknown {
+._7sfs-score-renown {
     display: inline-block;
     background-image: url('img/boardResources.jpg');
     background-size: calc(var(--jpg-board-resource-width) * .35) calc(var(--jpg-board-resource-height) * .35);

@@ -73,15 +73,15 @@
                 this.statusBar.addActionButton(_('Pass'), () => this.onConfirmPass(), { id: 'actPass', color: 'alert' });
                 dojo.addClass('actCityLocationsSelected', 'disabled');
     
-                let numberofLocationsWithReknown = 0;
+                let numberofLocationsWithRenown = 0;
                 const locations = this.getListofAvailableCityLocationImages();
                 locations.forEach((location) => {
                     const imageElement = $(location);
-                    const reknownElement = dojo.query('._7sfs-city-reknown-chip', imageElement.parentElement)[0];
-                    const reknown = parseInt(reknownElement.innerHTML);
-                    if (reknown > 0) numberofLocationsWithReknown++
+                    const renownElement = dojo.query('._7sfs-city-renown-chip', imageElement.parentElement)[0];
+                    const renown = parseInt(renownElement.innerHTML);
+                    if (renown > 0) numberofLocationsWithRenown++
                 });
-                if (numberofLocationsWithReknown === 0) dojo.addClass('actPass', 'disabled');
+                if (numberofLocationsWithRenown === 0) dojo.addClass('actPass', 'disabled');
             },
     
             'planningPhaseResolveSchemes_01125_2': () => {

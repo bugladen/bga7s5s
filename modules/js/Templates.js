@@ -128,7 +128,7 @@
 
         window.jstpl_player_board = `
         <div>
-            <div id="\${id}-score-reknown" class="_7sfs-score-reknown">\${reknown}</div>
+            <div id="\${id}-score-renown" class="_7sfs-score-renown">\${renown}</div>
             <div id="\${id}-score-crewcap" class="_7sfs-crew-cap _7sfs-score-crew-cap">\${crewcap}</div>
             <div id="\${id}-score-panache" class="_7sfs-panache _7sfs-score-panache">\${panache}</div>
             <div id="\${id}-score-hand-count" class="_7sfs-hand-count">\${handCount}</div>
@@ -252,7 +252,7 @@
         `;
         
         window.jstpl_reknown_chip = `
-        <div id="\${id}" class="_7sfs-reknown-chip _7sfs-card-reknown-chip">\${amount}</div>
+        <div id="\${id}" class="_7sfs-renown-chip _7sfs-card-renown-chip">\${amount}</div>
         `;
         
         window.jstpl_generic_chip = `
@@ -442,7 +442,7 @@
                                 <div id="oles-inn-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
                             </div>
                             <div id="oles-inn-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01004.jpg)">
-                                <div id="oles-inn-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                                <div id="oles-inn-reknown" class="_7sfs-renown-chip _7sfs-city-renown-chip"></div>
                             </div>
                             <div id="oles-inn-other-cards" class="_7sfs-city-other-cards">
                                 <div id="oles-inn-endcap" class="_7sfs-city-endcap"></div>
@@ -457,7 +457,7 @@
                                 <div id="dock-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
                             </div>
                             <div id="dock-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01003.jpg)">
-                                <div id="dock-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                                <div id="dock-reknown" class="_7sfs-renown-chip _7sfs-city-renown-chip"></div>
                             </div>
                             <div id="dock-other-cards" class="_7sfs-city-other-cards">
                                 <div id="dock-endcap" class="_7sfs-city-endcap"></div>
@@ -472,7 +472,7 @@
                                 <div id="forum-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
                             </div>
                             <div id="forum-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01001.jpg)">
-                                <div id="forum-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                                <div id="forum-reknown" class="_7sfs-renown-chip _7sfs-city-renown-chip"></div>
                             </div>
                             <div id="forum-other-cards" class="_7sfs-city-other-cards">
                                 <div id="forum-endcap" class="_7sfs-city-endcap"></div>
@@ -487,7 +487,7 @@
                                 <div id="bazaar-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
                             </div>
                             <div id="bazaar-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01002.jpg)">
-                                <div id="bazaar-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                                <div id="bazaar-reknown" class="_7sfs-renown-chip _7sfs-city-renown-chip"></div>
                             </div>
                             <div id="bazaar-other-cards" class="_7sfs-city-other-cards">
                                 <div id="bazaar-endcap" class="_7sfs-city-endcap"></div>
@@ -502,7 +502,7 @@
                                 <div id="garden-my-cards-endcap" class="_7sfs-city-my-cards-endcap"></div>
                             </div>
                             <div id="garden-image" class="_7sfs-city-image" style="--city-image:url(https://dtdb.co/images/7s5s/en/01005.jpg)">
-                                <div id="garden-reknown" class="_7sfs-reknown-chip _7sfs-city-reknown-chip"></div>
+                                <div id="garden-reknown" class="_7sfs-renown-chip _7sfs-city-renown-chip"></div>
                             </div>
                             <div id="garden-other-cards" class="_7sfs-city-other-cards">
                                 <div id="garden-endcap" class="_7sfs-city-endcap"></div>

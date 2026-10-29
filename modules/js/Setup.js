@@ -76,7 +76,7 @@ return declare('seventhseacityoffivesails.setup', null, {
         // WHY: After unused locations (Ole's / Garden) are destroyed so holiday
         // ambience only seeds sides that remain for this player count.
         this.setupHolidayFeatures();
-        this.addTippyTooltipToClass('_7sfs-city-reknown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
+        this.addTippyTooltipToClass('_7sfs-city-renown-chip', `<div class='_7sfs-basic-tooltip'>${_('Current Renown on this City Location')}</div>` );
 
         //Update the day
         if (gamedatas.day > 0) {
@@ -104,17 +104,17 @@ return declare('seventhseacityoffivesails.setup', null, {
 
             dojo.style( `player_score_${playerId}`, 'display', 'none' );
 
-            // Override the score with the reknown
+            // Override the score with the renown
             this.getPlayerPanelElement(playerId).innerHTML = this.format_block( 'jstpl_player_board', {
                 id: playerId,
-                reknown: player.score,
+                renown: player.score,
                 crewcap: player.leader?.modifiedCrewCap ?? '',
                 panache: player.leader?.modifiedPanache ?? '',
                 handCount: player.handCount,
                 faction: player.leader?.faction.toLowerCase() ?? '',
                 turnOrder: player.turn_order ?? '',
             });
-            this.addTippyTooltip( `${playerId}-score-reknown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
+            this.addTippyTooltip( `${playerId}-score-renown`, `<div class='_7sfs-basic-tooltip'>${_('Current Renown')}</div>` );
             this.addTippyTooltip( `${playerId}-score-crewcap`, `<div class='_7sfs-basic-tooltip'>${_('Current Crew Cap')}</div>` );
             this.addTippyTooltip( `${playerId}-score-panache`, `<div class='_7sfs-basic-tooltip'>${_('Current Panache')}</div>` );
             this.addTippyTooltip( `${playerId}-score-hand-count`, `<div class='_7sfs-basic-tooltip'>${_('Number of cards in Faction Hand')}</div>` );
