@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03037;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03037;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_03037_Test extends TestCase
@@ -46,8 +47,8 @@ class Action_03037_Test extends TestCase
             },
 
             // WHY: No Engage cost, so an engaged Sanjay can still issue it. The opponent
-            // must have strictly fewer cards in hand. SANJAY_CHALLENGE_TYPE stays off the
-            // auto-engage list. The challenge flow resolves the action.
+            // must have strictly fewer cards in hand. Act queues only CharacterTargeted;
+            // hub-exit + SANJAY_CHALLENGE_TYPE wait for that event to survive.
             'issues an Influence challenge when their hand is smaller' => function () {
                 $world = new TestWorld();
                 [$sanjay, $action, $foe] = $this->scene($world);
@@ -86,15 +87,50 @@ class Action_03037_Test extends TestCase
                 $args = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_03037, 'x');
                 Assert::same([$foe->Id], $args['ids'], 'the foe');
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03037, 'x', $foe->Id);
+                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'CharacterTargeted hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'foe targeted');
+                Assert::same($sanjay->Id, $targeted[0]->sourceId, 'sanjay source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'no hub-exit yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'challenge flow resolves it');
+                Assert::same(['targetChosen'], array_slice($world->game->gamestate->transitions, -1), 'target chosen');
+            },
+
+            // WHY: Dabney shape — challenge globals + 03037_2 only after targeting survives.
+            'surviving CharacterTargeted stamps SANJAY type and queues 03037_2' => function () {
+                $world = new TestWorld();
+                [$sanjay, $action, $foe] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->theah = $world->theah;
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = false;
+                $action->handleEvent($targeted);
+
                 Assert::same($sanjay->Id, $world->game->globals->get(Game::CHOSEN_PERFORMER), 'sanjay');
                 Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
                 Assert::same(Game::STAT_INFLUENCE, $world->game->globals->get(Game::CHALLENGE_STAT), 'influence');
                 Assert::same(Game::SANJAY_CHALLENGE_TYPE, $world->game->globals->get(Game::CHALLENGE_TYPE), 'sanjay type');
-                $transition = $world->theah->queuedOfType(EventTransition::class)[1];
+                $transition = $world->theah->queuedOfType(EventTransition::class)[0];
                 Assert::same('03037_2', $transition->transition, 'challenge flow');
                 Assert::same($sanjay->Id, $transition->sourceId, 'sanjay is the source');
-                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'challenge flow resolves it');
-                Assert::same(['targetChosen'], array_slice($world->game->gamestate->transitions, -1), 'target chosen');
+            },
+
+            'canceled CharacterTargeted queues no hub-exit' => function () {
+                $world = new TestWorld();
+                [, $action, $foe] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->theah = $world->theah;
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no 03037_2');
             },
 
             'an uncontrolled character and a friendly character are rejected' => function () {

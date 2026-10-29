@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03037 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -55,6 +56,35 @@ class Action_03037 extends CharacterAction implements IAbilityThatTargetsCharact
             $sanjay = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $sanjay->Id, "03037", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Gate hub-exit on EventCharacterTargeted surviving so Vittoria/UL/
+        // Premonition can redirect or cancel at the printed targeting moment
+        // (framework challenge picker + Dabney Action_05DabneyUS01). Before this,
+        // act queued 03037_2 alone — CharacterTargeted never fired.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $sanjay = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($target == null)
+            {
+                return;
+            }
+
+            // Sync after Vittoria/DI redirect so the challenge defender matches.
+            $game->globals->set(Game::CHOSEN_PERFORMER, $sanjay->Id);
+            $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+            $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_INFLUENCE);
+            // WHY SANJAY_CHALLENGE_TYPE (kept out of stIssueChallenge's auto-engage
+            // list): this is not a basic challenge and the card does not Engage
+            // Sanjay. NORMAL_CHALLENGE_TYPE would auto-engage him.
+            $game->globals->set(Game::CHALLENGE_TYPE, Game::SANJAY_CHALLENGE_TYPE);
+
+            // WHY: Decline/Pass re-delivers targeting — strip a prior hub-exit first.
+            $event->theah->deleteQueuedTransitionsNamed("03037_2");
+            $transitionEvent = EventFactory::createTransitionEvent($sanjay->ControllerId, $sanjay->Id, "03037_2", $this->Id);
+            $event->theah->queueEvent($transitionEvent);
         }
     }
 
@@ -116,16 +146,22 @@ class Action_03037 extends CharacterAction implements IAbilityThatTargetsCharact
 
             $sanjay = $this->getOwningCharacter($game->theah);
 
-            $game->globals->set(Game::CHOSEN_PERFORMER, $sanjay->Id);
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
-            $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_INFLUENCE);
-            // WHY SANJAY_CHALLENGE_TYPE (kept out of stIssueChallenge's auto-engage
-            // list): this is not a basic challenge and the card does not Engage
-            // Sanjay. NORMAL_CHALLENGE_TYPE would auto-engage him.
-            $game->globals->set(Game::CHALLENGE_TYPE, Game::SANJAY_CHALLENGE_TYPE);
 
-            $transitionEvent = EventFactory::createTransitionEvent($sanjay->ControllerId, $sanjay->Id, "03037_2", $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+            // WHY: Fire targeting alone here. Challenge hub-exit is queued from
+            // handleEvent only when EventCharacterTargeted is not canceled.
+            // batchId: UL / Maryam / Vittoria deleteEventBatch on cancel so
+            // Pass/Decline re-emit is clean (Dabney Action_05DabneyUS01).
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $sanjay->ControllerId,
+                $target->Id,
+                $sanjay->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             // createActionResolvedEvent is queued by the challenge resolution flow.
 
