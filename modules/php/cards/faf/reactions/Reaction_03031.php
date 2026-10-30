@@ -96,6 +96,18 @@ class Reaction_03031 extends RiskReaction
 
     private function isOpponentAbility(Theah $theah, int $sourceId, string $abilityId, int $ownerPlayerId): bool
     {
+        // WHY: Duel leftover-threat conversion queues EventCharacterBeingWounded with
+        // sourceId = adversary character and abilityId = '' (StatesTrait stDuelEndOfRound).
+        // Controller-only checks treat that as "opponent's ability" and wrongly offer this
+        // Reaction. Empty abilityId = framework/threat wound, not an ability (same gate as
+        // Shield Rite Reaction_04058 / Cascade Reaction_02059 / Kaspar _03014).
+        // Latent sibling flagged in journal 2026-10-03-04 — now reported with Léontine
+        // leftover threat vanishing after Decline.
+        if ($abilityId === '')
+        {
+            return false;
+        }
+
         $source = $theah->getCardById($sourceId);
         if ($source)
         {
@@ -367,10 +379,25 @@ class Reaction_03031 extends RiskReaction
             $payTransition = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
             $game->theah->queueEvent($payTransition);
         }
-        else if ($this->characterIntervenedEvent)
+        else
         {
-            $this->releaseEvent($game, $this->targetCharacterId);
-            $this->skipNextEvent = true;
+            // WHY: Decline means "do not redirect," not "cancel the effect." Cancel-first
+            // already nullified the original; without re-release, wound/move/engage vanish
+            // permanently. Intervene already released here; wound/move/engage must too
+            // (Shield Rite Reaction_04058 / Cascade Reaction_02059 Decline shape).
+            if ($this->characterIntervenedEvent
+                || $this->characterWoundedEvent
+                || $this->engagedEvent
+                || $this->cardMovingEvent)
+            {
+                $this->releaseEvent($game, $this->targetCharacterId);
+                $this->skipNextEvent = true;
+                $owner = $this->getOwningCard($game->theah);
+                if ($owner !== null)
+                {
+                    $owner->IsUpdated = true;
+                }
+            }
         }
 
         $game->gamestate->nextState('done');

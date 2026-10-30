@@ -56,7 +56,6 @@ class Reaction_03031_Test extends TestCase
         return [
             // WHY: A non-targeting opponent ability still redirects. Pay is queued on the
             // click; the wound is rewritten onto the chosen performer only after the Risk resolves.
-            // Decline of a wound does not put the wound back.
             'redirects a wound onto the other character at that location' => function () {
                 $world = new TestWorld();
                 [$risk, $reaction, $victim, $ally] = $this->scene($world);
@@ -85,7 +84,10 @@ class Reaction_03031_Test extends TestCase
                 unset($risk);
             },
 
-            'decline leaves the wound canceled, and a friendly or uncontrolled source never offers' => function () {
+            // WHY: Decline = do not redirect, not cancel. Cancel-first already held the
+            // wound; re-release onto the original or leftover threat (and real ability
+            // Declines) vanish with no log — Léontine / Blood Mark report 2026-10-30.
+            'decline re-releases the wound onto the original, and a friendly or uncontrolled source never offers' => function () {
                 $world = new TestWorld();
                 [, $reaction, $victim] = $this->scene($world);
                 $source = $world->placeCard(new _03032(), Game::LOCATION_HAND, 2);
@@ -93,9 +95,16 @@ class Reaction_03031_Test extends TestCase
                 $reaction->handleEvent($wound);
                 $world->theah->takeQueuedEvents();
                 $reaction->performReaction($world->game, 0, $reaction->Id, 'decline');
-                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'decline does not release a wound');
+                $released = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $released, 'decline re-releases the wound');
+                Assert::same($victim->Id, $released[0]->characterId, 'original target');
                 Assert::false($reaction->Used, 'decline');
                 Assert::same(['done'], $world->game->gamestate->transitions, 'done');
+
+                $world->theah->takeQueuedEvents();
+                $echo = $this->wound($world, $source->Id, $victim->Id);
+                $reaction->handleEvent($echo);
+                Assert::false($echo->canceled, 'echo skipped via skipNextEvent');
 
                 $source->ControllerId = 1;
                 $friendly = $this->wound($world, $source->Id, $victim->Id);
@@ -107,6 +116,24 @@ class Reaction_03031_Test extends TestCase
                 $reaction->handleEvent($wild);
                 Assert::false($wild->canceled, 'uncontrolled source');
                 Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no offer');
+            },
+
+            // WHY: stDuelEndOfRound leftover threat uses abilityId '' + sourceId = adversary.
+            // Controller-only isOpponentAbility treated that as an ability and offered redirect;
+            // Decline then ate the wound (Shield Rite journal 2026-10-03-04 latent sibling).
+            'empty abilityId leftover-threat wound is not an opponent ability' => function () {
+                $world = new TestWorld();
+                [, $reaction, $victim] = $this->scene($world);
+                $adversary = $world->placeCharacter(new GenericCharacter('Adversary'), Game::LOCATION_CITY_DOCKS, 2);
+                $threat = new EventCharacterBeingWounded();
+                $threat->theah = $world->theah;
+                $threat->sourceId = $adversary->Id;
+                $threat->abilityId = '';
+                $threat->characterId = $victim->Id;
+                $threat->wounds = 2;
+                $reaction->handleEvent($threat);
+                Assert::false($threat->canceled, 'framework leftover threat');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no Altruistic offer');
             },
 
             'the risk must be in hand, and there must be someone else at the location' => function () {
