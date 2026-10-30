@@ -15,11 +15,13 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01200;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Dandy;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Dandya;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Dandyb;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02027;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterInfluenceModified;
@@ -416,6 +418,94 @@ class Card_05Dandy_Test extends TestCase
                 Assert::same(4, $claude->ModifiedInfluence, 'back to printed');
                 Assert::same(4, $claude->UnclampedInfluence, 'tracker');
                 Assert::same(0, $claude->TrackedAttachmentInfluence, 'cleared');
+            },
+
+            // WHY: Dusk queues Engarde before CardMoved home (Moving appends Moved).
+            // Without writing Unclamped on Éventail's engarde bump, the Renown
+            // restore rebuilds the chip without the +1.
+            'eventail en garde bonus survives dusk home move past renown' => function () {
+                $world = new TestWorld();
+                /** @var _05Dandy $claude */
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $fan = $world->placeCard(new _02027(), Game::LOCATION_CITY_DOCKS, 1);
+                $fan->AttachedToId = $claude->Id;
+                $claude->Attachments[] = $fan->Id;
+                $claude->Engaged = true;
+                // Engaged at a city with 1 Renown; Éventail bonus already stripped.
+                $claude->UnclampedInfluence = 3;
+                $claude->ModifiedInfluence = 3;
+                $claude->AppliedRenownPenalty = 1;
+
+                $engarde = new EventCardEngarded();
+                $engarde->cardId = $claude->Id;
+                $engarde->playerId = 1;
+                $world->fire($engarde);
+
+                Assert::same(4, $claude->ModifiedInfluence, 'eventail +1 on chip');
+                Assert::same(4, $claude->UnclampedInfluence, 'eventail +1 on tracker');
+                Assert::same(1, $claude->SkipExternalUnclampedInfluenceEvents, 'armed skip');
+
+                // InfMod is stacked — drain it before the home move like runEvents would.
+                foreach ($world->theah->takeQueuedEvents() as $ev) {
+                    if ($ev instanceof EventCharacterInfluenceModified) {
+                        $world->applyHub($ev);
+                        $world->fire($ev);
+                    }
+                }
+                Assert::same(0, $claude->SkipExternalUnclampedInfluenceEvents, 'skip consumed');
+                Assert::same(4, $claude->UnclampedInfluence, 'no double-count');
+
+                $moved = new EventCardMoved();
+                $moved->cardId = $claude->Id;
+                $moved->fromLocation = Game::LOCATION_CITY_DOCKS;
+                $moved->toLocation = Game::LOCATION_PLAYER_HOME;
+                $moved->engage = false;
+                $world->fire($moved);
+
+                Assert::same(5, $claude->ModifiedInfluence, 'printed + eventail at home');
+                Assert::same(5, $claude->UnclampedInfluence, 'tracker');
+                Assert::same(0, $claude->AppliedRenownPenalty, 'renown cleared');
+            },
+
+            // Same dusk race, but home move runs while Éventail's InfMod is still queued
+            // (absorb path must keep Unclamped correct without waiting for InfMod).
+            'eventail en garde bonus survives home move before InfMod drains' => function () {
+                $world = new TestWorld();
+                /** @var _05Dandy $claude */
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $fan = $world->placeCard(new _02027(), Game::LOCATION_CITY_DOCKS, 1);
+                $fan->AttachedToId = $claude->Id;
+                $claude->Attachments[] = $fan->Id;
+                $claude->Engaged = true;
+                $claude->UnclampedInfluence = 3;
+                $claude->ModifiedInfluence = 3;
+                $claude->AppliedRenownPenalty = 1;
+
+                $engarde = new EventCardEngarded();
+                $engarde->cardId = $claude->Id;
+                $engarde->playerId = 1;
+                $world->fire($engarde);
+
+                $moved = new EventCardMoved();
+                $moved->cardId = $claude->Id;
+                $moved->fromLocation = Game::LOCATION_CITY_DOCKS;
+                $moved->toLocation = Game::LOCATION_PLAYER_HOME;
+                $moved->engage = false;
+                $world->fire($moved);
+
+                Assert::same(5, $claude->ModifiedInfluence, 'chip after renown clear');
+                Assert::same(5, $claude->UnclampedInfluence, 'tracker kept eventail');
+
+                foreach ($world->theah->takeQueuedEvents() as $ev) {
+                    if ($ev instanceof EventCharacterInfluenceModified) {
+                        $world->applyHub($ev);
+                        $world->fire($ev);
+                    }
+                }
+
+                Assert::same(5, $claude->ModifiedInfluence, 'chip after InfMods');
+                Assert::same(5, $claude->UnclampedInfluence, 'no double-count');
+                Assert::same(0, $claude->SkipExternalUnclampedInfluenceEvents, 'skips drained');
             },
         ];
     }

@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac;
 
 use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Dandy;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -85,7 +86,23 @@ class _02027 extends FactionAttachment
             $character->ModifiedInfluence,
             $this->getInjectCode()
         );
-        $theah->queueEvent($influenceEvent);
+
+        // WHY: Claude (_05Dandy) rebuilds his chip from UnclampedInfluence on
+        // CardMoved. Dusk fires Engarde (this +1) before the home CardMoved
+        // (Nazem needs enemies still at the site when they en garde), so a
+        // deferred InfMod leaves Unclamped stale and the Renown restore wipes
+        // the bonus. Write Unclamped now; SkipExternal… prevents double-count
+        // when InfMod lands. stackEvent so the notif runs before that Moved
+        // and Hub does not re-apply a stale NewInfluence over the restored chip.
+        if ($character instanceof _05Dandy)
+        {
+            $character->absorbImmediateInfluenceDelta($amount);
+            $theah->stackEvent($influenceEvent);
+        }
+        else
+        {
+            $theah->queueEvent($influenceEvent);
+        }
     }
 
     public function handleEvent(Event $event)

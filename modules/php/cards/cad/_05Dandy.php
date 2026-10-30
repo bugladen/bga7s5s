@@ -35,6 +35,13 @@ class _05Dandy extends Leader implements IHasActions
     // the chip without it. Crystal Eye's +1 then cancels a Renown coming off:
     // the chip stays put and no log line is queued.
     public int $TrackedAttachmentInfluence = 0;
+    // WHY: Éventail writes Unclamped in modifyInfluence before queueing
+    // EventCharacterInfluenceModified. Dusk queues Engarde before CardMoved
+    // home (Nazem needs enemies still at the site), so the home Renown sync
+    // would rebuild from a stale Unclamped and wipe the en-garde +1; the
+    // deferred InfMod then double-counts if we also apply it. Count how many
+    // InfMod handlers should skip the Unclamped delta.
+    public int $SkipExternalUnclampedInfluenceEvents = 0;
 
     public function __construct()
     {
@@ -87,8 +94,16 @@ class _05Dandy extends Leader implements IHasActions
             // Own penalty events already wrote Unclamped before they were queued.
             if ($event->Reason !== $this->getInjectCode())
             {
-                $this->UnclampedInfluence += ($event->NewInfluence - $event->OldInfluence);
-                $this->IsUpdated = true;
+                if ($this->SkipExternalUnclampedInfluenceEvents > 0)
+                {
+                    $this->SkipExternalUnclampedInfluenceEvents--;
+                    $this->IsUpdated = true;
+                }
+                else
+                {
+                    $this->UnclampedInfluence += ($event->NewInfluence - $event->OldInfluence);
+                    $this->IsUpdated = true;
+                }
             }
             return;
         }
@@ -178,6 +193,15 @@ class _05Dandy extends Leader implements IHasActions
     public function repairAttachmentInfluence(Theah $theah): void
     {
         $this->foldAttachmentInfluence($theah, true);
+    }
+
+    // WHY: Callers that bump ModifiedInfluence and queue InfMod (Éventail) must
+    // also land the delta on Unclamped immediately — see SkipExternalUnclampedInfluenceEvents.
+    public function absorbImmediateInfluenceDelta(int $delta): void
+    {
+        $this->UnclampedInfluence += $delta;
+        $this->SkipExternalUnclampedInfluenceEvents++;
+        $this->IsUpdated = true;
     }
 
     private function syncRenownPenalty(Theah $theah, string $location): void
