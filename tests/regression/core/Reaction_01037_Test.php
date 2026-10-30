@@ -95,6 +95,32 @@ class Reaction_01037_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'not adjacent');
             },
 
+            // WHY: Hexenjagd sends Edeline Home engaged before EventDuelEnd. From Home,
+            // getAdjacentCityLocations lists city sites — without a city gate the reaction
+            // wrongly offers pulling Valeri onto PLAYER_HOME.
+            'duel end does not offer when Edeline is at Home' => function () {
+                $world = new TestWorld();
+                $edeline = $world->placeCharacter(new _01037(), Game::LOCATION_PLAYER_HOME, 1);
+                $challenger = $world->placeCharacter(new GenericCharacter('C'), Game::LOCATION_CITY_FORUM, 1);
+                $defender = $world->placeCharacter(new GenericCharacter('D'), Game::LOCATION_CITY_FORUM, 2);
+                $defender->Engaged = true;
+
+                /** @var Reaction_01037 $reaction */
+                $reaction = $edeline->getReactions()[0];
+                $challengerProp = new \ReflectionProperty(Reaction_01037::class, 'ChallengerId');
+                $challengerProp->setAccessible(true);
+                $defenderProp = new \ReflectionProperty(Reaction_01037::class, 'DefenderId');
+                $defenderProp->setAccessible(true);
+                $challengerProp->setValue($reaction, $challenger->Id);
+                $defenderProp->setValue($reaction, $defender->Id);
+
+                $event = new EventDuelEnd();
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::count(0, $world->theah->queuedEvents, 'Home must not offer');
+            },
+
             'performReaction moves engaged participant to Edeline' => function () {
                 $world = new TestWorld();
                 $edeline = $world->placeCharacter(new _01037(), Game::LOCATION_CITY_DOCKS, 1);

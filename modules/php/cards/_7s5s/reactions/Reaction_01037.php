@@ -35,6 +35,13 @@ class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCharacte
         }
 
         $owner = $this->getOwningCharacter($game->theah);
+        // WHY: getAdjacentCityLocations(PLAYER_HOME) returns city sites (movement graph).
+        // Printed reaction is city-board adjacency — Home must not offer / resolve a pull.
+        if (!$game->theah->cardInCity($owner))
+        {
+            return [false, $game->translate("Edeline is not at a City location.")];
+        }
+
         $adjacentLocations = $game->theah->getAdjacentCityLocations($owner->Location, false);
 
         if (!in_array($character->Location, $adjacentLocations))
@@ -94,6 +101,14 @@ class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCharacte
         if ($event instanceof EventDuelEnd && $this->isAvailable())
         {
             $owner = $this->getOwningCharacter($event->theah);
+            // WHY: Hexenjagd (and similar) can send Edeline Home before EventDuelEnd.
+            // From Home the adjacency helper lists city sites, which would wrongly offer
+            // pulling the remaining participant onto PLAYER_HOME.
+            if (!$event->theah->cardInCity($owner))
+            {
+                return;
+            }
+
             $locations = $event->theah->getAdjacentCityLocations($owner->Location, false);
 
             $challenger = $event->theah->getCharacterById($this->ChallengerId);
