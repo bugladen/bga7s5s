@@ -1603,9 +1603,14 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
+            // WHY: Pass only legal when every opponent Approach Deck is empty (Day 5 soft-lock).
+            "actFromCardPass",
         ],
+        // WHY: Pass must return to EVENTS — bare "" would be the only legal empty key and
+        // would send Pass into _2 (another soft-lock). Named keys for both exits.
         "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_01200_2
+            "opponentChosen" => States::HIGH_DRAMA_PLAYER_TURN_01200_2,
+            "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
         ]
     ],
     
@@ -1617,6 +1622,8 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithId",
+            // WHY: Pass when the chosen Approach Deck is empty — unsticks Day-5 equip.
+            "actFromCardPass",
         ],
         "transitions" => [
             "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
@@ -1634,9 +1641,11 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
-            "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01200_2
+            "opponentChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01200_2,
+            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
         ]
     ],
 
@@ -1648,6 +1657,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
             "" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
@@ -1664,9 +1674,11 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
-            "" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2
+            "opponentChosen" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2,
+            "pass" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS,
         ]
     ],
 
@@ -1678,6 +1690,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
             "" => States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_EVENTS,
@@ -1864,9 +1877,11 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
-            "" => States::DUEL_RESOLVE_MANEUVER_01200_2
+            "opponentChosen" => States::DUEL_RESOLVE_MANEUVER_01200_2,
+            "pass" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
         ]
     ],
     
@@ -1878,6 +1893,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
             "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
@@ -1921,9 +1937,11 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForState",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
-            "" => States::DUEL_END_OF_ROUND_01200_2
+            "opponentChosen" => States::DUEL_END_OF_ROUND_01200_2,
+            "pass" => States::DUEL_END_OF_ROUND_EVENTS,
         ]
     ],
     
@@ -1935,6 +1953,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         "args" => "argsForStatePrivate",
         "possibleactions" => [
             "actFromCardWithId",
+            "actFromCardPass",
         ],
         "transitions" => [
             "" => States::DUEL_END_OF_ROUND_EVENTS,

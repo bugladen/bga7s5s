@@ -54,15 +54,68 @@ class _01200 extends CityAttachment implements IHasReactions
         ];
     }
 
+    // WHY: Approach Deck empties across Days; by Day 5 an opponent may have nothing left.
+    // Forced "choose a card in it" cannot resolve — queuing the chooser soft-locks.
+    private function opponentHasApproachCards(Game $game, int $playerId): bool
+    {
+        $deck = $game->getGameDeckObject();
+        return count($deck->getCardsInLocation(Game::LOCATION_APPROACH, $playerId)) > 0;
+    }
+
+    private function anyOpponentHasApproachCards(Game $game): bool
+    {
+        foreach ($game->loadPlayersBasicInfos() as $playerId => $player)
+        {
+            if ((int)$playerId == $this->ControllerId)
+            {
+                continue;
+            }
+            if ($this->opponentHasApproachCards($game, (int)$playerId))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function isOpponentChooserState(int $state): bool
+    {
+        return $state == States::HIGH_DRAMA_PLAYER_TURN_01200
+            || $state == States::DUEL_END_OF_ROUND_01200
+            || $state == States::DUEL_RESOLVE_MANEUVER_01200
+            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200
+            || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01200;
+    }
+
+    private function isCardChooserState(int $state): bool
+    {
+        return $state == States::HIGH_DRAMA_PLAYER_TURN_01200_2
+            || $state == States::DUEL_END_OF_ROUND_01200_2
+            || $state == States::DUEL_RESOLVE_MANEUVER_01200_2
+            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2
+            || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01200_2;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
         if ($event instanceof EventAttachmentEquipped && $this->Id == $event->attachmentId)
         {
-            $event->theah->game->notify->all("message", clienttranslate('Crystal Eye has been equipped and its Forced Ability will trigger.'), []);
+            $game = $event->theah->game;
 
-            $transition = EventFactory::createTransitionEvent($event->theah->game->getActivePlayerId(), $this->Id, "01200");
+            // WHY: Cat's Embargo (_01098) same shape — skip Forced when the chooser would be empty.
+            if (! $this->anyOpponentHasApproachCards($game))
+            {
+                $game->notify->all("message", clienttranslate('${card_inject_code}: No opponent has cards in their Approach Deck. The Forced ability is skipped.'), [
+                    "card_inject_code" => $this->getInjectCode(),
+                ]);
+                return;
+            }
+
+            $game->notify->all("message", clienttranslate('Crystal Eye has been equipped and its Forced Ability will trigger.'), []);
+
+            $transition = EventFactory::createTransitionEvent($game->getActivePlayerId(), $this->Id, "01200");
             $event->theah->queueEvent($transition);
         }
 
@@ -94,35 +147,36 @@ class _01200 extends CityAttachment implements IHasReactions
     {
         $args = parent::argsFromCard($game, $state, $stateName, $internalId);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200
-            || $state == States::DUEL_END_OF_ROUND_01200
-            || $state == States::DUEL_RESOLVE_MANEUVER_01200
-            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200
-            || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01200)
+        if ($this->isOpponentChooserState($state))
         {
             $opponents = [];
             $players = $game->loadPlayersBasicInfos();
             foreach ( $players as $playerId => $player ) 
             {
-                if ($playerId != $this->ControllerId)
-                    $opponents[] = ['id' => $playerId, 'name' => $player['player_name']];
+                if ((int)$playerId == $this->ControllerId)
+                {
+                    continue;
+                }
+                // WHY: empty Approach Deck has nothing to choose — omit so the UI cannot
+                // send the player into a soft-locked _2 state (Day 5 equip).
+                if (! $this->opponentHasApproachCards($game, (int)$playerId))
+                {
+                    continue;
+                }
+                $opponents[] = ['id' => (int)$playerId, 'name' => $player['player_name']];
             }        
 
             $args['opponents'] = $opponents;
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2
-            || $state == States::DUEL_END_OF_ROUND_01200_2
-            || $state == States::DUEL_RESOLVE_MANEUVER_01200_2
-            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2
-            || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01200_2)
+        if ($this->isCardChooserState($state))
         {
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
 
             $players = $game->loadPlayersBasicInfos();
             $args['playerName'] = $players[$playerId]['player_name'];
 
-            $deck = $game->getGameDeckObject($playerId);
+            $deck = $game->getGameDeckObject();
             $cardObjects = $deck->getCardsInLocation(Game::LOCATION_APPROACH, $playerId);
             $cards = [];
             foreach ($cardObjects as $cardObject)
@@ -136,21 +190,59 @@ class _01200 extends CityAttachment implements IHasReactions
         return $args;
     }
 
+    public function actFromCardPass(Game $game, int $state, string $stateName, string $internalId): void
+    {
+        parent::actFromCardPass($game, $state, $stateName, $internalId);
+
+        // WHY: Pass is only an escape hatch when Forced cannot be fulfilled (empty Approach).
+        // Live tables already stuck in _2 after a Day-5 equip need this to unstick.
+        if ($this->isOpponentChooserState($state))
+        {
+            if ($this->anyOpponentHasApproachCards($game))
+            {
+                throw new \BgaUserException($game->translate("An opponent still has cards in their Approach Deck."));
+            }
+
+            $game->notify->all("message", clienttranslate('${card_inject_code}: No opponent has cards in their Approach Deck. The Forced ability is skipped.'), [
+                "card_inject_code" => $this->getInjectCode(),
+            ]);
+            $game->gamestate->nextState("pass");
+            return;
+        }
+
+        if ($this->isCardChooserState($state))
+        {
+            $playerId = (int)$game->globals->get(Game::CHOSEN_OPPONENT);
+            if ($playerId > 0 && $this->opponentHasApproachCards($game, $playerId))
+            {
+                throw new \BgaUserException($game->translate("That opponent still has cards in their Approach Deck."));
+            }
+
+            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} finds no cards in the Approach Deck to choose.'), [
+                "card_inject_code" => $this->getInjectCode(),
+                "player_name" => $game->getActivePlayerName(),
+            ]);
+            // WHY: _2 keeps a sole "" transition — both choose and empty-deck Pass exit to EVENTS.
+            $game->gamestate->nextState();
+        }
+    }
+
     public function actFromCardWithId(Game $game, int $state, string $stateName, string $actionId, int $id): void 
     {
         parent::actFromCardWithId($game, $state, $stateName, $actionId, $id);
         
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200
-            || $state == States::DUEL_END_OF_ROUND_01200
-            || $state == States::DUEL_RESOLVE_MANEUVER_01200
-            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200
-            || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01200)
+        if ($this->isOpponentChooserState($state))
         {
             $players = $game->loadPlayersBasicInfos();
             if ( ! isset($players[$id]))
             {
                 throw new \BgaUserException($game->translate("Invalid opponent"));
+            }
+
+            if (! $this->opponentHasApproachCards($game, $id))
+            {
+                throw new \BgaUserException($game->translate("That opponent has no cards in their Approach Deck."));
             }
 
             $game->notify->all("message", clienttranslate('${player_name} has chosen to look at <strong>${opponentName}</strong>\'s Approach Deck.'), [
@@ -159,14 +251,10 @@ class _01200 extends CityAttachment implements IHasReactions
             ]);
 
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
-            $game->gamestate->nextState();
+            $game->gamestate->nextState("opponentChosen");
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01200_2
-            || $state == States::DUEL_END_OF_ROUND_01200_2
-            || $state == States::DUEL_RESOLVE_MANEUVER_01200_2
-            || $state == States::PLANNING_PHASE_APPROACH_CARDS_PLAYED_01200_2
-            || $state == States::PLANNING_PHASE_RESOLVE_SCHEMES_01200_2)
+        if ($this->isCardChooserState($state))
         {
             $playerId = $game->globals->get(Game::CHOSEN_OPPONENT);
             $activePlayerId = $game->getActivePlayerId();

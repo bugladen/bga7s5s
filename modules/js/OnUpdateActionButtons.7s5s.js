@@ -912,33 +912,60 @@
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
                 });
+                // WHY: Day 5 / empty Approach — no legal opponent; Pass exits Forced.
+                if (!args.args.opponents.length) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
     
             'highDramaPhase01200_2': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
+                // WHY: argsForStatePrivate → onUpdate gets args._private.args (see 01165).
+                const cards = (args && args._private && args._private.args && args._private.args.cards) || [];
+                if (cards.length) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                } else {
+                    // WHY: Soft-lock escape when Approach Deck emptied (esp. Day 5 equip).
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
 
             'planningPhaseApproach01200': () => {
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
                 });
+                if (!args.args.opponents.length) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
 
             'planningPhaseApproach01200_2': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
+                const cards = (args && args._private && args._private.args && args._private.args.cards) || [];
+                if (cards.length) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                } else {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
 
             'planningPhaseResolveSchemes_01200': () => {
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
                 });
+                if (!args.args.opponents.length) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
 
             'planningPhaseResolveSchemes_01200_2': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
+                const cards = (args && args._private && args._private.args && args._private.args.cards) || [];
+                if (cards.length) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                } else {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
     
             'highDramaPhase01205': () => {
@@ -1109,11 +1136,19 @@
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
                 });
+                if (!args.args.opponents.length) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
     
             'duelResolveManeuver_01200_2': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
+                const cards = (args && args._private && args._private.args && args._private.args.cards) || [];
+                if (cards.length) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                } else {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
 
             'duelApplyCombatCardStats_01085': () => {
@@ -1137,11 +1172,19 @@
                 args.args.opponents.forEach((opponent) => {
                     this.addActionButton(`actChooseOpponent-${opponent.id}`, opponent.name, () => this.bgaPerformAction('actFromCardWithId', {id: opponent.id}));
                 });
+                if (!args.args.opponents.length) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
     
             'duelEndOfRound_01200_2': () => {
-                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
-                dojo.addClass('actChooseCardSelected', 'disabled');
+                const cards = (args && args._private && args._private.args && args._private.args.cards) || [];
+                if (cards.length) {
+                    this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
+                    dojo.addClass('actChooseCardSelected', 'disabled');
+                } else {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
     
             'duskPhaseBegin01177': () => {

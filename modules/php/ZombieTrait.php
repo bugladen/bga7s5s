@@ -265,7 +265,28 @@ trait ZombieTrait
                 case "highDramaPhase01197_2": // Kalla attachment
                 case "highDramaPhase01197_3": // Kalla character to
                 case "highDramaPhase01200": // Crystal Eye opponent
+                    {
+                        // WHY: Day-5 empty Approach → Pass; otherwise pick first legal opponent.
+                        $args = $this->argsForState();
+                        $opponents = $args['args']['opponents'] ?? [];
+                        if (!empty($opponents)) {
+                            $this->actFromCardWithId((int)$opponents[0]['id']);
+                        } else {
+                            $this->actFromCardPass();
+                        }
+                    }
+                    break;
                 case "highDramaPhase01200_2": // Crystal Eye card
+                    {
+                        $args = $this->argsForStatePrivate();
+                        $cards = $args['_private']['active']['args']['cards'] ?? [];
+                        if (!empty($cards)) {
+                            $this->actFromCardWithId((int)($cards[0]['id'] ?? $cards[0]['Id']));
+                        } else {
+                            $this->actFromCardPass();
+                        }
+                    }
+                    break;
                 case "highDramaPhase01205": // Kidnap character
                 case "highDramaPhase01205_2": // Kidnap location
                     // Default action: Pass or take first available option
