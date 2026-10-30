@@ -49,6 +49,16 @@ class State_highDramaPhase05Dandya_2 extends GameState
         $claude = $this->game->theah->getCardById($sourceId);
         $current = $claude === null ? '' : $claude->Location;
 
+        // WHY: Shackled/Harpooned path in Action_05Dandya resolves without a
+        // destination; any pick (including empty) completes via that branch.
+        if ($claude !== null
+            && ($claude->hasCondition(Game::SHACKLES_CONDITION)
+                || $claude->hasCondition(Game::HARPOON_CONDITION)))
+        {
+            $this->game->actFromCardWithLocations(json_encode(['']));
+            return;
+        }
+
         $locations = [];
         foreach (array_keys($this->game->theah->getCityLocations()) as $locationName)
         {

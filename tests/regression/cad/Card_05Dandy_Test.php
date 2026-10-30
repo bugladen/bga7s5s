@@ -196,6 +196,58 @@ class Card_05Dandy_Test extends TestCase
                 Assert::true($action->isAvailableToPlayer(1, $world->theah), 'home move');
             },
 
+            // WHY: Shackles soft-locked tables that paid then failed eventCheck on
+            // location pick. Gate availability (and pay-step) so the Action never
+            // enters 05Dandya_2 while Claude cannot move.
+            'move action is unavailable while Shackled' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $claude->addCondition(Game::SHACKLES_CONDITION);
+                /** @var Action_05Dandya $action */
+                $action = $claude->getActions()[0];
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'shackled');
+            },
+
+            'paying for the move refuses while Shackled' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $claude->addCondition(Game::SHACKLES_CONDITION);
+                $payment = $world->placeCard(new GenericCharacter('Coin'), Game::LOCATION_HAND, 1);
+                /** @var Action_05Dandya $action */
+                $action = $claude->getActions()[0];
+
+                Assert::throws(
+                    fn() => $action->actFromActionWithIds(
+                        $world->game,
+                        States::HIGH_DRAMA_PLAYER_TURN_05DANDYA,
+                        'highDramaPhase05Dandya',
+                        [$payment->Id]
+                    ),
+                    'Shackled',
+                    'refused'
+                );
+                Assert::count(0, $world->theah->queuedOfType(EventCardDiscardedFromHand::class), 'no pay');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no step 2');
+            },
+
+            'location choice while Shackled resolves without moving' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $claude->addCondition(Game::SHACKLES_CONDITION);
+                /** @var Action_05Dandya $action */
+                $action = $claude->getActions()[0];
+
+                $action->actFromActionWithIds(
+                    $world->game,
+                    States::HIGH_DRAMA_PLAYER_TURN_05DANDYA_2,
+                    'highDramaPhase05Dandya_2',
+                    [Game::LOCATION_CITY_FORUM]
+                );
+
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
             'collect is available only in a city that has Renown' => function () {
                 $world = new TestWorld();
                 $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_PLAYER_HOME, 1);

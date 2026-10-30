@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -40,6 +41,16 @@ class Action_05Dandya extends CharacterAction
         return $destinations;
     }
 
+    // WHY: Shackles/Harpoon stamp "cannot move" on the character. Claude's Action
+    // still pays first then picks a location — without this gate the pay step
+    // succeeds and location selection soft-locks on Character::eventCheck.
+    // Mirror Technique_01036 / Maneuver_01059 activate-time refusal.
+    private function ownerCannotMove(Character $owner): bool
+    {
+        return $owner->hasCondition(Game::SHACKLES_CONDITION)
+            || $owner->hasCondition(Game::HARPOON_CONDITION);
+    }
+
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
         if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
@@ -49,6 +60,11 @@ class Action_05Dandya extends CharacterAction
 
         $owner = $this->getOwningCharacter($theah);
         if (! $theah->cardInPlay($owner))
+        {
+            return false;
+        }
+
+        if ($this->ownerCannotMove($owner))
         {
             return false;
         }
@@ -101,6 +117,23 @@ class Action_05Dandya extends CharacterAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DANDYA)
         {
+            // WHY: Refuse before the discard so a stale client cannot soft-lock
+            // after wealth leaves the hand (see Shackles journal soft-fail note).
+            if ($owner->hasCondition(Game::SHACKLES_CONDITION))
+            {
+                throw new UserException(sprintf(
+                    $game->translate("%s is Shackled and cannot move."),
+                    $owner->Name
+                ));
+            }
+            if ($owner->hasCondition(Game::HARPOON_CONDITION))
+            {
+                throw new UserException(sprintf(
+                    $game->translate("%s is Harpooned and cannot move for the remainder of the duel."),
+                    $owner->Name
+                ));
+            }
+
             $this->queueOneWealthPayment($game, $owner, $ids);
 
             // WHY: Return to the event queue so the discard resolves before the
@@ -114,6 +147,22 @@ class Action_05Dandya extends CharacterAction
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DANDYA_2)
         {
+            // WHY: Tables that paid before availability was gated are stuck here.
+            // Completing without the move (wealth already spent) unsticks them;
+            // Character::eventCheck would otherwise throw forever on every pick.
+            if ($this->ownerCannotMove($owner))
+            {
+                $reason = $owner->hasCondition(Game::HARPOON_CONDITION)
+                    ? $game->translate("%s is Harpooned and cannot move for the remainder of the duel. The Action ends without moving.")
+                    : $game->translate("%s is Shackled and cannot move. The Action ends without moving.");
+                $game->notify->all("message", sprintf($reason, $owner->Name), []);
+
+                $resolved = EventFactory::createActionResolvedEvent($owner->ControllerId);
+                $game->theah->queueEvent($resolved);
+                $game->gamestate->nextState();
+                return;
+            }
+
             $locationName = $ids[0] ?? '';
             $eligible = $this->getDestinations($game->theah, $owner->Location);
             if (! in_array($locationName, $eligible, true))
