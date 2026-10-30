@@ -920,9 +920,14 @@ class Game
         return $infos;
     }
 
+    // WHY: Default 99 so equip-affordability gates stay open in most suites.
+    // Set handWealthOverride when a suite must assert real wealth math (e.g. Action_04029
+    // chooser after the Risk leaves hand).
+    public ?int $handWealthOverride = null;
+
     public function handWealthCount(int $playerId): int
     {
-        return 99;
+        return $this->handWealthOverride ?? 99;
     }
 
     // WHY: Action/Maneuver_01113 pay-with-ids validates exact Wealth; mirror UtilitiesTrait.

@@ -357,6 +357,10 @@
                 args.args.attachments.forEach((attachment) => {
                     this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
                 });
+                // WHY: Pass only when the chooser is empty — unsticks soft-locks; refuse when options remain.
+                if (!args.args.attachments || args.args.attachments.length === 0) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
             },
 
             'highDramaPhase04029_2': () => {

@@ -333,15 +333,19 @@ This is **not** B.2 (RiskAttachment fake equip), **not** Robbery City Action (`A
 1. **`RiskAction`** + `RequiresPerformerSelected = true` + **`IAbilityThatTargetsCards`** on the Action (marker interface — **no** `isValidTargetForAbility`; validation lives in `getStealableAttachments` + act re-check). **Do not** mark `IRiskThatTargetsCharacters` on the Risk — the chooser is attachments, not characters (Cesca character-target only).
 2. **Heading gates stack:** En Garde → `!$Engaged`; **Merchant** (or other trait in heading) → `hasTrait("Merchant")`. Start from `parent::getPerformersForAction` (plain Action — home in pool), then **also** require `cardInCity($performer)` — printed "at this location" on a City Action-less Risk means City location, not Home (`Action_04011` idiom).
 3. **Stealable pool:** `getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)` → each host's `$host->Attachments` → `getAttachmentById` → filter with `getEquipDiscount`, `hasEquipRestrictions`, `canAttachTo`.
-4. **Wealth adjustment (availability + args + act):** centralize in `getWealthAdjustment(Theah $theah)`:
+4. **Wealth adjustment (availability only while Risk still in hand):** centralize in `getWealthAdjustment(Theah $theah)`:
 
 ```php
 // Risk implements IWealthCost — reserve cards that pay for / leave with the Risk.
+// Return null once Location != HAND — handWealthCount already excludes the played Risk.
+if ($owner->Location != Game::LOCATION_HAND) {
+    return null;
+}
 $selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
 return -($selfWealth + $owner->getWealthCost());
 ```
 
-Pass the same adjustment into **every** `getStealableAttachments(...)` call (grey check, `getArgsFromAction`, `actFromActionWithId` re-validation). Mirror `Action_01113` comment on why.
+Use the adjustment for grey/`isAvailable` / `getEligiblePerformers`. Do **not** keep reserving in `getArgsFromAction` / `actFromActionWithId` after the Risk has left hand — that double-count emptied `_04029`'s chooser with one payment card left. Mirror Robbery: adjust only in availability.
 
 5. **0-cost equip:** after discount, if `$cost == 0`, **skip** the `handWealth < $cost` check — risk-in-hand alone is enough (Langschwert `_01048`). When `$cost > 0`, apply adjusted hand wealth.
 6. **Two-step flow:**

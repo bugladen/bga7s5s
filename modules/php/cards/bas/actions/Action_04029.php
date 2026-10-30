@@ -33,6 +33,15 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
             return null;
         }
 
+        // WHY: Only while the Risk is still in hand. After play it is already gone from
+        // handWealthCount — applying the reserve again undercounts and empties the chooser
+        // (e.g. one payment card left → soft-lock with no attachment buttons).
+        // Robbery (Action_01113) only adjusts in isAvailableToPlayer for the same reason.
+        if ($owner->Location != Game::LOCATION_HAND)
+        {
+            return null;
+        }
+
         // WHY: Risk leaves hand when played — reserve its wealth (and play cost) before checking equip affordability.
         $selfWealth = $owner->hasTrait("Wealth") ? 2 : 1;
 
@@ -271,6 +280,38 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
             $game->theah->queueEvent($transition);
 
             $game->gamestate->nextState("attachmentChosen");
+        }
+    }
+
+    public function actFromActionPass(Game $game, int $state): void
+    {
+        parent::actFromActionPass($game, $state);
+
+        // WHY: Escape hatch for empty chooser (stale wealth double-count soft-locks, or
+        // every stealable attachment became illegal after play). Not a voluntary Pass
+        // when options remain — Forced-style mandatory when fulfillable.
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_04029)
+        {
+            $performerId = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+            $stealable = $performer === null
+                ? []
+                : $this->getStealableAttachments($game->theah, $performer, $this->getWealthAdjustment($game->theah));
+
+            if (count($stealable) > 0)
+            {
+                throw new UserException($game->translate("You must choose an attachment to take control of"));
+            }
+
+            $owner = $this->getOwningCard($game->theah);
+            $game->notify->all("message", clienttranslate('${card_inject_code}: No legal attachments to take control of. The Action ends.'), [
+                "card_inject_code" => $owner->getInjectCode(),
+            ]);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $game->gamestate->nextState("pass");
         }
     }
 

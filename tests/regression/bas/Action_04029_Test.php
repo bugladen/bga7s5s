@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04023;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04027;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04029;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04029;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
@@ -119,6 +120,65 @@ class Action_04029_Test extends TestCase
                 }
                 Assert::true($threw, 'act refused');
                 Assert::same(2, $hand->ControllerId, 'control unchanged');
+            },
+
+            // WHY: Soft-lock report — Risk played, one payment card left, opposing attachments
+            // cost 1. Availability reserves the Risk's hand wealth; the chooser must not
+            // reserve again once the Risk has left hand (Robbery pattern).
+            // FakeGame defaults handWealth to 99; override to the real post-play count.
+            'chooser still lists attachments after the risk leaves hand' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04029(), Game::LOCATION_HAND, 1);
+                $merchant = $world->placeCharacter(new _04023(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $bow = $world->placeCard(new _04017(), Game::LOCATION_CITY_DOCKS, 2);
+                $bow->WealthCost = 1;
+                $bow->AttachedToId = $foe->Id;
+                $foe->Attachments = [$bow->Id];
+                $world->placeCard(new _04027(), Game::LOCATION_HAND, 1);
+                /** @var Action_04029 $action */
+                $action = $risk->getActions()[0];
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $merchant->Id);
+
+                // Risk (1) + payment card (1); availability reserves the Risk → effective 1.
+                $world->game->handWealthOverride = 2;
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available with risk in hand');
+
+                // Risk already played — only the payment card remains. Do not reserve again.
+                $risk->Location = Game::LOCATION_PURGATORY;
+                $world->game->handWealthOverride = 1;
+                $args = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029, '');
+                Assert::count(1, $args['attachments'], 'one payment card still affords the steal');
+                Assert::same($bow->Id, $args['attachments'][0]['id'], 'bow listed');
+            },
+
+            // WHY: Pass is only for empty chooser escape — not a voluntary cancel mid-steal.
+            'pass exits when chooser empty and refuses when options remain' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04029(), Game::LOCATION_HAND, 1);
+                $merchant = $world->placeCharacter(new _04023(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $bow = $world->placeCard(new _04017(), Game::LOCATION_CITY_DOCKS, 2);
+                $bow->WealthCost = 0;
+                $bow->AttachedToId = $foe->Id;
+                $foe->Attachments = [$bow->Id];
+                /** @var Action_04029 $action */
+                $action = $risk->getActions()[0];
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $merchant->Id);
+
+                $threw = false;
+                try {
+                    $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029);
+                } catch (UserException) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'pass refused while stealable');
+
+                $bow->WealthCost = 1;
+                $risk->Location = Game::LOCATION_PURGATORY;
+                $world->game->handWealthOverride = 0;
+                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029);
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'action resolved');
             },
         ];
     }

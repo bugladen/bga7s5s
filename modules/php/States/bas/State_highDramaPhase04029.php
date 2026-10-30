@@ -23,6 +23,7 @@ class State_highDramaPhase04029 extends GameState
             descriptionMyTurn: clienttranslate('A Fine Addition...') . clienttranslate(': ${you} must choose an attachment to take control of:'),
             transitions: [
                 "attachmentChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
@@ -41,6 +42,12 @@ class State_highDramaPhase04029 extends GameState
         $this->game->actFromCardWithId($id);
     }
 
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
+    }
+
     public function zombie(int $playerId): void
     {
         $args = $this->game->argsForState();
@@ -51,6 +58,6 @@ class State_highDramaPhase04029 extends GameState
             return;
         }
 
-        $this->game->gamestate->nextState("zombie");
+        $this->game->actFromCardPass();
     }
 }
