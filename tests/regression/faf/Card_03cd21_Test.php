@@ -10,7 +10,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04047;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03cd21;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03057;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01172;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01078;
@@ -145,6 +147,71 @@ class Card_03cd21_Test extends TestCase
                 Assert::true($issued->canceled, 'canceled');
                 Assert::true($world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'flag');
                 Assert::true($spine->hasCondition(Game::SILVER_SPINE_ABILITY_USED), 'spent');
+            },
+
+            // WHY: Celerity prints "These effects cannot be cancelled." Framework
+            // target-pick fires CharacterTargeted first. Spine used to announce +
+            // spend the Day while the challenge still proceeded (no CHALLENGE_CANCELLED
+            // on that path either). Immunity must skip the Forced entirely.
+            'Celerity targeting does not cancel or spend the Day' => function () {
+                $world = new TestWorld();
+                [$spine, $host] = $this->equipped($world);
+                $celerity = $world->placeCard(new _04047(), Game::LOCATION_HAND, 1);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->targetId = $host->Id;
+                $targeted->sourceId = $celerity->Id;
+                $targeted->abilityId = $celerity->getActions()[0]->Id;
+                $targeted->playerId = 1;
+                $targeted->theah = $world->theah;
+                $world->game->globals->set(Game::CHALLENGE_TYPE, Game::CELERITY_CHALLENGE_TYPE);
+                $spine->handleEvent($targeted);
+
+                Assert::false($targeted->canceled, 'not canceled');
+                Assert::false($spine->hasCondition(Game::SILVER_SPINE_ABILITY_USED), 'unused');
+                Assert::false($world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'no flag');
+            },
+
+            'Celerity ChallengeIssued does not cancel or spend the Day' => function () {
+                $world = new TestWorld();
+                [$spine, $host] = $this->equipped($world);
+                $celerity = $world->placeCard(new _04047(), Game::LOCATION_HAND, 1);
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 1);
+
+                $issued = new EventChallengeIssued();
+                $issued->challengerId = $challenger->Id;
+                $issued->defenderId = $host->Id;
+                $issued->sourceId = $celerity->Id;
+                $issued->theah = $world->theah;
+                $spine->handleEvent($issued);
+
+                Assert::false($issued->canceled, 'not canceled');
+                Assert::false($spine->hasCondition(Game::SILVER_SPINE_ABILITY_USED), 'unused');
+                Assert::false($world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'no flag');
+            },
+
+            // WHY: Framework Risk challenges (Censure) fire CharacterTargeted before
+            // TECHNIQUE_AVAILABLE. Cancel must set CHALLENGE_CANCELLED or the duel
+            // still issues after Spine has already spent its Day.
+            'Censure framework target-pick cancel sets CHALLENGE_CANCELLED' => function () {
+                $world = new TestWorld();
+                [$spine, $host] = $this->equipped($world);
+                $censure = $world->placeCard(new _03057(), Game::LOCATION_HAND, 1);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->targetId = $host->Id;
+                $targeted->sourceId = $censure->Id;
+                $targeted->abilityId = $censure->getActions()[0]->Id;
+                $targeted->playerId = 1;
+                $targeted->batchId = 99;
+                $targeted->theah = $world->theah;
+                $world->game->globals->set(Game::CHALLENGE_TYPE, Game::CENSURE_CHALLENGE_TYPE);
+                $spine->handleEvent($targeted);
+
+                Assert::true($targeted->canceled, 'canceled');
+                Assert::true($spine->hasCondition(Game::SILVER_SPINE_ABILITY_USED), 'spent');
+                Assert::true($world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'flag');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'technique gate resolves');
             },
 
             'Dusk clears the once-per-Day condition' => function () {

@@ -154,8 +154,13 @@ class _03cd21 extends CityAttachment
     private function isOpponentRiskTargetingCharacters(Event $event, int $sourceId): bool
     {
         $source = $event->theah->getCardById($sourceId);
+        // WHY: Celerity / Unsanctioned / Rage print "These effects cannot be cancelled."
+        // Night of Drinking already gates on Risk::effectsCannotBeCancelled(); Forced
+        // cancel must too — otherwise Spine announces and spends its Day while the
+        // challenge still proceeds (the printed immunity wins).
         return $source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters
-            && $source->ControllerId != $this->ControllerId;
+            && $source->ControllerId != $this->ControllerId
+            && ! $source->effectsCannotBeCancelled();
     }
 
     private function markAbilityUsed(Game $game): void
@@ -176,17 +181,35 @@ class _03cd21 extends CityAttachment
     private function cancelRiskEffects(Event $event, int $sourceId, bool $abortUnbatchedFollowUp): void
     {
         $this->markAbilityUsed($event->theah->game);
+        $game = $event->theah->game;
 
         if ($event->batchId)
         {
             $event->theah->deleteEventBatch($event->batchId);
         }
-        // WHY not elseif: Defending Honor now batches the targeting event and only
-        // emits "01078" when that event survives. A batch delete removes the picker
-        // if this handler already queued it, and the action still has to resolve —
-        // otherwise the Risk ends with no "action resolved" and no challenge.
-        if ($abortUnbatchedFollowUp)
+
+        // WHY: Framework challenge target-pick only queues CharacterTargeted, then
+        // endOfEvents always enters TECHNIQUE_AVAILABLE. Abort only via
+        // CHALLENGE_CANCELLED (UL / Blood Like Winter). Challenge types other than
+        // NORMAL are already set before the picker (Censure, Celerity, …).
+        // Defending Honor is also non-NORMAL but lives outside that hub — cancelling
+        // leaves no "01078" transition and never hits stTechniqueAvailable, so it
+        // still needs ActionResolved below. skipChallengeBeforeTechnique resolves
+        // the framework path — do not double-queue ActionResolved here.
+        $challengeType = (int) $game->globals->get(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+        $inFrameworkChallengePick = $challengeType !== Game::NORMAL_CHALLENGE_TYPE
+            && $challengeType !== Game::DEFENDING_HONOR_CHALLENGE_TYPE;
+
+        if ($inFrameworkChallengePick)
         {
+            $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+        }
+        elseif ($abortUnbatchedFollowUp)
+        {
+            // WHY not elseif on batch alone: Defending Honor batches the targeting
+            // event and only emits "01078" when that event survives. A batch delete
+            // removes the picker if this handler already queued it, and the action
+            // still has to resolve — otherwise the Risk ends with no challenge.
             $event->theah->deleteTransitionEventsBySourceId($sourceId);
             $source = $event->theah->getCardById($sourceId);
             $playerId = ($source && $source->ControllerId) ? (int)$source->ControllerId : (int)$event->playerId;

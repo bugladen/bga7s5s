@@ -69,7 +69,7 @@ class _01186 extends CityCharacter
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            if ($this->isCancellableRiskTargetingCharacters($source))
             {
                 $this->addMaryamCondition($event->theah->game);
 
@@ -89,21 +89,41 @@ class _01186 extends CityCharacter
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            if ($this->isCancellableRiskTargetingCharacters($source))
             {
                 $this->addMaryamCondition($event->theah->game);
+                $game = $event->theah->game;
 
                 $batchId = $event->batchId;
                 if ($batchId)
                 {
                     $event->theah->deleteEventBatch($batchId);
                 }
-                else
+
+                // WHY: Same framework-picker abort as Silver Spine / UL / Blood Like
+                // Winter. CharacterTargeted alone does not stop TECHNIQUE_AVAILABLE.
+                // Defending Honor stays on the ActionResolved path below.
+                $challengeType = (int) $game->globals->get(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+                $inFrameworkChallengePick = $challengeType !== Game::NORMAL_CHALLENGE_TYPE
+                    && $challengeType !== Game::DEFENDING_HONOR_CHALLENGE_TYPE;
+
+                if ($inFrameworkChallengePick)
+                {
+                    $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+                }
+                elseif (! $batchId)
                 {
                     // WHY: Same Defending Honor hole as Silver Spine. The choose-target
                     // transition is not batched with EventCharacterTargeted, so spending
                     // Imperviousness here used to leave the challenge running.
                     $event->theah->deleteTransitionEventsBySourceId((int)$event->sourceId);
+                    $resolved = EventFactory::createActionResolvedEvent((int)$source->ControllerId);
+                    $event->theah->queueEvent($resolved);
+                }
+                else
+                {
+                    // Batched Defending Honor: transition shares the batch (stripped
+                    // above). Still need ActionResolved — never hits TECHNIQUE_AVAILABLE.
                     $resolved = EventFactory::createActionResolvedEvent((int)$source->ControllerId);
                     $event->theah->queueEvent($resolved);
                 }
@@ -118,7 +138,7 @@ class _01186 extends CityCharacter
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            if ($this->isCancellableRiskTargetingCharacters($source))
             {
                 $this->addMaryamCondition($event->theah->game);
 
@@ -141,7 +161,7 @@ class _01186 extends CityCharacter
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            if ($this->isCancellableRiskTargetingCharacters($source))
             {
                 $this->addMaryamCondition($event->theah->game);
 
@@ -161,7 +181,7 @@ class _01186 extends CityCharacter
         )
         {
             $source = $event->theah->getCardById($event->sourceId);
-            if ($source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters)
+            if ($this->isCancellableRiskTargetingCharacters($source))
             {
                 $this->addMaryamCondition($event->theah->game);
 
@@ -210,5 +230,14 @@ class _01186 extends CityCharacter
         $game->notify->all("maryamBenuPleromaAbilityUsed", clienttranslate('Maryam has used her Imperviousness to cancel the ability targeting her.'), [
             "cardId" => $this->Id,
         ]);
+    }
+
+    // WHY: Same gate as Silver Spine / Night of Drinking — printed "These effects
+    // cannot be cancelled." (Celerity, Unsanctioned, Rage) must not spend
+    // Imperviousness or announce a cancel that did not happen.
+    private function isCancellableRiskTargetingCharacters(mixed $source): bool
+    {
+        return $source && $source instanceof Risk && $source instanceof IRiskThatTargetsCharacters
+            && ! $source->effectsCannotBeCancelled();
     }
 }

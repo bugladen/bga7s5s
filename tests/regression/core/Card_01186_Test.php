@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04047;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01049;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01160;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
@@ -212,6 +213,24 @@ class Card_01186_Test extends TestCase
                 $maryam->handleEvent($event);
 
                 Assert::false($event->canceled, 'no cancel');
+                Assert::false($maryam->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED), 'unused');
+            },
+
+            // WHY: Same Celerity immunity as Silver Spine — Forced cancel must honor
+            // Risk::effectsCannotBeCancelled() or Imperviousness announces a no-op cancel.
+            'Celerity targeting does not cancel or spend Imperviousness' => function () {
+                $world = new TestWorld();
+                [$maryam] = $this->scene($world);
+                $celerity = $world->placeCard(new _04047(), Game::LOCATION_HAND, 2);
+
+                $event = new EventCharacterTargeted();
+                $event->targetId = $maryam->Id;
+                $event->sourceId = $celerity->Id;
+                $event->theah = $world->theah;
+                $world->game->globals->set(Game::CHALLENGE_TYPE, Game::CELERITY_CHALLENGE_TYPE);
+                $maryam->handleEvent($event);
+
+                Assert::false($event->canceled, 'not canceled');
                 Assert::false($maryam->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED), 'unused');
             },
 
