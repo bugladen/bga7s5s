@@ -1612,14 +1612,21 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         const card = this.cardProperties[args.characterId];
-        card.modifiedInfluence = args.newInfluence;
+        if (card) 
+        {
+            card.modifiedInfluence = args.newInfluence;
 
-        const element = $(`${card.divId}_influence_value`);
-        element.innerHTML = card.modifiedInfluence;
-        if (card.modifiedInfluence != card.influence)
-            dojo.addClass(element, '_7sfs-modified-stat-value');
-        else
-            dojo.removeClass(element, '_7sfs-modified-stat-value');
+            const element = $(`${card.divId}_influence_value`);
+            if (element) 
+            {
+                element.innerHTML = card.modifiedInfluence;
+
+                if (card.modifiedInfluence != card.influence)
+                    dojo.addClass(element, '_7sfs-modified-stat-value');
+                else
+                    dojo.removeClass(element, '_7sfs-modified-stat-value');
+            }
+        }
     },
 
     notif_characterResolveModified: function( notif )
