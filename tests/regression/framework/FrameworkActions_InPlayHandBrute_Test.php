@@ -256,6 +256,45 @@ class FrameworkActions_InPlayHandBrute_Test extends TestCase
                 Assert::false($game->globals->has(Game::CHOSEN_PERFORMER), 'nothing recorded');
             },
 
+            // WHY: After Confirm, Used is true and EventActionTriggered is queued. Empty
+            // performer list must undo Used, drop the trigger, and resolve — otherwise
+            // Crabs/Siren's-style soft-locks stay stuck in choose-performer.
+            // Extra Action lock to a non-performer empties the filtered ids (CharacterAction
+            // always lists its owner; Engage filters live on specific card Actions).
+            'actHighDramaInPlayActionCancelNoPerformer undoes Used and clears the pending trigger' => function () {
+                [$game, $owner, $action] = $this->inPlayScene(requiresPerformer: true);
+                $game->globals->set(Game::CHOSEN_ACTION, $action->Id);
+                $action->Used = true;
+                $game->globals->set(Game::IN_PLAY_ACTION_TRIGGER_PENDING, 1);
+                $game->globals->set(Game::EXTRA_ACTION_PERFORMER, 4242);
+                $triggered = new EventActionTriggered();
+                $triggered->actionId = $action->Id;
+                $triggered->playerId = 1;
+                $game->theah->queueEvent($triggered);
+
+                $game->actHighDramaInPlayActionCancelNoPerformer();
+
+                Assert::false($action->Used, 'Used undone');
+                Assert::false($game->globals->has(Game::IN_PLAY_ACTION_TRIGGER_PENDING), 'pending cleared');
+                Assert::count(0, $game->queued(EventActionTriggered::class), 'trigger removed');
+                Assert::count(1, $game->queued(EventActionResolved::class), 'resolved');
+                Assert::same(['cancelled'], $game->gamestate->transitions, 'transition');
+            },
+
+            'actHighDramaInPlayActionCancelNoPerformer refuses when a performer is still available' => function () {
+                [$game, $owner, $action] = $this->inPlayScene(requiresPerformer: true);
+                $game->globals->set(Game::CHOSEN_ACTION, $action->Id);
+                $action->Used = true;
+
+                Assert::throws(
+                    fn() => $game->actHighDramaInPlayActionCancelNoPerformer(),
+                    'must choose a performer',
+                    'options remain'
+                );
+                Assert::true($action->Used, 'Used left alone');
+                Assert::same([], $game->gamestate->transitions, 'no transition');
+            },
+
             // ---- In-Hand Actions ------------------------------------------------------------------------------
 
             'actHighDramaChooseInHandActionStart proceeds when a Risk in hand has an available Action' => function () {

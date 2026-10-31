@@ -2430,9 +2430,14 @@ $machinestates = [
                 "args" => "argsHighDramaInPlayActionChoosePerformer",
                 "possibleactions" => [
                     "actHighDramaInPlayActionPerformerChosen",
+                    "actHighDramaInPlayActionCancelNoPerformer",
                 ],
                 "transitions" => [
                     "inPlayActionPerformerChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                    // WHY: Empty performer list after Confirm (Engage-cost Actions offered
+                    // while only engaged characters are at the site). Escape undoes Used
+                    // and drains the pending ActionTriggered.
+                    "cancelled" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 ]
             ],
             States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_ACTION => [

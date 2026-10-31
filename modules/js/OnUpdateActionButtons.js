@@ -179,8 +179,16 @@ onUpdateActionButtons: function( stateName, args )
         },
 
         'highDramaInPlayActionChoosePerformer'  : () => {
-            this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
-            dojo.addClass('actChooseCardSelected', 'disabled');
+            // WHY: Soft-lock escape when availability lagged behind Engage filters
+            // (Crabs in a Bucket / Siren's Scream class). Pass only if no performers.
+            // WHY args.ids not args.args.ids: onUpdateActionButtons gets getArgs() flat;
+            // onEnteringState nests one more level under .args (BGA).
+            if (!args.ids || args.ids.length === 0) {
+                this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actHighDramaInPlayActionCancelNoPerformer', {}), { id: 'actPass', color: 'alert' });
+            } else {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            }
         },
 
         'highDramaInHandActionChooseAction'  : () => {

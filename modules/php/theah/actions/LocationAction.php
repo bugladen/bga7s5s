@@ -78,6 +78,18 @@ abstract class LocationAction extends Action
         $this->notifyUsedList($this->game);
     }
 
+    // WHY: Soft-lock escape after Confirm when choose-performer is empty — undo the
+    // setPlayerUsed that Confirm already wrote so the Action is not spent for a no-op.
+    public function unsetPlayerUsed(int $playerId): void
+    {
+        $this->playersUsed = array_values(array_filter(
+            $this->playersUsed,
+            fn($usedId) => (int)$usedId !== $playerId
+        ));
+        $this->game->globals->set($this->globalVariableName, $this->playersUsed);
+        $this->notifyUsedList($this->game);
+    }
+
     public function getUsedListData(Game $game): array
     {
         $list = [];

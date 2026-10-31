@@ -1002,6 +1002,58 @@ trait FrameworkActionsTrait
         $this->gamestate->nextState("inPlayActionPerformerChosen");
     }
 
+    /**
+     * Escape when choose-performer has no legal performers (e.g. only engaged characters
+     * after Confirm for an Engage-cost City Action). Not a voluntary cancel when options remain.
+     */
+    public function actHighDramaInPlayActionCancelNoPerformer(): void
+    {
+        $playerId = (int)$this->getActivePlayerId();
+        $this->theah->buildCity();
+
+        $actionId = $this->globals->get(Game::CHOSEN_ACTION, '');
+        $action = $this->theah->getInPlayActionById($actionId);
+        if ($action == null)
+        {
+            throw new UserException(clienttranslate("Action not found."));
+        }
+
+        $performerIds = array_map(
+            fn($performer) => $performer->Id,
+            array_values($action->getPerformersForAction($playerId, $this->theah))
+        );
+        $performerIds = $this->filterPerformerIdsForExtraAction($performerIds);
+        if (count($performerIds) > 0)
+        {
+            throw new UserException(clienttranslate("You must choose a performer for the Action."));
+        }
+
+        // WHY: Confirm already announced + set Used / playerUsed. Undo so the Action
+        // is not permanently spent for a no-op soft-lock. Delete the dispatch's
+        // EventActionTriggered — otherwise PLAYER_TURN_EVENTS would still open the
+        // action UI with no performer.
+        if ($action instanceof CardAction)
+        {
+            $action->setUsed($this->theah, false);
+        }
+        else if ($action instanceof LocationAction)
+        {
+            $action->unsetPlayerUsed($playerId);
+        }
+
+        $this->theah->deleteActionTriggeredEvents((string)$actionId);
+        $this->globals->delete(Game::IN_PLAY_ACTION_TRIGGER_PENDING);
+
+        $this->notify->all("message", clienttranslate('${player_name} has no legal performer and cancels the Action.'), [
+            'player_name' => $this->getPlayerNameById($playerId),
+        ]);
+
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
+        $this->theah->queueEvent($actionResolvedEvent);
+
+        $this->gamestate->nextState("cancelled");
+    }
+
     private function requeueInPlayActionEntryTransition(): void
     {
         $transition = (string) $this->globals->get(Game::IN_PLAY_ACTION_ENTRY_TRANSITION, '');

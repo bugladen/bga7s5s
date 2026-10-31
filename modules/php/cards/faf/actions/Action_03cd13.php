@@ -60,6 +60,15 @@ class Action_03cd13 extends EventCityAction implements IAbilityThatTargetsPlayer
             return false;
         }
 
+        // WHY: getPerformersForAction filters out engaged characters (Engage cost).
+        // Parent EventCityAction only checks "any character at location" — without this
+        // gate the action is offered, confirm announces, then choose-performer is empty
+        // and the game soft-locks (same class as Action_01179 Siren's Scream).
+        if (count($this->getPerformersForAction($playerId, $theah)) == 0)
+        {
+            return false;
+        }
+
         return true;
     }
 

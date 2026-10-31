@@ -152,13 +152,26 @@ trait ZombieTrait
                 case "highDramaRecruitActionPayForMercenary":
                 case "highDramaInPlayActionChooseAction":
                 case "highDramaInPlayActionConfirm":
-                case "highDramaInPlayActionChoosePerformer":
                 case "highDramaInHandActionChooseAction":
                 case "highDramaInHandActionChoosePerformer":
                 case "highDramaBruteActionChooseBrute":
                 case "highDramaBruteActionPayForBrute":
                     // Default action: Go back to main turn
                     $this->actBack();
+                    break;
+
+                case "highDramaInPlayActionChoosePerformer":
+                    // WHY: This state has no actBack transition. Empty list → cancel
+                    // escape; otherwise pick the first legal performer.
+                    $args = $this->argsHighDramaInPlayActionChoosePerformer();
+                    if (empty($args['ids']))
+                    {
+                        $this->actHighDramaInPlayActionCancelNoPerformer();
+                    }
+                    else
+                    {
+                        $this->actHighDramaInPlayActionPerformerChosen((int)$args['ids'][0]);
+                    }
                     break;
 
                 case "highDramaEquipActionChooseAttachmentLocation":

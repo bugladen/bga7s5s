@@ -47,8 +47,9 @@ class Action_03cd13_Test extends TestCase
     {
         return [
             // WHY: Once per player per day, via playersUsed, not the Action Used flag.
-            // Claimable location and a strictly richer opponent are both required.
-            // An engaged character at the location still satisfies the parent gate.
+            // Claimable location, a strictly richer opponent, and an unengaged performer
+            // are all required. Parent EventCityAction still opens on engaged-only — we
+            // must gate on getPerformersForAction or Confirm → empty choose-performer soft-locks.
             'available when you are behind on Renown and the location can be claimed' => function () {
                 $world = new TestWorld();
                 [$card, $action, $performer] = $this->scene($world);
@@ -57,8 +58,8 @@ class Action_03cd13_Test extends TestCase
                 Assert::false($action->isAvailableToPlayer(2, $world->theah), 'player 2 is ahead and has no character');
 
                 $performer->Engaged = true;
-                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'engaged still opens the action');
-                Assert::count(0, $action->getPerformersForAction(1, $world->theah), 'but no performer button');
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'engaged-only cannot pay Engage cost');
+                Assert::count(0, $action->getPerformersForAction(1, $world->theah), 'no performer button');
                 $performer->Engaged = false;
                 Assert::same([$performer], $action->getPerformersForAction(1, $world->theah), 'ready performer');
 
