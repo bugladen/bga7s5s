@@ -1073,7 +1073,7 @@ trait EventHub
                     $performerInjectCode = $performer ? $performer->getInjectCode() : "";
                     $theah->game->notify->all("message", clienttranslate('${player_name} chose ${performer_inject_code} to Pressure ${location}.
                     <br>Pressure Type: ${pressureType}
-                    <br>Influence Totals: ${totals}'), [
+                    <br>Totals: ${totals}'), [
                         'i18n' => ['location', 'pressureType'],
                         "player_name" => $this->game->getPlayerNameById($event->playerId),
                         "performer_inject_code" => $performerInjectCode,
