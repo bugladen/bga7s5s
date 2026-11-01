@@ -43,6 +43,11 @@ class Game extends \Bga\GameFramework\Table
     final const OPTIONS_PLAYER_DECKS_RANDOM_TOOTH_AND_CLAW = 2;
     final const OPTIONS_PLAYER_DECKS_RANDOM_FATE_AND_FORTUNE = 3;
 
+    // WHY: Deploy-time switch for tournament deck locking (BGA Tournament API store/restore).
+    // When true, a player's picked (or randomly assigned) deck is locked for the whole
+    // tournament. Flip to false to let players choose a new deck each tournament game.
+    final const TOURNAMENT_LOCK_DECKS = false;
+
     // BGA end-of-game statistic keys (must match stats.json)
     //Table stats
     final const STAT_DAY_ENDED = "day_ended";    //The day that ended the game

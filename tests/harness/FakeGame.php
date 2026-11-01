@@ -86,6 +86,8 @@ class Game
     final const STAT_CHARACTERS_DAY_5 = "characters_day_5";
     final const CHARACTERS_END_OF_DAY_RECORDED = "charactersEndOfDayRecorded";
     final const USER_PREFERENCES_AUTO_ACKNOWLEDGE_CARD_REVEALS = 110;
+    // WHY: FrameworkActionsTrait / StatesTrait tournament deck lock gate. Must match Game.php.
+    final const TOURNAMENT_LOCK_DECKS = true;
     final const DAY = "day";
     final const DEBUG_INCLUDE_CITY_CARD = "debugIncludeCityCard";
     final const WHEN_REVEALED_REMAINING_CARDS = "whenRevealedRemainingCards";

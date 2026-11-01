@@ -177,7 +177,7 @@ trait FrameworkActionsTrait
             $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
             $this->DbQuery($sql);
 
-            if ($this->bga->tournament->isTournament())
+            if (Game::TOURNAMENT_LOCK_DECKS && $this->bga->tournament->isTournament())
             {
                 // WHY: pass the decoded $deck object, not $deck_json. The framework
                 // JSON-encodes on store and JSON-decodes on retrieve, so passing an

@@ -90,9 +90,9 @@ trait StatesTrait
     {
         $this->gamestate->setAllPlayersMultiactive();
 
-        // In a tournament, players who already have a stored deck were
-        // restored in DeckAssignment and don't need to pick again.
-        if ($this->bga->tournament->isTournament())
+        // In a tournament (when locking is on), players who already have a stored
+        // deck were restored in DeckAssignment and don't need to pick again.
+        if (Game::TOURNAMENT_LOCK_DECKS && $this->bga->tournament->isTournament())
         {
             $players = $this->loadPlayersBasicInfos();
             foreach ($players as $playerId => $player)

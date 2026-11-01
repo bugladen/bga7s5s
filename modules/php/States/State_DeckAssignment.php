@@ -31,13 +31,15 @@ class State_DeckAssignment extends GameState
 
     function onEnteringState(int $activePlayerId)
     {
-        $isTournament = $this->game->bga->tournament->isTournament();
+        // WHY: Game::TOURNAMENT_LOCK_DECKS is the deploy-time switch; isTournament()
+        // alone is not enough — locking can be disabled while still on a tournament table.
+        $lockTournamentDecks = Game::TOURNAMENT_LOCK_DECKS && $this->game->bga->tournament->isTournament();
         $players = $this->game->loadPlayersBasicInfos();
 
         // Restore any decks already stored for this tournament. Track which
         // players still need a deck so the manual/random branches can handle them.
         $playersNeedingDeck = $players;
-        if ($isTournament)
+        if ($lockTournamentDecks)
         {
             foreach ($players as $playerId => $player)
             {
@@ -102,7 +104,7 @@ class State_DeckAssignment extends GameState
             $this->game->DbQuery($sql);
 
             // Lock the random assignment in for the rest of the tournament.
-            if ($isTournament)
+            if ($lockTournamentDecks)
             {
                 $this->game->bga->tournament->storePlayerGameData($playerId, 'deck_source', $chosen_deck);
             }
