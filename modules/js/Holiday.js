@@ -15,7 +15,7 @@
 
 // WHY: Seasonal city-tower / map / ambience swap. Set to 1 for Halloween; 0 restores
 // normal art. Client-only — no server/gamedatas involvement.
-window.CITY_HALLOWEEN = 1;
+window.CITY_HALLOWEEN = 0;
 
 define(['dojo', 'dojo/_base/declare'], (dojo, declare) => {
 return declare('seventhseacityoffivesails.holiday', null, {
