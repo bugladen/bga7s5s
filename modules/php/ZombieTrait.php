@@ -36,17 +36,7 @@ trait ZombieTrait
 
         if ($state["type"] === "activeplayer") {
             switch ($stateName) {
-                case "setupTable_01006":
-                    // Default action: Pass or take first available option
-                    $this->actPass();
-                    break;
-
-                case "setupTable_05Gary":
-                    // WHY: Named "pass" transition (not bare nextState) — State class zombie
-                    // also calls actFromCardPass; keep ZombieTrait aligned if it still runs.
-                    $this->actFromCardPass();
-                    break;
-
+                // setupTable_05Gary / setupTable_01006 live in their State class zombie()
                 case "planningPhaseResolveSchemes_01044":
                 case "planningPhaseResolveSchemes_01045":
                 case "planningPhaseResolveSchemes_01150":
@@ -234,7 +224,6 @@ trait ZombieTrait
                         $this->gamestate->nextState("zombie");
                     break;
 
-                case "highDramaPhase01008_4": // Cesca Del Rosso
                 case "highDramaPhase01024": // Bravos
                 case "highDramaPhase01025": // Fate's Burden
                 case "highDramaPhase01026": // For the Family
@@ -386,8 +375,7 @@ trait ZombieTrait
                     break;
 
                 // Setup Table States
-                case "setupTable_01006_2":
-                case "setupTable_05Gary_2":
+                // setupTable_05Gary_2 / setupTable_01006_2 live in their State class zombie()
                 case "duelChooseTechnique_03043":
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;
@@ -403,7 +391,7 @@ trait ZombieTrait
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;
 
-                case "highDramaPhase01008": // Cesca Del Rosso
+                // highDramaPhase01008 lives in State_highDramaPhase01008::zombie
                 case "highDramaPhase01035": // Kaspar
                 case "highDramaPhase01035v2": // Kaspar v2
                 case "highDramaPhase01038": // Otto Streit

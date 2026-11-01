@@ -4,35 +4,6 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 $machinestates += [
 
-    States::SETUP_TABLE_01006 => [
-        "name" => "setupTable_01006",
-        "description" => clienttranslate('Don Contanzo Scarpa') . clienttranslate(': ${actplayer} is choosing a Red Hand Thug from their Faction Deck to reveal and place in their Hand.'),
-        "descriptionmyturn" => clienttranslate('Don Contanzo Scarpa') . clienttranslate(': ${you} must choose a Red Hand Thug from your Faction Deck to reveal and place in your Hand:'),
-        "type" => "activeplayer",
-        "args" => "argsForStatePrivate",
-        "possibleactions" => [
-            "actFromCardWithId",
-            "actFromCardPass"
-        ],
-        "transitions" => [
-            "cardChosen" => States::SETUP_TABLE_01006_2,
-            "pass" => States::SETUP_TABLE_EVENTS
-        ]
-    ],
-
-    States::SETUP_TABLE_01006_2 => [
-        "name" => "setupTable_01006_2",
-        "description" => clienttranslate('Don Contanzo Scarpa') . clienttranslate(': Your opponent(s) must acknowlege revealed card.'),
-        "descriptionmyturn" => clienttranslate('Don Contanzo Scarpa') . clienttranslate(': ${you} must must acknowlege revealed card:'),
-        "type" => "multipleactiveplayer",
-        "args" => "argsForState",
-        "action" => "stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer",
-        "possibleactions" => [
-            "actMultipleOk", 
-        ],
-        "transitions" => ["multipleOk" => States::SETUP_TABLE_EVENTS]
-    ],
-
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01016 => [
         "name" => "planningPhaseResolveSchemes_01016",
         "description" => clienttranslate('Plans Within Plans') . clienttranslate(': ${actplayer} must choose two city locations to place Renown onto.'),
@@ -384,47 +355,6 @@ $machinestates += [
             ],
             "transitions" => ["" => States::HIGH_DRAMA_BEGINNING_EVENTS]
         ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01008 => [
-        "name" => "highDramaPhase01008",
-        "description" => clienttranslate('Cesca Del Rosso') . clienttranslate(': Your opponent(s) must acknowlege revealed card.'),
-        "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} must must acknowlege revealed card:'),
-        "type" => "multipleactiveplayer",
-        "args" => "argsForState",
-        "action" => "stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer",
-        "possibleactions" => [
-            "actMultipleOk", 
-        ],
-        "transitions" => ["multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01008_2]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01008_2 => [
-        "name" => "highDramaPhase01008_2",
-        "type" => "game",
-        "action" => "stSetCurrentPlayer",
-        "transitions" => ["" => States::HIGH_DRAMA_PLAYER_TURN_01008_3]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01008_3 => [
-        "name" => "highDramaPhase01008_3",
-        "type" => "game",
-        "action" => "stFromCard",
-        "transitions" => [
-            "cardDrawn" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-            "choose" => States::HIGH_DRAMA_PLAYER_TURN_01008_4]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01008_4 => [
-        "name" => "highDramaPhase01008_4",
-        "description" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${actplayer} may choose to sink revealed card.'),
-        "descriptionmyturn" => clienttranslate('Cesca Del Rosso') . clienttranslate(': ${you} may choose to sink revealed card:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardPass",
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
 
     States::HIGH_DRAMA_PLAYER_TURN_01011 => [
         "name" => "highDramaPhase01011",
