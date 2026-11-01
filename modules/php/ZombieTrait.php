@@ -49,8 +49,7 @@ trait ZombieTrait
                     break;
 
                 // Planning Phase States
-                case "planningPhaseResolveSchemes_01016":
-                case "planningPhaseResolveSchemes_01016_2":
+                // planningPhaseResolveSchemes_01016 / _2 live in their State class zombie()
                 case "planningPhaseResolveSchemes_01143":
                     // Default action: Pass or take first available option
                     $this->actPass();
@@ -182,8 +181,7 @@ trait ZombieTrait
                     break;
 
                 // High Drama Player Turn Event States (Card-Specific)
-                case "highDramaPhase01011": // Servo Scarpa
-                case "highDramaPhase01015": // The Great Game
+                // highDramaPhase01011 / 01015 live in their State class zombie()
                 case "highDramaPhase01044": // Armed and Marshaled
                 case "highDramaPhase01044_2": // Armed and Marshaled target
                 case "highDramaPhase01044_3": // Armed and Marshaled manipulation
@@ -209,10 +207,7 @@ trait ZombieTrait
                     $this->actBack();
                     break;
 
-                case "highDramaPhase01012": // Sibella Scarpa
-                case "highDramaPhase01017": // Alcee
-                case "highDramaPhase01019": // Buratino
-                case "highDramaPhase01020": // Dante
+                // highDramaPhase01012 / 01017 / 01019 / 01020 live in their State class zombie()
                 case "highDramaPhase01046a": // Dark Gift location
                 case "highDramaPhase01049": // Polished Flintlock
                 case "highDramaPhase01068": // Léontine Giroux character
@@ -318,7 +313,7 @@ trait ZombieTrait
                     break;
 
                 // Duel Choose Technique States
-                case "duelChooseTechnique_01013": // Vissenta Scarpa's Technique
+                // duelChooseTechnique_01013 lives in State_duelChooseTechnique_01013::zombie
                 case "duelChooseTechnique_01036": // Daniela's Technique
                 case "duelChooseTechnique_01067": // Jean Urbain's Technique
                     $this->gamestate->nextState("");
@@ -386,7 +381,7 @@ trait ZombieTrait
                     break;
 
                 // Acknowledgment States
-                case "planningPhaseResolveSchemes_01016_3":
+                // planningPhaseResolveSchemes_01016_3 lives in State_planningPhaseResolveSchemes_01016_3::zombie
                 case "planningPhaseResolveSchemes_01147": // Let's Haggle
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;

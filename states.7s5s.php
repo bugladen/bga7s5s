@@ -4,44 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
 $machinestates += [
 
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_01016 => [
-        "name" => "planningPhaseResolveSchemes_01016",
-        "description" => clienttranslate('Plans Within Plans') . clienttranslate(': ${actplayer} must choose two city locations to place Renown onto.'),
-        "descriptionmyturn" => clienttranslate('Plans Within Plans') . clienttranslate(': ${you} must choose two city locations to place Renown onto:'),
-        "type" => "activeplayer",
-        "args" => "argsEmpty",
-        "possibleactions" => [
-            "actCityLocationsForRenownSelected", 
-        ],
-        "transitions" => ["" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_2]
-    ],    
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_2 => [
-        "name" => "planningPhaseResolveSchemes_01016_2",
-        "description" => clienttranslate('Plans Within Plans') . clienttranslate(': ${actplayer} may search their deck for a Red Hand Thug.'),
-        "descriptionmyturn" => clienttranslate('Plans Within Plans') . clienttranslate(': ${you} may choose a Red Hand Thug from Your Deck:'),
-        "type" => "activeplayer",
-        "args" => "argsForStatePrivate",
-        "possibleactions" => [
-            "actFromCardPass",
-            "actFromCardWithId", 
-        ],
-        "transitions" => [
-            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
-            "cardChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_3
-        ]
-    ],
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_01016_3 => [
-        "name" => "planningPhaseResolveSchemes_01016_3",
-        "description" => clienttranslate('Plans Within Plans') . clienttranslate(': Your opponent(s) must acknowlege revealed card.'),
-        "descriptionmyturn" => clienttranslate('Plans Within Plans') . clienttranslate(': ${you} must must acknowlege revealed card:'),
-        "type" => "multipleactiveplayer",
-        "args" => "argsPlanningPhaseResolveSchemes_01016_3",
-        "action" => "stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer",
-        "possibleactions" => [
-            "actMultipleOk", 
-        ],
-        "transitions" => ["multipleOk" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS]
-    ],
+    // planningPhaseResolveSchemes_01016 / _2 / _3 live in State_planningPhaseResolveSchemes_01016*
 
     States::PLANNING_PHASE_RESOLVE_SCHEMES_01044 => [
         "name" => "planningPhaseResolveSchemes_01044",
@@ -356,97 +319,7 @@ $machinestates += [
             "transitions" => ["" => States::HIGH_DRAMA_BEGINNING_EVENTS]
         ],
 
-    States::HIGH_DRAMA_PLAYER_TURN_01011 => [
-        "name" => "highDramaPhase01011",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Servo Scarpa') . clienttranslate(': ${you} must choose an adjacent opposing character to challenge: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actBack",
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
-            "opposingCharacterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01012 => [
-        "name" => "highDramaPhase01012",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Sibella Scarpa') . clienttranslate(': ${you} must choose an opposing character to wound: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-            "opposingCharacterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01015 => [
-        "name" => "highDramaPhase01015",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('The Great Game') . clienttranslate(': ${you} must choose a character to wound:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actBack",
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
-            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01017 => [
-        "name" => "highDramaPhase01017",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Alcee') . clienttranslate(': ${you} must choose a character to engage:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01019 => [
-        "name" => "highDramaPhase01019",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Buratino') . clienttranslate(': ${you} must choose a character to wound:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01020 => [
-        "name" => "highDramaPhase01020",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Dante') . clienttranslate(': ${you} must choose a character to move:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
+    // highDramaPhase01011 / 01012 / 01015 / 01017 / 01019 / 01020 live in their State_* classes
 
     States::HIGH_DRAMA_PLAYER_TURN_01024 => [
         "name" => "highDramaPhase01024",
@@ -1686,19 +1559,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
 
-    States::DUEL_CHOOSE_TECHNIQUE_01013 => [
-        "name" => "duelChooseTechnique_01013",
-        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-        "descriptionmyturn" => clienttranslate('Vissenta Scarpa') . clienttranslate(': Add Parry or Thrust: ${you} must choose Parry or Thrust:'),
-        "type" => "activeplayer",
-        "args" => "argsEmpty",
-        "possibleactions" => [
-            "actFromCardWithId", 
-        ],
-        "transitions" => [
-            "" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
-        ]
-    ],
+    // duelChooseTechnique_01013 lives in State_duelChooseTechnique_01013
 
     States::DUEL_CHOOSE_TECHNIQUE_01036 => [
         "name" => "duelChooseTechnique_01036",
