@@ -37,8 +37,7 @@ trait ZombieTrait
         if ($state["type"] === "activeplayer") {
             switch ($stateName) {
                 // setupTable_05Gary / setupTable_01006 live in their State class zombie()
-                case "planningPhaseResolveSchemes_01044":
-                case "planningPhaseResolveSchemes_01045":
+                // planningPhaseResolveSchemes_01044 / 01045 live in their State class zombie()
                 case "planningPhaseResolveSchemes_01150":
                 case "planningPhaseResolveSchemes_01071":
                 case "planningPhaseResolveSchemes_01072":
@@ -181,10 +180,7 @@ trait ZombieTrait
                     break;
 
                 // High Drama Player Turn Event States (Card-Specific)
-                // highDramaPhase01011 / 01015 live in their State class zombie()
-                case "highDramaPhase01044": // Armed and Marshaled
-                case "highDramaPhase01044_2": // Armed and Marshaled target
-                case "highDramaPhase01044_3": // Armed and Marshaled manipulation
+                // highDramaPhase01011 / 01015 / 01044 / 01028_2 / 01035_4 live in their State class zombie()
                 case "highDramaPhase01055": // Last Word character
                 case "highDramaPhase01055_2": // Last Word location
                 case "highDramaPhase01056": // Move Along
@@ -207,9 +203,7 @@ trait ZombieTrait
                     $this->actBack();
                     break;
 
-                // highDramaPhase01012 / 01017 / 01019 / 01020 live in their State class zombie()
-                case "highDramaPhase01046a": // Dark Gift location
-                case "highDramaPhase01049": // Polished Flintlock
+                // highDramaPhase01012 / 01017 / 01019 / 01020 / 01046a / 01049 live in their State class zombie()
                 case "highDramaPhase01068": // Léontine Giroux character
                 case "highDramaPhase01069": // Maxime De Lafayette character
                 case "highDramaPhase01156": // Matchlock Musket discard
@@ -219,16 +213,7 @@ trait ZombieTrait
                         $this->gamestate->nextState("zombie");
                     break;
 
-                case "highDramaPhase01024": // Bravos
-                case "highDramaPhase01025": // Fate's Burden
-                case "highDramaPhase01026": // For the Family
-                case "highDramaPhase01028": // Pack Tactics
-                case "highDramaPhase01028_2": // Pack Tactics
-                case "highDramaPhase01029": // The Pressure Is On
-                case "highDramaPhase01030": // Pull the Strand
-                case "highDramaPhase01034": // Wrath of the Don
-                case "highDramaPhase01034_2": // Wrath of the Don target
-                case "highDramaPhase01049_2": // Polished Flintlock engage
+                // highDramaPhase01024–01030 / 01034 / 01049_2 live in their State class zombie()
                 case "highDramaPhase01156_2": // Matchlock Musket target
                 case "highDramaPhase01156_3": // Matchlock Musket choice
                 case "highDramaPhase01056_2": // Move Along choice
@@ -244,11 +229,7 @@ trait ZombieTrait
                     $this->gamestate->nextState();
                     break;
 
-                case "highDramaPhase01029": // The Pressure Is On
-                case "highDramaPhase01035_3": // Kaspar recruit choice
-                case "highDramaPhase01035_4": // Kaspar parley choice
-                case "highDramaPhase01035v2_3": // Kaspar v2 recruit choice
-                case "highDramaPhase01038_3": // Otto Streit attachment choice
+                // highDramaPhase01035_3 / 01035v2_3 / 01038_3 live in their State class zombie()
                 case "highDramaPhase01180": // Kaj Kousei
                 case "highDramaPhase01180_2": // Kaj Kousei
                 case "highDramaPhase01180_4": // Kaj Kousei performer
@@ -290,11 +271,7 @@ trait ZombieTrait
                     $this->gamestate->nextState("pass");
                     break;
 
-                case "highDramaPhase01035v2_4": // Kaspar v2 parley choice
-                    // WHY: No Parley. Bare nextState("pass") is not a transition on this state,
-                    // and Parley would open the City Reaction the zombie should not take.
-                    $this->actFromCardWithId(0);
-                    break;
+                // highDramaPhase01035v2_4 lives in State_highDramaPhase01035v2_4::zombie
 
                 // Challenge Action States
                 case "highDramaChallengeActionResolveTechnique_01063": // Bastien's Technique
@@ -313,8 +290,8 @@ trait ZombieTrait
                     break;
 
                 // Duel Choose Technique States
-                // duelChooseTechnique_01013 lives in State_duelChooseTechnique_01013::zombie
-                case "duelChooseTechnique_01036": // Daniela's Technique
+                // duelChooseTechnique_01013 / 01036 live in their State class zombie()
+                // duelEndOfRound_01031 lives in State_duelEndOfRound_01031::zombie
                 case "duelChooseTechnique_01067": // Jean Urbain's Technique
                     $this->gamestate->nextState("");
                     break;
@@ -386,10 +363,7 @@ trait ZombieTrait
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
                     break;
 
-                // highDramaPhase01008 lives in State_highDramaPhase01008::zombie
-                case "highDramaPhase01035": // Kaspar
-                case "highDramaPhase01035v2": // Kaspar v2
-                case "highDramaPhase01038": // Otto Streit
+                // highDramaPhase01008 / 01035 / 01035v2 / 01038 live in their State class zombie()
                 case "highDramaPhase01180": // Kaj Kousei
                 case "highDramaPhase01192": // Gustavo
                     // Default action: Acknowledge
