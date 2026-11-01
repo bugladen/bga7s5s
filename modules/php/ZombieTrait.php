@@ -37,10 +37,8 @@ trait ZombieTrait
         if ($state["type"] === "activeplayer") {
             switch ($stateName) {
                 // setupTable_05Gary / setupTable_01006 live in their State class zombie()
-                // planningPhaseResolveSchemes_01044 / 01045 live in their State class zombie()
+                // planningPhaseResolveSchemes_01044 / 01045 / 01071 / 01072 live in their State class zombie()
                 case "planningPhaseResolveSchemes_01150":
-                case "planningPhaseResolveSchemes_01071":
-                case "planningPhaseResolveSchemes_01072":
                 case "planningPhaseResolveSchemes_01125_3":
                 case "planningPhaseResolveSchemes_01125_4":
                 case "planningPhaseResolveSchemes_01144_2":
@@ -181,17 +179,7 @@ trait ZombieTrait
 
                 // High Drama Player Turn Event States (Card-Specific)
                 // highDramaPhase01011 / 01015 / 01044 / 01028_2 / 01035_4 live in their State class zombie()
-                case "highDramaPhase01055": // Last Word character
-                case "highDramaPhase01055_2": // Last Word location
-                case "highDramaPhase01056": // Move Along
-                case "highDramaPhase01058": // Press the Advantage
-                case "highDramaPhase01059": // Regroup
-                case "highDramaPhase01060": // Stratege location
-                case "highDramaPhase01060_2": // Stratege performers
-                case "highDramaPhase01060_3": // Stratege destination
-                case "highDramaPhase01068_2": // Léontine Giroux location
-                case "highDramaPhase01069_2": // Maxime De Lafayette discard
-                case "highDramaPhase01072_3": // Réputation Méritée muster
+                // highDramaPhase01055 / _2 / 01060_2 / _3 / 01068_2 / 01069_2 / 01072_2 live in their State class zombie()
                 case "highDramaPhase01076": // Blood Mark location
                 case "highDramaPhase01076_2": // Blood Mark character
                 case "highDramaPhase01147": // Let's Haggle
@@ -203,9 +191,7 @@ trait ZombieTrait
                     $this->actBack();
                     break;
 
-                // highDramaPhase01012 / 01017 / 01019 / 01020 / 01046a / 01049 live in their State class zombie()
-                case "highDramaPhase01068": // Léontine Giroux character
-                case "highDramaPhase01069": // Maxime De Lafayette character
+                // highDramaPhase01012 / 01017 / 01019 / 01020 / 01046a / 01049 / 01068 / 01069 live in their State class zombie()
                 case "highDramaPhase01156": // Matchlock Musket discard
                 case "highDramaPhase01185": // Risky Undertaking
                 case "highDramaPhase01189a": // Move reknown from
@@ -213,11 +199,9 @@ trait ZombieTrait
                         $this->gamestate->nextState("zombie");
                     break;
 
-                // highDramaPhase01024–01030 / 01034 / 01049_2 live in their State class zombie()
+                // highDramaPhase01024–01030 / 01034 / 01049_2 / 01056 / _2 / 01058 / 01059 / 01060 / 01072 live in their State class zombie()
                 case "highDramaPhase01156_2": // Matchlock Musket target
                 case "highDramaPhase01156_3": // Matchlock Musket choice
-                case "highDramaPhase01056_2": // Move Along choice
-                case "highDramaPhase01072_2": // Réputation Méritée city card
                 case "highDramaPhase01081": // Gallant Deeds
                 case "highDramaPhase01085": // Porté Travel
                 case "highDramaPhase01086": // Status Matters
@@ -274,10 +258,7 @@ trait ZombieTrait
                 // highDramaPhase01035v2_4 lives in State_highDramaPhase01035v2_4::zombie
 
                 // Challenge Action States
-                case "highDramaChallengeActionResolveTechnique_01063": // Bastien's Technique
-                case "highDramaChallengeActionResolveTechnique_01067": // Jean Urbain's Technique
-                    $this->gamestate->nextState("");
-                    break;
+                // highDramaChallengeActionResolveTechnique_01063 / 01067 live in their State class zombie()
 
                 // Duel States
                 case "duelChooseAction":
@@ -290,15 +271,11 @@ trait ZombieTrait
                     break;
 
                 // Duel Choose Technique States
-                // duelChooseTechnique_01013 / 01036 live in their State class zombie()
+                // duelChooseTechnique_01013 / 01036 / 01063 / 01067 live in their State class zombie()
                 // duelEndOfRound_01031 lives in State_duelEndOfRound_01031::zombie
-                case "duelChooseTechnique_01067": // Jean Urbain's Technique
-                    $this->gamestate->nextState("");
-                    break;
 
                 // Duel Resolve Maneuver States
-                case "duelResolveManeuver_01051": // Answering the Call
-                case "duelResolveManeuver_01059": // Regroup
+                // duelResolveManeuver_01051 / 01059 live in their State class zombie()
                 case "duelResolveManeuver_01079": // Disarm
                 case "duelResolveManeuver_01079_2": // Disarm choice
                     $this->gamestate->nextState("");
