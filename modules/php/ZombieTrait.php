@@ -37,10 +37,8 @@ trait ZombieTrait
         if ($state["type"] === "activeplayer") {
             switch ($stateName) {
                 // setupTable_05Gary / setupTable_01006 live in their State class zombie()
-                // planningPhaseResolveSchemes_01044 / 01045 / 01071 / 01072 live in their State class zombie()
+                // planningPhaseResolveSchemes_01044 / 01045 / 01071 / 01072 / 01125 live in their State class zombie()
                 case "planningPhaseResolveSchemes_01150":
-                case "planningPhaseResolveSchemes_01125_3":
-                case "planningPhaseResolveSchemes_01125_4":
                 case "planningPhaseResolveSchemes_01144_2":
                     $this->gamestate->nextState("");
                     break;
@@ -52,8 +50,6 @@ trait ZombieTrait
                     $this->actPass();
                     break;
 
-                case "planningPhaseResolveSchemes_01125":
-                case "planningPhaseResolveSchemes_01125_2":
                 case "planningPhaseResolveSchemes_01144":
                 case "planningPhaseResolveSchemes_01145":
                 case "planningPhaseResolveSchemes_01145_2":
