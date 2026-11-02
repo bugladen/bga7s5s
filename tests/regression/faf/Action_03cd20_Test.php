@@ -152,6 +152,27 @@ class Action_03cd20_Test extends TestCase
 
                 Assert::count(0, $world->theah->queuedEvents, 'silent');
             },
+
+            // WHY: After a successful pressure the card lives in Home. EventCityAction
+            // used to treat Home like any other location, so friendly chars at Home
+            // made the City Action usable again — including re-pressuring.
+            'City Action is unavailable while the card is in Home' => function () {
+                $world = new TestWorld();
+                $card = $world->placeCard(new _03cd20(), Game::LOCATION_PLAYER_HOME, 1);
+                $world->placeCharacter(new GenericCharacter('HomeBody'), Game::LOCATION_PLAYER_HOME, 1);
+                /** @var Action_03cd20 $action */
+                $action = $card->getActions()[0];
+
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'not while in Home');
+            },
+
+            'City Action is available when the card is in the city with a friendly character' => function () {
+                $world = new TestWorld();
+                [$card, $action] = $this->scene($world);
+                $world->placeCharacter(new GenericCharacter('AtDocks'), Game::LOCATION_CITY_DOCKS, 1);
+
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'city + friendly');
+            },
         ];
     }
 }

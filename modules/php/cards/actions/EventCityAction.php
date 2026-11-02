@@ -19,6 +19,15 @@ abstract class EventCityAction extends CardAction
         }
 
         $card = $this->getOwningCard($theah);
+
+        // WHY: City Actions require the event in a city location. _03cd20 can sit in a
+        // player's Home after a successful pressure; without this gate the action
+        // reappears whenever that player has characters at Home (same Location string).
+        if (! $theah->cardInCity($card))
+        {
+            return false;
+        }
+
         $location = $card->Location;
 
         //Any characters in play at location owned by player?
