@@ -38,17 +38,11 @@ trait ZombieTrait
             switch ($stateName) {
                 // setupTable_05Gary / setupTable_01006 live in their State class zombie()
                 // planningPhaseResolveSchemes_01044 / 01045 / 01071 / 01072 / 01125 live in their State class zombie()
-                // planningPhaseResolveSchemes_01126 / _2 / 01143 / 01144 / _2 / 01145 / _2 / 01150 live in their State class zombie()
+                // planningPhaseResolveSchemes_01126 / _2 / 01143 / 01144 / _2 / 01145 / _2 / 01150 / 01151 / _2 / 01152 / _2 / _3 live in their State class zombie()
                 // highDramaBeginning_01144 / _2 live in their State class zombie()
 
                 // Planning Phase States
                 // planningPhaseResolveSchemes_01016 / _2 live in their State class zombie()
-                case "planningPhaseResolveSchemes_01152":
-                case "planningPhaseResolveSchemes_01152_2":
-                case "planningPhaseResolveSchemes_01152_3":
-                    // Default action: Pass or take first available option
-                    $this->actPass("pass");
-                    break;
 
                 // High Drama Player Turn States
                 case "highDramaPlayerTurn":
@@ -133,15 +127,10 @@ trait ZombieTrait
                 // High Drama Player Turn Event States (Card-Specific)
                 // highDramaPhase01011 / 01015 / 01044 / 01028_2 / 01035_4 live in their State class zombie()
                 // highDramaPhase01055 / _2 / 01060_2 / _3 / 01068_2 / 01069_2 / 01072_2 / 01076_2 live in their State class zombie()
-                // highDramaPhase01147 / 01148 / 01149 live in their State class zombie()
-                case "highDramaPhase01152a": // Until Morale Improves
-                case "highDramaPhase01152b": // Until Morale Improves
-
-                    $this->actBack();
-                    break;
+                // highDramaPhase01147 / 01148 / 01149 / 01152a / 01152b live in their State class zombie()
 
                 // highDramaPhase01012 / 01017 / 01019 / 01020 / 01046a / 01049 / 01068 / 01069 / 01076 / 01086 live in their State class zombie()
-                case "highDramaPhase01156": // Matchlock Musket discard
+                // highDramaPhase01156 lives in State_highDramaPhase01156::zombie
                 case "highDramaPhase01185": // Risky Undertaking
                 case "highDramaPhase01189a": // Move reknown from
                 case "highDramaPhase01189b": // Move reknown to
@@ -149,14 +138,7 @@ trait ZombieTrait
                     break;
 
                 // highDramaPhase01024–01030 / 01034 / 01049_2 / 01056 / _2 / 01058 / 01059 / 01060 / 01072 / 01081 / 01085 live in their State class zombie()
-                // highDramaPhase01148_3 / _4 live in their State class zombie()
-                case "highDramaPhase01156_2": // Matchlock Musket target
-                case "highDramaPhase01156_3": // Matchlock Musket choice
-                case "highDramaPhase01160": // Bleed Out
-                case "highDramaPhase01161": // Boon
-
-                    $this->gamestate->nextState();
-                    break;
+                // highDramaPhase01148_3 / _4 / 01156_2 / _3 / 01160 / 01161 live in their State class zombie()
 
                 // highDramaPhase01035_3 / 01035v2_3 / 01038_3 live in their State class zombie()
                 case "highDramaPhase01180": // Kaj Kousei
@@ -220,11 +202,7 @@ trait ZombieTrait
                 // duelEndOfRound_01031 lives in State_duelEndOfRound_01031::zombie
 
                 // Duel Resolve Maneuver States
-                // duelResolveManeuver_01051 / 01059 / 01079 / _2 live in their State class zombie()
-
-                case "duelResolveManeuver_01165": // Copy Technique
-                    $this->gamestate->nextState("pass");
-                    break;
+                // duelResolveManeuver_01051 / 01059 / 01079 / _2 / 01164 / 01165 live in their State class zombie()
 
                 // Duel Apply Combat Card Stats States
                 // duelApplyCombatCardStats_01085 lives in State_duelApplyCombatCardStats_01085::zombie

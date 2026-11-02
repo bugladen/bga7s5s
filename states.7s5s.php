@@ -7,53 +7,7 @@ $machinestates += [
     // planningPhaseResolveSchemes_01016 / _2 / _3 live in State_planningPhaseResolveSchemes_01016*
 
     // planningPhaseResolveSchemes_01044 / 01045 / 01071 / 01072 / 01125 live in their State_* classes
-    // planningPhaseResolveSchemes_01126 / _2 / 01143 / 01144 / _2 / 01145 / _2 / _3 / 01147 / 01150 live in their State_* classes
-
-    States::PLANNING_PHASE_RESOLVE_SCHEMES_01152 => [
-        "name" => "planningPhaseResolveSchemes_01152",
-        "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} may choose a City Location to place a Renown onto.'),
-        "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} may choose a City Location to place a Renown onto: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithLocations",
-            "actFromCardPass"
-        ],
-        "transitions" => [
-            "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
-            "reknownPlaced" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-            ]
-        ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2 => [
-            "name" => "planningPhaseResolveSchemes_01152_2",
-            "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} must choose a City Location to move a Renown FROM, if able.'),
-            "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose a City Location to move a Renown FROM, if able: '),
-            "type" => "activeplayer",
-            "args" => "argsEmpty",
-            "possibleactions" => [
-                "actFromCardWithLocations",
-                "actFromCardPass"
-            ],
-            "transitions" => [
-                "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
-                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3
-                ]
-            ],
-        States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_3 => [
-            "name" => "planningPhaseResolveSchemes_01152_3",
-            "description" => clienttranslate('Until Morale Improves') . clienttranslate(': ${actplayer} must choose an adjacent City Location to move the Renown TO.'),
-            "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose an adjacent City Location to move the Renown TO:'),
-            "type" => "activeplayer",
-            "args" => "argsForState",
-            "possibleactions" => [
-                "actBack",
-                "actFromCardWithLocations"
-            ],
-            "transitions" => [
-                "back" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01152_2,
-                "locationChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS
-            ]
-        ],
+    // planningPhaseResolveSchemes_01126 / _2 / 01143 / 01144 / _2 / 01145 / _2 / _3 / 01147 / 01150 / 01151 / _2 / 01152 / _2 / _3 live in their State_* classes
 
     // highDramaBeginning_01144 / _2 live in their State_* classes
 
@@ -61,116 +15,8 @@ $machinestates += [
     // highDramaPhase01024–01030 / 01034–01035(v2) / 01038 / 01044 / 01046a / 01049 live in their State_* classes
     // highDramaPhase01055 / 01056 / 01058 / 01059 / 01060 / 01068 / 01069 / 01072 live in their State_* classes
     // highDramaPhase01076 / _2 / 01081 / 01085 / 01086 live in their State_* classes
-    // highDramaPhase01147 / 01148 / _2 / _3 / _4 / 01149 live in their State_* classes
-
-    States::HIGH_DRAMA_PLAYER_TURN_01152a => [
-        "name" => "highDramaPhase01152a",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose a character to En Garde: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actBack",
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
-            "targetChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01152b => [
-        "name" => "highDramaPhase01152b",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Until Morale Improves') . clienttranslate(': ${you} must choose a character to Engage: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actBack",
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
-            "targetChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-
-
-    States::HIGH_DRAMA_PLAYER_TURN_01156 => [
-        "name" => "highDramaPhase01156",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Matchlock Musket') . clienttranslate(': ${you} must choose a card to discard: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01156_2,
-            "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01156_2 => [
-        "name" => "highDramaPhase01156_2",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Matchlock Musket') . clienttranslate(': ${you} must choose a character to target: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01156_3 => [
-        "name" => "highDramaPhase01156_3",
-        "description" => clienttranslate('${actplayer} is choosing whether to Engage targeted Character or Wound them.'),
-        "descriptionmyturn" => clienttranslate('Matchlock Musket') . clienttranslate(': ${you} must choose whether to Engage or Wound your targeted Character: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01160 => [
-        "name" => "highDramaPhase01160",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Bleed Out') . clienttranslate(': ${you} must choose a wounded character to target:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01161 => [
-        "name" => "highDramaPhase01161",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Boon') . clienttranslate(': ${you} must choose a character to Equip Boon:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01161_2 => [
-        "name" => "highDramaPhase01161_2",
-        "type" => "game",
-        "action" => "stFromCard",
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS, 
-        ]
-    ],
+    // highDramaPhase01147 / 01148 / _2 / _3 / _4 / 01149 / 01152a / 01152b / 01154 / _2 / 01156 / _2 / _3 / 01158 / 01160 / 01161 / _2 live in their State_* classes
+    // highDramaPhase01162 / _2 / 01163 / _2 / _3 / 01164 / 01167 / _2 / _3 / _4 / 01171 / 01172 / 01174 / 01175 live in their State_* classes
 
     States::HIGH_DRAMA_PLAYER_TURN_01180 => [
         "name" => "highDramaPhase01180",
@@ -518,23 +364,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
 
     // duelChooseTechnique_01013 / 01036 / 01063 / 01067 live in their State_* classes
 
-    // duelResolveManeuver_01051 / 01059 / 01079 / _2 live in their State_* classes
-
-    States::DUEL_RESOLVE_MANEUVER_01165 => [
-        "name" => "duelResolveManeuver_01165",
-        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-        "descriptionmyturn" => clienttranslate('I Know That Trick!') . clienttranslate(': ${you} must choose a Technique to copy:'),
-        "type" => "activeplayer",
-        "args" => "argsForStatePrivate",
-        "possibleactions" => [
-            "actFromCardWithIds", 
-            "actPassWithPass",
-        ],
-        "transitions" => [
-            "cardChosen" => States::DUEL_CHOOSE_TECHNIQUE_EVENTS,
-            "pass" => States::DUEL_RESOLVE_MANEUVER_EVENTS
-        ]
-    ],
+    // duelResolveManeuver_01051 / 01059 / 01079 / _2 / 01164 / 01165 live in their State_* classes
 
     States::DUEL_RESOLVE_MANEUVER_01200 => [
         "name" => "duelResolveManeuver_01200",
