@@ -4175,5 +4175,3 @@ $machinestates = [
     ],
 
 ];
-
-include("states.7s5s.php");

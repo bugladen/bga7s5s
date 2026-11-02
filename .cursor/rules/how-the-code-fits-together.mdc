@@ -8,8 +8,8 @@ This codebase is for an online adaption of the card game 7th Sea: City of Five S
 Anything related to the backend is written in PHP.  
 Anything written for the UI or front-end is written in Javascript.  jQuery is available. Dojo is available.
 
-The entire backend is a state machine and centers around the file:states.inc.php.  states.inc.php is a huge associative array.  The indexes for the array are named constants.  
-states.inc.php also includes the file states.7s5s.php which includes the same function.
+The entire backend is a state machine and centers around the file:states.inc.php.  states.inc.php is a huge associative array.  The indexes for the array are named constants.
+Card-specific interactive states live as GameState classes under `modules/php/States/<expansion>/` (discovered by the BGA framework); framework hub states stay as array entries in states.inc.php.
 There are three types of states:
 1. game: This is a state run by the state machine automatically when the state is transitioned to.  There is no player interaction with this state.
 2. activeplayer: This is a single-player state.  The game waits for the player to perform an action and then transitions to another state based on the action.

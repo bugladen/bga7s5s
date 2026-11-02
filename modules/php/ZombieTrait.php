@@ -130,57 +130,16 @@ trait ZombieTrait
                 // highDramaPhase01147 / 01148 / 01149 / 01152a / 01152b live in their State class zombie()
 
                 // highDramaPhase01012 / 01017 / 01019 / 01020 / 01046a / 01049 / 01068 / 01069 / 01076 / 01086 live in their State class zombie()
-                // highDramaPhase01156 lives in State_highDramaPhase01156::zombie
-                case "highDramaPhase01185": // Risky Undertaking
-                case "highDramaPhase01189a": // Move reknown from
-                case "highDramaPhase01189b": // Move reknown to
-                        $this->gamestate->nextState("zombie");
-                    break;
+                // highDramaPhase01156 / 01185 / 01189a / 01189b live in their State class zombie()
 
                 // highDramaPhase01024–01030 / 01034 / 01049_2 / 01056 / _2 / 01058 / 01059 / 01060 / 01072 / 01081 / 01085 live in their State class zombie()
                 // highDramaPhase01148_3 / _4 / 01156_2 / _3 / 01160 / 01161 live in their State class zombie()
 
                 // highDramaPhase01035_3 / 01035v2_3 / 01038_3 live in their State class zombie()
-                case "highDramaPhase01180": // Kaj Kousei
-                case "highDramaPhase01180_2": // Kaj Kousei
-                case "highDramaPhase01180_4": // Kaj Kousei performer
-                case "highDramaPhase01180_5": // Kaj Kousei payment
-                case "highDramaPhase01192": // Gustavo
-                case "highDramaPhase01192_2": // Gustavo
-                case "highDramaPhase01192_3": // Gustavo risk choice
-                case "highDramaPhase01194": // Adelheide attachment
-                case "highDramaPhase01194_2": // Adelheide character
-                case "highDramaPhase01197": // Kalla character from
-                case "highDramaPhase01197_2": // Kalla attachment
-                case "highDramaPhase01197_3": // Kalla character to
-                case "highDramaPhase01200": // Crystal Eye opponent
-                    {
-                        // WHY: Day-5 empty Approach → Pass; otherwise pick first legal opponent.
-                        $args = $this->argsForState();
-                        $opponents = $args['args']['opponents'] ?? [];
-                        if (!empty($opponents)) {
-                            $this->actFromCardWithId((int)$opponents[0]['id']);
-                        } else {
-                            $this->actFromCardPass();
-                        }
-                    }
-                    break;
-                case "highDramaPhase01200_2": // Crystal Eye card
-                    {
-                        $args = $this->argsForStatePrivate();
-                        $cards = $args['_private']['active']['args']['cards'] ?? [];
-                        if (!empty($cards)) {
-                            $this->actFromCardWithId((int)($cards[0]['id'] ?? $cards[0]['Id']));
-                        } else {
-                            $this->actFromCardPass();
-                        }
-                    }
-                    break;
-                case "highDramaPhase01205": // Kidnap character
-                case "highDramaPhase01205_2": // Kidnap location
-                    // Default action: Pass or take first available option
-                    $this->gamestate->nextState("pass");
-                    break;
+                // highDramaPhase01180 / _2 / _4 / _5 / 01192 / _2 / _3 / 01194 / _2 / 01197 / _2 / _3 live in their State class zombie()
+                // highDramaPhase01200 / _2 / 01205 / _2 live in their State class zombie()
+                // planningPhaseResolveSchemes_01200 / _2 / planningPhaseApproach01200 / _2 live in their State class zombie()
+                // duelResolveManeuver_01200 / _2 / duelEndOfRound_01200 / _2 live in their State class zombie()
 
                 // highDramaPhase01035v2_4 lives in State_highDramaPhase01035v2_4::zombie
 
@@ -202,18 +161,16 @@ trait ZombieTrait
                 // duelEndOfRound_01031 lives in State_duelEndOfRound_01031::zombie
 
                 // Duel Resolve Maneuver States
-                // duelResolveManeuver_01051 / 01059 / 01079 / _2 / 01164 / 01165 live in their State class zombie()
+                // duelResolveManeuver_01051 / 01059 / 01079 / _2 / 01164 / 01165 / 01200 / _2 live in their State class zombie()
 
                 // Duel Apply Combat Card Stats States
                 // duelApplyCombatCardStats_01085 lives in State_duelApplyCombatCardStats_01085::zombie
 
+                // Duel End Of Round States
+                // duelEndOfRound_01200 / _2 live in their State class zombie()
 
                 // Dusk Phase States
-                case "duskPhaseBegin01177": // Penya choice
-                case "duskPhaseBegin01177_2": // Penya card order
-                    // Default action: Pass
-                    $this->actPass();
-                    break;
+                // duskPhaseBegin01177 / _2 live in their State class zombie()
 
                 // Generic Reaction States
                 case "playerReaction":
@@ -254,12 +211,7 @@ trait ZombieTrait
                 // Acknowledgment States
                 // planningPhaseResolveSchemes_01016_3 / 01147 live in their State class zombie()
 
-                // highDramaPhase01008 / 01035 / 01035v2 / 01038 live in their State class zombie()
-                case "highDramaPhase01180": // Kaj Kousei
-                case "highDramaPhase01192": // Gustavo
-                    // Default action: Acknowledge
-                    $this->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
-                    break;
+                // highDramaPhase01008 / 01035 / 01035v2 / 01038 / 01180 / 01192 live in their State class zombie()
 
                 // Dusk Phase Discard
                 case "duskPhaseDiscard":

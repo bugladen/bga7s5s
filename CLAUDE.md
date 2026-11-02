@@ -29,7 +29,7 @@ Suites are in `tests/regression/<expansion>/*_Test.php` (`core`=01, `tac`=02, `f
 
 ### State Machine (core of the game)
 
-The entire backend is a state machine defined in `states.inc.php` (which includes `states.7s5s.php`). Each state is an element in a large associative array keyed by named constants from `modules/php/States.php`.
+The entire backend is a state machine defined in `states.inc.php`. Framework hub states are array entries keyed by named constants from `modules/php/States.php`. Card-specific interactive states are GameState classes under `modules/php/States/<expansion>/`.
 
 Three state types:
 - **game** — auto-runs on transition, no player interaction
@@ -85,7 +85,7 @@ New action classes follow this structure:
 - **Required methods**: `isAvailableToPlayer()`, `handleEvent()`, `getArgsFromAction()`, `actFromActionWithId()`
 - **State constants**: `States::HIGH_DRAMA_PLAYER_TURN_{CARD_ID}`
 - **State names**: `highDramaPlayerTurn_{CARD_ID}`
-- States must be registered in both `states.inc.php` and `states.7s5s.php`
+- Register the state constant in `States.php`, a transition key on the relevant EVENTS hub in `states.inc.php`, and a GameState class under `modules/php/States/<expansion>/`
 - Use `EventFactory::createTransitionEvent()` for state transitions
 - Always call `$game->gamestate->nextState()` at the end of action methods
 
