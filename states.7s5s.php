@@ -273,80 +273,8 @@ $machinestates += [
     // highDramaPhase01011 / 01012 / 01015 / 01017 / 01019 / 01020 live in their State_* classes
     // highDramaPhase01024–01030 / 01034–01035(v2) / 01038 / 01044 / 01046a / 01049 live in their State_* classes
     // highDramaPhase01055 / 01056 / 01058 / 01059 / 01060 / 01068 / 01069 / 01072 live in their State_* classes
+    // highDramaPhase01076 / _2 / 01081 / 01085 / 01086 live in their State_* classes
 
-    States::HIGH_DRAMA_PLAYER_TURN_01076 => [
-        "name" => "highDramaPhase01076",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Blood Mark') . clienttranslate(': ${you} must choose a City location to move Performer: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actBack",
-            "actFromCardWithLocations"
-        ],
-        "transitions" => [
-            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_01076_2
-        ]
-    ],
-    States::HIGH_DRAMA_PLAYER_TURN_01076_2 => [
-        "name" => "highDramaPhase01076_2",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Blood Mark') . clienttranslate(': ${you} may Wound Performer and choose Character to include: '),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actBack",
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "back" => States::HIGH_DRAMA_PLAYER_TURN_01076,
-            "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01081 => [
-        "name" => "highDramaPhase01081",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Gallant Deeds') . clienttranslate(': ${you} must choose an Opposing Character to Engage:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId",
-            "actPass"
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01085 => [
-        "name" => "highDramaPhase01085",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Porté Travel') . clienttranslate(': ${you} must choose a character to move:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId"
-        ],
-        "transitions" => [
-            "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-
-    States::HIGH_DRAMA_PLAYER_TURN_01086 => [
-        "name" => "highDramaPhase01086",
-        "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
-        "descriptionmyturn" => clienttranslate('Status Matters') . clienttranslate(': ${you} must choose a location to make Uncontrolled:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithLocations"
-        ],
-        "transitions" => [
-            "locationChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
-        ]
-    ],
-    
     States::HIGH_DRAMA_PLAYER_TURN_01147 => [
         "name" => "highDramaPhase01147",
         "description" => clienttranslate('${actplayer} is choosing options to perform an Action.'),
@@ -886,34 +814,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
 
     // duelChooseTechnique_01013 / 01036 / 01063 / 01067 live in their State_* classes
 
-    // duelResolveManeuver_01051 / 01059 live in their State_* classes
-
-    States::DUEL_RESOLVE_MANEUVER_01079 => [
-        "name" => "duelResolveManeuver_01079",
-        "description" => clienttranslate('${actplayer} is choosing their Duel Action options.'),
-        "descriptionmyturn" => clienttranslate('Disarm') . clienttranslate(': ${you} must choose a Adversary\'s weapon to destroy:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId", 
-        ],
-        "transitions" => [
-            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
-        ]
-    ],
-    States::DUEL_RESOLVE_MANEUVER_01079_2 => [
-        "name" => "duelResolveManeuver_01079_2",
-        "description" => clienttranslate('${actplayer} is choosing to destroy their weapon or take a wound.'),
-        "descriptionmyturn" => clienttranslate('Disarm') . clienttranslate(': ${you} must choose to destroy your weapon or take a wound:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId", 
-        ],
-        "transitions" => [
-            "" => States::DUEL_RESOLVE_MANEUVER_EVENTS,
-        ]
-    ],
+    // duelResolveManeuver_01051 / 01059 / 01079 / _2 live in their State_* classes
 
     States::DUEL_RESOLVE_MANEUVER_01165 => [
         "name" => "duelResolveManeuver_01165",
@@ -963,19 +864,7 @@ States::HIGH_DRAMA_PLAYER_TURN_01194 => [
         ]
     ],
     
-    States::DUEL_APPLY_COMBAT_CARD_STATS_01085 => [
-        "name" => "duelApplyCombatCardStats_01085",
-        "description" => clienttranslate('Porté Travel\'s Forced Ability: ${actplayer} is choosing their Sorcerer.'),
-        "descriptionmyturn" => clienttranslate('Porté Travel') . clienttranslate(': ${you} must choose a Sorcerer:'),
-        "type" => "activeplayer",
-        "args" => "argsForState",
-        "possibleactions" => [
-            "actFromCardWithId", 
-        ],
-        "transitions" => [
-            "" => States::DUEL_APPLY_COMBAT_CARD_STATS_EVENTS,
-        ]
-    ],
+    // duelApplyCombatCardStats_01085 lives in State_duelApplyCombatCardStats_01085
 
     // duelEndOfRound_01031 lives in State_duelEndOfRound_01031
 

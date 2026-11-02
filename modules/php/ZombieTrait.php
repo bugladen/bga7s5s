@@ -179,9 +179,7 @@ trait ZombieTrait
 
                 // High Drama Player Turn Event States (Card-Specific)
                 // highDramaPhase01011 / 01015 / 01044 / 01028_2 / 01035_4 live in their State class zombie()
-                // highDramaPhase01055 / _2 / 01060_2 / _3 / 01068_2 / 01069_2 / 01072_2 live in their State class zombie()
-                case "highDramaPhase01076": // Blood Mark location
-                case "highDramaPhase01076_2": // Blood Mark character
+                // highDramaPhase01055 / _2 / 01060_2 / _3 / 01068_2 / 01069_2 / 01072_2 / 01076_2 live in their State class zombie()
                 case "highDramaPhase01147": // Let's Haggle
                 case "highDramaPhase01148": // Marooned
                 case "highDramaPhase01149": // Midnight Shipment
@@ -191,7 +189,7 @@ trait ZombieTrait
                     $this->actBack();
                     break;
 
-                // highDramaPhase01012 / 01017 / 01019 / 01020 / 01046a / 01049 / 01068 / 01069 live in their State class zombie()
+                // highDramaPhase01012 / 01017 / 01019 / 01020 / 01046a / 01049 / 01068 / 01069 / 01076 / 01086 live in their State class zombie()
                 case "highDramaPhase01156": // Matchlock Musket discard
                 case "highDramaPhase01185": // Risky Undertaking
                 case "highDramaPhase01189a": // Move reknown from
@@ -199,12 +197,9 @@ trait ZombieTrait
                         $this->gamestate->nextState("zombie");
                     break;
 
-                // highDramaPhase01024–01030 / 01034 / 01049_2 / 01056 / _2 / 01058 / 01059 / 01060 / 01072 live in their State class zombie()
+                // highDramaPhase01024–01030 / 01034 / 01049_2 / 01056 / _2 / 01058 / 01059 / 01060 / 01072 / 01081 / 01085 live in their State class zombie()
                 case "highDramaPhase01156_2": // Matchlock Musket target
                 case "highDramaPhase01156_3": // Matchlock Musket choice
-                case "highDramaPhase01081": // Gallant Deeds
-                case "highDramaPhase01085": // Porté Travel
-                case "highDramaPhase01086": // Status Matters
                 case "highDramaPhase01148_3": // Marooned discard
                 case "highDramaPhase01148_4": // Marooned manipulate
                 case "highDramaPhase01160": // Bleed Out
@@ -275,21 +270,15 @@ trait ZombieTrait
                 // duelEndOfRound_01031 lives in State_duelEndOfRound_01031::zombie
 
                 // Duel Resolve Maneuver States
-                // duelResolveManeuver_01051 / 01059 live in their State class zombie()
-                case "duelResolveManeuver_01079": // Disarm
-                case "duelResolveManeuver_01079_2": // Disarm choice
-                    $this->gamestate->nextState("");
-                    break;
+                // duelResolveManeuver_01051 / 01059 / 01079 / _2 live in their State class zombie()
 
                 case "duelResolveManeuver_01165": // Copy Technique
                     $this->gamestate->nextState("pass");
                     break;
 
                 // Duel Apply Combat Card Stats States
-                case "duelApplyCombatCardStats_01085": // Porté Travel
-                    // Default action: Pass or take first available option
-                    $this->gamestate->nextState("");
-                    break;
+                // duelApplyCombatCardStats_01085 lives in State_duelApplyCombatCardStats_01085::zombie
+
 
                 // Dusk Phase States
                 case "duskPhaseBegin01177": // Penya choice
