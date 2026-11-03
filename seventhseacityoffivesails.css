@@ -690,6 +690,9 @@ body._7sfs-halloween {
     z-index: 1;
 }
 
+/* WHY: Right-column stack at 25px stride (chip height) so Yevgeni / Maryam /
+   Carmella / Indomitable Will never share a slot. Maryam+Carmella previously
+   both sat at top:30. left:80 unchanged — Challenger/Defender stay at 80,0. */
 ._7sfs-yevgeni-adversary-chip {
     position: absolute;
     background-image: url('https://dtdb.co/images/7s5s/en/01125.jpg');
@@ -714,7 +717,7 @@ body._7sfs-halloween {
     border-radius: 50%;
     display: inline-block;
     left: 80px;
-    top: 30px;
+    top: 25px;
     border: 2px solid orangered
 }
 
@@ -728,7 +731,7 @@ body._7sfs-halloween {
     border-radius: 50%;
     display: inline-block;
     left: 80px;
-    top: 30px;
+    top: 50px;
     border: 2px solid lime
 }
 
@@ -761,7 +764,7 @@ body._7sfs-halloween {
     border-radius: 50%;
     display: inline-block;
     left: 80px;
-    top: 60px;
+    top: 75px;
     border: 2px solid orangered
 }
 
