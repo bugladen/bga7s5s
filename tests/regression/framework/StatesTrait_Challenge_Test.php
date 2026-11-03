@@ -352,6 +352,9 @@ class StatesTrait_Challenge_Test extends TestCase
                 Assert::same([$c->Id, $t->Id], array_slice($game->updatedCardObjectIds, 0, 2), 'both persisted');
                 Assert::same(0, $game->globals->get(Game::PASS_COUNT), 'pass count reset');
                 Assert::false($game->globals->has(Game::CHALLENGE_ACCEPTED), 'accept cleared');
+                // WHY: Must consume the flag — leaving it true poisons the next challenge
+                // at stTechniqueAvailable (Épée / Sanjay sticky-cancel reports).
+                Assert::false($game->globals->has(Game::CHALLENGE_CANCELLED), 'cancel flag consumed');
                 $resolved = $game->queued(EventActionResolved::class);
                 Assert::count(1, $resolved, 'action resolved');
                 Assert::same(1, $resolved[0]->playerId, 'for the challenger controller');
@@ -480,13 +483,35 @@ class StatesTrait_Challenge_Test extends TestCase
 
                 Assert::true($maryam->hasCondition(Game::MARYAM_BENU_PLEROMA_ABILITY_USED), 'ability marked used');
                 Assert::same(['cancelled'], $game->gamestate->transitions, 'cancelled');
-                Assert::true($game->globals->get(Game::CHALLENGE_CANCELLED), 'cancel flag set');
+                // Flag is set mid-gate to drive cancel, then consumed so the next challenge lives.
+                Assert::false($game->globals->has(Game::CHALLENGE_CANCELLED), 'cancel flag consumed');
 
                 // Second time: already used, so it must not cancel again.
                 $game->gamestate->transitions = [];
-                $game->globals->delete(Game::CHALLENGE_CANCELLED);
                 $game->stChallengeActionCheckCancelled();
                 Assert::same(['notCancelled'], $game->gamestate->transitions, 'only once');
+            },
+
+            // WHY: Repro for sticky CHALLENGE_CANCELLED after a handled cancel — the next
+            // challenge's technique gate must issue, not skipChallengeBeforeTechnique.
+            'after checkCancelled consumes the flag, stTechniqueAvailable issues the next challenge' => function () {
+                $game = new StatesTraitGame();
+                [$c, $t] = $this->duelists($game);
+                $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+
+                $game->stChallengeActionCheckCancelled();
+                Assert::false($game->globals->has(Game::CHALLENGE_CANCELLED), 'consumed');
+                Assert::same(['cancelled'], $game->gamestate->transitions, 'prior cancel done');
+
+                $game->gamestate->transitions = [];
+                $game->notify->messages = [];
+                $game->theah->takeQueuedEvents();
+                $game->stTechniqueAvailable();
+
+                Assert::count(1, $game->queued(EventChallengeIssued::class), 'next challenge issued');
+                Assert::same($c->Id, $game->queued(EventChallengeIssued::class)[0]->challengerId, 'challenger');
+                Assert::same($t->Id, $game->queued(EventChallengeIssued::class)[0]->defenderId, 'defender');
+                Assert::same(['noTechnique'], $game->gamestate->transitions, 'proceeded');
             },
 
             // ---- technique / threat ------------------------------------------------

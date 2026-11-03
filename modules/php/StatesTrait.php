@@ -603,6 +603,9 @@ trait StatesTrait
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+        // WHY: Same sticky-flag hygiene as stNextPlayer / checkCancelled cancel — a
+        // leftover true skips the first challenge of the phase at technique available.
+        $this->globals->delete(Game::CHALLENGE_CANCELLED);
         $this->gamestate->nextState("");
     }
 
@@ -614,6 +617,10 @@ trait StatesTrait
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+        // WHY: Belt-and-suspenders with checkCancelled / stNextPlayer. Extra-action
+        // re-entry hits this without a full phase reset; sticky true still kills
+        // the next challenge at stTechniqueAvailable.
+        $this->globals->delete(Game::CHALLENGE_CANCELLED);
 
         $this->globals->delete(Game::IS_BASIC_CLAIM_ACTION);
         $this->globals->delete(Game::ABNORMAL_FLOW);
@@ -1047,6 +1054,12 @@ trait StatesTrait
 
             $this->globals->set(Game::PASS_COUNT, 0);
             $this->globals->delete(Game::CHALLENGE_ACCEPTED);
+            // WHY: Consume the flag here. Leaving it true after "cancelled" → NEXT_PLAYER
+            // poisons the next challenge at stTechniqueAvailable (reads the flag before
+            // stIssueChallenge resets it) — Épée / Sanjay "chosen to Challenge" then
+            // immediate ActionResolved + "Challenge was cancelled" with no issue line.
+            // skipChallengeBeforeTechnique already deletes; this path did not.
+            $this->globals->delete(Game::CHALLENGE_CANCELLED);
 
             $resolvedPlayerId = $challenger !== null
                 ? $challenger->ControllerId
@@ -2136,6 +2149,10 @@ trait StatesTrait
         $this->globals->set(Game::EQUIP_TYPE, Game::NORMAL_EQUIP_TYPE);
         $this->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
         $this->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+        // WHY: Cancel-at-checkCancelled used to leave CHALLENGE_CANCELLED true through
+        // this state. Extra actions (and the next player's first challenge) then died
+        // at stTechniqueAvailable. Clear with the other per-action challenge globals.
+        $this->globals->delete(Game::CHALLENGE_CANCELLED);
 
         $this->globals->delete(Game::SMUGGLED_ITEM_ATTACHMENT_ID);
 

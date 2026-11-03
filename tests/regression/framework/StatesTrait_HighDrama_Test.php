@@ -35,6 +35,7 @@ class StatesTrait_HighDrama_Test extends TestCase
         $game->globals->set(Game::EQUIP_TYPE, Game::SMUGGLED_ITEM_EQUIP_TYPE);
         $game->globals->set(Game::CHALLENGE_TYPE, Game::TRISKELION_CHALLENGE_TYPE);
         $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_INFLUENCE);
+        $game->globals->set(Game::CHALLENGE_CANCELLED, true);
         $game->globals->set(Game::IS_BASIC_CLAIM_ACTION, true);
         $game->globals->set(Game::ABNORMAL_FLOW, true);
     }
@@ -47,6 +48,7 @@ class StatesTrait_HighDrama_Test extends TestCase
         Assert::same(Game::NORMAL_EQUIP_TYPE, $game->globals->get(Game::EQUIP_TYPE), 'equip type');
         Assert::same(Game::NORMAL_CHALLENGE_TYPE, $game->globals->get(Game::CHALLENGE_TYPE), 'challenge type');
         Assert::same(Game::STAT_COMBAT, $game->globals->get(Game::CHALLENGE_STAT), 'challenge stat');
+        Assert::false($game->globals->has(Game::CHALLENGE_CANCELLED), 'challenge cancelled cleared');
     }
 
     private function action(string $id, bool $requiresPerformer): Action
@@ -441,6 +443,7 @@ class StatesTrait_HighDrama_Test extends TestCase
                     Game::REVEALED_CARDS, Game::ABNORMAL_FLOW, Game::DISCOUNT, Game::PRESSURE_BONUS, Game::LOYAL_PLAYER_ID,
                     Game::VANTAGE_POINT_PLAYER_ID, Game::MEETING_OF_THE_MINDS_PLAYER_ID, Game::SMUGGLED_ITEM_ATTACHMENT_ID,
                     Game::IN_PLAY_ACTION_TRIGGER_PENDING, Game::IN_PLAY_ACTION_ENTRY_TRANSITION, Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID,
+                    Game::CHALLENGE_CANCELLED,
                 ] as $key) {
                     $game->globals->set($key, 'dirty');
                 }
@@ -457,6 +460,7 @@ class StatesTrait_HighDrama_Test extends TestCase
                     Game::REVEALED_CARDS, Game::ABNORMAL_FLOW, Game::DISCOUNT, Game::PRESSURE_BONUS, Game::LOYAL_PLAYER_ID,
                     Game::VANTAGE_POINT_PLAYER_ID, Game::MEETING_OF_THE_MINDS_PLAYER_ID, Game::SMUGGLED_ITEM_ATTACHMENT_ID,
                     Game::IN_PLAY_ACTION_TRIGGER_PENDING, Game::IN_PLAY_ACTION_ENTRY_TRANSITION, Game::IN_PLAY_ACTION_ENTRY_PLAYER_ID,
+                    Game::CHALLENGE_CANCELLED,
                 ] as $key) {
                     Assert::false($game->globals->has($key), "{$key} deleted");
                 }
