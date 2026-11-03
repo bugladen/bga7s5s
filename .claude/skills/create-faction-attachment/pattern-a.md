@@ -139,7 +139,9 @@ When printed text says the card equips to an **opposing** character (not "your" 
 
 References: `_01021` (Legion's Caress — non-Leader + City; no Finesse compare), `_03066` (Shackles — opposing + less Finesse than performer).
 
-**"Opposing"** (wiring.md): different `ControllerId` **and** same location.
+**"Opposing"** (wiring.md): different `ControllerId` **and** same **City** location. Home is **not** opposing.
+
+**Home footgun:** `Game::LOCATION_PLAYER_HOME` is one shared string for every player. A same-location ally scan at Home will see both players' Home characters as co-located. Always `cardInCity` (or an explicit City gate) before that scan — `_03066` / `_01021`. HD Equip args must not offer opposing Home hosts for `CanEquipToOpponents` (own Home stays for normal attachments).
 
 ### "Less [Stat] than your performer" under opponent-equip
 
@@ -147,14 +149,20 @@ Printed text often still says "your performer" even though BGA collapsed perform
 
 Canonical resolution (`_03066` Shackles):
 
+- Target must be in the **City** (`cardInCity`) — not Home.
 - Target must be opposing (`ControllerId != equipping player`).
-- You must control a character **at the target's location** with `ModifiedFinesse > target.ModifiedFinesse` (that ally is the implicit performer). Same-location also satisfies the "opposing" location half.
+- You must control a character **at the target's City location** with `ModifiedFinesse > target.ModifiedFinesse` (that ally is the implicit performer). Same-location also satisfies the "opposing" location half.
 
 ```php
 if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
 {
     $character = $event->theah->getCharacterById($event->characterId);
     $playerId = $event->playerId;
+
+    if (! $event->theah->cardInCity($character))
+    {
+        throw new UserException(/* City only */);
+    }
 
     if ($character->ControllerId == $playerId)
     {
@@ -182,8 +190,13 @@ public function canAttachTo(Character $character): bool
         return false;
     }
 
+    // City gate without Theah — Home is a shared location string.
+    $inCity = in_array($character->Location, [/* five LOCATION_CITY_* */], true);
+
     // Finesse vs same-location performer needs Theah — eventCheck only.
-    return $this->ControllerId > 0 && $character->ControllerId != $this->ControllerId;
+    return $inCity
+        && $this->ControllerId > 0
+        && $character->ControllerId != $this->ControllerId;
 }
 ```
 

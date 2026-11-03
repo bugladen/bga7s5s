@@ -164,11 +164,17 @@ class ArgumentsTrait_HighDrama_Test extends TestCase
                 $game = new FrameworkActionsGame();
                 $mine = $game->place(new GenericCharacter('Mine'), Game::LOCATION_CITY_DOCKS, 1);
                 $theirs = $game->place(new GenericCharacter('Theirs'), Game::LOCATION_CITY_FORUM, 2);
+                $theirsHome = $game->place(new GenericCharacter('Theirs Home'), Game::LOCATION_PLAYER_HOME, 2);
+                $mineHome = $game->place(new GenericCharacter('Mine Home'), Game::LOCATION_PLAYER_HOME, 1);
                 $game->place(new GenericFactionAttachment('Curse', 1, true), Game::LOCATION_HAND, 1);
 
                 $ids = $game->argsHighDramaEquipActionChoosePerformer()['_private']['active']['ids'];
                 Assert::true(in_array($mine->Id, $ids, true), 'own');
                 Assert::true(in_array($theirs->Id, $ids, true), 'opponent via CanEquipToOpponents');
+                Assert::true(in_array($mineHome->Id, $ids, true), 'own Home still equippable');
+                // WHY: Shackles/Caress are City "opposing" only; shared Home string must not
+                // surface opposing Home hosts just because CanEquipToOpponents is in hand.
+                Assert::false(in_array($theirsHome->Id, $ids, true), 'opposing Home excluded');
             },
 
             'argsHighDramaEquipActionChooseAttachmentFromHand / PayForAttachmentFromHand expose hand picks' => function () {

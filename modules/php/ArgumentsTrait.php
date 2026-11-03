@@ -274,14 +274,11 @@ trait ArgumentsTrait
             }
         }
 
-        if ($canEquipToOpponents)
-        {
-            $charactersAtHome = $this->theah->getCharactersAtHome();
-        }
-        else
-        {
-            $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
-        }
+        // WHY: CanEquipToOpponents (Shackles / Legion's Caress) targets City "opposing"
+        // characters only. LOCATION_PLAYER_HOME is one shared string for every player —
+        // getCharactersAtHome() would offer opposing Home hosts, which both cards reject.
+        // Keep own Home so normal hand attachments can still equip there.
+        $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
         foreach($charactersAtHome as $character) {
             if (! $character->canReceiveAttachments()) {
                 continue;

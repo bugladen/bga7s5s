@@ -591,14 +591,9 @@ trait FrameworkActionsTrait
             }
         }
 
-        if ($canEquipToOpponents)
-        {
-            $charactersAtHome = $this->theah->getCharactersAtHome();
-        }
-        else
-        {
-            $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
-        }
+        // WHY: Mirror argsHighDramaEquipActionChoosePerformer — CanEquipToOpponents is
+        // City-only; do not offer opposing Home hosts (shared LOCATION_PLAYER_HOME).
+        $charactersAtHome = $this->theah->getCharactersAtHomeByPlayerId($playerId);
 
         foreach ($charactersAtHome as $character) {
             if (! $character->canReceiveAttachments()) {

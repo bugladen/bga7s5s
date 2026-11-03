@@ -42,13 +42,17 @@ class Card_03066_Test extends TestCase
             },
 
             // WHY: The equip target is not "your performer". You need your own character at
-            // that location with strictly higher Finesse. Same controller is rejected first.
-            // Equipping stamps the cannot-move condition. End of High Drama destroys it.
+            // that City location with strictly higher Finesse. Same controller is rejected
+            // first. Home is rejected even when a higher-Finesse ally shares LOCATION_PLAYER_HOME
+            // (shared string across players). Equipping stamps the cannot-move condition.
+            // End of High Drama destroys it.
             'equips only to an opposing character with less finesse' => function () {
                 $world = new TestWorld();
                 $shackles = $world->placeCard(new _03066(), Game::LOCATION_HAND, 1);
                 $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_DOCKS, 2);
                 $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
+                $homeTarget = $world->placeCharacter(new GenericCharacter('Home Target'), Game::LOCATION_PLAYER_HOME, 2);
+                $homeAlly = $world->placeCharacter(new GenericCharacter('Home Ally'), Game::LOCATION_PLAYER_HOME, 1);
                 $equipping = new EventAttachmentEquipping();
                 $equipping->theah = $world->theah;
                 $equipping->attachmentId = $shackles->Id;
@@ -77,8 +81,21 @@ class Card_03066_Test extends TestCase
                 }
                 Assert::true($threw, 'same controller');
 
+                $equipping->playerId = 1;
+                $equipping->characterId = $homeTarget->Id;
+                $homeAlly->ModifiedFinesse = 5;
+                $homeTarget->ModifiedFinesse = 1;
+                $threw = false;
+                try {
+                    $shackles->eventCheck($equipping);
+                } catch (UserException) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'Home rejected despite higher-Finesse Home ally');
+
                 Assert::false($shackles->canAttachTo($ally), 'ally controller matches shackles');
-                Assert::true($shackles->canAttachTo($target), 'opposing');
+                Assert::true($shackles->canAttachTo($target), 'opposing city');
+                Assert::false($shackles->canAttachTo($homeTarget), 'opposing Home');
 
                 $shackles->AttachedToId = $target->Id;
                 $equipped = new EventAttachmentEquipped();

@@ -65,8 +65,17 @@ class _03066 extends FactionAttachment
             $character = $event->theah->getCharacterById($event->characterId);
             $playerId = $event->playerId;
 
+            // WHY: "Opposing character" is City same-location only. LOCATION_PLAYER_HOME
+            // is one shared string for every player — without a City gate, a Home ally
+            // with higher Finesse looks co-located with an opposing Home target and the
+            // ally scan below would wrongly pass (Legion's Caress _01021 shape).
+            if (! $event->theah->cardInCity($character))
+            {
+                throw new UserException($event->theah->game->translate("Shackles can only be equipped to an opposing character at a City location."));
+            }
+
             // Opposing = different controller (same-location half of "opposing" is
-            // enforced by requiring a higher-Finesse ally at that location below).
+            // enforced by requiring a higher-Finesse ally at that City location below).
             if ($character->ControllerId == $playerId)
             {
                 throw new UserException($event->theah->game->translate("Shackles can only be equipped to an opposing character."));
@@ -98,8 +107,20 @@ class _03066 extends FactionAttachment
             return false;
         }
 
-        // Finesse vs same-location performer needs Theah — enforced in eventCheck.
-        return $this->ControllerId > 0 && $character->ControllerId != $this->ControllerId;
+        // WHY: Mirror eventCheck City half without Theah — Home is a shared location
+        // string, so grey it out for steal/salvage. Finesse vs same-location performer
+        // still needs Theah (eventCheck only).
+        $inCity = in_array($character->Location, [
+            Game::LOCATION_CITY_OLES_INN,
+            Game::LOCATION_CITY_DOCKS,
+            Game::LOCATION_CITY_FORUM,
+            Game::LOCATION_CITY_BAZAAR,
+            Game::LOCATION_CITY_GOVERNORS_GARDEN,
+        ], true);
+
+        return $inCity
+            && $this->ControllerId > 0
+            && $character->ControllerId != $this->ControllerId;
     }
 
     public function handleEvent(Event $event)
