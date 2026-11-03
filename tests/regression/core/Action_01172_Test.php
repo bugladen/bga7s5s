@@ -138,6 +138,7 @@ class Action_01172_Test extends TestCase
 
             // WHY: Start before wound so Torsten can cancel before the performer wound
             // processes; shared batchId so deleteEventBatch strips the wound (not a Torsten target).
+            // Announce before queue so UL on CardMoving still has a named target in the log.
             'non-Strega queues Sorcerer Start, wound, move, ActionResolved, Played' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $target] = $this->scene($world);
@@ -149,6 +150,17 @@ class Action_01172_Test extends TestCase
                     'highDramaPlayerTurn_01172',
                     $target->Id
                 );
+
+                $msgs = array_filter(
+                    $world->game->notify->messages,
+                    fn($n) => ($n['type'] ?? '') === 'message'
+                        && str_contains((string) ($n['message'] ?? ''), 'has chosen to move')
+                );
+                Assert::true(count($msgs) >= 1, 'chat names target before effects');
+                $msg = array_values($msgs)[0];
+                Assert::same($target->getInjectCode(), $msg['args']['character_inject_code'], 'target in log');
+                Assert::same($performer->getInjectCode(), $msg['args']['performer_inject_code'], 'performer in log');
+                Assert::same($risk->getInjectCode(), $msg['args']['card_inject_code'], 'card in log');
 
                 $order = array_map(fn($e) => $e::class, $world->theah->queuedEvents);
                 Assert::same(
@@ -217,6 +229,7 @@ class Action_01172_Test extends TestCase
                 [, $action, $performer] = $this->scene($world);
                 $same = $world->placeCharacter(new GenericCharacter('Same'), Game::LOCATION_CITY_DOCKS, 2);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $world->game->notify->messages = [];
 
                 $threwSelf = false;
                 try {
@@ -232,6 +245,7 @@ class Action_01172_Test extends TestCase
                 }
                 Assert::true($threwSelf, 'self');
                 Assert::true($threwSame, 'same location');
+                Assert::count(0, $world->game->notify->messages, 'no announce on refuse');
             },
         ];
     }

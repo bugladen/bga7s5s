@@ -123,6 +123,16 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
             
             $owner = $this->getOwningCard($game->theah);
 
+            // WHY: Unyielding Loyalty (and Hexenjagd) intercept EventCardMoving before the
+            // hub move log. Name the target at pick time — same hole as challenge
+            // announcePendingChallenge / Porté Travel / Action_01138.
+            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} has chosen to move ${character_inject_code} to ${performer_inject_code}\'s location.'), [
+                "card_inject_code" => $owner->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "character_inject_code" => $target->getInjectCode(),
+                "performer_inject_code" => $performer->getInjectCode(),
+            ]);
+
             // WHY: Start before wound so Torsten (Reaction_01122) can stack cancel before the
             // performer wound processes. Shared batchId — cancel's deleteEventBatch strips the
             // wound (it does not target Torsten, so deleteEventsTargetingCard alone misses it).
