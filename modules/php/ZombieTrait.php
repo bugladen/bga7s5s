@@ -193,7 +193,28 @@ trait ZombieTrait
             switch ($stateName) {
                 // Deck Picking
                 case "pickDecks":
-                    // Default action: Pick first available deck
+                    // WHY: Releasing the zombie without writing deck_source lets the
+                    // last pick transition into buildTable → buildDecks, which then
+                    // fatals on $deck->faction (null json_decode). Must assign a deck.
+                    // Cannot call actPickDeck — it uses getCurrentPlayerId(), which
+                    // fails on the zombie/cron path ("Not logged").
+                    // Random Core matches State_DeckAssignment's random-core path and
+                    // the Core-only pool shown in argAvailableDecks.
+                    $starter_decks = json_decode(StarterDecks::$decksJson);
+                    $core_decks = array_values(array_filter(
+                        $starter_decks->decks,
+                        fn($deck) => ($deck->set ?? null) === "Core"
+                    ));
+                    $chosen_deck = $core_decks[array_rand($core_decks)];
+                    $deck_json = addslashes(json_encode($chosen_deck));
+                    $sql = "UPDATE player SET deck_source = '$deck_json' WHERE player_id='$playerId'";
+                    $this->DbQuery($sql);
+
+                    if (Game::TOURNAMENT_LOCK_DECKS && $this->bga->tournament->isTournament())
+                    {
+                        $this->bga->tournament->storePlayerGameData($playerId, 'deck_source', $chosen_deck);
+                    }
+
                     $this->gamestate->setPlayerNonMultiactive($playerId, 'deckPicked');
                     break;
 

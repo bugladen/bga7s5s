@@ -12,6 +12,7 @@
 
  namespace Bga\Games\SeventhSeaCityOfFiveSails;
 
+use Bga\GameFramework\SystemException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 
 trait DeckTrait
@@ -133,8 +134,15 @@ trait DeckTrait
         {
             // Get the source and deck_id of the deck from the DB for the  player
             $result = $this->getObjectFromDB("SELECT deck_source FROM player WHERE player_id = '$playerId'");
-            $deck = json_decode($result['deck_source']);
-            
+            $deck = json_decode($result['deck_source'] ?? '');
+
+            // WHY: Null here used to fatal on $deck->faction (Sentry: zombie pickDecks
+            // released without writing deck_source). Fail with a clear culprit instead.
+            if ($deck === null)
+            {
+                throw new SystemException("Player $playerId has no valid deck_source during buildDecks");
+            }
+
             //Now that we have a deck, add the cards in the deck to the db
 
             $faction = $deck->faction;
