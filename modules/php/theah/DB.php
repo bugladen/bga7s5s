@@ -331,8 +331,11 @@ class DB
 
     public function areTransitionEventsOfTypeForPlayerQueued(int $playerId, string $reactionType): bool
     {
+        // WHY: Append the PHP-serialize string closer (`"`) so Reaction_01109 does not
+        // match a queued Reaction_01109v2 via prefix LIKE '%Reaction_01109%'. Mixed hands
+        // previously lost the original Night of Drinking offer when v2 stacked first.
         $sql = "SELECT COUNT(*) FROM events 
-                WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$playerId}%' AND event_serialized LIKE '%{$reactionType}%')";
+                WHERE (event_serialized LIKE '%EventTransition%' AND event_serialized LIKE '%{$playerId}%' AND event_serialized LIKE '%{$reactionType}\"%')";
         return $this->getUniqueValue($sql) > 0;
     }
 

@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01109;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01109;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02029;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
@@ -64,12 +65,12 @@ class Reaction_01109_Test extends TestCase
         return [$nod, $reaction];
     }
 
-    private function actionActivated(TestWorld $world, Risk $source, int $playerId = 2): EventActionActivated
+    private function actionActivated(TestWorld $world, Risk $source, int $playerId = 2, string $actionId = 'someAction'): EventActionActivated
     {
         $event = new EventActionActivated();
         $event->playerId = $playerId;
         $event->sourceId = $source->Id;
-        $event->actionId = 'someAction';
+        $event->actionId = $actionId;
         $event->theah = $world->theah;
         return $event;
     }
@@ -131,6 +132,31 @@ class Reaction_01109_Test extends TestCase
                 Assert::same($transitions[0], $world->theah->queuedEvents[0], 'stacked in front');
             },
 
+            // WHY: Bug report — NoD did not offer vs Diplomatic Impunity (_02029). Diplomat
+            // Action is a normal RiskAction announce; Flourish/Bureaucracy/Camaraderie is not
+            // Sorcery and effectsCannotBeCancelled is false. Lock the offer so a regression
+            // cannot hide behind "works for It's Personal".
+            'offers on opposing Diplomatic Impunity Action announce' => function () {
+                $world = new TestWorld();
+                [, $reaction] = $this->scene($world);
+                $enemy = $world->placeCard(new _02029(), Game::LOCATION_HAND, 2);
+
+                $reaction->handleEvent($this->actionActivated($world, $enemy, 2, $enemy->getActions()[0]->Id));
+
+                Assert::same(1, $this->offered($world), '02029 Action');
+            },
+
+            'offers on opposing Diplomatic Impunity Maneuver announce' => function () {
+                $world = new TestWorld();
+                [, $reaction] = $this->scene($world);
+                $enemy = $world->placeCard(new _02029(), Game::LOCATION_HAND, 2);
+                $maneuver = $enemy->getManeuvers()[0];
+
+                $reaction->handleEvent($this->maneuverActivated($world, $maneuver->Id));
+
+                Assert::same(1, $this->offered($world), '02029 Maneuver');
+            },
+
             'does not offer for own Risk Action' => function () {
                 $world = new TestWorld();
                 [, $reaction] = $this->scene($world);
@@ -190,6 +216,27 @@ class Reaction_01109_Test extends TestCase
 
                 $reaction->handleEvent($this->actionActivated($world, $enemy));
                 Assert::same(1, $this->offered($world), 'no duplicate');
+            },
+
+            // WHY: Old de-dupe used LIKE/str_contains '%Reaction_01109%' which matched a
+            // queued Reaction_01109v2 and suppressed the original card's offer. Mixed hands
+            // (or v2 stacking first in the card walk) looked like "NoD never fired" vs Risks
+            // such as Diplomatic Impunity. Boundary match must keep both offers independent.
+            'queued Reaction_01109v2 does not suppress original Reaction_01109 offer' => function () {
+                $world = new TestWorld();
+                [, $reaction] = $this->scene($world);
+                $enemy = $world->placeCard(new _02029(), Game::LOCATION_HAND, 2);
+
+                $v2 = new EventTransition();
+                $v2->playerId = 1;
+                $v2->sourceId = 999;
+                $v2->internalId = '999_Reaction_01109v2';
+                $v2->transition = 'reaction';
+                $world->theah->queueEvent($v2);
+
+                $reaction->handleEvent($this->actionActivated($world, $enemy, 2, $enemy->getActions()[0]->Id));
+
+                Assert::same(2, $this->offered($world), 'original offers beside v2');
             },
 
             // ---- EventRiskPlayed (Risk Reaction path) ----
@@ -359,6 +406,34 @@ class Reaction_01109_Test extends TestCase
                 $resolved = $world->theah->queuedOfType(EventActionResolved::class);
                 Assert::count(1, $resolved, 'ActionResolved for Soline window');
                 Assert::same(2, $resolved[0]->playerId, 'announcer player');
+            },
+
+            // WHY: Diplomatic Impunity claims inside ActionTriggered. Cancel must delete that
+            // trigger before the claim handler runs — same delete-by-RiskId path as other Risks.
+            'triggered cancel of Diplomatic Impunity Action deletes its ActionTriggered' => function () {
+                $world = new TestWorld();
+                [$nod, $reaction] = $this->scene($world);
+                $enemy = $world->placeCard(new _02029(), Game::LOCATION_HAND, 2);
+                $action = $enemy->getActions()[0];
+
+                $reaction->handleEvent($this->actionActivated($world, $enemy, 2, $action->Id));
+                $world->theah->takeQueuedEvents();
+
+                $triggered = new EventActionTriggered();
+                $triggered->sourceId = $enemy->Id;
+                $triggered->actionId = $action->Id;
+                $world->theah->queueEvent($triggered);
+
+                $event = new EventRiskReactionTriggered();
+                $event->playerId = 1;
+                $event->sourceId = $nod->Id;
+                $event->internalId = $reaction->Id;
+                $event->reactionId = 'cancel';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::count(0, $world->theah->queuedOfType(EventActionTriggered::class), '02029 trigger deleted');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'Soline window');
             },
 
             'triggered cancel after Maneuver path deletes Maneuver events and does not fire ActionResolved' => function () {

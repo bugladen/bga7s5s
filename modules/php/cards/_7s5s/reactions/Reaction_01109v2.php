@@ -78,11 +78,10 @@ class Reaction_01109v2 extends RiskReaction implements ICancelReaction
                     && ! $risk->hasTrait("Sorcery")
                     && ! $risk->effectsCannotBeCancelled())
                 {
-                    // WHY: De-dupe on this clone's class id. The queue stores
-                    // {cardId}_Reaction_01109v2, and the original card's LIKE
-                    // '%Reaction_01109%' also matches that string. Two v2 copies
-                    // still collapse to one offer; do not point this check back
-                    // at Reaction_01109 or a mixed hand de-dupes the wrong card.
+                    // WHY: De-dupe on this clone's class id (not Reaction_01109).
+                    // DB/TestTheah match with a serialize / ends_with boundary so the
+                    // original card's Reaction_01109 check no longer collides with v2.
+                    // Two v2 copies still collapse to one offer.
                     if (! $event->theah->areTransitionEventsOfTypeForPlayerQueued($owner->ControllerId, "Reaction_01109v2"))
                     {
                         $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);

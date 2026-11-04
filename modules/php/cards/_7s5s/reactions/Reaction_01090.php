@@ -42,53 +42,64 @@ class Reaction_01090 extends CardReaction
 
         if ($event instanceof EventActionActivated && $this->isAvailable())
         {
+            // WHY: LocationAction::announceAction uses sourceId=0 — getCardById(0) is
+            // null. A bare dereference fatals mid-card-walk and aborts every later
+            // ActionActivated listener (including Night of Drinking).
             $card = $event->theah->getCardById($event->sourceId);
-            $ability = $card->getAbilityById($event->actionId);
-            $owner = $this->getOwningCard($event->theah);
-            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            if ($card !== null)
             {
+                $ability = $card->getAbilityById($event->actionId);
                 $owner = $this->getOwningCard($event->theah);
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->stackEvent($transitionEvent);
+                if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+                {
+                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($transitionEvent);
+                }
             }
         }
 
         if ($event instanceof EventReactionActivated && $this->isAvailable())
         {
             $card = $event->theah->getCardById($event->sourceId);
-            $ability = $card->getAbilityById($event->reactionId);
-            $owner = $this->getOwningCard($event->theah);
-            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            if ($card !== null)
             {
+                $ability = $card->getAbilityById($event->reactionId);
                 $owner = $this->getOwningCard($event->theah);
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->stackEvent($transitionEvent);
+                if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+                {
+                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($transitionEvent);
+                }
             }
         }
 
         if ($event instanceof EventTechniqueActivated && $this->isAvailable())
         {
             $card = $event->theah->getCardById($event->ownerId);
-            $ability = $card->getAbilityById($event->techniqueId);
-            $owner = $this->getOwningCard($event->theah);
-            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            if ($card !== null)
             {
+                $ability = $card->getAbilityById($event->techniqueId);
                 $owner = $this->getOwningCard($event->theah);
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->stackEvent($transitionEvent);
+                if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+                {
+                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($transitionEvent);
+                }
             }
         }
 
         if ($event instanceof EventManeuverActivated && $this->isAvailable())
         {
             $card = $event->theah->getCardById($event->ownerId);
-            $ability = $card->getAbilityById($event->maneuverId);
-            $owner = $this->getOwningCard($event->theah);
-            if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+            if ($card !== null)
             {
+                $ability = $card->getAbilityById($event->maneuverId);
                 $owner = $this->getOwningCard($event->theah);
-                $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                $event->theah->stackEvent($transitionEvent);
+                if ($owner->ControllerId == $event->playerId && $ability instanceof IAbilityThatDependsOnNotBeingFirstPlayer)
+                {
+                    $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
+                    $event->theah->stackEvent($transitionEvent);
+                }
             }
         }
 

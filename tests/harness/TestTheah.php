@@ -479,6 +479,8 @@ class TestTheah extends Theah
 
     // WHY: Reaction_01109 (Night of Drinking) de-dupes offers via DB LIKE on EventTransition.
     // Mirror that against in-memory $queuedEvents so ActionActivated / RiskPlayed paths do not double-offer.
+    // WHY ends_with (not str_contains): must match DB.php's serialize-closer boundary so
+    // Reaction_01109 does not collide with Reaction_01109v2 (prefix of the class id).
     public function areTransitionEventsOfTypeForPlayerQueued(int $playerId, string $reactionType): bool
     {
         foreach ($this->queuedEvents as $event) {
@@ -488,7 +490,7 @@ class TestTheah extends Theah
             if ((int)$event->playerId !== (int)$playerId) {
                 continue;
             }
-            if (str_contains((string)$event->internalId, $reactionType)) {
+            if (str_ends_with((string)$event->internalId, $reactionType)) {
                 return true;
             }
         }
