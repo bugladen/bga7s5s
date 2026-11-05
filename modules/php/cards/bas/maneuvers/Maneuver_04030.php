@@ -88,18 +88,22 @@ class Maneuver_04030 extends Maneuver
         if ($state == States::DUEL_RESOLVE_MANEUVER_04030)
         {
             $owner = $this->getOwningCard($game->theah);
+            // WHY: Choice announce only — calc explanations still log the actual +1
+            // Parry/Thrust. Naming the option here avoided a duplicate "adds 1 Parry".
             if ($id == 1)
             {
                 $this->ChooseParry = true;
-                $game->notify->all("message", clienttranslate('${card_inject_code} adds 1 Parry.'), [
+                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} has chosen +1 Parry.'), [
                     "card_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 ]);
             }
             else if ($id == 2)
             {
                 $this->ChooseParry = false;
-                $game->notify->all("message", clienttranslate('${card_inject_code} adds 1 Thrust.'), [
+                $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} has chosen +1 Thrust.'), [
                     "card_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 ]);
             }
 
