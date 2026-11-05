@@ -7,6 +7,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression\Framework;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01062;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01178;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd09;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03050;
@@ -23,6 +24,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericLeader;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericLocationAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
@@ -353,6 +355,26 @@ class FrameworkActions_Challenge_Test extends TestCase
 
                 Assert::count(1, $game->queued(EventChallengeIssued::class), 'challenge issued');
                 Assert::count(0, $game->queued(EventCardEngaged::class), 'no engage');
+            },
+
+            // WHY: Tables already on ActivateTechnique after Valeri moved onto an Envoy-protected
+            // Diplomat — Back throws, stIssueChallenge throws. Pass must abort to NEXT_PLAYER.
+            'actHighDramaChallengeActionActivateTechnique_Pass aborts Valeri when Envoy bans Combat' => function () {
+                $game = new FrameworkActionsGame();
+                $valeri = $game->place(new GenericCharacter('Valeri'), Game::LOCATION_CITY_FORUM, 1);
+                $diplomat = $game->place(new GenericCharacter('Envoy', ['Diplomat']), Game::LOCATION_CITY_FORUM, 2);
+                $game->place(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                $game->globals->set(Game::CHOSEN_PERFORMER, $valeri->Id);
+                $game->globals->set(Game::CHOSEN_TARGET, $diplomat->Id);
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE);
+                $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+                $game->globals->set(Game::CURRENT_PLAYER, 1);
+
+                $game->actHighDramaChallengeActionActivateTechnique_Pass();
+
+                Assert::count(0, $game->queued(EventChallengeIssued::class), 'no issue');
+                Assert::count(1, $game->queued(EventActionResolved::class), 'action resolved');
+                Assert::same(['challengeSkipped'], $game->gamestate->transitions, 'escape');
             },
 
             // ---- Accept --------------------------------------------------------------------------------

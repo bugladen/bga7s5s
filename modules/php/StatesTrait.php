@@ -814,7 +814,20 @@ trait StatesTrait
             {
                 $targetId = $this->globals->get(GAME::CHOSEN_TARGET);
                 $target = $this->theah->getCharacterById((int) $targetId);
-                if ($target !== null)
+                if ($target !== null && $target->Location === $performer->Location)
+                {
+                    // WHY: Co-located but ChallengeIssued banned (Diplomatic Envoy, Patricia, …).
+                    // Distinct from the Soline flee message so the log matches the rule that fired.
+                    $this->notifyAllPlayers(
+                        "message",
+                        clienttranslate('${performer_inject_code} cannot issue a challenge to ${target_inject_code}.'),
+                        [
+                            "performer_inject_code" => $performer->getInjectCode(),
+                            "target_inject_code" => $target->getInjectCode(),
+                        ]
+                    );
+                }
+                else if ($target !== null)
                 {
                     $this->notifyAllPlayers(
                         "message",
@@ -872,7 +885,11 @@ trait StatesTrait
         $this->gamestate->nextState("noTechnique");
     }
 
-    private function skipChallengeBeforeTechnique(int $performerId): void
+    // WHY protected (not private): FrameworkActionsTrait calls this from Pass/technique
+    // abort. Test harness puts FrameworkActionsTrait on a child of StatesTraitGame —
+    // private would be invisible across that parent/child split (production Game is fine
+    // either way; both traits live on one class there).
+    protected function skipChallengeBeforeTechnique(int $performerId): void
     {
         $performer = $performerId !== 0 ? $this->theah->getCharacterById($performerId) : null;
         $targetId = (int) $this->globals->get(GAME::CHOSEN_TARGET);
@@ -898,6 +915,43 @@ trait StatesTrait
         ]);
 
         $this->gamestate->nextState('challengeSkipped');
+    }
+
+    /**
+     * Move-then-challenge (CAD Valeri / Andriana) already moved before Technique pick.
+     * If ChallengeIssued would fail now, Pass/technique must not call stIssueChallenge
+     * (UserException soft-locks — Back is blocked for these types).
+     *
+     * WHY also here (not only stTechniqueAvailable): tables already stuck on
+     * ActivateTechnique need Pass to escape after deploy; legality can also change
+     * between TECHNIQUE_AVAILABLE and the player's click.
+     */
+    // WHY protected: see skipChallengeBeforeTechnique — FrameworkActionsTrait callers.
+    protected function shouldAbortMoveThenChallengeFromTechniquePicker(): bool
+    {
+        $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
+        if ($challengeType != Game::VALERI_CHALLENGE_TYPE
+            && $challengeType != Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE)
+        {
+            return false;
+        }
+
+        $performerId = (int) $this->globals->get(Game::CHOSEN_PERFORMER);
+        $targetId = (int) $this->globals->get(Game::CHOSEN_TARGET);
+        $performer = $this->theah->getCharacterById($performerId);
+        $target = $this->theah->getCharacterById($targetId);
+
+        if ($performer === null || $target === null)
+        {
+            return true;
+        }
+
+        if ($target->Location !== $performer->Location)
+        {
+            return true;
+        }
+
+        return ! $this->theah->challengeCanBeIssued($performerId, $targetId);
     }
 
     public function stIssueChallenge()

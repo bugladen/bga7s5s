@@ -6,6 +6,8 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression\Framework;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01078;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04024;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05DabneyUS01;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -180,6 +182,28 @@ class StatesTrait_Challenge_Test extends TestCase
 
                 Assert::count(1, $game->queued(EventChallengeIssued::class), 'challenge issued');
                 Assert::same(['noTechnique'], $game->gamestate->transitions, 'transition');
+            },
+
+            // WHY: CAD Valeri always has a Technique. Without this skip he opens
+            // ActivateTechnique with Back locked; Pass → stIssueChallenge → Envoy throw.
+            'stTechniqueAvailable (Valeri) skips when Diplomatic Envoy bans the Combat challenge' => function () {
+                $game = new StatesTraitGame();
+                $valeri = $game->place(new _05DabneyUS01(), Game::LOCATION_CITY_FORUM, 1);
+                $diplomat = $game->place(new GenericCharacter('Envoy', ['Diplomat']), Game::LOCATION_CITY_FORUM, 2);
+                $game->place(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                $game->globals->set(Game::CURRENT_PLAYER, 1);
+                $game->globals->set(Game::CHOSEN_PERFORMER, $valeri->Id);
+                $game->globals->set(Game::CHOSEN_TARGET, $diplomat->Id);
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE);
+                $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+                $game->globals->set(Game::TRANSITION_INTERNAL_ID, $valeri->getActions()[0]->Id);
+
+                $game->stTechniqueAvailable();
+
+                Assert::count(1, $game->queued(EventActionResolved::class), 'action resolved');
+                Assert::same(['challengeSkipped'], $game->gamestate->transitions, 'transition');
+                Assert::contains('cannot issue a challenge to', $game->notify->messages[0]['message'], 'ban reason');
+                Assert::count(0, $game->queued(EventChallengeIssued::class), 'no challenge');
             },
 
             // ---- stIssueChallenge ---------------------------------------------------

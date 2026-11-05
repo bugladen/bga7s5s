@@ -49,9 +49,13 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             $opposingCharacters = $theah->getCharactersAtLocation($adjacentLocation);
             // WHY: Print targets opposing non-Leader only (PTv0.4 re-print). Same gate in
             // availability, args ids, and isValidTargetForAbility so UI and server agree.
+            // Also require ChallengeIssued would succeed (Diplomatic Envoy / Patricia / …) —
+            // otherwise Valeri moves, lands on ActivateTechnique with Back locked, and soft-locks.
             $opposingCharacters = array_filter(
                 $opposingCharacters,
-                fn($c) => $c->isNotControlledByPlayer($playerId) && ! $c->hasTrait("Leader")
+                fn($c) => $c->isNotControlledByPlayer($playerId)
+                    && ! $c->hasTrait("Leader")
+                    && $theah->challengeCanBeIssued($owner->Id, $c->Id, Game::STAT_COMBAT)
             );
             if (count($opposingCharacters) > 0)
             {
@@ -153,7 +157,9 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
                 $opposingCharacters = $game->theah->getCharactersAtLocation($adjacentLocation);
                 $opposingCharacters = array_filter(
                     $opposingCharacters,
-                    fn($c) => $c->isNotControlledByPlayer($owner->ControllerId) && ! $c->hasTrait("Leader")
+                    fn($c) => $c->isNotControlledByPlayer($owner->ControllerId)
+                        && ! $c->hasTrait("Leader")
+                        && $game->theah->challengeCanBeIssued($owner->Id, $c->Id, Game::STAT_COMBAT)
                 );
                 foreach ($opposingCharacters as $opposingCharacter)
                 {
@@ -172,6 +178,8 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
     // so CardMoved reactions (Soline Reaction_03040, pri 6) resolve first and can yank the
     // target off Valeri's landing spot before TECHNIQUE_AVAILABLE. stTechniqueAvailable
     // calls this and challengeSkipped when false — challenge requires same location.
+    // Also re-check ChallengeIssued legality (Diplomatic Envoy etc.): Valeri always has a
+    // Technique, so an illegal issue would soft-lock on ActivateTechnique with Back blocked.
     public function shouldIssueChallenge(Game $game): bool
     {
         $owner = $this->getOwningCharacter($game->theah);
@@ -183,7 +191,12 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             return false;
         }
 
-        return $target->Location === $owner->Location;
+        if ($target->Location !== $owner->Location)
+        {
+            return false;
+        }
+
+        return $game->theah->challengeCanBeIssued($owner->Id, $target->Id);
     }
 
     public function isValidTargetForAbility(Game $game, Character $character): array
@@ -203,6 +216,11 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         if (! in_array($character->Location, $locations))
         {
             return [false, "Target character is not at an adjacent location"];
+        }
+
+        if (! $game->theah->challengeCanBeIssued($owner->Id, $character->Id, Game::STAT_COMBAT))
+        {
+            return [false, "That character cannot be issued a Combat challenge."];
         }
 
         return [true, ""];

@@ -1515,6 +1515,14 @@ trait FrameworkActionsTrait
     public function actHighDramaChallengeActionTechniqueActivated(string $techniqueId)
     {
         $this->theah->buildCity();
+
+        // WHY: Before technique Id overwrites TRANSITION_INTERNAL_ID / before stIssueChallenge.
+        if ($this->shouldAbortMoveThenChallengeFromTechniquePicker())
+        {
+            $this->skipChallengeBeforeTechnique((int) $this->globals->get(Game::CHOSEN_PERFORMER));
+            return;
+        }
+
         $playerId = $this->getActivePlayerId();
         $performer = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_PERFORMER));
         $target = $this->getCardObjectFromDb($this->globals->get(GAME::CHOSEN_TARGET));
@@ -1539,6 +1547,16 @@ trait FrameworkActionsTrait
 
     public function actHighDramaChallengeActionActivateTechnique_Pass()
     {
+        $this->theah->buildCity();
+
+        // WHY: Stuck ActivateTechnique after illegal Valeri/Andriana move-then-challenge
+        // (Diplomatic Envoy). Pass must escape — Back is blocked and stIssueChallenge throws.
+        if ($this->shouldAbortMoveThenChallengeFromTechniquePicker())
+        {
+            $this->skipChallengeBeforeTechnique((int) $this->globals->get(Game::CHOSEN_PERFORMER));
+            return;
+        }
+
         $this->stIssueChallenge();
 
         $this->gamestate->nextState("pass");

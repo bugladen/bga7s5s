@@ -92,12 +92,19 @@ class Action_02001 extends CharacterAction implements ISorcererAbility, IAbility
         $targetId = (int) $game->globals->get(Game::CHOSEN_TARGET);
         $target = $game->theah->getCharacterById($targetId);
 
-        if ($target === null)
+        if ($andriana === null || $target === null)
         {
             return false;
         }
 
-        return $target->Location === $andriana->Location;
+        // WHY: Co-location (Soline flee) plus ChallengeIssued legality (Patricia / Envoy).
+        // Same soft-lock class as CAD Valeri if Technique pick opens after a banned issue.
+        if ($target->Location !== $andriana->Location)
+        {
+            return false;
+        }
+
+        return $game->theah->challengeCanBeIssued($andriana->Id, $target->Id);
     }
 
     public function isValidTargetForAbility(Game $game, Character $character): array

@@ -1470,7 +1470,10 @@ $machinestates = [
             "transitions" => [
                 "techniqueActivated" => States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS,
                 "pass" => States::HIGH_DRAMA_CHALLENGE_ACTION_SETUP_CHALLENGE,
-                "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET
+                "back" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                // WHY: Move-then-challenge abort from Pass/technique when ChallengeIssued is
+                // illegal after the move (Diplomatic Envoy). Same exit as TECHNIQUE_AVAILABLE.
+                "challengeSkipped" => States::NEXT_PLAYER,
             ]
         ],
             States::HIGH_DRAMA_CHALLENGE_ACTION_ACTIVATE_TECHNIQUE_EVENTS => [

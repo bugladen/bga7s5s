@@ -39,6 +39,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\GovernorsGardenAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\OlesInnAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChangeActivePlayer;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
@@ -289,6 +290,18 @@ class Theah
         Maneuver_01129::assertNotLocked($event);
         unset($event->theah);
 
+        $this->eventCheckCards($event);
+    }
+
+    /**
+     * Walk in-play cards for eventCheck vetoes.
+     *
+     * WHY extracted: challengeCanBeIssued dry-runs this without going through eventCheck().
+     * TestTheah stubs eventCheck (records permission asks, skips the walk) — legality
+     * still needs Envoy / Patricia / Solomonia bans from seeded RAM cards.
+     */
+    protected function eventCheckCards(Event $event): void
+    {
         foreach ($this->cards as $card) {
             // WHY: A zombie player's cards must not react to events — the zombie
             // handler can't make the interactive choices their reactions/abilities
@@ -1811,6 +1824,67 @@ class Theah
         );
 
         return count($otherCharacters) > 0;
+    }
+
+    /**
+     * Dry-run EventChallengeIssued through eventCheck (Diplomatic Envoy, Patricia, Solomonia, …).
+     *
+     * WHY: Move-then-challenge Actions (CAD Valeri, Andriana) can land on ActivateTechnique
+     * with Back locked after the move. If ChallengeIssued would throw, Pass/technique still
+     * call stIssueChallenge and soft-lock. Callers re-check here before offering Technique
+     * (and at target pick so illegal Combat targets are not offered).
+     *
+     * @param string|int|null $challengeStat Temporary CHALLENGE_STAT override for pre-issue
+     *        checks (Combat for Valeri/Andriana). Null keeps the current global. Typed loosely
+     *        because Game::STAT_* constants are strings.
+     */
+    public function challengeCanBeIssued(int $challengerId, int $defenderId, string|int|null $challengeStat = null): bool
+    {
+        $hadStat = $this->game->globals->has(Game::CHALLENGE_STAT);
+        $savedStat = $hadStat ? $this->game->globals->get(Game::CHALLENGE_STAT) : null;
+        if ($challengeStat !== null)
+        {
+            $this->game->globals->set(Game::CHALLENGE_STAT, $challengeStat);
+        }
+
+        try
+        {
+            $this->buildCity();
+            $challengeEvent = $this->createEvent(Events::ChallengeIssued);
+            if ($challengeEvent instanceof EventChallengeIssued)
+            {
+                $challenger = $this->getCharacterById($challengerId);
+                $challengeEvent->playerId = $challenger?->ControllerId ?? 0;
+                $challengeEvent->challengerId = $challengerId;
+                $challengeEvent->defenderId = $defenderId;
+                $challengeEvent->activatedTechniqueId = '';
+            }
+            $challengeEvent->theah = $this;
+            Maneuver_01129::assertNotLocked($challengeEvent);
+            unset($challengeEvent->theah);
+            // WHY not eventCheck(): TestTheah stubs it and skips the card walk.
+            $this->eventCheckCards($challengeEvent);
+            return true;
+        }
+        catch (\Exception)
+        {
+            // WHY: eventCheck bans throw UserException / BgaUserException — both are Exception.
+            return false;
+        }
+        finally
+        {
+            if ($challengeStat !== null)
+            {
+                if ($hadStat)
+                {
+                    $this->game->globals->set(Game::CHALLENGE_STAT, $savedStat);
+                }
+                else
+                {
+                    $this->game->globals->delete(Game::CHALLENGE_STAT);
+                }
+            }
+        }
     }
 
     public function characterCanBasicClaim(Character $character): bool

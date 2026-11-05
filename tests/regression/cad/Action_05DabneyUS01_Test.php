@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04024;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05DabneyUS01;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05DabneyUS01;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
@@ -100,6 +101,43 @@ class Action_05DabneyUS01_Test extends TestCase
                 [, , $action] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_TARGET, 999999);
                 Assert::false($action->shouldIssueChallenge($world->game), 'missing');
+            },
+
+            // WHY: Diplomatic Envoy bans Combat vs En Garde Forum Diplomat. Co-location alone
+            // was true → Technique picker → Pass called stIssueChallenge → UserException soft-lock
+            // (Back blocked for VALERI_CHALLENGE_TYPE). shouldIssueChallenge must refuse.
+            'shouldIssueChallenge false when Diplomatic Envoy bans Combat vs En Garde Forum Diplomat' => function () {
+                $world = new TestWorld();
+                $valeri = $world->placeCharacter(new _05DabneyUS01(), Game::LOCATION_CITY_FORUM, 1);
+                $diplomat = $world->placeCharacter(
+                    new GenericCharacter('Envoy', ['Diplomat']),
+                    Game::LOCATION_CITY_FORUM,
+                    2
+                );
+                $world->placeCard(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                $world->game->globals->set(Game::CHOSEN_TARGET, $diplomat->Id);
+                $world->game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+                /** @var Action_05DabneyUS01 $action */
+                $action = $valeri->getActions()[0];
+
+                Assert::false($action->shouldIssueChallenge($world->game), 'envoy ban');
+
+                $diplomat->Engaged = true;
+                Assert::true($action->shouldIssueChallenge($world->game), 'engaged diplomat ok');
+            },
+
+            'unavailable when the only adjacent foe is an Envoy-protected Diplomat' => function () {
+                $world = new TestWorld();
+                $valeri = $world->placeCharacter(new _05DabneyUS01(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('Envoy', ['Diplomat']),
+                    Game::LOCATION_CITY_FORUM,
+                    2
+                );
+                $world->placeCard(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                $action = $valeri->getActions()[0];
+
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'protected only');
             },
 
             'EventCharacterTargeted queues move without engage and stamps VALERI_CHALLENGE_TYPE' => function () {

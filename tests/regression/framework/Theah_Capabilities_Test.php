@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCityCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericFactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04024;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 
 /**
@@ -279,6 +280,32 @@ class Theah_Capabilities_Test extends TestCase
                 $world->theah->removeCardFromWorld($actor);
                 $world->theah->applyAbsentActorBaseChallengeThreat($event);
                 Assert::same(0, $event->adversaryThreat, 'skip flag');
+            },
+
+            // ---- challengeCanBeIssued --------------------------------------------------------------
+
+            'challengeCanBeIssued respects Diplomatic Envoy Combat ban and restores CHALLENGE_STAT' => function () {
+                $world = $this->world();
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_FORUM, 1);
+                $diplomat = $world->placeCharacter(
+                    new GenericCharacter('Envoy', ['Diplomat']),
+                    Game::LOCATION_CITY_FORUM,
+                    2
+                );
+                $world->placeCard(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                $world->game->globals->set(Game::CHALLENGE_STAT, Game::STAT_FINESSE);
+
+                Assert::false(
+                    $world->theah->challengeCanBeIssued($challenger->Id, $diplomat->Id, Game::STAT_COMBAT),
+                    'combat banned'
+                );
+                Assert::same(Game::STAT_FINESSE, $world->game->globals->get(Game::CHALLENGE_STAT), 'stat restored');
+
+                Assert::true(
+                    $world->theah->challengeCanBeIssued($challenger->Id, $diplomat->Id, Game::STAT_FINESSE),
+                    'finesse still legal'
+                );
+                Assert::same(Game::STAT_FINESSE, $world->game->globals->get(Game::CHALLENGE_STAT), 'stat restored again');
             },
         ];
     }
