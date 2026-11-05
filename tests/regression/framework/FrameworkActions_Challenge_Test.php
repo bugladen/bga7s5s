@@ -377,6 +377,24 @@ class FrameworkActions_Challenge_Test extends TestCase
                 Assert::same(['challengeSkipped'], $game->gamestate->transitions, 'escape');
             },
 
+            'actHighDramaChallengeActionActivateTechnique_Pass aborts Servo when Envoy bans Combat' => function () {
+                $game = new FrameworkActionsGame();
+                $servo = $game->place(new GenericCharacter('Servo'), Game::LOCATION_CITY_FORUM, 1);
+                $diplomat = $game->place(new GenericCharacter('Envoy', ['Diplomat']), Game::LOCATION_CITY_FORUM, 2);
+                $game->place(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                $game->globals->set(Game::CHOSEN_PERFORMER, $servo->Id);
+                $game->globals->set(Game::CHOSEN_TARGET, $diplomat->Id);
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::SERVO_SCARPA_CHALLENGE_TYPE);
+                $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+                $game->globals->set(Game::CURRENT_PLAYER, 1);
+
+                $game->actHighDramaChallengeActionActivateTechnique_Pass();
+
+                Assert::count(0, $game->queued(EventChallengeIssued::class), 'no issue');
+                Assert::count(1, $game->queued(EventActionResolved::class), 'action resolved');
+                Assert::same(['challengeSkipped'], $game->gamestate->transitions, 'escape');
+            },
+
             // ---- Accept --------------------------------------------------------------------------------
 
             'actHighDramaChallengeActionAccept queues the acceptance and records it' => function () {

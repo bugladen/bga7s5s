@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01011;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01011;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04024;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -163,6 +164,47 @@ class Action_01011_Test extends TestCase
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::same('01011_2', $transitions[0]->transition, 'challenge follow-up');
                 Assert::same(['opposingCharacterChosen'], $world->game->gamestate->transitions, 'nextState');
+            },
+
+            // WHY: Same soft-lock class as CAD Valeri — Servo has Technique + Back hidden.
+            'shouldIssueChallenge false when Diplomatic Envoy bans Combat vs En Garde Forum Diplomat' => function () {
+                $world = new TestWorld();
+                $servo = $world->placeCharacter(new _01011(), Game::LOCATION_CITY_FORUM, 1);
+                $diplomat = $world->placeCharacter(
+                    new GenericCharacter('Envoy', ['Diplomat']),
+                    Game::LOCATION_CITY_FORUM,
+                    2
+                );
+                $world->placeCard(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                $world->game->globals->set(Game::CHOSEN_TARGET, $diplomat->Id);
+                $world->game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
+                /** @var Action_01011 $action */
+                $action = $servo->getActions()[0];
+
+                Assert::false($action->shouldIssueChallenge($world->game), 'envoy ban');
+
+                $diplomat->Engaged = true;
+                Assert::true($action->shouldIssueChallenge($world->game), 'engaged diplomat ok');
+            },
+
+            'unavailable when the only adjacent foe is an Envoy-protected Diplomat' => function () {
+                $world = new TestWorld();
+                $servo = $world->placeCharacter(new _01011(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('Ally RH', ['Red Hand']),
+                    Game::LOCATION_CITY_FORUM,
+                    1
+                );
+                $world->placeCharacter(
+                    new GenericCharacter('Envoy', ['Diplomat']),
+                    Game::LOCATION_CITY_FORUM,
+                    2
+                );
+                $world->placeCard(new _04024(), Game::LOCATION_PLAYER_HOME, 2);
+                /** @var Action_01011 $action */
+                $action = $servo->getActions()[0];
+
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'protected only');
             },
         ];
     }

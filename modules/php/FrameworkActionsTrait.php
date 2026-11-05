@@ -1549,7 +1549,7 @@ trait FrameworkActionsTrait
     {
         $this->theah->buildCity();
 
-        // WHY: Stuck ActivateTechnique after illegal Valeri/Andriana move-then-challenge
+        // WHY: Stuck ActivateTechnique after illegal Servo/Valeri/Andriana move-then-challenge
         // (Diplomatic Envoy). Pass must escape — Back is blocked and stIssueChallenge throws.
         if ($this->shouldAbortMoveThenChallengeFromTechniquePicker())
         {

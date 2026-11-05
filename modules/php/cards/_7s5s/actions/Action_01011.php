@@ -36,7 +36,12 @@ class Action_01011 extends CharacterAction
         }
         $targetCharacters = array_values($targetCharacters);
 
-        return $targetCharacters;
+        // WHY: Combat challenge after move. Drop Envoy/Patricia-banned targets so Servo
+        // never moves onto ActivateTechnique with Back locked and an unissuable challenge.
+        return array_values(array_filter(
+            $targetCharacters,
+            fn($c) => $theah->challengeCanBeIssued($servo->Id, $c->Id, Game::STAT_COMBAT)
+        ));
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -57,11 +62,29 @@ class Action_01011 extends CharacterAction
             return false;
         }
 
-        $adjacentLocations = $theah->getAdjacentCityLocations($servo->Location, $includeHome = false);
-        $thugs = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $thugs = array_values(array_filter($thugs, fn($character) => $character->hasTrait("Red Hand") && in_array($character->Location, $adjacentLocations)));
+        // WHY: Same list as args / act validation — includes ChallengeIssued legality.
+        return count($this->getTargetCharacters($playerId, $theah)) > 0;
+    }
 
-        return count($thugs) > 0;
+    // WHY: Move-then-challenge. Soline can flee after Servo lands; Diplomatic Envoy /
+    // Patricia can ban Combat. stTechniqueAvailable skips when false (Valeri/Andriana shape).
+    public function shouldIssueChallenge(Game $game): bool
+    {
+        $servo = $this->getOwningCharacter($game->theah);
+        $targetId = (int) $game->globals->get(Game::CHOSEN_TARGET);
+        $target = $game->theah->getCharacterById($targetId);
+
+        if ($servo === null || $target === null)
+        {
+            return false;
+        }
+
+        if ($target->Location !== $servo->Location)
+        {
+            return false;
+        }
+
+        return $game->theah->challengeCanBeIssued($servo->Id, $target->Id);
     }
 
     public function handleEvent(Event $event)

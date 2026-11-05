@@ -25,6 +25,13 @@ anyway: tables already stuck past TECHNIQUE_AVAILABLE; Back stays locked by desi
 Action_05DabneyUS01 Envoy cases; StatesTrait Valeri skip; FrameworkActions Pass abort;
 Theah_Capabilities challengeCanBeIssued + stat restore. 102 pass on those suites.
 
+## Follow-up: Servo (Action_01011)
+Same soft-lock class (Technique + Back hidden on ActivateTechnique). Extended:
+- `Action_01011::shouldIssueChallenge` + `getTargetCharacters` Combat legality filter
+  (availability now uses that list).
+- `SERVO_SCARPA_CHALLENGE_TYPE` in `stTechniqueAvailable` + technique-picker abort.
+- Tests: Action_01011 Envoy cases; StatesTrait Servo skip; FrameworkActions Pass abort.
+
 ## Gotchas while testing
 - `Game::STAT_*` are strings — `challengeCanBeIssued` third arg is `string|int|null`.
 - TestTheah stubs `eventCheck` (no card walk). Dry-run must call extracted

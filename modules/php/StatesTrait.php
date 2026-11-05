@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01186;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01135;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01129;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01011;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05DabneyUS01;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\CityCharacter;
@@ -797,16 +798,19 @@ trait StatesTrait
 
         // WHY: Move-then-challenge Actions queue TECHNIQUE_AVAILABLE at TRANSITION_PRIORITY
         // (9). CardMoved reactions (Soline 03040, Stubborn, etc.) drain at REACTION_PRIORITY
-        // (6) first and can leave the target elsewhere. Andriana / CAD Valeri re-check
-        // co-location here before offering Technique or calling stIssueChallenge.
+        // (6) first and can leave the target elsewhere. Servo / Andriana / CAD Valeri
+        // re-check co-location + ChallengeIssued legality before Technique / stIssueChallenge.
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE
-            || $challengeType == Game::VALERI_CHALLENGE_TYPE)
+            || $challengeType == Game::VALERI_CHALLENGE_TYPE
+            || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE)
         {
             $abilityId = $this->globals->get(Game::TRANSITION_INTERNAL_ID, '');
             $action = $this->theah->getInPlayActionById($abilityId);
             $shouldIssue = true;
-            if ($action instanceof Action_02001 || $action instanceof Action_05DabneyUS01)
+            if ($action instanceof Action_02001
+                || $action instanceof Action_05DabneyUS01
+                || $action instanceof Action_01011)
             {
                 $shouldIssue = $action->shouldIssueChallenge($this);
             }
@@ -918,7 +922,7 @@ trait StatesTrait
     }
 
     /**
-     * Move-then-challenge (CAD Valeri / Andriana) already moved before Technique pick.
+     * Move-then-challenge (Servo / CAD Valeri / Andriana) already moved before Technique pick.
      * If ChallengeIssued would fail now, Pass/technique must not call stIssueChallenge
      * (UserException soft-locks — Back is blocked for these types).
      *
@@ -931,7 +935,8 @@ trait StatesTrait
     {
         $challengeType = $this->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType != Game::VALERI_CHALLENGE_TYPE
-            && $challengeType != Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE)
+            && $challengeType != Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE
+            && $challengeType != Game::SERVO_SCARPA_CHALLENGE_TYPE)
         {
             return false;
         }
