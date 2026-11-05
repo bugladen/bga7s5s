@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01048;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01061;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01061;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Sniper;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
@@ -163,6 +164,39 @@ class Action_01061_Test extends TestCase
                 }
                 Assert::true($threw, 'no attachment');
                 Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            // WHY: Eleanor's Ranged Weapon fiction makes her "equipped" for her
+            // controller's abilities even with an empty Attachments list.
+            'available when engaged Eleanor has no real attachment' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01061(), Game::LOCATION_HAND, 1);
+                $eleanor = $world->placeCharacter(new _05Sniper(), Game::LOCATION_CITY_DOCKS, 1);
+                $eleanor->Engaged = true;
+
+                /** @var Action_01061 $action */
+                $action = $risk->getActions()[0];
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'her fiction');
+                $performers = $action->getPerformersForAction(1, $world->theah);
+                Assert::count(1, $performers, 'eleanor');
+                Assert::same($eleanor->Id, $performers[0]->Id, 'performer');
+            },
+
+            'trigger en gardes engaged Eleanor with no real attachment' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01061(), Game::LOCATION_HAND, 1);
+                $eleanor = $world->placeCharacter(new _05Sniper(), Game::LOCATION_CITY_DOCKS, 1);
+                $eleanor->Engaged = true;
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $eleanor->Id);
+
+                /** @var Action_01061 $action */
+                $action = $risk->getActions()[0];
+                $this->trigger($world, $action);
+
+                $engarde = $world->theah->queuedOfType(EventCardEngarded::class);
+                Assert::count(1, $engarde, 'engarde');
+                Assert::same($eleanor->Id, $engarde[0]->cardId, 'eleanor');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
             },
         ];
     }

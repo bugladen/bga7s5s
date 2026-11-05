@@ -700,6 +700,33 @@ abstract class Character extends Card implements IHasTechniques
         return false;
     }
 
+    // WHY: Positive "equipped performer/character" gates (Well-Equipped Action) used
+    // to check Attachments only. A Ranged Weapon fiction (Eleanor) still means
+    // "equipped" for the acting player's own abilities. Do not invert this for
+    // "unequipped" requirements — "may" is permission for if-equipped benefits.
+    public function countsAsEquipped(Theah $theah, int $actingPlayerId = 0): bool
+    {
+        if (count($this->Attachments) > 0)
+        {
+            return true;
+        }
+
+        return $this->countsAsEquippedWithRangedWeapon($theah, $actingPlayerId);
+    }
+
+    // WHY: "equipped with a Weapon" (Well-Equipped Maneuver) includes a fiction that
+    // counts as a Ranged Weapon — Ranged Weapon ⊆ Weapon. Real Weapons stay via
+    // hasWeaponEquipped; the fiction only applies for the acting player's checks.
+    public function countsAsEquippedWithWeapon(Theah $theah, int $actingPlayerId = 0): bool
+    {
+        if ($this->hasWeaponEquipped($theah))
+        {
+            return true;
+        }
+
+        return $this->countsAsEquippedWithRangedWeapon($theah, $actingPlayerId);
+    }
+
     // WHY: "equipped with a Ranged Weapon" gates (Long Shot, Vantage Point) used to
     // walk Attachments inline. A character can count as equipped without a real
     // attachment (Eleanor). $actingPlayerId is the player using the ability —

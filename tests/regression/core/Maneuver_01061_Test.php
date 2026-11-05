@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01048;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01050;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01061;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01061;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Sniper;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
@@ -122,6 +123,21 @@ class Maneuver_01061_Test extends TestCase
 
                 Assert::same(1, $calc->riposte, 'unchanged');
                 Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            // WHY: Ranged Weapon fiction ⊆ Weapon for her controller's Maneuver.
+            'calc draws when Eleanor is the participant with no real Weapon' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01061(), Game::LOCATION_HAND, 1);
+                $eleanor = $world->placeCharacter(new _05Sniper(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->theah->duelActor = $eleanor;
+                $world->theah->duelOpponent = $foe;
+                /** @var Maneuver_01061 $maneuver */
+                $maneuver = $risk->getManeuvers()[0];
+
+                $this->calc($world, $maneuver, $eleanor, $foe);
+                Assert::count(1, $world->theah->queuedOfType(EventCardDrawn::class), 'fiction draw');
             },
         ];
     }

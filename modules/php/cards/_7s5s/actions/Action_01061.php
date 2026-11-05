@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -25,7 +26,9 @@ class Action_01061 extends RiskAction
             return false;
 
         $characters = $theah->getCharactersInPlayByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => count($character->Attachments) > 0 && $character->Engaged);
+        // WHY: countsAsEquipped so a Ranged Weapon fiction (Eleanor) satisfies
+        // "equipped performer" for this player's own Well-Equipped Action.
+        $characters = array_filter($characters, fn($character) => $character->countsAsEquipped($theah, $playerId) && $character->Engaged);
         return count($characters) > 0;
     }
 
@@ -34,7 +37,7 @@ class Action_01061 extends RiskAction
         parent::getPerformersForAction($playerId, $theah);
 
         $characters = $theah->getCharactersInPlayByPlayerId($playerId);
-        $characters = array_values(array_filter($characters, fn($character) => count($character->Attachments) > 0 && $character->Engaged));
+        $characters = array_values(array_filter($characters, fn($character) => $character->countsAsEquipped($theah, $playerId) && $character->Engaged));
         return $characters;
     }
 
@@ -47,18 +50,18 @@ class Action_01061 extends RiskAction
             $game = $event->theah->game;
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $event->theah->getCharacterById($performerId);
+            $owner = $this->getOwningCard($event->theah);
 
             if (! $performer->Engaged)
             {
-                throw new \BgaUserException($game->translate("Character must be engaged to use this action"));
+                throw new UserException($game->translate("Character must be engaged to use this action"));
             }
 
-            if (count($performer->Attachments) == 0)
+            if (! $performer->countsAsEquipped($event->theah, $owner->ControllerId))
             {
-                throw new \BgaUserException($game->translate("Character must have an attachment to use this action"));
+                throw new UserException($game->translate("Character must have an attachment to use this action"));
             }
 
-            $owner = $this->getOwningCard($event->theah);
             $engardeEvent = EventFactory::createCardEngardedEvent($owner->ControllerId, $performer->Id, $owner->Id, $this->Id);
             $event->theah->queueEvent($engardeEvent);
 

@@ -214,6 +214,11 @@ This is a boolean fiction for "if equipped with a Ranged Weapon" gates. It is **
 - `Maneuver_01055` duel participant
 - `Reaction_04020` Vantage Point performers (`$ownerPlayerId`)
 
+Broader positive gates use helpers that chain through this fiction (do **not** invert for "unequipped" requirements — "may" is permission for if-equipped benefits only):
+
+- `Character::countsAsEquipped` — any attachment **or** Ranged fiction (`Action_01061` Well-Equipped Action)
+- `Character::countsAsEquippedWithWeapon` — real Weapon **or** Ranged fiction (`Maneuver_01061` Well-Equipped Maneuver)
+
 A new "if your performer/participant is equipped with a Ranged Weapon" check goes through this method. Do **not** copy the old attachment loop.
 
 **Do not route engage / destroy / pick-this-attachment through it.** Katain `Technique_02011` lists Katain's real unengaged Weapon+Ranged attachments and then `createCardEngagedEvent` on the chosen id. Eleanor has no card to engage, and that technique does not call `countsAsEquippedWithRangedWeapon`. Wiring the fiction into Katain would offer a technique that cannot pay its cost.

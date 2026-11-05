@@ -27,18 +27,9 @@ class Maneuver_01061 extends Maneuver
             $event->explanations[] = sprintf($event->theah->game->translate("%s adds 1 Riposte."), $owner->getInjectCode());
 
             $actor = $event->theah->getCharacterById($event->actorId);
-            $drawCard = false;
-            foreach($actor->Attachments as $attachmentId)
-            {
-                $attachment = $event->theah->getAttachmentById($attachmentId);
-                if ($attachment && $attachment->hasTrait("Weapon"))
-                {
-                    $drawCard = true;
-                    break;
-                }
-            }
-
-            if ($drawCard)
+            // WHY: countsAsEquippedWithWeapon so a Ranged Weapon fiction (Eleanor)
+            // satisfies "equipped with a Weapon" for this player's Maneuver.
+            if ($actor->countsAsEquippedWithWeapon($event->theah, $owner->ControllerId))
             {
                 $game = $event->theah->game;
                 $addEvent = EventFactory::createCardDrawnEvent($owner->ControllerId, $owner->getInjectCode());
