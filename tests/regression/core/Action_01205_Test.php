@@ -189,6 +189,16 @@ class Action_01205_Test extends TestCase
 
                 Assert::same(Game::LOCATION_CITY_FORUM, $world->game->globals->get(Game::CHOSEN_LOCATION), 'location');
 
+                $targetMsgs = array_filter(
+                    $world->game->notify->messages,
+                    fn($n) => ($n['type'] ?? '') === 'message'
+                        && str_contains((string) ($n['message'] ?? ''), 'targeting')
+                );
+                Assert::true(count($targetMsgs) >= 1, 'chat names target on location commit');
+                $targetMsg = array_values($targetMsgs)[0];
+                Assert::same($foe->getInjectCode(), $targetMsg['args']['character_inject_code'], 'target in log');
+                Assert::same($giacinto->getInjectCode(), $targetMsg['args']['card_inject_code'], 'card in log');
+
                 $engages = $world->theah->queuedOfType(EventCardEngaged::class);
                 Assert::count(1, $engages, 'cost engage only');
                 Assert::same($giacinto->Id, $engages[0]->cardId, 'Giacinto');

@@ -280,6 +280,15 @@ class Action_04032 extends CharacterAction implements IAbilityThatTargetsCharact
             $owner = $this->getOwningCharacter($game->theah);
             $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
+            // WHY: Opponent then chooses reveal/pass off-turn. Without a target line here,
+            // spectators (and the opponent glancing away) only see the action fired, not who.
+            // Same copy as Action_04028 / 04040 CharacterTargeted window.
+            $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "card_inject_code" => $owner->getInjectCode(),
+                "character_inject_code" => $character->getInjectCode(),
+            ]);
+
             $transition = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "04032_2", $this->Id);
             $game->theah->queueEvent($transition);
 

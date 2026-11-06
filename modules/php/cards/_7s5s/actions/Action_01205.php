@@ -195,6 +195,16 @@ class Action_01205 extends CharacterAction implements IAbilityThatTargetsCharact
 
             $game->globals->set(Game::CHOSEN_LOCATION, $location->Name);
 
+            // WHY: EventCharacterTargeted does not write a log line. Announce here (location
+            // commit), not on victim pick — 01205_2 has Back, so an early line would go stale.
+            // Same copy as Action_01138 / 04040; sits next to CharacterTargeted so UL / cancel
+            // still has a named target in chat.
+            $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($giacinto->ControllerId),
+                "card_inject_code" => $giacinto->getInjectCode(),
+                "character_inject_code" => $victim->getInjectCode(),
+            ]);
+
             // WHY no batchId: printed cost. Must survive Unyielding Loyalty / Maryam cancel
             // of the effect batch. Not moved to announceAction — multi-step UI can still
             // Back from location pick; cost pays only on final location commit. (Risk

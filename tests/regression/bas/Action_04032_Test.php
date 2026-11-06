@@ -43,6 +43,15 @@ class Action_04032_Test extends TestCase
                 Assert::true($action->isAvailableToPlayer(1, $world->theah), 'ready');
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04032, '', $foe->Id);
+                $targetMsgs = array_filter(
+                    $world->game->notify->messages,
+                    fn($n) => ($n['type'] ?? '') === 'message'
+                        && str_contains((string) ($n['message'] ?? ''), 'targeting')
+                );
+                Assert::true(count($targetMsgs) >= 1, 'chat names target on pick');
+                $targetMsg = array_values($targetMsgs)[0];
+                Assert::same($foe->getInjectCode(), $targetMsg['args']['character_inject_code'], 'target in log');
+                Assert::same($giacinto->getInjectCode(), $targetMsg['args']['card_inject_code'], 'card in log');
                 Assert::same('04032_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'their response');
                 Assert::same(2, $world->theah->queuedOfType(EventTransition::class)[0]->playerId, 'opponent acts');
 
