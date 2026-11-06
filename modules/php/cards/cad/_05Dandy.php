@@ -48,7 +48,8 @@ class _05Dandy extends Leader implements IHasActions
         parent::__construct();
         $this->Name = "Claude de la Roche";
         $this->Title = "Disgraced Dandy";
-        $this->Image = "05Dandy.v1.jpg";
+        $this->Image = "05Dandy.v41.jpg";
+        $this->InPlayXImageOffset = -15;
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 14;
@@ -71,10 +72,10 @@ class _05Dandy extends Leader implements IHasActions
             "Montaigne"
         ];
 
-        $this->Text = "<p>During setup, draw four cards. <i>(After shuffling)</i></p>
+        $this->Text = "<p>During setup, draw three cards. <i>(After shuffling)</i></p>
         <p>Claude has -1 [Influence] for each Renown at his location.</p>
-        <p><b>Action:</b> Pay [1 Wealth] • Move Claude to any <b>City</b> location.</p>
-        <p><b>Action:</b> Pay [2 Wealth] • Collect a Renown from this location.</p>";
+        <p><b>City Action:</b> Pay [1 Wealth] • Move Claude to a <b>City</b> location where you control a character.</p>
+        <p><b>Covert Action:</b> Pay [2 Wealth] • Collect a Renown from this location.</p>";
 
         $this->resetCard();
         $this->UnclampedInfluence = $this->ModifiedInfluence;
@@ -181,7 +182,7 @@ class _05Dandy extends Leader implements IHasActions
         // The parenthetical is that timing, not a second shuffle. Cap at the
         // deck size so an empty test deck does not draw from an empty discard.
         $available = count($deck->getCardsInLocation($location));
-        $toDraw = min(4, $available);
+        $toDraw = min(3, $available);
 
         for ($i = 0; $i < $toDraw; $i++)
         {

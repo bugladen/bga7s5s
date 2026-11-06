@@ -65,7 +65,7 @@ class Card_05Dandy_Test extends TestCase
                 Assert::instanceOf(CharacterAction::class, $claude->getActions()[0], 'CharacterAction');
             },
 
-            'setup draws four cards when the deck has them' => function () {
+            'setup draws three cards when the deck has them' => function () {
                 $world = new TestWorld();
                 $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_PLAYER_HOME, 1);
                 $this->placeDeckCards($world, 6);
@@ -73,7 +73,7 @@ class Card_05Dandy_Test extends TestCase
                 $setup = new EventTableSetup();
                 $world->fireOn($claude, $setup);
 
-                Assert::count(4, $world->theah->queuedOfType(EventCardDrawn::class), 'four draws');
+                Assert::count(3, $world->theah->queuedOfType(EventCardDrawn::class), 'three draws');
             },
 
             'setup draws only what the deck holds' => function () {
@@ -189,12 +189,25 @@ class Card_05Dandy_Test extends TestCase
                 Assert::same(2, $claude->getInfluencePressureValue($world->theah, Game::LOCATION_CITY_DOCKS), 'pressure total uses the chip');
             },
 
-            'move action is available at Home when another city exists' => function () {
+            // City Action: Home is illegal even if a destination city has an ally.
+            'move action is unavailable at Home' => function () {
                 $world = new TestWorld();
                 $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_PLAYER_HOME, 1);
+                $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_FORUM, 1);
                 /** @var Action_05Dandya $action */
                 $action = $claude->getActions()[0];
-                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'home move');
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'home');
+            },
+
+            'move action needs a City destination where you control a character' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                /** @var Action_05Dandya $action */
+                $action = $claude->getActions()[0];
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'alone');
+
+                $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_FORUM, 1);
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'ally at forum');
             },
 
             // WHY: Shackles soft-locked tables that paid then failed eventCheck on
@@ -249,7 +262,8 @@ class Card_05Dandy_Test extends TestCase
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
             },
 
-            'collect is available only in a city that has Renown' => function () {
+            // WHY: Covert Action = uncontrolled City with Renown. Controlled sites are not Covert.
+            'collect is available only at an uncontrolled city that has Renown' => function () {
                 $world = new TestWorld();
                 $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_PLAYER_HOME, 1);
                 /** @var Action_05Dandyb $action */
@@ -261,12 +275,18 @@ class Card_05Dandy_Test extends TestCase
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'empty');
 
                 $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 1);
-                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'has renown');
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'has renown uncontrolled');
+
+                $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 2);
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'controlled is not Covert');
+                $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 0);
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'restored');
             },
 
             'paying for the move queues the discard then the location step' => function () {
                 $world = new TestWorld();
-                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_PLAYER_HOME, 1);
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_FORUM, 1);
                 $payment = $world->placeCard(new GenericCharacter('Coin'), Game::LOCATION_HAND, 1);
                 /** @var Action_05Dandya $action */
                 $action = $claude->getActions()[0];
@@ -290,7 +310,8 @@ class Card_05Dandy_Test extends TestCase
 
             'location choice moves Claude without engaging' => function () {
                 $world = new TestWorld();
-                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_PLAYER_HOME, 1);
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_FORUM, 1);
                 /** @var Action_05Dandya $action */
                 $action = $claude->getActions()[0];
 
@@ -306,6 +327,26 @@ class Card_05Dandy_Test extends TestCase
                 Assert::same(Game::LOCATION_CITY_FORUM, $moves[0]->toLocation, 'forum');
                 Assert::same(false, $moves[0]->engage, 'no engage');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            'location choice rejects a City with no controlled character' => function () {
+                $world = new TestWorld();
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_FORUM, 1);
+                /** @var Action_05Dandya $action */
+                $action = $claude->getActions()[0];
+
+                Assert::throws(
+                    fn() => $action->actFromActionWithIds(
+                        $world->game,
+                        States::HIGH_DRAMA_PLAYER_TURN_05DANDYA_2,
+                        'highDramaPhase05Dandya_2',
+                        [Game::LOCATION_CITY_BAZAAR]
+                    ),
+                    'control a character',
+                    'empty destination'
+                );
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move');
             },
 
             'collect pays 2 Wealth then removes one Renown and gains it' => function () {

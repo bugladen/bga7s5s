@@ -21,8 +21,8 @@ class State_highDramaPhase05Dandya_2 extends GameState
             name: "highDramaPhase05Dandya_2",
 
             // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
-            description: '${actplayer} is choosing a City location.',
-            descriptionMyTurn: 'Claude de la Roche: ${you} must choose a City location to move to:',
+            description: '${actplayer} is choosing a City location where they control a character.',
+            descriptionMyTurn: 'Claude de la Roche: ${you} must choose a City location where you control a character:',
             transitions: [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
@@ -59,10 +59,16 @@ class State_highDramaPhase05Dandya_2 extends GameState
             return;
         }
 
+        // Mirror Action_05Dandya::getDestinations — only cities with a controlled character.
         $locations = [];
         foreach (array_keys($this->game->theah->getCityLocations()) as $locationName)
         {
-            if ($locationName != $current)
+            if ($locationName == $current)
+            {
+                continue;
+            }
+
+            if (count($this->game->theah->getCharactersAtLocationByPlayerId($locationName, $playerId)) > 0)
             {
                 $locations[] = $locationName;
             }

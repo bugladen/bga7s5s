@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CharacterAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -19,7 +20,7 @@ class Action_05Dandyb extends CharacterAction
         parent::__construct();
 
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
-        $this->Name = "Pay 2 Wealth; Collect a Renown from this location";
+        $this->Name = "Covert: Pay 2 Wealth; Collect a Renown from this location";
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -35,7 +36,14 @@ class Action_05Dandyb extends CharacterAction
             return false;
         }
 
-        if ($theah->getCityLocation($owner->Location)->Renown <= 0)
+        // WHY: Covert Action — Covert abilities only at uncontrolled City locations (Valeri / Overcoat).
+        $cityLocation = $theah->getCityLocation($owner->Location);
+        if ($cityLocation === null || $cityLocation->isControlled())
+        {
+            return false;
+        }
+
+        if ($cityLocation->Renown <= 0)
         {
             return false;
         }
@@ -78,6 +86,14 @@ class Action_05Dandyb extends CharacterAction
         }
 
         $owner = $this->getOwningCharacter($game->theah);
+
+        // WHY: Keep Covert honest if control flipped between announce and resolve.
+        $cityLocation = $game->theah->getCityLocation($owner->Location);
+        if ($cityLocation === null || $cityLocation->isControlled())
+        {
+            throw new UserException("Covert Actions can only be used at uncontrolled City locations.");
+        }
+
         $this->queueWealthPayment($game, $owner, $ids, 2);
 
         if ($game->theah->cardInCity($owner) && $game->theah->getCityLocation($owner->Location)->Renown > 0)

@@ -21,18 +21,27 @@ class Action_05Dandya extends CharacterAction
         parent::__construct();
 
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
-        $this->Name = "Pay 1 Wealth; Move Claude to any City location";
+        $this->Name = "Pay 1 Wealth; Move Claude to a City location where you control a character";
     }
 
     /**
+     * City locations other than Claude's current spot that already have at least
+     * one of the player's characters. Claude is not there yet, so he never
+     * counts as the controlled character for the destination gate.
+     *
      * @return string[]
      */
-    private function getDestinations(Theah $theah, string $currentLocation): array
+    private function getDestinations(Theah $theah, int $playerId, string $currentLocation): array
     {
         $destinations = [];
         foreach (array_keys($theah->getCityLocations()) as $locationName)
         {
-            if ($locationName != $currentLocation)
+            if ($locationName == $currentLocation)
+            {
+                continue;
+            }
+
+            if (count($theah->getCharactersAtLocationByPlayerId($locationName, $playerId)) > 0)
             {
                 $destinations[] = $locationName;
             }
@@ -59,7 +68,8 @@ class Action_05Dandya extends CharacterAction
         }
 
         $owner = $this->getOwningCharacter($theah);
-        if (! $theah->cardInPlay($owner))
+        // City Action — legal only while Claude is in the city, not at Home.
+        if (! $theah->cardInCity($owner))
         {
             return false;
         }
@@ -74,7 +84,7 @@ class Action_05Dandya extends CharacterAction
             return false;
         }
 
-        return count($this->getDestinations($theah, $owner->Location)) > 0;
+        return count($this->getDestinations($theah, $playerId, $owner->Location)) > 0;
     }
 
     public function handleEvent(Event $event)
@@ -103,7 +113,7 @@ class Action_05Dandya extends CharacterAction
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DANDYA_2)
         {
             $owner = $this->getOwningCharacter($game->theah);
-            $args['locationIds'] = $this->getDestinations($game->theah, $owner->Location);
+            $args['locationIds'] = $this->getDestinations($game->theah, $owner->ControllerId, $owner->Location);
         }
 
         return $args;
@@ -164,10 +174,10 @@ class Action_05Dandya extends CharacterAction
             }
 
             $locationName = $ids[0] ?? '';
-            $eligible = $this->getDestinations($game->theah, $owner->Location);
+            $eligible = $this->getDestinations($game->theah, $owner->ControllerId, $owner->Location);
             if (! in_array($locationName, $eligible, true))
             {
-                throw new UserException("Choose a City location Claude is not already at.");
+                throw new UserException("Choose a City location where you control a character.");
             }
 
             // WHY: Engage is not printed. The move does not engage him.
