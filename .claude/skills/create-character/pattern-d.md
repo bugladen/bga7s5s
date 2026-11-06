@@ -180,7 +180,7 @@ Listen on `EventCardMoved` (past-tense). **Do not treat these as the same patter
 
 | | Volk (plain Reaction) | Horatio (City Reaction) |
 |---|---|---|
-| Owner scope | `cardInPlay` (city **or** Home) | `cardInCity` |
+| Owner scope | `cardInCity` ("opposing" is city-scoped; Home has none) | `cardInCity` |
 | Who | enemy-controlled Character | enemy-controlled Character |
 | Origin | any play site (Home or city) | **`fromLocation == owner.Location`** (leave-from-here) |
 | Destination | any other play site | **adjacent** city only (`getAdjacentCityLocations(..., false)`) |
@@ -191,8 +191,8 @@ if (! ($event instanceof EventCardMoved) || ! $this->isAvailable()) return;
 $owner = $this->getOwningCharacter($event->theah);
 if ($owner === null) return;
 
-// Volk: cardInPlay. Horatio: cardInCity (City Reaction).
-if (! $event->theah->cardInPlay($owner)) return;
+// Both: cardInCity. "opposing character" has no meaning at Home.
+if (! $event->theah->cardInCity($owner)) return;
 
 $character = $event->theah->getCardById($event->cardId);
 if (! ($character instanceof Character)) return;
@@ -215,13 +215,13 @@ $owner->IsUpdated = true;
 $event->theah->queueEvent(EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id));
 ```
 
-**UI:** Follow + Pass buttons (no state / no JS). On Follow: `createCardMovingEvent(..., $engage=false, …)`; `setUsed(true)` only on a real move.
+**UI:** Follow + Pass buttons (no state / no JS). On Follow: `createCardMovingEvent(..., $engage=false, …)`; `setUsed(true)` only on a real move. Re-check `cardInCity($owner)` in `performReaction`.
 
-**WHY Volk is not leave-from-here:** copying Horatio's `fromLocation == owner.Location` blocked Volk in the city when an opponent left **their** Home for another city. Printed text has no City / adjacent / "at this location" wording — playtest treats "opposing" as enemy-controlled.
+**WHY Volk is not leave-from-here:** copying Horatio's `fromLocation == owner.Location` blocked Volk in the city when an opponent left **their** Home for another city. Printed text has no City / adjacent / "at this location" wording — "opposing" = enemy-controlled **while Volk is in the city** (not `cardInPlay`; Home has no opposing characters).
 
 Contrast Ise `Reaction_03016b` (arrive-here → pull ally).
 
-Reference: `Reaction_05Volk` (any enemy play→play), `Reaction_01066` (leave-from-here + adjacent).
+Reference: `Reaction_05Volk` (city owner + any enemy play→play), `Reaction_01066` (leave-from-here + adjacent).
 
 ### After a character equips an attachment at a location
 

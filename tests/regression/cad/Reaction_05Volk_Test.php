@@ -46,19 +46,18 @@ class Reaction_05Volk_Test extends TestCase
     public function tests(): array
     {
         return [
-            'offers when Volk is at Home and an opponent leaves Home for the Forum' => function () {
+            // WHY: "opposing character" is city-scoped — Home has no opposing characters.
+            'does not offer when Volk is at Home' => function () {
                 $world = new TestWorld();
-                [$volk, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_PLAYER_HOME);
+                [, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_PLAYER_HOME);
 
                 $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM));
 
-                $transitions = $world->theah->queuedOfType(EventTransition::class);
-                Assert::count(1, $transitions, 'offered');
-                Assert::same($volk->Id, $transitions[0]->sourceId, 'source');
+                Assert::count(0, $world->theah->queuedEvents, 'Home has no opposing');
             },
 
-            // WHY: Playtest — Volk in city, opponent Home → other city. Not leave-from-here;
-            // Volk follows any enemy play→play move (unlike Horatio).
+            // WHY: Not leave-from-here; Volk follows any enemy play→play move while in city
+            // (unlike Horatio). Includes opponent Home → other city.
             'offers when Volk is in the city and an opponent leaves Home for another city' => function () {
                 $world = new TestWorld();
                 [$volk, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
@@ -70,9 +69,9 @@ class Reaction_05Volk_Test extends TestCase
                 Assert::same($volk->Id, $transitions[0]->sourceId, 'source');
             },
 
-            'follow from Home moves Volk to the Forum without engaging' => function () {
+            'follow from city moves Volk to the Forum without engaging' => function () {
                 $world = new TestWorld();
-                [$volk, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_PLAYER_HOME);
+                [$volk, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
                 $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM));
 
                 $reaction->performReaction($world->game, 0, $reaction->Id, 'followCharacter');
@@ -80,7 +79,7 @@ class Reaction_05Volk_Test extends TestCase
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
                 Assert::count(1, $moves, 'move');
                 Assert::same($volk->Id, $moves[0]->cardId, 'Volk moves');
-                Assert::same(Game::LOCATION_PLAYER_HOME, $moves[0]->fromLocation, 'from Home');
+                Assert::same(Game::LOCATION_CITY_DOCKS, $moves[0]->fromLocation, 'from Docks');
                 Assert::same(Game::LOCATION_CITY_FORUM, $moves[0]->toLocation, 'to Forum');
                 Assert::false($moves[0]->engage, 'no engage');
                 Assert::true($reaction->Used, 'used');

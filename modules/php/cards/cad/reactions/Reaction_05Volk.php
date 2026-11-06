@@ -55,8 +55,10 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
-        // WHY: Plain Reaction (not Horatio City Reaction). In play = city or Home.
-        if (! $event->theah->cardInPlay($owner))
+        // WHY: "opposing character" is city-scoped (Home has no opposing characters).
+        // Plain Reaction (not Horatio City Reaction) but still requires Volk in the city —
+        // not cardInPlay. Horatio additionally needs leave-from-here + adjacent.
+        if (! $event->theah->cardInCity($owner))
         {
             return;
         }
@@ -67,9 +69,9 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
-        // WHY: Playtests — "opposing" here is enemy-controlled, not leave-from-here.
-        // Horatio needs fromLocation == owner (City + co-located). Volk follows any
-        // enemy move into a play location, including Home → city while Volk is elsewhere.
+        // WHY: "opposing" = enemy-controlled (not leave-from-here). Horatio needs
+        // fromLocation == owner. Volk follows any enemy play→play move while in city,
+        // including Home → city while Volk is elsewhere.
         if ($character->ControllerId == 0 || $character->ControllerId == $owner->ControllerId)
         {
             return;
@@ -113,6 +115,7 @@ class Reaction_05Volk extends CardReaction
             $destination = $this->FollowedCharacterLocation;
 
             if ($owner !== null
+                && $game->theah->cardInCity($owner)
                 && $destination !== ''
                 && $destination != $owner->Location
                 && ($destination == Game::LOCATION_PLAYER_HOME || $game->theah->locationInCity($destination)))
