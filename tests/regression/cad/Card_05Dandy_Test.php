@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
@@ -400,6 +401,39 @@ class Card_05Dandy_Test extends TestCase
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterInfluenceModified::class), 'equip already wrote the chip');
             },
 
+            // WHY: Collect clears Applied/Unclamped immediately, but a leftover InfMod
+            // from applying the penalty (queued before a Transition interrupt) can still
+            // absolute-write the chip back to 3. Re-sync on InfMod must restore 4.
+            'stale penalty InfMod cannot stick after renown is cleared' => function () {
+                $world = new TestWorld();
+                /** @var _05Dandy $claude */
+                $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 0);
+                // Post-collect state: Renown gone, tracker restored, chip already 4.
+                $claude->UnclampedInfluence = 4;
+                $claude->ModifiedInfluence = 4;
+                $claude->AppliedRenownPenalty = 0;
+
+                // Leftover from when the penalty was first applied (4→3).
+                $stale = EventFactory::createCharacterInfluenceModifiedEvent(
+                    1,
+                    $claude->Id,
+                    4,
+                    3,
+                    $claude->getInjectCode()
+                );
+                $world->applyHub($stale);
+                $world->fire($stale);
+
+                Assert::same(4, $claude->ModifiedInfluence, 'chip restored');
+                Assert::same(4, $claude->UnclampedInfluence, 'tracker');
+                Assert::same(0, $claude->AppliedRenownPenalty, 'still cleared');
+                $mods = $world->theah->queuedOfType(EventCharacterInfluenceModified::class);
+                Assert::count(1, $mods, 'correction logged');
+                Assert::same(3, $mods[0]->OldInfluence, 'from stale chip');
+                Assert::same(4, $mods[0]->NewInfluence, 'back to printed');
+            },
+
             'collecting the renown while crystal eye is equipped logs the increase' => function () {
                 $world = new TestWorld();
                 $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
@@ -479,6 +513,7 @@ class Card_05Dandy_Test extends TestCase
                 $world = new TestWorld();
                 /** @var _05Dandy $claude */
                 $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 1);
                 $fan = $world->placeCard(new _02027(), Game::LOCATION_CITY_DOCKS, 1);
                 $fan->AttachedToId = $claude->Id;
                 $claude->Attachments[] = $fan->Id;
@@ -525,6 +560,7 @@ class Card_05Dandy_Test extends TestCase
                 $world = new TestWorld();
                 /** @var _05Dandy $claude */
                 $claude = $world->placeCharacter(new _05Dandy(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 1);
                 $fan = $world->placeCard(new _02027(), Game::LOCATION_CITY_DOCKS, 1);
                 $fan->AttachedToId = $claude->Id;
                 $claude->Attachments[] = $fan->Id;

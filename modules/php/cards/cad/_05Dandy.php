@@ -105,6 +105,16 @@ class _05Dandy extends Leader implements IHasActions
                     $this->IsUpdated = true;
                 }
             }
+
+            // WHY: EventHub absolute-writes NewInfluence. A stale own InfMod (e.g. the
+            // 4→3 from applying Renown, still queued behind a Transition) can land
+            // AFTER collect already cleared Applied and raised Unclamped — chip drops
+            // back to the penalty while Unclamped stays correct, and the Reason match
+            // above skips the Unclamped fix. Reassert chip from Unclamped only.
+            // Do not syncRenownPenalty here: Location can still be the old city while
+            // a home restore already cleared Applied via toLocation (Éventail stacks
+            // InfMod before CardMoved).
+            $this->reassertChipFromUnclamped($event->theah);
             return;
         }
 
@@ -193,6 +203,12 @@ class _05Dandy extends Leader implements IHasActions
     public function repairAttachmentInfluence(Theah $theah): void
     {
         $this->foldAttachmentInfluence($theah, true);
+        // WHY: Tables that already took a stale InfMod absolute write (chip low,
+        // Unclamped/Applied cleared) heal the next time the city is loaded.
+        if ($this->ControllerId != 0 && ! $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            $this->syncRenownPenalty($theah, $this->Location);
+        }
     }
 
     // WHY: Callers that bump ModifiedInfluence and queue InfMod (Éventail) must
@@ -202,6 +218,33 @@ class _05Dandy extends Leader implements IHasActions
         $this->UnclampedInfluence += $delta;
         $this->SkipExternalUnclampedInfluenceEvents++;
         $this->IsUpdated = true;
+    }
+
+    private function reassertChipFromUnclamped(Theah $theah): void
+    {
+        if ($this->DashedInfluence || $this->ControllerId == 0 || $theah->game->characterIsInDiscardOrLocker($this))
+        {
+            return;
+        }
+
+        $this->foldAttachmentInfluence($theah, false);
+        $reported = max(0, $this->UnclampedInfluence);
+        if ($reported === $this->ModifiedInfluence)
+        {
+            return;
+        }
+
+        $oldChip = $this->ModifiedInfluence;
+        $this->ModifiedInfluence = $reported;
+        $this->IsUpdated = true;
+
+        $theah->queueEvent(EventFactory::createCharacterInfluenceModifiedEvent(
+            $this->ControllerId,
+            $this->Id,
+            $oldChip,
+            $reported,
+            $this->getInjectCode()
+        ));
     }
 
     private function syncRenownPenalty(Theah $theah, string $location): void
@@ -220,17 +263,20 @@ class _05Dandy extends Leader implements IHasActions
             $desired = $this->renownAt($theah, $location);
         }
 
-        if ($desired === $this->AppliedRenownPenalty)
-        {
-            return;
-        }
-
         $newUnclamped = $this->UnclampedInfluence + $this->AppliedRenownPenalty - $desired;
         $oldChip = $this->ModifiedInfluence;
         // WHY: Write the chip now. A later move/renown event can run before this
         // queued modifier is processed; it must see the penalty already applied
         // or it will skip a restore that the stale event then paints back on.
         $reported = max(0, $newUnclamped);
+
+        // WHY also run when desired === Applied: Unclamped can be right while the
+        // chip still shows a stale absolute InfMod. Reassert from Unclamped.
+        if ($desired === $this->AppliedRenownPenalty && $reported === $oldChip)
+        {
+            return;
+        }
+
         $this->UnclampedInfluence = $newUnclamped;
         $this->AppliedRenownPenalty = $desired;
         $this->ModifiedInfluence = $reported;
