@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\reactions\Reaction_03cd20;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasActions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 
 class _03cd20 extends CityEventCard implements IHasActions, IHasReactions
 {
@@ -43,5 +44,10 @@ class _03cd20 extends CityEventCard implements IHasActions, IHasReactions
         $this->Reactions = [
             new Reaction_03cd20(),
         ];
+    }
+
+    public function getEarlyMorningArrangementsUsedListData(Game $game): array
+    {
+        return $this->Actions[0]->getUsedListData($game);
     }
 }

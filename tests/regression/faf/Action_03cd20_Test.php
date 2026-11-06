@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
+use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
@@ -15,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCityCardAddedToLocation;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -104,6 +106,12 @@ class Action_03cd20_Test extends TestCase
 
                 $resolved = $world->theah->queuedOfType(EventActionResolved::class);
                 Assert::same(2, $resolved[0]->playerId, 'resolved');
+                Assert::false($action->Used, 'global Used cleared');
+                Assert::same(
+                    [['playerId' => 2, 'playerName' => 'Player Two', 'playerColor' => '000002']],
+                    $card->getEarlyMorningArrangementsUsedListData($world->game),
+                    'used list'
+                );
             },
 
             'successful pressure with an empty City Deck still goes Home' => function () {
@@ -122,9 +130,15 @@ class Action_03cd20_Test extends TestCase
                 Assert::same(1, $card->ControllerId, 'controller');
             },
 
+            // WHY: City-event Actions stay in play and are once-per-Day per player. A failed
+            // pressure must lock only the acting player — clearing the global Used flag so
+            // Player B can still try while the card remains in the city.
             'failed pressure resolves the action and leaves the card' => function () {
                 $world = new TestWorld();
                 [$card, $action] = $this->scene($world);
+                $world->placeCharacter(new GenericCharacter('AtDocks'), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Other'), Game::LOCATION_CITY_DOCKS, 2);
+                $action->Used = true;
 
                 $result = new EventLocationPressureResult();
                 $result->abilityId = $action->Id;
@@ -137,6 +151,14 @@ class Action_03cd20_Test extends TestCase
                 Assert::count(0, $world->theah->queuedOfType(EventCityCardAddedToLocation::class), 'no card');
                 Assert::same(0, $card->ControllerId, 'still uncontrolled');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+                Assert::false($action->Used, 'global Used cleared');
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'locked for A');
+                Assert::true($action->isAvailableToPlayer(2, $world->theah), 'still open for B');
+                Assert::same(
+                    [['playerId' => 1, 'playerName' => 'Player One', 'playerColor' => '000001']],
+                    $card->getEarlyMorningArrangementsUsedListData($world->game),
+                    'used list'
+                );
             },
 
             'a pressure result for another ability is ignored' => function () {
@@ -172,6 +194,55 @@ class Action_03cd20_Test extends TestCase
                 $world->placeCharacter(new GenericCharacter('AtDocks'), Game::LOCATION_CITY_DOCKS, 1);
 
                 Assert::true($action->isAvailableToPlayer(1, $world->theah), 'city + friendly');
+            },
+
+            'using it again the same day is rejected' => function () {
+                $world = new TestWorld();
+                [, $action] = $this->scene($world);
+                $world->placeCharacter(new GenericCharacter('AtDocks'), Game::LOCATION_CITY_DOCKS, 1);
+
+                $result = new EventLocationPressureResult();
+                $result->abilityId = $action->Id;
+                $result->playerId = 1;
+                $result->success = false;
+                $result->theah = $world->theah;
+                $action->handleEvent($result);
+
+                $triggered = new EventActionTriggered();
+                $triggered->actionId = $action->Id;
+                $triggered->playerId = 1;
+                $triggered->theah = $world->theah;
+
+                $threw = false;
+                try {
+                    $action->eventCheck($triggered);
+                } catch (UserException $e) {
+                    $threw = true;
+                    Assert::contains('already used', $e->getMessage(), 'message');
+                }
+                Assert::true($threw, 'rejected');
+            },
+
+            'Dusk clears the per-player lock' => function () {
+                $world = new TestWorld();
+                [$card, $action] = $this->scene($world);
+                $world->placeCharacter(new GenericCharacter('AtDocks'), Game::LOCATION_CITY_DOCKS, 1);
+
+                $result = new EventLocationPressureResult();
+                $result->abilityId = $action->Id;
+                $result->playerId = 1;
+                $result->success = false;
+                $result->theah = $world->theah;
+                $action->handleEvent($result);
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'locked');
+
+                $dusk = new EventDuskEndOfDay();
+                $dusk->theah = $world->theah;
+                $action->handleEvent($dusk);
+
+                Assert::true($card->IsUpdated, 'rewritten');
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available again');
+                Assert::same([], $card->getEarlyMorningArrangementsUsedListData($world->game), 'list cleared');
             },
         ];
     }

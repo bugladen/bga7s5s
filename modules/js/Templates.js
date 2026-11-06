@@ -288,6 +288,10 @@
         <div id="crabs-in-a-bucket-used-list" class="_7sfs-card-player-list"></div>
         `;
 
+        window.jstpl_early_morning_arrangements_used_list = `
+        <div id="early-morning-arrangements-used-list" class="_7sfs-card-player-list"></div>
+        `;
+
         window.jstpl_location_action_used_list = `
         <div id="location-action-used-list-\${actionId}" class="_7sfs-card-player-list _7sfs-location-action-used-list"></div>
         `;

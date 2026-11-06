@@ -76,6 +76,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['locationInfluenceTotalsUpdated', 1],
             ['sirensScreamUsedListUpdated', 1],
             ['crabsInABucketUsedListUpdated', 1],
+            ['earlyMorningArrangementsUsedListUpdated', 1],
             ['locationActionUsedListUpdated', 1],
             ['catsEmbargoUpdated', 1],
             ['locationUncontrolled', 500],
@@ -3196,6 +3197,15 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         const args = notif.args;
         this.displayCrabsInABucketUsedList(args.cardId, args.usedList);
+    },
+
+    notif_earlyMorningArrangementsUsedListUpdated: function( notif )
+    {
+        debug( 'notif_earlyMorningArrangementsUsedListUpdated' );
+        debug( notif );
+
+        const args = notif.args;
+        this.displayEarlyMorningArrangementsUsedList(args.cardId, args.usedList);
     },
 
     notif_locationActionUsedListUpdated: function( notif )

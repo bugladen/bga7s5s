@@ -2467,6 +2467,39 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
+    displayEarlyMorningArrangementsUsedList: function(cardId, usedList) {
+        this.removeEarlyMorningArrangementsUsedList();
+
+        if (!usedList || usedList.length === 0) {
+            return;
+        }
+
+        const card = this.cardProperties[cardId];
+        if (!card || !card.divId) return;
+
+        const imageElement = $(`${card.divId}_image`);
+        if (!imageElement) return;
+
+        dojo.place(this.format_block('jstpl_early_morning_arrangements_used_list', {}), imageElement, 'last');
+
+        const container = $('early-morning-arrangements-used-list');
+        usedList.forEach((entry) => {
+            dojo.create('span', {
+                innerHTML: entry.playerName,
+                style: `color:#${entry.playerColor}`,
+            }, container);
+        });
+
+        this.addTippyTooltip('early-morning-arrangements-used-list', `<div class='_7sfs-basic-tooltip'>${_("Early Morning Arrangements - Players who have used this Action this Day")}</div>`);
+    },
+
+    removeEarlyMorningArrangementsUsedList: function() {
+        const existing = $('early-morning-arrangements-used-list');
+        if (existing) {
+            dojo.destroy(existing);
+        }
+    },
+
     displayLocationActionUsedList: function(actionId, locationName, usedList) {
         this.removeLocationActionUsedList(actionId);
 
