@@ -113,6 +113,22 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     gap: 10px;
 }
 
+/* WHY: Stacks explicit button rows (Core 3+2, Balanced 5+5) instead of flex-wrap. */
+._7sfs-deck-picker-button-stack {
+    display: flex;
+    flex-direction: column;
+    background: #eee;
+}
+
+._7sfs-deck-picker-button-stack ._7sfs-deck-picker-tab-buttons {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+._7sfs-deck-picker-button-stack .deck-picker-button {
+    padding: 6px 14px;
+}
+
 ._7sfs-deck-picker-tab-buttons button {
     font-size: 16px;
     padding: 6px 22px;
@@ -126,6 +142,24 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
 ._7sfs-deck-picker-tab-buttons button:hover,
 ._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-tab-selected {
     background: #c9a97a;
+}
+
+/* WHY: Cooler slate vs parchment so group tabs (Core / Balanced) read as a
+   different tier from faction/leader deck-picker-button choices. */
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button {
+    background: #4a6678;
+    color: #f0ebe3;
+    border-color: #2d4454;
+}
+
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button:hover {
+    background: #355468;
+    color: #f0ebe3;
+}
+
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-tab-selected {
+    background: #1e3340;
+    color: #f0ebe3;
 }
 
 ._7sfs-deck-picker-tab-buttons button._7sfs-deck-picker-confirm-ready {
@@ -190,6 +224,19 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     background-size: 990px 1350px;
     background-position: -250px -180px;
     width: 700px;
+}
+
+/* WHY: Faction art is a fixed-size background crop — taller viewport = more
+   portrait visible. Cap the blurb (scroll if needed) and grow the modal only
+   while a deck tab with faction art is active so banner/custom stay compact. */
+._7sfs-deck-picker-modal:has(._7sfs-deck-picker-tab-content._7sfs-deck-picker-active ._7sfs-deck-picker-faction-image) {
+    height: 780px;
+}
+
+._7sfs-deck-picker-tab-content._7sfs-deck-picker-active:has(._7sfs-deck-picker-faction-image) ._7sfs-deck-picker-tab-text {
+    max-height: 100px;
+    overflow-y: auto;
+    flex: 0 0 auto;
 }
 ._7sfs-deck-picker-faction-image._7sfs-castille {
     background-image: url('img/cards/deckpicker/089.jpg');

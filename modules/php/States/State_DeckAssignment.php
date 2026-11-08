@@ -39,6 +39,9 @@ class State_DeckAssignment extends GameState
         // Restore any decks already stored for this tournament. Track which
         // players still need a deck so the manual/random branches can handle them.
         $playersNeedingDeck = $players;
+        // WHY: Balanced has two leaders per faction — unique-by-id alone still allows
+        // same-faction mirrors. Track restored factions so random fill doesn't collide.
+        $takenFactions = [];
         if ($lockTournamentDecks)
         {
             foreach ($players as $playerId => $player)
@@ -56,6 +59,12 @@ class State_DeckAssignment extends GameState
                     $this->game->notify->player($playerId, 'message', clienttranslate('Private: Deck ${deck_name} is restored for the tournament.'), [
                         'deck_name' => $deck_name,
                     ]);
+
+                    $faction = is_array($deck) ? ($deck['faction'] ?? null) : ($deck->faction ?? null);
+                    if ($faction)
+                    {
+                        $takenFactions[$faction] = true;
+                    }
 
                     unset($playersNeedingDeck[$playerId]);
                 }
@@ -80,13 +89,25 @@ class State_DeckAssignment extends GameState
         {
             $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "Core");
         }
-        else if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_RANDOM_TOOTH_AND_CLAW)
+        else if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_RANDOM_BALANCED)
         {
-            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "TaC");
+            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "Balanced");
         }
-        else if ($playerDeckChoice === Game::OPTIONS_PLAYER_DECKS_RANDOM_FATE_AND_FORTUNE)
+        else
         {
-            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "FaF");
+            // WHY: Waiting tables created before TaC/FaF starter pools were removed may still
+            // carry option value 3 (old random FaF). Value 2 was old random TaC and is now
+            // RANDOM_BALANCED above; any other deleted/unknown non-manual value also lands
+            // here. Prefer Balanced over an empty filter or mixing Core into those games.
+            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => ($deck->set ?? null) === "Balanced");
+        }
+
+        if (!empty($takenFactions))
+        {
+            $starter_decks->decks = array_filter(
+                $starter_decks->decks,
+                fn($deck) => !isset($takenFactions[$deck->faction ?? ''])
+            );
         }
     
         foreach ($playersNeedingDeck as $playerId => $player)
@@ -109,8 +130,13 @@ class State_DeckAssignment extends GameState
                 $this->game->bga->tournament->storePlayerGameData($playerId, 'deck_source', $chosen_deck);
             }
 
-            //Remove the deck from the array
-            $starter_decks->decks = array_filter($starter_decks->decks, fn($deck) => $deck->id !== $chosen_deck->id);
+            // WHY: Drop the whole faction, not just the chosen id — Balanced ships two
+            // leaders per faction, and unique-by-id still allowed Soline+Sanjay mirrors.
+            $chosenFaction = $chosen_deck->faction ?? null;
+            $starter_decks->decks = array_filter(
+                $starter_decks->decks,
+                fn($deck) => ($deck->faction ?? null) !== $chosenFaction
+            );
         }
 
         return "buildTable";

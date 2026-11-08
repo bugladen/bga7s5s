@@ -197,10 +197,17 @@ return declare('seventhseacityoffivesails.utilities', null, {
             }
         });
 
-        const buttons = document.querySelectorAll('.deck-picker-button');
-        buttons.forEach((btn, i) => {
-          btn.classList.toggle('_7sfs-deck-picker-tab-selected', i === tabIndex - this.deckPickerGroup - 1);
-        });
+        // WHY: Scope highlight to the visible deck row only. Faction + Balanced rows
+        // both use .deck-picker-button, and Custom/Confirm share that class too —
+        // a global querySelectorAll would mis-highlight once Balanced (10 buttons) exists.
+        const factionRow = document.getElementById('deck-picker-faction-buttons');
+        const balancedRow = document.getElementById('deck-picker-balanced-buttons');
+        const activeRow = (balancedRow && balancedRow.style.display !== 'none') ? balancedRow : factionRow;
+        if (activeRow) {
+            activeRow.querySelectorAll('.deck-picker-button').forEach((btn, i) => {
+                btn.classList.toggle('_7sfs-deck-picker-tab-selected', i === tabIndex - this.deckPickerGroup - 1);
+            });
+        }
 
         // If the tabIndex is 0, disable the deck select button
         if (tabIndex === 0)
@@ -215,7 +222,20 @@ return declare('seventhseacityoffivesails.utilities', null, {
     },
 
     deckPickerGroupShowTab: function(groupIndex) {
-        this.deckPickerGroup = 5 * (groupIndex - 1);
+        const factionRow = document.getElementById('deck-picker-faction-buttons');
+        const balancedRow = document.getElementById('deck-picker-balanced-buttons');
+
+        // WHY: Tabs are Core 1–5, Balanced 6–15, Custom 16. Group 1 uses faction stride;
+        // group 2 (Balanced) offsets to 5 so +1..+10 → 6..15.
+        if (groupIndex === 2) {
+            this.deckPickerGroup = 5;
+            if (factionRow) factionRow.style.display = 'none';
+            if (balancedRow) balancedRow.style.display = 'flex'; // column wrapper; CSS sets flex-direction
+        } else {
+            this.deckPickerGroup = 5 * (groupIndex - 1);
+            if (factionRow) factionRow.style.display = 'flex';
+            if (balancedRow) balancedRow.style.display = 'none';
+        }
         this.deckPickerShowTab(0);
 
         const buttons = document.querySelectorAll('.deck-picker-group-button');

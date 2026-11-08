@@ -49,54 +49,54 @@
                 <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_core}</div>
                 </div>
 
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDCastilleTaC">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-castille"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${castille_description_tac}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDEisenTaC">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-eisen"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${eisen_description_tac}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDMontaigneTaC">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-montaigne"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${montaigne_description_tac}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDUssuraTaC">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-ussura"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${ussura_description_tac}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacceTaC">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_tac}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDCastilleFaF">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-castille"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${castille_description_faf}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDEisenFaF">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-eisen"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${eisen_description_faf}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDMontaigneFaF">
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDBalancedAngeline">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-montaigne"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${montaigne_description_faf}</div>
+                <div class="_7sfs-deck-picker-tab-text">\${angeline_description_balanced}</div>
                 </div>
 
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDUssuraFaF">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-ussura"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${ussura_description_faf}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacceFaF">
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDBalancedCesca">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-vodacce"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_faf}</div>
+                <div class="_7sfs-deck-picker-tab-text">\${cesca_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDBalancedConstanzo">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${constanzo_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDBalancedDaniella">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-eisen"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${daniella_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDBalancedEkaterina">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-ussura"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${ekaterina_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDBalancedKaspar">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-eisen"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${kaspar_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDBalancedOdette">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-montaigne"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${odette_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDBalancedSanjay">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _faf-castille"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${sanjay_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDBalancedSoline">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-castille"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${soline_description_balanced}</div>
+                </div>
+
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDBalancedYevgeni">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-ussura"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${yevgeni_description_balanced}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" id="Custom">
@@ -105,17 +105,39 @@
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core</button>
-                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Tooth & Claw</button>
-                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(3)">Fate & Fortune</button>
+                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core Cards Only</button>
+                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Balanced Leaders</button>
                 </div>
 
+                <!-- WHY: Core factions as 3+2 rows so the five names don't crowd one line. -->
+                <div id="deck-picker-faction-buttons" class="_7sfs-deck-picker-button-stack">
                 <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Castille</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Eisen</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 3)">Montaigne</button>
+                </div>
+                <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 4)">Ussura</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 5)">Vodacce</button>
+                </div>
+                </div>
+
+                <!-- WHY: Separate from faction buttons — Balanced has 10 leaders in two rows of 5. Hidden until group 2. -->
+                <div id="deck-picker-balanced-buttons" class="_7sfs-deck-picker-button-stack" style="display: none;">
+                <div class="_7sfs-deck-picker-tab-buttons">
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Angeline</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Cesca</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 3)">Constanzo</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 4)">Daniella</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 5)">Ekaterina</button>
+                </div>
+                <div class="_7sfs-deck-picker-tab-buttons">
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 6)">Kaspar</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 7)">Odette</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 8)">Sanjay</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 9)">Soline</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 10)">Yevgeni</button>
+                </div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">

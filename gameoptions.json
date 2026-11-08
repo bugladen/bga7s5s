@@ -23,20 +23,15 @@
         "values": {
             "0": {
                 "name": "Player Chosen",
-                "description": "Each player will choose a Starter Deck manually or provide a deck code. Mirror matches are possible."
+                "description": "Each player will choose a Starter Deck manually or provide a deck code."
             },
             "1": {
                 "name": "Assigned Random Unique Core Starter Deck",
-                "description": "A random unique Core Starter Deck will be assigned to each player by the server.  No mirror matches are possible."
-                
+                "description": "A random unique Core Starter Deck will be assigned to each player by the server."
             },
             "2": {
-                "name": "Assigned Random Unique Tooth & Claw Starter Deck",
-                "description": "A random unique Tooth & Claw Starter Deck will be assigned to each player by the server.  No mirror matches are possible."                
-            },
-            "3": {
-                "name": "Assigned Random Unique Fate & Fortune Starter Deck",
-                "description": "A random unique Fate & Fortune Starter Deck will be assigned to each player by the server.  No mirror matches are possible."                
+                "name": "Assigned Random Unique Balanced Starter Deck",
+                "description": "A random unique Balanced Starter Deck will be assigned to each player by the server. No same-faction matches."
             }
         },
         "startcondition": {

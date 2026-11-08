@@ -40,8 +40,11 @@ class Game extends \Bga\GameFramework\Table
     final const OPTIONS_PLAYER_DECKS = 101;
     final const OPTIONS_PLAYER_DECKS_MANUAL = 0;
     final const OPTIONS_PLAYER_DECKS_RANDOM_CORE = 1;
-    final const OPTIONS_PLAYER_DECKS_RANDOM_TOOTH_AND_CLAW = 2;
-    final const OPTIONS_PLAYER_DECKS_RANDOM_FATE_AND_FORTUNE = 3;
+    final const OPTIONS_PLAYER_DECKS_RANDOM_BALANCED = 2;
+    // WHY: Pre-removal table option for random Fate & Fortune starters. Waiting tables may
+    // still have this value; State_DeckAssignment maps it (and any other unknown non-manual
+    // value) to the Balanced pool. Value 2 was old random TaC and is now RANDOM_BALANCED.
+    final const OPTIONS_PLAYER_DECKS_LEGACY_RANDOM_FATE_AND_FORTUNE = 3;
 
     // WHY: Deploy-time switch for tournament deck locking (BGA Tournament API store/restore).
     // When true, a player's picked (or randomly assigned) deck is locked for the whole
