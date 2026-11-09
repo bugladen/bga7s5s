@@ -32,19 +32,22 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
             return false;
         }
 
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait("Musketeer") && $character->canChallenge($theah));
-
-        return count($characters) > 0;
+        // WHY: City Action issues a challenge to "target opposing character" — a lone
+        // Musketeer with nobody to challenge must not light the action. Same gate as
+        // Action_04045 / Action_02061 (performer legality includes a co-located foe).
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
 
-        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Musketeer") && $performer->canChallenge($theah));
-
-        return $performers;
+        return array_values(array_filter(
+            $performers,
+            fn($performer) => $performer->hasTrait("Musketeer")
+                && $performer->canChallenge($theah)
+                && count($theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)) > 0
+        ));
     }
 
     public function isValidTargetForAbility(Game $game, Character $character): array

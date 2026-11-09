@@ -64,10 +64,11 @@ class Action_01071_Test extends TestCase
         return [
             // --- availability / performers / targets ---
 
-            'available with a Musketeer in the city' => function () {
+            'available with a Musketeer and opposing character at the same location' => function () {
                 $world = new TestWorld();
                 $scheme = $world->placeCard(new _01071(), Game::LOCATION_PLAYER_HOME, 1);
                 $world->placeCharacter(new GenericCharacter('Musketeer', ['Musketeer']), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
                 /** @var Action_01071 $action */
                 $action = $scheme->getActions()[0];
                 Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available');
@@ -77,30 +78,47 @@ class Action_01071_Test extends TestCase
                 $world = new TestWorld();
                 $scheme = $world->placeCard(new _01071(), Game::LOCATION_PLAYER_HOME, 1);
                 $world->placeCharacter(new GenericCharacter('Plain'), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
                 /** @var Action_01071 $action */
                 $action = $scheme->getActions()[0];
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no musketeer');
+            },
+
+            // WHY: "target opposing character" — Musketeer alone (or foe at a different
+            // location) must not light the City Action. Softlock / empty choose-target.
+            'unavailable when Musketeer has no co-located opposing character' => function () {
+                $world = new TestWorld();
+                $scheme = $world->placeCard(new _01071(), Game::LOCATION_PLAYER_HOME, 1);
+                $world->placeCharacter(new GenericCharacter('Musketeer', ['Musketeer']), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Far Foe'), Game::LOCATION_CITY_FORUM, 2);
+                /** @var Action_01071 $action */
+                $action = $scheme->getActions()[0];
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no local foe');
             },
 
             'unavailable when scheme is not at Player Home' => function () {
                 $world = new TestWorld();
                 $scheme = $world->placeCard(new _01071(), Game::LOCATION_CITY_DISCARD, 1);
                 $world->placeCharacter(new GenericCharacter('Musketeer', ['Musketeer']), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
                 /** @var Action_01071 $action */
                 $action = $scheme->getActions()[0];
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'not at home');
             },
 
-            'getPerformersForAction returns only Musketeers' => function () {
+            'getPerformersForAction returns only Musketeers with a local foe' => function () {
                 $world = new TestWorld();
                 $scheme = $world->placeCard(new _01071(), Game::LOCATION_PLAYER_HOME, 1);
                 $musketeer = $world->placeCharacter(new GenericCharacter('Musketeer', ['Musketeer']), Game::LOCATION_CITY_DOCKS, 1);
+                $lonely = $world->placeCharacter(new GenericCharacter('Lonely Musketeer', ['Musketeer']), Game::LOCATION_CITY_FORUM, 1);
                 $plain = $world->placeCharacter(new GenericCharacter('Plain'), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
                 /** @var Action_01071 $action */
                 $action = $scheme->getActions()[0];
 
                 $ids = array_map(fn($c) => $c->Id, $action->getPerformersForAction(1, $world->theah));
-                Assert::true(in_array($musketeer->Id, $ids, true), 'musketeer');
+                Assert::true(in_array($musketeer->Id, $ids, true), 'musketeer with foe');
+                Assert::false(in_array($lonely->Id, $ids, true), 'lonely musketeer excluded');
                 Assert::false(in_array($plain->Id, $ids, true), 'plain excluded');
             },
 
