@@ -164,7 +164,8 @@ class Action_01086_Test extends TestCase
                 Assert::same(Game::LOCATION_CITY_DOCKS, $queued[0]->location, 'location');
                 Assert::same(1, $queued[0]->playerId, 'owner');
                 Assert::instanceOf(EventActionResolved::class, $queued[1], 'resolved second');
-                Assert::same([null], $world->game->gamestate->transitions, 'next state');
+                // WHY: must name locationChosen — state also has zombie (GameState conversion).
+                Assert::same(['locationChosen'], $world->game->gamestate->transitions, 'next state');
             },
 
             // WHY: still resolves the Action (cost paid) but must not queue an Uncontrolled event
@@ -180,7 +181,7 @@ class Action_01086_Test extends TestCase
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
                 $messages = $world->game->notify->messages;
                 Assert::true(count($messages) >= 1, 'message logged');
-                Assert::same([null], $world->game->gamestate->transitions, 'next state');
+                Assert::same(['locationChosen'], $world->game->gamestate->transitions, 'next state');
             },
 
             // WHY: empty/Mercenary was only checked in isAvailable/args; act must re-check against crafted clients.

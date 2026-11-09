@@ -134,7 +134,9 @@ class Action_01086 extends RiskAction
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
-            $game->gamestate->nextState();
+            // WHY: State has zombie + locationChosen; bare nextState() throws
+            // "More than one possible transition at this state".
+            $game->gamestate->nextState("locationChosen");
         }
     }
 }
