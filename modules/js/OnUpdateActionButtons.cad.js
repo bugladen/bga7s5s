@@ -105,6 +105,13 @@
                 this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actPass', {}), { id: 'actPass', color: 'alert' });
             },
 
+            // WHY: Covert wound — no Engage printed, so Back is legal (unlike Teens).
+            'highDramaPhase05Vulture': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             // WHY: No Back on any Teens state - the performer was engaged at announce.
             'highDramaPhase05Teens': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());

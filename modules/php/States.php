@@ -506,6 +506,8 @@ class States
             const HIGH_DRAMA_PLAYER_TURN_05TEENS_2 = 4050192;
             const HIGH_DRAMA_PLAYER_TURN_05TEENS_3 = 4050193;
             const HIGH_DRAMA_PLAYER_TURN_05TEENS_4 = 4050194;
+        // CAD — Gusev Grabiezca (_05Vulture). Exp 5 + card 23. Covert wound Scion / equipped.
+        const HIGH_DRAMA_PLAYER_TURN_05VULTURE = 405023;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;

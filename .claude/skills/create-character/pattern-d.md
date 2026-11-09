@@ -576,6 +576,20 @@ WHY Opponent-effect via `sourceId`/`abilityId`, not `initiatingPlayerId`: some M
 
 Reference: `Reaction_04041` Jak-Sen; cancel-move siblings `Reaction_03016a` / `Reaction_01140`; opponent-effect helper `Reaction_04021`; engage Decline skip `Reaction_01032`.
 
+### Destroyed character → take control of attachment
+
+Printed (Vulture `_05Vulture`): **Reaction: When a character at this location is destroyed • Take control of their equipped attachment and equip it to a character you control paying all costs.**
+
+**Timing trap:** `Character::unEquipAllAttachments` queues Unequip + Discard **before** `EventCharacterDestroyed`. By Destroy time, `Attachments` is empty and cards sit in discard. Do **not** read `$destroyed->Attachments` on Destroy.
+
+**Stash:** On `EventAttachmentUnequipped`, gate `IsDying` + same location as Owner + real (non-Fake) attachment. WHY `IsDying`: normal Damya/Teens unequips must not pollute the map. Clear stale on Dusk / after resolve.
+
+**Trigger:** `EventCharacterDestroyed` when destroyed at Owner's location and stashed attachments are still in a discard pile with ≥1 payable host. Plain Reaction → `cardInPlay` (Home legal unless City printed). Self-destroy legal unless text says "another".
+
+**Take control + pay:** Teens discard pull (`ControllerId` + `createCardRemovedFrom*DiscardPileEvent`) + Tomas/Kaj click-to-pay inside the Reaction — **never** `PAY_STATE_EQUIP_ATTACHMENT` (destroy fires outside HD). Then `getRequiredAttachTargetId` + `createAttachmentEquippedEvent`. Hosts = `getCharactersAtLocationByPlayerId(owner.Location, …)` excluding dying/locker (same location as the destroy trigger). Skip Artifact filter unless printed (Tomas is non-Artifact-only).
+
+Reference: `Reaction_05Vulture`; Action sibling `Action_05Teens`; click-to-pay `Reaction_04013` / `Reaction_04042`.
+
 ### Would-be-discarded attachment → equip paying costs
 
 Printed shape (Tomas `_04013`): **"City Reaction: When a non-Artifact attachment equipped to your character at this location would be put into a discard pile • Equip it to your character at this location instead, paying all costs."**
@@ -650,6 +664,7 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_03001` | Cesca del Rosso's "after Cesca performs a Sorcerer ability, wound an opposing character" — button-per-opposing-character target picker, with a Pass button. |
 | `Reaction_03003` (Don Constanzo) | Multi-stage Reaction with hand/discard source selection, **incremental click-to-pay wealth handling** rolled inside the reaction (no PAY_STATE_PLAY_BRUTE coupling), and muster-at-Home. Canonical reference for cost-bearing Reactions and "put into play from hand or discard pile." |
 | `Reaction_04013` (Tomas — salvage attachment) | **Would-be-discard → equip paying costs.** Cancel both discard events; unequip-stash map for host identity; pick character + click-to-pay (`getEquipDiscount`); Decline re-queues discard via `cancelDeclinedByCardIds`. No `PAY_STATE_EQUIP_ATTACHMENT`. |
+| `Reaction_05Vulture` (Gusev — destroy → take control attachment) | **CharacterDestroyed** trigger + stash on Unequip only when host `IsDying` (attachments discard before Destroy). Take control from discard (Teens ControllerId + remove-from-pile) + Tomas/Kaj click-to-pay (never `PAY_STATE`). Hosts = controlled non-dying **at Owner's location**. No Artifact exclusion unless printed. Prototype: no `clienttranslate`. |
 | `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
 | `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
 | `Reaction_01066` (Horatio — follow adjacent) | **"After opposing moved to adjacent • Move Owner there."** Leave-from-here (`fromLocation == owner.Location`) + adjacent city gate; stash destination; Follow/Pass; Owner `createCardMovingEvent(engage=false)`. City Reaction. |

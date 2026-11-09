@@ -1423,7 +1423,7 @@ body._7sfs-halloween {
     margin-right: 2px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * 0.6942);
-    background-position: -541px -43px;
+    background-position: -541px -44px;
     width: 19px;
     height: 19px;
     flex-shrink: 0;
@@ -1451,7 +1451,7 @@ body._7sfs-halloween {
 ._7sfs-card-influence-image {
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * .6942);
-    background-position: -540px -82px;
+    background-position: -540px -83px;
     width: 21px;
     height: 19px;
     flex-shrink: 0;
