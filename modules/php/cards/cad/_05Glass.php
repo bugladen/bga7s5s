@@ -21,7 +21,7 @@ class _05Glass extends Risk implements IHasActions, IHasManeuvers
 
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
         $this->Name = "Unseat";
-        $this->Image = "05Glass.v4.jpg";
+        $this->Image = "05Glass.v5.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 12;
@@ -40,8 +40,8 @@ class _05Glass extends Risk implements IHasActions, IHasManeuvers
             "Overthrow",
         ];
 
-        $this->Text = "<p><b>City Action:</b> Pressure your performer’s location with [Finesse]. If successful, this location becomes uncontrolled.</p>
-<p><b>Maneuver:</b> If the adversary has more [Influence] than your participant • Wound them.</p>";
+        $this->Text = "<p><b>City Action:</b> Pressure your performer's location with [Finesse]. If successful, this location becomes uncontrolled.</p>
+<p><b>Maneuver:</b> If the adversary has more [Influence] than your participant • Wound the adversary.</p>";
 
         $this->resetCard();
 
