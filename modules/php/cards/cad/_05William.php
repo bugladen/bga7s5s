@@ -39,7 +39,7 @@ class _05William extends Scheme implements IHasActions
         $this->initializeFaction("Ussura");
 
         $this->Initiative = 27;
-        $this->PanacheModifier = 0;
+        $this->PanacheModifier = -1;
 
         $this->Traits = [
             "Discovery",
