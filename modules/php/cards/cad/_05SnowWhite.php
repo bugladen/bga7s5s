@@ -19,7 +19,7 @@ class _05SnowWhite extends Scheme implements IHasReactions
     {
         parent::__construct();
         $this->Name = "Wildcall";
-        $this->Image = "05SnowWhite.v4.jpg";
+        $this->Image = "05SnowWhite.v5.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         // WHY: Stub CardNumber=13 matches CAD sequence after William/Orel/Volk (10–12).
@@ -37,7 +37,7 @@ class _05SnowWhite extends Scheme implements IHasReactions
         ];
 
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
-        $this->Text = "<p>Add a Renown to [The City Forum] and [The Grand Bazaar].</p>
+        $this->Text = "<p>Add a Renown to [The City Docks] and [The City Forum].</p>
 <hr />
 <p><b>Sorcerer Reaction:</b> At the end of Planning • Muster Orel or Volk at your <b>Home</b> from out of play.</p>
 <p>Your <b>Animals</b> do not count towards [Crew Cap].</p>
@@ -68,9 +68,19 @@ class _05SnowWhite extends Scheme implements IHasReactions
         {
             $game = $event->theah->game;
 
-            $game->notify->all("message", '${scheme_inject_code} now resolves. A Renown will be added to The City Forum and The Grand Bazaar.', [
+            // WHY: Printed destinations are Docks + Forum (v5 / Text). Earlier Forum+Bazaar
+            // was a Text stub that disagreed with Anchor+Temple art — Text now matches art.
+            $game->notify->all("message", '${scheme_inject_code} now resolves. Renown will be added to The City Docks and The City Forum.', [
                 "scheme_inject_code" => $this->getInjectCode(),
             ]);
+
+            $docks = EventFactory::createRenownAddedToLocationEvent(
+                $this->ControllerId,
+                Game::LOCATION_CITY_DOCKS,
+                1,
+                $this->getInjectCode()
+            );
+            $event->theah->queueEvent($docks);
 
             $forum = EventFactory::createRenownAddedToLocationEvent(
                 $this->ControllerId,
@@ -79,14 +89,6 @@ class _05SnowWhite extends Scheme implements IHasReactions
                 $this->getInjectCode()
             );
             $event->theah->queueEvent($forum);
-
-            $bazaar = EventFactory::createRenownAddedToLocationEvent(
-                $this->ControllerId,
-                Game::LOCATION_CITY_BAZAAR,
-                1,
-                $this->getInjectCode()
-            );
-            $event->theah->queueEvent($bazaar);
         }
     }
 }

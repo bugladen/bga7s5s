@@ -208,7 +208,7 @@ Card text (CAD prototype — plain strings, no `clienttranslate`):
 > Your **Animals** do not count towards [Crew Cap]. (Until the end of the day.)
 
 1. **Constructor.** Ussura, Init 56 / Panache 0 (match art). Name **Wildcall** (art title band — scaffold had WildCall). Traits Dar Matushki + Command (add `Command` to TraitNames). `CardNumber=13` (CAD sequence after William/Orel/Volk); footer CAD-US8 is not the CardNumber. `IHasReactions` + `Reaction_05SnowWhite`.
-2. **Resolve.** Trivial Forum + Bazaar Renown. No planning sub-state.
+2. **Resolve.** Trivial Docks + Forum Renown. No planning sub-state.
 3. **Sorcerer Planning-End Reaction.** `EventPhasePlanningEnd` + scheme at Home + ≥1 controlled Sorcerer + ≥1 of Orel/Volk not in play. Buttons: Muster Orel / Muster Volk / Pass — **no** `PLANNING_PHASE_END_*` state / no JS. `implements ISorcererAbility`; first Sorcerer as `performerId` on start/played. Pass without `setUsed`.
 4. **Muster from out of play.** Not in game → `createCardInLocation('05Orel'|'05Volk', PURGATORY)` + `addCardToWorld` + `createCharacterMusteredEvent` at Home (Damned). Locker/discard → remove event then muster. Skip name already in play. Iterate out-of-play world cards via **`getAllCards()`** — never `$theah->cards` (private; Studio fatal). Locker via `getCardObjectsAtLocation`.
 5. **Animals Crew Cap passive.** While scheme at Home: `Theah::characterCountsAgainstCrewCap` / `playerAnimalsExemptFromCrewCap`. Wire `getCharacterCountByPlayerId` and `Reaction_CrewCapLimit` (sink buttons + remaining). EOD = scheme→locker — no dusk clear.
