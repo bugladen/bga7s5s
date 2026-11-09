@@ -19,7 +19,7 @@ class _05Robin extends FactionAttachment implements IHasTechniques
 
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
         $this->Name = "Rogue's Cowl";
-        $this->Image = "05Robin.v4.jpg";
+        $this->Image = "05Robin.v5.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 16;
@@ -42,7 +42,7 @@ class _05Robin extends FactionAttachment implements IHasTechniques
             "Stealth"
         ];
 
-        $this->Text = "<p><i>Covert</i> - The equipped character reveals an additional card when they gamble.
+        $this->Text = "<p><i>Covert</i> - When the equipped character gambles, they reveal an additional card.
 <br>(<i>Covert Abilities may only be used at uncontrolled locations.</i>)</p>        
 <p><b>Technique:</b> If your combat card is a Flourish or Stealth card • +1[Thrust].</p>";
 
