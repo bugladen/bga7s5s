@@ -1417,8 +1417,10 @@ trait StatesTrait
         $this->notifyAllPlayers("duelStarted", clienttranslate('A DUEL HAS STARTED.'), [
             "duelId" => $duelId,
             "challengerId" => $challengerId,
+            "challengerName" => $challenger->Name,
             "challengingPlayerId" => $challenger->ControllerId,
             "defenderId" => $defenderId,
+            "defenderName" => $defender->Name,
             "defendingPlayerId" => $defender->ControllerId,
             "challengerThreat" => $challengerThreat,
             "defenderThreat" => $defenderThreat,

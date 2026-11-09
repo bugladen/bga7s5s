@@ -2270,8 +2270,10 @@ body._7sfs-halloween {
     width: auto;
 }
 
-/* WHY: Maneuver/Technique names run long; 3pt under table 12pt keeps chips at their own size. Header stays 12pt. Was 8pt; +1pt per user ask.
-   Same Georgia stack as duel_stats / header th — PirataOne on long ability titles is hard to read. Stat cols keep table font for chips. */
+/* WHY: Combat "Not Chosen" + Maneuver/Technique names — Georgia stack as duel_stats /
+   header th. PirataOne is hard to read on multi-word labels. Stat cols keep table font for chips.
+   Font-size: 3pt under table 12pt; was 8pt; +1pt per user ask. Header stays 12pt. */
+#duel_table td:nth-child(4),
 #duel_table td:nth-child(6),
 #duel_table td:nth-child(8) {
     font-size: 9pt;
@@ -2300,12 +2302,36 @@ body._7sfs-halloween {
     font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
 }
 
+/* WHY: Keep #duel_stats as a real table-cell so colspan fills the table width.
+   Flex on the <td> itself collapsed the row; layout lives on the inner wrapper. */
 #duel_table td#duel_stats {
     text-align: left;
     font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
     font-size: 13pt;
     letter-spacing: 0.02em;
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+}
+
+._7sfs-duel-stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+._7sfs-duel-stats-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+._7sfs-duel-participants {
+    margin-left: auto;
+    text-align: right;
+    font-style: italic;
 }
 
 #duel_stat_value {

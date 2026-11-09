@@ -331,7 +331,7 @@
         <div id="duel_scroll_top"><div id="duel_scroll_top_inner"></div></div>
         <div id="duel">
         <table id="duel_table" class="duel">
-        <tr><td id="duel_stats" colspan="11">Duel Stat: <span id="duel_stat_value"><div class="_7sfs-card-\${challengeStatClass}-image"></div></span></td></tr>
+        <tr><td id="duel_stats" colspan="11"><div class="_7sfs-duel-stats-row"><span class="_7sfs-duel-stats-left">Duel Stat: <span id="duel_stat_value"><div class="_7sfs-card-\${challengeStatClass}-image"></div></span></span><span id="duel_participants" class="_7sfs-duel-participants">\${participantsText}</span></div></td></tr>
         <tr id="duel_header_row">
             <th>Round</th>
             <th>Actor</th>

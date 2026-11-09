@@ -1882,9 +1882,20 @@ return declare('seventhseacityoffivesails.utilities', null, {
         }
     },
 
-    displayDuelTable: function(challengeStat) {
+    displayDuelTable: function(challengeStat, challengerName, defenderName) {
+        let participantsText = '';
+        if (challengerName && defenderName) {
+            participantsText = dojo.string.substitute(
+                _("A Duel betwixt ${challenger} and ${defender}"),
+                {
+                    challenger: _(challengerName),
+                    defender: _(defenderName),
+                }
+            );
+        }
         dojo.place( this.format_block( 'jstpl_duel_table', {
             challengeStatClass: (challengeStat || '').toLowerCase(),
+            participantsText: participantsText,
         }),  'city-wrapper', 'before');
         this.setupDuelScrollSync();
     },

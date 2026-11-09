@@ -54,5 +54,12 @@ User: center Starting/Ending Threat Pool cells. Nested `._7sfs-threat-table` get
 ## Follow-up: raised wounds chip
 Tried raised look on `._7sfs-duel-wound-chip` — user reverted.
 
+## Follow-up: duel title participants
+User: title row text "A duel between X and Y" right of Duel Stat.
+- Template: left stats cluster + `#duel_participants`
+- `displayDuelTable(stat, challengerName, defenderName)` builds translated string
+- `duelStarted` notify + getAllDatas (`duelChallengerName`/`duelDefenderName`) supply names; setup falls back to first duel round
+- Participants on the right of the wood banner via inner `._7sfs-duel-stats-row` flex — NOT `display:flex` on the `<td>` (that broke colspan width)
+
 ## Font follow-up (same day)
 Swapped Georgia/Palatino for `PirataOne-Regular` on `#duel_table` / `._7sfs-threat-table` + the three explicit overrides (header th, `#duel_stats`, round indicator). WHY inherit on table: one place owns the ledger face; overrides kept so they don't fall back if something resets font-family. Font file already in `fonts/`.

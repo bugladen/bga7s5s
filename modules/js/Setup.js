@@ -424,7 +424,12 @@ return declare('seventhseacityoffivesails.setup', null, {
             this.inDuel = true;
             this.duelRound = gamedatas.duelRound;
 
-            this.displayDuelTable(gamedatas.challengeStat);
+            const firstRound = gamedatas.duelRounds && gamedatas.duelRounds[0];
+            this.displayDuelTable(
+                gamedatas.challengeStat,
+                gamedatas.duelChallengerName || firstRound?.challengerName,
+                gamedatas.duelDefenderName || firstRound?.defenderName
+            );
             this.placeFactionHandForDuel();
 
             gamedatas.duelRounds.forEach((round) => {
