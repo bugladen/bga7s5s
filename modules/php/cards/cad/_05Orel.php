@@ -50,8 +50,8 @@ class _05Orel extends Character
     }
 
     // WHY: Printed "cannot equip attachments". When Fate's Silence blanks the text box the
-    // restriction lifts (abilitiesAreBlanked → true → can receive). Same host gate as
-    // Volk's "cannot be equipped" — HD Equip / canAttachTo / eventCheckCore all consult this.
+    // restriction lifts (abilitiesAreBlanked → true → can receive). Same host gate as Volk —
+    // HD Equip / canAttachTo / eventCheckCore all consult this.
     public function canReceiveAttachments(): bool
     {
         return $this->abilitiesAreBlanked();

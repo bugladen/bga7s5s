@@ -16,7 +16,7 @@ class _05Volk extends Character implements IHasReactions
         parent::__construct();
         $this->Name = "Volk";
         $this->Title = "BoRF!";
-        $this->Image = "05Volk.v4.jpg";
+        $this->Image = "05Volk.v5.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 12;
@@ -35,9 +35,9 @@ class _05Volk extends Character implements IHasReactions
             "Familiar",
         ];
 
-        $this->Text = "<p>Volk cannot be included in Approach decks.</p>
-<p>Volk cannot be equipped and cannot perform abilities on risks and schemes.</p>
-<p><b>Reaction:</b> After an opposing character moved • Move Volk to their new location.</p>";
+        $this->Text = "<p>Volk cannot be in an Approach deck.</p>
+<p>Volk cannot equip attachments and cannot perform abilities on risks and schemes. <i>(Action, Reactions, Maneuvers, etc.)</i></p>
+<p><b>Reaction:</b> After an opposing character moves • Move Volk to their new location.</p>";
 
         $this->resetCard();
 
@@ -53,14 +53,16 @@ class _05Volk extends Character implements IHasReactions
         return false;
     }
 
-    // WHY: Printed "cannot be equipped". When Fate's Silence blanks the text box the
-    // restriction lifts (abilitiesAreBlanked → true → can receive).
+    // WHY: Printed "cannot equip attachments". When Fate's Silence blanks the text box the
+    // restriction lifts (abilitiesAreBlanked → true → can receive). Same host gate as Orel.
     public function canReceiveAttachments(): bool
     {
         return $this->abilitiesAreBlanked();
     }
 
-    // WHY: Printed "cannot perform abilities on risks and schemes". Same Silence lift.
+    // WHY: Printed "cannot perform abilities on risks and schemes". Reminder means Character
+    // Actions/Reactions/Maneuvers stay legal — only Risk/Scheme performer paths are gated.
+    // Same Silence lift as Orel.
     public function canPerformRiskAndSchemeAbilities(): bool
     {
         return $this->abilitiesAreBlanked();

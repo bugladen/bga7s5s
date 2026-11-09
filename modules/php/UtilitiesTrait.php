@@ -1064,11 +1064,12 @@ trait UtilitiesTrait
 
     public function hasEquipRestrictions(Character $character, Attachment $attachment) : array
     {
-        // WHY: Host-side "cannot be equipped" (Orel) — catch paths that check
-        // hasEquipRestrictions without also calling canAttachTo.
+        // WHY: Host-side "cannot equip attachments" (Orel / Volk) — catch paths that check
+        // hasEquipRestrictions without also calling canAttachTo. Wording matches
+        // FrameworkActionsTrait / Character::eventCheckCore.
         if (! $character->canReceiveAttachments())
         {
-            return [true, sprintf($this->translate("%s cannot be equipped."), $character->Name)];
+            return [true, sprintf($this->translate("%s cannot equip attachments."), $character->Name)];
         }
 
         // WHY: Weapon/Armor/Attire/OffHand duplicates are no longer blocked here —

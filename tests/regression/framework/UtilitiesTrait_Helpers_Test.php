@@ -270,7 +270,7 @@ class UtilitiesTrait_Helpers_Test extends TestCase
 
                 [$blocked, $msg] = $host->hasEquipRestrictions($closed, $att);
                 Assert::true($blocked, 'blocked');
-                Assert::contains('cannot be equipped', $msg, 'message');
+                Assert::contains('cannot equip attachments', $msg, 'message');
 
                 [$ok, $empty] = $host->hasEquipRestrictions($open, $att);
                 Assert::false($ok, 'open host');

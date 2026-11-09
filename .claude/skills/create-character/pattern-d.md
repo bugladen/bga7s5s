@@ -173,7 +173,7 @@ For the *self-moves* analogue ("after this character moves to a new location, do
 
 Printed shapes:
 
-- **Volk `_05Volk`:** `<b>Reaction:</b> After an opposing character moved • Move Volk to their new location.`
+- **Volk `_05Volk`:** `<b>Reaction:</b> After an opposing character moves • Move Volk to their new location.`
 - **Horatio `_01066`:** `<b>City Reaction:</b> After an opposing character moved to an adjacent location • Move Horatio to their new location.`
 
 Listen on `EventCardMoved` (past-tense). **Do not treat these as the same pattern** — playtests split them:
@@ -653,7 +653,7 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
 | `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
 | `Reaction_01066` (Horatio — follow adjacent) | **"After opposing moved to adjacent • Move Owner there."** Leave-from-here (`fromLocation == owner.Location`) + adjacent city gate; stash destination; Follow/Pass; Owner `createCardMovingEvent(engage=false)`. City Reaction. |
-| `Reaction_05Volk` (Volk — follow any enemy move) | Enemy play→play anywhere while Owner is `cardInPlay`. **Not** leave-from-here (unlike Horatio). Prototype: no `clienttranslate`. Contrast Ise arrive-here. |
+| `Reaction_05Volk` (Volk — follow any enemy move) | Enemy play→play anywhere while Owner is `cardInCity` (Home has no opposing). **Not** leave-from-here (unlike Horatio). Prototype: no `clienttranslate`. Contrast Ise arrive-here. |
 | `Reaction_03040` (Soline el Gato — any character arrives) | **"After a character moves here"** without enemy gate — allies trigger too. Effect: button-per-other-city-location + Pass; `createCardMovingEvent(engage=false)` for Soline herself. Contrast `Reaction_03016b` (enemy-only) and `Reaction_01089` (adjacent-only after Action resolves). |
 | `Reaction_04003a` (Desideria — Thug destroy → hand) | **En Garde City Reaction** + duel/opponent cause gate + **deferred mid-duel Hand return**. `EventCharacterWounded` marks opponent lethal; Destroyed ORs `IN_DUEL`; locker/discard → hand; `stDuelEnd` flush. |
 | `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |

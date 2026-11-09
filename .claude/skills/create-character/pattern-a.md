@@ -1296,7 +1296,7 @@ Printed variants (often stacked on Familiars / Brutes / Damned):
 | Printed | Character predicate | Framework consumers |
 |---|---|---|
 | **"cannot be included in / cannot be in an Approach deck"** | `canEnterApproachDeck()` → `false` | `DeckValidator` (non-Brute message vs Brute trait message); `EventCharacterPutIntoApproachDeck` in `eventCheckCore`; Object of Wonder filters |
-| **"cannot be equipped"** | `canReceiveAttachments()` | `Attachment::canAttachTo`; `hasEquipRestrictions`; HD Equip performer lists (`ArgumentsTrait` / `FrameworkActionsTrait`); `characterCanEquip`; `EventAttachmentEquipped` in `eventCheckCore` |
+| **"cannot equip attachments"** / **"cannot be equipped"** | `canReceiveAttachments()` | `Attachment::canAttachTo`; `hasEquipRestrictions`; HD Equip performer lists (`ArgumentsTrait` / `FrameworkActionsTrait`); `characterCanEquip`; `EventAttachmentEquipped` in `eventCheckCore` |
 | **"cannot perform abilities on risks and schemes"** | `canPerformRiskAndSchemeAbilities()` | `RiskAction::getPerformersForAction`; `SchemeAction::getPerformersForAction` (parent); `Theah::actionAvailableToPerformer` when owner is `Risk`/`Scheme`; in-hand/in-play performer args |
 
 **Silence vs deck rules:** Approach bans are structural — keep `canEnterApproachDeck()` always `false`. Equip and Risk/Scheme bans are printed text-box restrictions — prefer `return $this->abilitiesAreBlanked()` so Fate's Silence lifts them (blanked → true → legal). Defaults on `Character` are all permissive (`true` / Brute-aware Approach).

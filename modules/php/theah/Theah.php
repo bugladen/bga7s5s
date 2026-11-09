@@ -1769,8 +1769,8 @@ class Theah
 
     public function characterCanEquip(Character $character): bool
     {
-        // WHY: Orel canReceiveAttachments — Equip menu must stay off for hosts that
-        // cannot be equipped (locked Extra Action performer path uses this).
+        // WHY: Orel/Volk canReceiveAttachments — Equip menu must stay off for hosts that
+        // cannot equip attachments (locked Extra Action performer path uses this).
         if (! $character->canReceiveAttachments())
         {
             return false;

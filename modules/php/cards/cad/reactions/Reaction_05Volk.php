@@ -55,9 +55,9 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
-        // WHY: "opposing character" is city-scoped (Home has no opposing characters).
-        // Plain Reaction (not Horatio City Reaction) but still requires Volk in the city —
-        // not cardInPlay. Horatio additionally needs leave-from-here + adjacent.
+        // WHY: "After an opposing character moves" — "opposing" is city-scoped (Home has
+        // none). Plain Reaction (not Horatio City Reaction) but still requires Volk in the
+        // city — not cardInPlay. Horatio additionally needs leave-from-here + adjacent.
         if (! $event->theah->cardInCity($owner))
         {
             return;

@@ -130,7 +130,7 @@ abstract class Character extends Card implements IHasTechniques
         return ! $this->hasTrait("Brute");
     }
 
-    // WHY: Host-side equip gate (Orel "cannot equip attachments" / Volk "cannot be equipped").
+    // WHY: Host-side equip gate (Orel / Volk "cannot equip attachments").
     // Attachment::canAttachTo and hasEquipRestrictions consult this so every equip path
     // (HD Equip, steal, salvage) shares one predicate. Default true; Familiars override.
     // Fate's Silence: subclass may return abilitiesAreBlanked() so blanking lifts the ban.
@@ -209,9 +209,9 @@ abstract class Character extends Card implements IHasTechniques
             ));
         }
 
-        // WHY: Host-side equip ban (Orel "cannot equip attachments" / Volk "cannot be
-        // equipped"). canAttachTo / hasEquipRestrictions filter prompts; this backstops
-        // forced equip events that skip those gates.
+        // WHY: Host-side equip ban (Orel / Volk "cannot equip attachments").
+        // canAttachTo / hasEquipRestrictions filter prompts; this backstops forced equip
+        // events that skip those gates.
         if ($event instanceof EventAttachmentEquipped
             && $event->characterId == $this->Id
             && ! $this->canReceiveAttachments())

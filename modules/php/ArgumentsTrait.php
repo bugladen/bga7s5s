@@ -264,7 +264,7 @@ trait ArgumentsTrait
         $handHasAttachments = $this->handHasAttachments($playerId);
         $charactersThatCanEquip = [];
         foreach ($charactersInCity as $character) {
-            // WHY: Orel canReceiveAttachments — do not offer hosts that cannot be equipped.
+            // WHY: Orel/Volk canReceiveAttachments — do not offer hosts that cannot equip attachments.
             if (! $character->canReceiveAttachments()) {
                 continue;
             }
