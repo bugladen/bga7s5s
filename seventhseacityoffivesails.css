@@ -98,7 +98,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
 }
 
 .duel {
-    color: black;
+    color: #2a1a0e;
 }
 
 ._7sfs-deck-picker-custom-textarea::placeholder {
@@ -2131,32 +2131,64 @@ body._7sfs-halloween {
     overflow-x: auto;
     margin-bottom: 10px;
 }
+
+/* WHY: Ship's-log / parchment ledger instead of bare silver HTML table.
+   Palette matches deck-picker + confirm dialog wood/parchment; structure
+   (collapse, nth-child cols, threat-table separate) stays for JS + gold acting row. */
 #duel_table {
     margin-bottom: 10px;
     min-width: 100%;
     width: max-content;
+    border-collapse: collapse;
+    background:
+        linear-gradient(180deg, rgba(255, 248, 230, 0.35) 0%, transparent 28%),
+        linear-gradient(135deg, #e8d5b7 0%, #d4b896 55%, #c9a87c 100%);
+    color: #2a1a0e;
+    font-size: 12pt;
+    border: 3px solid #4a3420;
+    border-radius: 6px;
+    outline: 1px solid #c9a46a;
+    outline-offset: -5px;
+    box-shadow:
+        0 0 0 1px #2a1a0e,
+        0 6px 18px rgba(42, 26, 14, 0.45);
+    /* WHY no overflow:hidden — gambled combat cards use ._7sfs-engaged rotate and must not clip */
 }
 
 #duel_table, ._7sfs-threat-table {
     width: max-content;
-    background-color: silver;
-
     font-size: 12pt;
-}
-
-#duel_table {
-    border-collapse: collapse;
 }
 
 /* WHY separate: border-radius on <tr> is ignored under border-collapse:collapse */
 ._7sfs-threat-table {
     border-collapse: separate;
     border-spacing: 0;
+    background: rgba(255, 248, 230, 0.45);
+    border: 1px solid #8b6d4b;
+    border-radius: 6px;
+    overflow: hidden;
 }
 
-#duel_table>tbody>:nth-child(1), #duel_table>tbody>:nth-child(2), ._7sfs-duel-acting-character
-{
-    background-color: white;
+/* Stats banner + column headers: stained wood bar */
+#duel_table > tbody > tr:nth-child(1),
+#duel_table > tbody > tr:nth-child(2) {
+    background:
+        linear-gradient(180deg, #6b4f34 0%, #4a3420 100%);
+    color: #f3e6c8;
+}
+
+#duel_table > tbody > tr:nth-child(2) th {
+    font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
+    font-weight: bold;
+    font-size: 11pt;
+    letter-spacing: 0.03em;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+    border-bottom: 2px solid #c9a46a;
+}
+
+._7sfs-duel-acting-character {
+    background: rgba(255, 236, 170, 0.55);
 }
 
 ._7sfs-duel-acting-character > td {
@@ -2174,22 +2206,23 @@ body._7sfs-halloween {
     border-radius: 0 8px 8px 0;
 }
 
-#duel_table {
-    border: 1px solid black;
-}
-#duel_table>tbody>tr {
-    border-bottom: 1px solid black;
+#duel_table > tbody > tr {
+    border-bottom: 1px solid #8b6d4b;
 }
 
-#duel_table>tbody>tr>td:not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(8)) {
-    border-right: 1px solid black;
+#duel_table > tbody > tr:nth-child(n+3):nth-child(even):not(._7sfs-duel-acting-character) {
+    background: rgba(201, 168, 124, 0.28);
+}
+
+#duel_table > tbody > tr > td:not(:nth-child(4)):not(:nth-child(6)):not(:nth-child(8)) {
+    border-right: 1px solid #a8845c;
 }
 
 #duel_table th, #duel_table td {
-    padding: 5px;
+    padding: 7px 8px;
     text-align: center;
     table-layout: auto;
-    width:auto;
+    width: auto;
 }
 
 /* WHY: Maneuver/Technique names run long; 3pt under table 12pt keeps chips at their own size. Header stays 12pt. Was 8pt; +1pt per user ask. */
@@ -2205,14 +2238,20 @@ body._7sfs-halloween {
 #duel_table td[id$="_maneuver"] > div,
 #duel_table td[id$="_technique"] > p,
 #duel_table td[id$="_technique"] > div {
-    border: 1px solid black;
-    border-radius: 8px;
-    padding: 2px 4px;
+    border: 1px solid #6b4f34;
+    border-radius: 6px;
+    padding: 2px 6px;
     margin: 2px 0;
+    background: rgba(255, 248, 230, 0.7);
+    box-shadow: inset 0 0 0 1px rgba(201, 164, 106, 0.35);
 }
 
 #duel_table td#duel_stats {
     text-align: left;
+    font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
+    font-size: 13pt;
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
 }
 
 #duel_stat_value {
@@ -2228,12 +2267,15 @@ body._7sfs-halloween {
 }
 
 ._7sfs-ability-not-chosen {
-    background-color: silver;
+    background-color: rgba(139, 109, 75, 0.35);
+    color: #5a4330;
+    font-style: italic;
 }
 
 /* WHY: canceled Maneuver/Technique names in the duel table (Let The Sword Decide etc.) */
 ._7sfs-duel-ability-canceled {
     text-decoration: line-through;
+    opacity: 0.7;
 }
 
 ._7sfs-ability-table {
@@ -2242,7 +2284,11 @@ body._7sfs-halloween {
 }
 
 ._7sfs-duel-round-indicator {
-    font-size:18pt;
+    font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
+    font-size: 20pt;
+    font-weight: bold;
+    color: #4a3420;
+    text-shadow: 0 1px 0 rgba(255, 248, 230, 0.6);
 }
 
 ._7sfs-duel-round-actor {
