@@ -21,8 +21,8 @@ class _05GaryFlipped extends Leader implements IHasReactions
 
         $this->Name = "Rena Klingenhalter";
         $this->Title = "Wrathful";
-        $this->Image = "05GaryFlipped.v4.jpg";
-        $this->FlippedImage = "05Gary.v4.jpg";
+        $this->Image = "05GaryFlipped.v5.jpg";
+        $this->FlippedImage = "05Gary.v5.jpg";
         $this->IsDoubleSided = true;
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
