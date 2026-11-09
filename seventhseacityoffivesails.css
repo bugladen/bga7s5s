@@ -15,6 +15,35 @@
 
 /* Note: you must not use any @import directive */
 
+/* WHY: Explicit @font-face even though BGA fonts/ can auto-declare — Studio was not
+   applying PirataOne-Regular by filename; this binds our CSS family name to the file
+   via the same relative path pattern as url(img/...). */
+@font-face {
+    font-family: PirataOne-Regular;
+    src: url('fonts/PirataOne-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* WHY: Numbers drawn on top of board-resource icon sprites (wealth, renown,
+   threat, wounds, resolve / attachment resolve-mod, combat chips, panache,
+   hand/deck counts, score renown). */
+._7sfs-renown-chip,
+._7sfs-threat-chip,
+._7sfs-duel-wound-chip,
+._7sfs-card-wealth-cost,
+._7sfs-card-resolve,
+._7sfs-wound-chip,
+._7sfs-combat-chip,
+._7sfs-chip-value,
+._7sfs-panache,
+._7sfs-hand-count,
+._7sfs-home-deck-count,
+._7sfs-score-renown,
+._7sfs-crew-cap {
+    font-family: PirataOne-Regular, serif;
+}
+
 :root {
     --jpg-board-resource-width: 290px;
     --jpg-board-resource-height: 78px;
@@ -1340,9 +1369,15 @@ body._7sfs-halloween {
 ._7sfs-card-stat-box {
     min-width: 38px;
     height: 20px;
-    line-height: 20px;
     margin-left: -10px;
     border: 1px solid black;
+    /* WHY: PirataOne-Regular via @font-face + fonts/PirataOne-Regular.ttf */
+    font-family: PirataOne-Regular, serif;
+    /* WHY: flex instead of float — centers digit against the icon (Pirata metrics sit high with line-height alone) */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
 }
 
 ._7sfs-card-combat-box {
@@ -1352,13 +1387,13 @@ body._7sfs-halloween {
 }
 
 ._7sfs-card-combat-image {
-    float: right;
     margin-right: 3px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * 0.6942);
     background-position: -545px -2px;
     width: 15px;
     height: 19px;
+    flex-shrink: 0;
 }
 
 ._7sfs-modified-stat-value {
@@ -1367,17 +1402,15 @@ body._7sfs-halloween {
 }
 
 ._7sfs-card-combat-value {
-    float: left;
-    margin-left: 3px;
-
+    /* WHY: flex:1 so text-align:center centers in the gap beside the icon, not just the glyph width */
+    flex: 1;
     font-size: 12pt;
-    vertical-align: top;
-    width:10px;
+    line-height: 1;
+    text-align: center;
     color: black;
 }
 ._7sfs-attachment-combat-value {
     font-size:12pt;
-    margin-left: 2px;
 }
 
 ._7sfs-card-finesse-box {
@@ -1387,33 +1420,28 @@ body._7sfs-halloween {
 }
 
 ._7sfs-card-finesse-image {
-    float: right;
     margin-right: 2px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.6993) calc(var(--png-board-resource-height) * 0.6942);
     background-position: -541px -43px;
     width: 19px;
     height: 19px;
+    flex-shrink: 0;
 }
 
 ._7sfs-card-finesse-value {
-    float: left;
-    margin-left: 3px;
-
+    flex: 1;
     font-size: 12pt;
-    vertical-align: top;
+    line-height: 1;
+    text-align: center;
     color: black;
 }
 ._7sfs-attachment-finesse-value {
     font-size:12pt;
-    margin-left: 2px;
 }
 
 ._7sfs-card-influence {
     position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     border: 1px solid black;
     background-color: #E4CCAC;
     bottom: 8px;
@@ -1431,12 +1459,11 @@ body._7sfs-halloween {
 }
 
 ._7sfs-card-influence-value {
-    margin-left: 2px;
+    flex: 1;
     font-size: 12pt;
+    line-height: 1;
+    text-align: center;
     color: black;
-}
-._7sfs-attachment-influence-value {
-    margin-left: 2px;
 }
 
 ._7sfs-scheme-initiative-box {
@@ -1446,20 +1473,19 @@ body._7sfs-halloween {
     min-width: 44px;
 }
 ._7sfs-scheme-initiative-image {
-    float: right;
     margin-right: 1px;
-    margin-top:3px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.15) calc(var(--png-board-resource-height) * 0.15);
     background-position: -14px -24px;
     width: 20px;
     height: 15px;
+    flex-shrink: 0;
 }
 ._7sfs-scheme-initiative-value {
-    float: left;
-    margin-left: 2px;
+    flex: 1;
     font-size: 12pt;
-    vertical-align: top;
+    line-height: 1;
+    text-align: center;
     color: black;
 }
 
@@ -1470,20 +1496,19 @@ body._7sfs-halloween {
     min-width: 44px;
 }
 ._7sfs-scheme-panache-image {
-    float: right;
     margin-right: 1px;
-    margin-top:3px;
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.5) calc(var(--png-board-resource-height) * 0.5);
     background-position: -156px 0px;
     height: 12px;
     width: 20px;
+    flex-shrink: 0;
 }
 ._7sfs-scheme-panache-value {
-    float: left;
-    margin-left: 2px;
+    flex: 1;
     font-size: 12pt;
-    vertical-align: top;
+    line-height: 1;
+    text-align: center;
     color: black;
 }
 
@@ -2145,6 +2170,8 @@ body._7sfs-halloween {
         linear-gradient(135deg, #e8d5b7 0%, #d4b896 55%, #c9a87c 100%);
     color: #2a1a0e;
     font-size: 12pt;
+    /* WHY: PirataOne-Regular auto-declared from fonts/; whole ledger inherits */
+    font-family: PirataOne-Regular, serif;
     border: 3px solid #4a3420;
     border-radius: 6px;
     outline: 1px solid #c9a46a;
@@ -2158,16 +2185,34 @@ body._7sfs-halloween {
 #duel_table, ._7sfs-threat-table {
     width: max-content;
     font-size: 12pt;
+    font-family: PirataOne-Regular, serif;
 }
 
-/* WHY separate: border-radius on <tr> is ignored under border-collapse:collapse */
+/* WHY separate: border-radius on <tr> is ignored under border-collapse:collapse.
+   Same inset sunken treatment as Maneuver/Technique label chips. */
 ._7sfs-threat-table {
     border-collapse: separate;
     border-spacing: 0;
-    background: rgba(255, 248, 230, 0.45);
+    margin: 0 auto;
+    background: rgba(201, 168, 124, 0.45);
     border: 1px solid #8b6d4b;
     border-radius: 6px;
     overflow: hidden;
+    box-shadow:
+        inset 0 2px 3px rgba(42, 26, 14, 0.35),
+        inset 0 -1px 1px rgba(255, 248, 230, 0.45);
+}
+
+._7sfs-threat-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Starting Threat Pool (3) + Ending Threat Pool (10) */
+#duel_table > tbody > tr > td:nth-child(3),
+#duel_table > tbody > tr > td:nth-child(10) {
+    text-align: center;
+    vertical-align: middle;
 }
 
 /* Stats banner + column headers: stained wood bar */
@@ -2225,25 +2270,34 @@ body._7sfs-halloween {
     width: auto;
 }
 
-/* WHY: Maneuver/Technique names run long; 3pt under table 12pt keeps chips at their own size. Header stays 12pt. Was 8pt; +1pt per user ask. */
+/* WHY: Maneuver/Technique names run long; 3pt under table 12pt keeps chips at their own size. Header stays 12pt. Was 8pt; +1pt per user ask.
+   Same Georgia stack as duel_stats / header th — PirataOne on long ability titles is hard to read. Stat cols keep table font for chips. */
 #duel_table td:nth-child(6),
+#duel_table td:nth-child(8) {
+    font-size: 9pt;
+    font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
+}
+
 #duel_table td:nth-child(7),
-#duel_table td:nth-child(8),
 #duel_table td:nth-child(9) {
     font-size: 9pt;
 }
 
-/* WHY: Maneuver/Technique columns can stack several labels (live <p>, reload <div>); border each so they read as separate rows. */
+/* WHY: Maneuver/Technique columns can stack several labels (live <p>, reload <div>); border each so they read as separate rows.
+   Inset shadows = recessed/carved chip on parchment (sunken vs raised). */
 #duel_table td[id$="_maneuver"] > p,
 #duel_table td[id$="_maneuver"] > div,
 #duel_table td[id$="_technique"] > p,
 #duel_table td[id$="_technique"] > div {
-    border: 1px solid #6b4f34;
+    border: 1px solid #8b6d4b;
     border-radius: 6px;
     padding: 2px 6px;
     margin: 2px 0;
-    background: rgba(255, 248, 230, 0.7);
-    box-shadow: inset 0 0 0 1px rgba(201, 164, 106, 0.35);
+    background: rgba(201, 168, 124, 0.45);
+    box-shadow:
+        inset 0 2px 3px rgba(42, 26, 14, 0.35),
+        inset 0 -1px 1px rgba(255, 248, 230, 0.45);
+    font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
 }
 
 #duel_table td#duel_stats {
@@ -2255,8 +2309,16 @@ body._7sfs-halloween {
 }
 
 #duel_stat_value {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     vertical-align: middle;
+    width: 28px;
+    height: 28px;
+    background-color: white;
+    border: 2px solid gold;
+    border-radius: 50%;
+    box-sizing: border-box;
 }
 
 #duel_stat_value > div {
@@ -2283,12 +2345,34 @@ body._7sfs-halloween {
     display: block;
 }
 
+/* WHY: Chip wraps only the round number (not the whole <td>) — same inset
+   sunken treatment as Maneuver/Technique labels + threat-table.
+   Block + margin:auto (not inline-block/text-align) — BGA/table quirks were
+   leaving the chip stuck in the upper-left of the cell. */
+#duel_table > tbody > tr > td:first-child {
+    vertical-align: middle;
+    text-align: center;
+}
+
 ._7sfs-duel-round-indicator {
-    font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
+    display: block;
+    width: max-content;
+    min-width: 1.4em;
+    margin: 0 auto;
+    padding: 2px 8px;
+    box-sizing: border-box;
+    text-align: center;
+    font-family: PirataOne-Regular, serif;
     font-size: 20pt;
     font-weight: bold;
     color: #4a3420;
     text-shadow: 0 1px 0 rgba(255, 248, 230, 0.6);
+    background: rgba(201, 168, 124, 0.45);
+    border: 1px solid #8b6d4b;
+    border-radius: 6px;
+    box-shadow:
+        inset 0 2px 3px rgba(42, 26, 14, 0.35),
+        inset 0 -1px 1px rgba(255, 248, 230, 0.45);
 }
 
 ._7sfs-duel-round-actor {
@@ -2299,6 +2383,9 @@ body._7sfs-halloween {
 ._7sfs-combat-chip {
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
+    /* WHY no-repeat: chip window sits on the sheet bottom edge; repeat would
+       tile the sheet's top white into a bar under the sword icons. */
+    background-repeat: no-repeat;
 
     height:30px;
     width: 44px;
@@ -2306,14 +2393,17 @@ body._7sfs-halloween {
     line-height: 31px;
     text-align: center;
 }
+/* WHY -47.1 not -47/-48: white opaque row ends at source y=156 (=46.8css at *0.3);
+   -47 can still sample it; -48 overflows past sheet bottom (77.1) and with
+   default repeat painted white under the icons. -47.1 clears white and fits exactly. */
 ._7sfs-riposte-chip {
-    background-position: -158px -47px;
+    background-position: -158px -47.1px;
 }
 ._7sfs-parry-chip {
-    background-position: -197px -47px;
+    background-position: -197px -47.1px;
 }
 ._7sfs-thrust-chip {
-    background-position: -238px -47px;
+    background-position: -238px -47.1px;
 }
 ._7sfs-chip-value {
   opacity: 1.0;

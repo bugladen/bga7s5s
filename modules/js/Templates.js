@@ -333,7 +333,7 @@
         <table id="duel_table" class="duel">
         <tr><td id="duel_stats" colspan="11">Duel Stat: <span id="duel_stat_value"><div class="_7sfs-card-\${challengeStatClass}-image"></div></span></td></tr>
         <tr id="duel_header_row">
-            <th>Duel Round</th>
+            <th>Round</th>
             <th>Actor</th>
             <th>Starting Threat Pool</th>
             <th colspan="2">Combat Card</th>
@@ -349,7 +349,7 @@
         
         window.jstpl_duel_round = `
         <tr>
-            <td class="_7sfs-duel-round-indicator">\${round}</td>
+            <td><div class="_7sfs-duel-round-indicator">\${round}</div></td>
             <td><div class="_7sfs-duel-round-actor" id="duel_round_\${round}_actor"></div></td><td>
             <table class="_7sfs-threat-table">
                 <tr id="duel_round_\${round}_starting_challenger_threat_row">
