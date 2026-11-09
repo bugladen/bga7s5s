@@ -20,8 +20,8 @@ class _05Forsythe extends FactionAttachment implements IHasActions
         parent::__construct();
 
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
-        $this->Name = "Syrneth Morosometer";
-        $this->Image = "05Forsythe.v4.jpg";
+        $this->Name = "Syrneth Jaw";
+        $this->Image = "05Forsythe.v5.1.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 5;
@@ -36,17 +36,18 @@ class _05Forsythe extends FactionAttachment implements IHasActions
         $this->WealthCost = 1;
         $this->Riposte = 0;
         $this->DashedRiposte = true;
-        $this->Parry = 2;
+        $this->Parry = 1;
         $this->Thrust = 0;
         $this->DashedThrust = true;
 
         $this->Traits = [
+            "Attire",
             "Syrneth",
             "Artifact",
             "Unique"
         ];
 
-        $this->Text = "<p>May only equip to your Academic.</p>
+        $this->Text = "<p>May only equip to your <b>Academic</b>.</p>
 <p><b>Covert Action:</b> Engage this card • Move an adjacent Renown to this location.</p>";
 
         $this->resetCard();
