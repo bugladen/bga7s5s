@@ -130,10 +130,10 @@ abstract class Character extends Card implements IHasTechniques
         return ! $this->hasTrait("Brute");
     }
 
-    // WHY: Host-side equip gate (Orel _05Orel "cannot be equipped"). Attachment::canAttachTo
-    // and hasEquipRestrictions consult this so every equip path (HD Equip, steal, salvage)
-    // shares one predicate. Default true; Familiars override. Fate's Silence: subclass may
-    // return abilitiesAreBlanked() so blanking lifts the printed restriction.
+    // WHY: Host-side equip gate (Orel "cannot equip attachments" / Volk "cannot be equipped").
+    // Attachment::canAttachTo and hasEquipRestrictions consult this so every equip path
+    // (HD Equip, steal, salvage) shares one predicate. Default true; Familiars override.
+    // Fate's Silence: subclass may return abilitiesAreBlanked() so blanking lifts the ban.
     public function canReceiveAttachments(): bool
     {
         return true;
@@ -209,14 +209,15 @@ abstract class Character extends Card implements IHasTechniques
             ));
         }
 
-        // WHY: Host-side "cannot be equipped" (Orel). canAttachTo / hasEquipRestrictions
-        // filter prompts; this backstops forced equip events that skip those gates.
+        // WHY: Host-side equip ban (Orel "cannot equip attachments" / Volk "cannot be
+        // equipped"). canAttachTo / hasEquipRestrictions filter prompts; this backstops
+        // forced equip events that skip those gates.
         if ($event instanceof EventAttachmentEquipped
             && $event->characterId == $this->Id
             && ! $this->canReceiveAttachments())
         {
             throw new UserException(sprintf(
-                $event->theah->game->translate("%s cannot be equipped."),
+                $event->theah->game->translate("%s cannot equip attachments."),
                 $this->Name
             ));
         }

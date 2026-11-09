@@ -14,7 +14,7 @@ class _05Orel extends Character
         parent::__construct();
         $this->Name = "Orel";
         $this->Title = "CACAW!";
-        $this->Image = "05Orel.v4.jpg";
+        $this->Image = "05Orel.v5.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 11;
@@ -36,7 +36,7 @@ class _05Orel extends Character
         ];
 
         $this->Text = "<p>Orel cannot be included in Approach decks.</p>
-<p>Orel cannot be equipped and cannot perform abilities on risks and schemes.</p>
+<p>Orel cannot equip attachments and cannot perform abilities on risks and schemes.</p>
 <p>During pressures at Orel's location, add +1 to your total. If you initiated the pressure, you succeed even if tied.</p>";
 
         $this->resetCard();
@@ -49,8 +49,9 @@ class _05Orel extends Character
         return false;
     }
 
-    // WHY: Printed "cannot be equipped". When Fate's Silence blanks the text box the
-    // restriction lifts (abilitiesAreBlanked → true → can receive).
+    // WHY: Printed "cannot equip attachments". When Fate's Silence blanks the text box the
+    // restriction lifts (abilitiesAreBlanked → true → can receive). Same host gate as
+    // Volk's "cannot be equipped" — HD Equip / canAttachTo / eventCheckCore all consult this.
     public function canReceiveAttachments(): bool
     {
         return $this->abilitiesAreBlanked();
