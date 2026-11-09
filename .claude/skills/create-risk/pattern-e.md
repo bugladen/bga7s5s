@@ -93,18 +93,49 @@ if ($action->Id == $this->Id)
 
 Null-check `$performer` before `hasTrait`. Gate `$action->Id == $this->Id`. Multi-trait OR lists are common (`Academic or Hunter`, `Zealot, Academic, or Bard`, `Merchant or Scoundrel` on E.2.1). Same hook — do not invent a Maneuver when none is printed.
 
-**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), `_03071` (Leverage), `_04018` (Seek Each Devil), and `_04039` (Rapsodia) all print a general "-1 cost if …" clause with **only** an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability.
+**Equipped-attachment variant** (Scholarly Sanctuary `_05Refuge`: **"If your performer is equipped with an Artifact, this card has -1 cost"**):
+
+```php
+if ($action->Id == $this->Id)
+{
+    if ($performer === null)
+    {
+        return $discount;
+    }
+
+    foreach ($performer->Attachments as $attachmentId)
+    {
+        $attachment = $theah->getAttachmentById((int)$attachmentId);
+        if ($attachment instanceof Attachment
+            && ! $attachment->FakeAttachment
+            && $attachment->hasTrait("Artifact"))
+        {
+            $discount += 1;
+            $owner = $this->getOwningCard($theah);
+            $explanations[] = sprintf(
+                "%s: -1 because your performer is equipped with an Artifact.",
+                $owner->getInjectCode()
+            );
+            break;
+        }
+    }
+}
+```
+
+Still E.2 on the Action — **not** a Maneuver discount and **not** a performer-trait `hasTrait` check. Skip `FakeAttachment` (RiskAttachment stand-ins). Same `$performer === null` / `$action->Id` gates. Contrast reaction/maneuver **"equipped with a Ranged Weapon"** gates (`Weapon`+`Ranged` scan on `_04020` / `_01055`) — those are availability, not pay discount. CAD prototypes use plain explanation strings (no `translate` / `clienttranslate`).
+
+**WHY not invent a discount-only Maneuver:** `_01159` (Appealing), `_01160` (Bleed Out), `_03071` (Leverage), `_04018` (Seek Each Devil), `_04039` (Rapsodia), and `_05Refuge` (Scholarly Sanctuary) all print a general "-1 cost if …" clause with **only** an Action. Combat-card play of those Risks pays full `WealthCost`. Inventing a Maneuver invents a printed ability.
 
 **When the Risk also prints a real Maneuver** and the card-level "-1 cost while your performer is …" clause should apply at combat-card pay too, see Pattern E.2.1 — do not leave combat-card at full WealthCost if the user/rules expect parity across both pay paths.
 
 **Gates:**
 - `$action->Id == $this->Id` (sticky discount must not leak to other hand Actions).
 - Leader variant: null-check `getLeaderByPlayerId` (Leader can be destroyed mid-game — `_01160` historically skipped this; new cards should not).
-- Performer variant: null-check `$performer` (discount is consulted before/without a performer in some pay-arg paths).
+- Performer / equipped-attachment variant: null-check `$performer` (discount is consulted before/without a performer in some pay-arg paths).
 
-**Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, wounds comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader- / performer-trait discounts on Action-only cards belong on the Action.
+**Contrast Pattern E Maneuver discounts:** duel-relative predicates (engaged adversary, Finesse comparison, wounds comparison, `DUEL_GAMBLED`) belong on Maneuvers because they only make sense at combat-card pay time. Leader- / performer-trait / equipped-attachment discounts on Action-only cards belong on the Action.
 
-References: `Action_03071`, `Action_01160`, `Action_01159`, `Action_04018` (performer Academic/Hunter), `Action_04039` (performer Zealot/Academic/Bard).
+References: `Action_03071`, `Action_01160`, `Action_01159`, `Action_04018` (performer Academic/Hunter), `Action_04039` (performer Zealot/Academic/Bard), `Action_05Refuge` (equipped Artifact).
 
 ### Pattern E.2.1 — Card-level performer-trait "-1 cost" with **both** City Action and Maneuver
 

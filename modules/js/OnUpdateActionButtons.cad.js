@@ -27,6 +27,11 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'highDramaPhase05Refuge': () => {
+                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'highDramaPhase05Overcoat': () => {
                 // WHY: Mandatory claim-or-move-renown (Soline "or" — no Pass).
                 // Args nest: OnUpdateActionButtons uses args.args.* (one less than OnEnteringState).

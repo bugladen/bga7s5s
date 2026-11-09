@@ -466,3 +466,26 @@ Composes **A.13** (character Target → attachment name buttons → `EventCharac
 **Contrast:** A.13 `_04040` = send to Locker + wound, Back available. B.9 `_04029` = steal an *equipped* attachment straight to hand (no destroy), performer-only equip, En Garde Merchant. Robbery `Action_01113` = discard-pile source, Pirate City Action.
 
 References: `_05Teens` / `Action_05Teens` / `State_highDramaPhase05Teens` + `_2`/`_3`/`_4`; target+attachment chooser `Action_04040`; pay `Action_04029`; announce-engage `Action_05Hulk`; Covert gate `Action_05Forsythe`.
+
+### Pattern B.14 — Academic Action: Move performer Home or to a City location you control
+
+Printed (Scholarly Sanctuary `_05Refuge`): **`<b>Academic Action:</b> Move your performer <b>Home</b> or to a <b>City</b> location you control.`** (± card-level **"If your performer is equipped with an Artifact, this card has -1 cost"** → Pattern E.2 equipped-attachment variant).
+
+Location chooser on a plain **`RiskAction`** (heading is Academic Action — **not** City Action). Destinations are **not** adjacent-only.
+
+**Recipe:**
+
+1. **`RiskAction`** + `RequiresPerformerSelected = true`. Start from `parent::getPerformersForAction` (home performers eligible — do **not** swap to `getCharactersInCityByPlayerId`).
+2. **Academic (or other heading trait)** = mechanical performer gate (`hasTrait("Academic")`) — **not** Sorcerer. Filter performers that also have ≥1 valid destination.
+3. **Destinations** (exclude current location — "Move … to" is a no-op on the same spot):
+   - `Game::LOCATION_PLAYER_HOME` when `$performer->Location != LOCATION_PLAYER_HOME`
+   - every City where `$theah->game->getControllerForLocation($name) == $performer->ControllerId`
+4. **WHY `getControllerForLocation` (Control_ globals), not `CityLocation->Controller`:** production claim-control lives in the globals; tests that only set `theah->setLocationController` leave destinations empty. Same discipline as B.8 / A.12 (`_04028` / `_04039`).
+5. **Not adjacent** — scan `getCityLocations()`, not `getAdjacentCityLocations`. Contrast B.1 / A.11.
+6. **Not B.8** — no character Target, no "or where you control a Leader" branch, move performer only (`engage=false`). **No Cesca** (location chooser; text never says Target).
+7. **Wire** one GameState (`"05Refuge"` → `HIGH_DRAMA_PLAYER_TURN_05REFUGE`, id `405018`): `EventActionTriggered` → transition → `getArgs` `performerId` + `locationIds` → `actFromActionWithIds` validates + `createCardMovingEvent(..., engage=false)` + `createActionResolvedEvent` + `nextState("locationChosen")`.
+8. **JS:** location-chooser Confirm trio, but when `locationIds` may include Home use **`makeHomeEndcapMarkerSelectable()`** (mirror `highDramaPhase03055` / scheme endcaps) — city-only `makeCityLocationSelectable` leaves Home unclickable. `resetCityLocations()` already clears the Home endcap.
+
+**Often + E.2** equipped-Artifact (or similar) Action discount — see pattern-e.md.
+
+References: `_05Refuge` / `Action_05Refuge` / `State_highDramaPhase05Refuge`; Home+City dest pool shape `_03032` / `_03055`; claim-control filter `_04028` / `_04039`; CAD plain strings.

@@ -499,6 +499,8 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_05DANDYA = 4050141;
             const HIGH_DRAMA_PLAYER_TURN_05DANDYA_2 = 40501412;
         const HIGH_DRAMA_PLAYER_TURN_05DANDYB = 4050142;
+        // CAD — Scholarly Sanctuary (_05Refuge). Exp 5 + card 18. Location chooser (Home / controlled City).
+        const HIGH_DRAMA_PLAYER_TURN_05REFUGE = 405018;
         // CAD - Smash and Grab (_05Teens). Exp 5 + card 19. Target / attachment / equip target / pay.
         const HIGH_DRAMA_PLAYER_TURN_05TEENS = 405019;
             const HIGH_DRAMA_PLAYER_TURN_05TEENS_2 = 4050192;

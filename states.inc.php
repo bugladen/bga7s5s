@@ -1307,6 +1307,7 @@ $machinestates = [
                 "05Dandya_2" => States::HIGH_DRAMA_PLAYER_TURN_05DANDYA_2,
                 "05Dandyb" => States::HIGH_DRAMA_PLAYER_TURN_05DANDYB,
                 "05Hulk" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET,
+                "05Refuge" => States::HIGH_DRAMA_PLAYER_TURN_05REFUGE,
                 // WHY: "05Teens_2" is reached directly from state 05Teens (characterChosen), so it has no key here.
                 "05Teens" => States::HIGH_DRAMA_PLAYER_TURN_05TEENS,
                 "05Teens_3" => States::HIGH_DRAMA_PLAYER_TURN_05TEENS_3,

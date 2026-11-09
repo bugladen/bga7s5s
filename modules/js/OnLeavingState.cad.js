@@ -35,6 +35,17 @@
                 }
             },
 
+            'highDramaPhase05Refuge': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.resetCityLocations();
+                    this.selectedCityLocations = [];
+                    this.numberOfCityLocationsSelectable = 0;
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase05Overcoat': () => {
                 if (this.isCurrentPlayerActive())
                 {
