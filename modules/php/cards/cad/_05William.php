@@ -21,11 +21,16 @@ class _05William extends Scheme implements IHasActions
 {
     use ActionTrait;
 
+    // WHY: Printed "at -1 cost" is only for this scheme's planning resolve equip — not a standing
+    // Kaj-style aura. Flag arms while the optional Artifact pick/pay is live; getEquipDiscount
+    // reads it so affordability + EventEnteringPayState stay in sync.
+    public bool $PlanningEquipDiscountActive = false;
+
     public function __construct()
     {
         parent::__construct();
         $this->Name = "Syrneth Secrets";
-        $this->Image = "05William.v4.jpg";
+        $this->Image = "05William.v5.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         // WHY: Stub CardNumber=10 matches printed CAD sequence; class routing uses `_05William`.
@@ -43,7 +48,7 @@ class _05William extends Scheme implements IHasActions
 
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
         $this->Text = "<p>Add a Renown to [The City Docks] and [The Grand Bazaar].</p>
-<p>Then, move your Academic to a City location. If an available Artifact is there, you may equip it to your performer, paying all costs.</p>
+<p>Then, move your <b>Academic</b> to a <b>City</b> location. They may equip an available <b>Artifact</b> there, at -1 cost.</p>
 <hr />
 <p><b>City Action:</b> Engage an <b>Artifact</b> equipped to your performer and target an opposing non-<b>Leader</b> • Move them <b>Home</b>.</p>";
 
@@ -52,6 +57,34 @@ class _05William extends Scheme implements IHasActions
         $this->Actions = [
             new Action_05William(),
         ];
+    }
+
+    public function getEquipDiscount(Theah $theah, Character $performer, Attachment $attachment, Array &$explanations): int
+    {
+        $discount = parent::getEquipDiscount($theah, $performer, $attachment, $explanations);
+
+        if ($this->PlanningEquipDiscountActive
+            && $performer->ControllerId == $this->ControllerId
+            && $attachment->hasTrait("Artifact")
+            && ! $attachment->FakeAttachment)
+        {
+            $discount += 1;
+            // WHY: Prototype CAD — plain strings, no clienttranslate.
+            $explanations[] = sprintf("%s: -1 cost for equipping an available Artifact.", $this->getInjectCode());
+        }
+
+        return $discount;
+    }
+
+    public function setPlanningEquipDiscountActive(Game $game, bool $active): void
+    {
+        if ($this->PlanningEquipDiscountActive === $active)
+        {
+            return;
+        }
+
+        $this->PlanningEquipDiscountActive = $active;
+        $game->updateCardObjectInDb($this);
     }
 
     /**
@@ -84,7 +117,38 @@ class _05William extends Scheme implements IHasActions
     }
 
     /**
-     * Available Artifacts at a location the Academic can afford to equip.
+     * World equip discounts plus this scheme's printed planning -1.
+     *
+     * @return array{0:int,1:string|list}
+     */
+    public function getPlanningEquipDiscount(Theah $theah, Character $performer, Attachment $attachment): array
+    {
+        [$discount, $explanations] = $theah->getEquipDiscount($performer, $attachment);
+
+        // WHY: getEquippableArtifactsAtLocation runs before the pay-flag is armed (and must,
+        // so a WealthCost-1 Artifact with empty hand is offered). When the flag is already
+        // on, getEquipDiscount already counted this scheme's -1 — do not double it.
+        if (! $this->PlanningEquipDiscountActive)
+        {
+            $discount += 1;
+            $line = sprintf("%s: -1 cost for equipping an available Artifact.", $this->getInjectCode());
+            if (is_array($explanations))
+            {
+                $explanations[] = $line;
+            }
+            else
+            {
+                $explanations = ($explanations === '' || $explanations === null)
+                    ? $line
+                    : ($explanations . '<br>' . $line);
+            }
+        }
+
+        return [$discount, $explanations];
+    }
+
+    /**
+     * Available Artifacts at a location the Academic can afford to equip (after -1).
      *
      * @return list<Attachment>
      */
@@ -107,14 +171,15 @@ class _05William extends Scheme implements IHasActions
                 continue;
             }
 
-            [$discount] = $theah->getEquipDiscount($performer, $attachment);
+            [$discount] = $this->getPlanningEquipDiscount($theah, $performer, $attachment);
             $cost = $attachment->getWealthCost() - $discount;
             if ($cost < 0)
             {
                 $cost = 0;
             }
 
-            if ($handWealth < $cost)
+            // WHY: cost 0 is always affordable (empty hand on turn-1 resolve before draw).
+            if ($cost > 0 && $handWealth < $cost)
             {
                 continue;
             }
@@ -123,6 +188,38 @@ class _05William extends Scheme implements IHasActions
         }
 
         return $artifacts;
+    }
+
+    private function queuePlanningArtifactEquip(
+        Game $game,
+        Character $performer,
+        Attachment $attachment,
+        int $discount,
+        int $cost,
+        string $explanations
+    ): void {
+        $game->notify->all("message", '${scheme_inject_code}: ${player_name} equips ${attachment_inject_code} to ${character_inject_code}.', [
+            "scheme_inject_code" => $this->getInjectCode(),
+            "player_name" => $game->getPlayerNameById($this->ControllerId),
+            "attachment_inject_code" => $attachment->getInjectCode(),
+            "character_inject_code" => $performer->getInjectCode(),
+        ]);
+
+        $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performer->Id);
+
+        $equipEvent = EventFactory::createAttachmentEquippedEvent(
+            $this->ControllerId,
+            $actualTargetId,
+            $attachment->Id,
+            $discount,
+            $cost,
+            $asAction = false,
+            $explanations,
+            false,
+            $this->Id
+        );
+        $game->theah->eventCheck($equipEvent);
+        $game->theah->queueEvent($equipEvent);
     }
 
     public function handleEvent(Event $event)
@@ -285,6 +382,11 @@ class _05William extends Scheme implements IHasActions
 
             $game->globals->set(Game::CHOSEN_CARD, $attachment->Id);
 
+            // WHY: Keep the normal pay state even when cost is 0 after -1 — same as other
+            // equip pay flows (01167 / HD equip-from-play). Confirm with an empty hand is valid
+            // via isValidWealthPayment(0, 0, …).
+            $this->setPlanningEquipDiscountActive($game, true);
+
             $payEvent = EventFactory::createEnteringPayStateEvent(
                 $performer->ControllerId,
                 $attachment->Id,
@@ -342,10 +444,13 @@ class _05William extends Scheme implements IHasActions
             $game->globals->set(Game::CHOSEN_PERFORMER, $character->Id);
             $game->globals->set(Game::CHOSEN_LOCATION, $locationName);
 
-            // WHY: Optional equip only when an affordable available Artifact is at the destination.
+            // WHY: Affordability applies the printed -1 inside getPlanningEquipDiscount without
+            // needing the pay-flag armed. Arm the flag only when we actually offer the pick,
+            // so EventEnteringPayState / getEquipDiscount see it during pay.
             $equippable = $this->getEquippableArtifactsAtLocation($game->theah, $character, $locationName);
             if (count($equippable) > 0)
             {
+                $this->setPlanningEquipDiscountActive($game, true);
                 $transition = EventFactory::createTransitionEvent($this->ControllerId, $this->Id, "05William_3");
                 // WHY: CardMoving only *queues* CardMoved (both MEDIUM). A MEDIUM equip
                 // transition FIFO-ahead of CardMoved left performer->Location stale → empty
@@ -408,28 +513,8 @@ class _05William extends Scheme implements IHasActions
                 throw new UserException(sprintf("Cost of Attachment is %d. You selected %d Wealth of cards.", $cost, $totalWealth));
             }
 
-            $game->notify->all("message", '${scheme_inject_code}: ${player_name} equips ${attachment_inject_code} to ${character_inject_code}.', [
-                "scheme_inject_code" => $this->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($this->ControllerId),
-                "attachment_inject_code" => $attachment->getInjectCode(),
-                "character_inject_code" => $performer->getInjectCode(),
-            ]);
-
-            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performerId);
-
-            $equipEvent = EventFactory::createAttachmentEquippedEvent(
-                $this->ControllerId,
-                $actualTargetId,
-                $attachmentId,
-                $discount,
-                $cost,
-                $asAction = false,
-                $explanations,
-                false,
-                $this->Id
-            );
-            $game->theah->eventCheck($equipEvent);
-            $game->theah->queueEvent($equipEvent);
+            $explanationsText = is_string($explanations) ? $explanations : (string)$explanations;
+            $this->queuePlanningArtifactEquip($game, $performer, $attachment, $discount, $cost, $explanationsText);
 
             foreach ($ids as $cardId)
             {
@@ -447,6 +532,7 @@ class _05William extends Scheme implements IHasActions
                 $game->theah->queueEvent($discardEvent);
             }
 
+            $this->setPlanningEquipDiscountActive($game, false);
             $game->gamestate->nextState("attachmentEquipped");
         }
     }
@@ -458,6 +544,7 @@ class _05William extends Scheme implements IHasActions
         if ($state == States::PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_3)
         {
             // WHY: "you may" — Pass is always legal; do not throw if Artifacts remain.
+            $this->setPlanningEquipDiscountActive($game, false);
             $game->notify->all("message", '${scheme_inject_code}: ${player_name} declines to equip an Artifact.', [
                 "scheme_inject_code" => $this->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($this->ControllerId),

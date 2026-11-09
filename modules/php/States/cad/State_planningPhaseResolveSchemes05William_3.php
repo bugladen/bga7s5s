@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\States\cad;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\GameState;
 use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05William;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 
@@ -20,8 +21,8 @@ class State_planningPhaseResolveSchemes05William_3 extends GameState
             name: "planningPhaseResolveSchemes_05William_3",
 
             // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
-            description: 'Syrneth Secrets: ${actplayer} may equip an available Artifact.',
-            descriptionMyTurn: 'Syrneth Secrets: ${you} may equip an available Artifact, paying all costs:',
+            description: 'Syrneth Secrets: ${actplayer} may equip an available Artifact at -1 cost.',
+            descriptionMyTurn: 'Syrneth Secrets: ${you} may equip an available Artifact at -1 cost:',
             transitions: [
                 "artifactChosen" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
                 "pass" => States::PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS,
@@ -51,6 +52,12 @@ class State_planningPhaseResolveSchemes05William_3 extends GameState
 
     public function zombie(int $playerId): void
     {
+        // WHY: Clear scheme -1 arm so a later HD Artifact equip does not keep the planning discount.
+        $scheme = $this->game->theah->getCardById((int)$this->game->globals->get(Game::TRANSITION_SOURCE_ID, 0));
+        if ($scheme instanceof _05William)
+        {
+            $scheme->setPlanningEquipDiscountActive($this->game, false);
+        }
         $this->game->gamestate->nextState("zombie");
     }
 }
