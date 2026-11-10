@@ -24,9 +24,10 @@
                 <div class="_7sfs-deck-picker-tab-text">\${banner_description}</div>
                 </div>
 
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDCastille">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-castille"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${castille_description_core}</div>
+                <!-- WHY: Core tab DOM order matches alpha leader buttons (Constanzo→Yevgeni) so +1..+5 highlight stays aligned. -->
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacce">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_core}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Eisen" id="SDEisen">
@@ -39,14 +40,14 @@
                 <div class="_7sfs-deck-picker-tab-text">\${montaigne_description_core}</div>
                 </div>
 
+                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Castille" id="SDCastille">
+                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-castille"></div>
+                <div class="_7sfs-deck-picker-tab-text">\${castille_description_core}</div>
+                </div>
+
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Ussura" id="SDUssura">
                 <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-ussura"></div>
                 <div class="_7sfs-deck-picker-tab-text">\${ussura_description_core}</div>
-                </div>
-
-                <div class="_7sfs-deck-picker-tab-content" data-deck-name="Vodacce" id="SDVodacce">
-                <div class="_7sfs-deck-picker-tab-image _7sfs-deck-picker-faction-image _7sfs-vodacce"></div>
-                <div class="_7sfs-deck-picker-tab-text">\${vodacce_description_core}</div>
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-content" data-deck-name="Montaigne" id="SDBalancedAngeline">
@@ -109,14 +110,14 @@
                 <button class="deck-picker-group-button _7sfs-deck-picker-group-balanced" onclick="gameui.deckPickerGroupShowTab(2)">Balanced Decks for Each Leader</button>
                 </div>
 
-                <!-- WHY: All five Core factions on one row. Group class tints buttons to match Core group tab. -->
+                <!-- WHY: Alpha by leader name (same as Balanced). Tab content above reordered to match so +N indices stay correct. -->
                 <div id="deck-picker-faction-buttons" class="_7sfs-deck-picker-button-stack _7sfs-deck-picker-group-core">
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Castille</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Eisen</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 3)">Montaigne</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 4)">Ussura</button>
-                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 5)">Vodacce</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Constanzo</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Kaspar</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 3)">Odette</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 4)">Soline</button>
+                <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 5)">Yevgeni</button>
                 </div>
                 </div>
 
