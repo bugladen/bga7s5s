@@ -576,6 +576,25 @@ WHY Opponent-effect via `sourceId`/`abilityId`, not `initiatingPlayerId`: some M
 
 Reference: `Reaction_04041` Jak-Sen; cancel-move siblings `Reaction_03016a` / `Reaction_01140`; opponent-effect helper `Reaction_04021`; engage Decline skip `Reaction_01032`.
 
+### Covert cancel movement from this location
+
+Printed (Mikael `_05Seadog`): **"<b>Covert Reaction:</b> When a character would move from this location • Cancel the movement."**
+
+Jak-Sen move half **with different gates** — do **not** copy his "your character" / "opponent's effect" filters or his engage arm.
+
+| Gate | Seadog | Jak-Sen |
+|---|---|---|
+| Scope label | **Covert** → `cardInCity` + location **uncontrolled** | **City** → `cardInCity` only |
+| Who | **any** `Character` leaving (`fromLocation == owner.Location`) | your character only |
+| Source | any (including `sourceId==0` framework / dusk) | opponent's effect only (`sourceId==0` skip) |
+| Events | `EventCardMoving` only | Moving **and** Engaged |
+
+Flow still: clone + cancel + `stackEvent` reaction transition → Cancel / Decline; Decline → `cancelDeclinedByCardIds[] = owner.Id`. Keep `!unstoppable`.
+
+WHY no opponent-effect gate: text does not say "by an opponent's effect." WHY Covert uncontrolled: Covert abilities may only be used at uncontrolled City locations (Valeri / Overcoat), even when Reminder text is omitted.
+
+Reference: `Reaction_05Seadog`; move Decline sibling `Reaction_04041`; Covert location gate `Action_05Overcoat` / `Action_05DabneyUS01`.
+
 ### Destroyed character → take control of attachment
 
 Printed (Vulture `_05Vulture`): **Reaction: When a character at this location is destroyed • Take control of their equipped attachment and equip it to a character you control paying all costs.**

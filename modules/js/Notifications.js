@@ -92,6 +92,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
             ['contemptAndHatredConditionEnded', 1],
             ['giacintoInfluenceReductionStarted', 1],
             ['giacintoInfluenceReductionEnded', 1],
+            ['seadogInfluenceReductionStarted', 1],
+            ['seadogInfluenceReductionEnded', 1],
             ['solineElGatoConditionStarted', 1],
             ['solineElGatoConditionEnded', 1],
             ['tomoeSangoConditionStarted', 1],
@@ -2224,6 +2226,35 @@ return declare('seventhseacityoffivesails.notifications', null, {
         if (card)
         {
             card.conditions = card.conditions.filter(condition => condition !== this.GIACINTO_INFLUENCE_REDUCTION_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_seadogInfluenceReductionStarted: function( notif )
+    {
+        debug( 'notif_seadogInfluenceReductionStarted' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            if (!card.conditions.includes(this.SEADOG_INFLUENCE_REDUCTION_CONDITION))
+                card.conditions.push(this.SEADOG_INFLUENCE_REDUCTION_CONDITION);
+            this.refreshTooltipForCard(card);
+        }
+    },
+
+    notif_seadogInfluenceReductionEnded: function( notif )
+    {
+        debug( 'notif_seadogInfluenceReductionEnded' );
+        debug( notif );
+
+        const args = notif.args;
+        const card = this.cardProperties[args.cardId];
+        if (card)
+        {
+            card.conditions = card.conditions.filter(condition => condition !== this.SEADOG_INFLUENCE_REDUCTION_CONDITION);
             this.refreshTooltipForCard(card);
         }
     },

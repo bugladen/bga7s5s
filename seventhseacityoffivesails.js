@@ -182,6 +182,7 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.INDOMITABLE_WILL_CONDITION = 'Indomitable Will Condition';
             this.CONTEMPT_AND_HATRED_CONDITION = 'Influence Reduced by Contempt and Hatred';
             this.GIACINTO_INFLUENCE_REDUCTION_CONDITION = 'Influence Reduced by Giacinto';
+            this.SEADOG_INFLUENCE_REDUCTION_CONDITION = 'Influence Reduced by Mikael Smitski';
             this.SOLINE_EL_GATO_CONDITION = 'Finesse Modified by Soline el Gato';
             this.TOMOE_SANGO_CONDITION = 'Finesse Modified by Tomoe Sango';
             this.EPEE_SANGLANTE_CONDITION = 'Influence Modified by Épée Sanglante';

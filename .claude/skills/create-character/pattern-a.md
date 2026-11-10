@@ -562,6 +562,19 @@ WHY not global `_01143`: printed "Opposing" in this codebase always means same l
 
 Reference: `_04032` Giacinto; condition/notif sibling `_01143`; location opposing siblings `_04001` Benci / `_04022` Axelle.
 
+### Opposing −N Influence while opponent controls equal or more characters
+
+For text like Mikael `_05Seadog` ("While an opponent controls equal or more characters than you, their characters opposing Mikael have −1[Influence]"):
+
+Same Giacinto location opposing Influence machinery (condition + Influence ModifiedEvent + client notifs + Home empty + Silence blank/unblank + stale-DB on move), with two changes:
+
+1. **No trait filter** — every opposing character at Owner's location is a candidate.
+2. **Per-opponent count gate** (Ren `_01121` shape): stamp only when `count(opponent's in-play characters) >= count(Owner controller's in-play characters)`. **"their characters"** means only that outnumbering/tying opponent's opposing characters — a second opponent who is outnumbered stays clean even at the same location.
+
+**Count flips without a local move.** A muster/destroy elsewhere can turn the aura on or off for characters already standing at Owner's location. Giacinto's arrival-only apply is not enough — **resync** on any `EventCharacterMustered` / `EventApproachCharacterPlayed` / `EventCharacterRecruited` / `EventCharacterDestroyed` (any character). On Destroy, **exclude `$event->characterId` from both counts** — `runEventHubAfterCards` still lists the victim in `getCharactersInPlay*` during card `handleEvent`.
+
+Reference: `_05Seadog`; Giacinto `_04032`; Ren count `_01121`.
+
 ### Location Technique grant aura — "Your other characters / your \<Trait\>s at this location gain: Technique: …"
 
 For text like Jean Urbain `_01067` ("Your other Musketeers … gain Technique"), Stranahan `_02022` ("Your Musketeers … gain Lethal"), Yepikhodov `_03051` ("Your other characters … gain Technique: Engage … Copy …"), Bastien `_01063` ("Your characters … gain Technique: Swap…"), or CAD Vissenta `_05Cooper` ("Your Thugs … gain Technique: +1 Thrust"). This is a **card-class `handleEvent` passive**, not a Reaction and not a Technique mounted on the aura source himself (unless the printed text also gives him the Technique).

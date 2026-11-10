@@ -152,6 +152,9 @@ class Game extends \Bga\GameFramework\Table
     final const LET_BYGONES_BE_BYGONES = "Let Bygones Be Bygones";
     final const CONTEMPT_AND_HATRED_CONDITION = "Influence Reduced by Contempt and Hatred";
     final const GIACINTO_INFLUENCE_REDUCTION_CONDITION = "Influence Reduced by Giacinto";
+    // WHY: Mikael Smitski (_05Seadog) −1 Influence on opposing characters when that
+    // opponent controls equal or more characters. Tooltip source like Giacinto.
+    final const SEADOG_INFLUENCE_REDUCTION_CONDITION = "Influence Reduced by Mikael Smitski";
     final const SOLINE_EL_GATO_CONDITION = "Finesse Modified by Soline el Gato";
     // WHY: Tomoe Sango (_04043) -1 Finesse on her duel adversary. Tooltip source like Soline.
     final const TOMOE_SANGO_CONDITION = "Finesse Modified by Tomoe Sango";
