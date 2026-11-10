@@ -115,6 +115,65 @@ Move-only text → movers only (`Technique_01036`, `Maneuver_01059`, `Maneuver_0
 
 **JS:** same Soline/Harpoon shape — constant string must match `Game::*_CONDITION` exactly; register `*ConditionStarted` / `*ConditionEnded` handlers that push/filter `card.conditions` + `refreshTooltipForCard`.
 
+## Pattern B — Permanence ("cannot be moved / destroyed / sent to The Locker")
+
+Printed permanence is **not** a `Game::*_CONDITION` on the host. It is attachment-local:
+
+1. **`canBeMoved(): bool` → `false`** — steal/take-control chooser gate (A Fine Addition, Robbery, Ratón, `_04029`). Take-control flows filter this and never emit `EventAttachmentMoved`, so an unequip-only veto never sees those steals.
+2. **`eventCheck(EventAttachmentUnequipped)`** — veto unless the host is dying:
+
+```php
+if ($event instanceof EventAttachmentUnequipped && $event->attachmentId == $this->Id)
+{
+    $owner = $this->attachedTo($event->theah);
+    $canDiscard = $owner instanceof Character && $owner->IsDying;
+
+    if (! $canDiscard)
+    {
+        throw new UserException("… cannot be destroyed or moved from the equipped character.");
+    }
+}
+```
+
+3. **`eventCheck(EventCardSentToLocker)`** — only when text names The Locker (Porcelain Heart). Object of Wonder / other abilities can `createCardSentToLockerEvent` on attachments; veto that path. Syrneth Hand `_01204` does **not** name Locker and only implements (1)+(2).
+
+**WHY dying-host exception is mandatory:** character destroy runs `unEquipAllAttachments` while `IsDying = true`. A hard unequip veto softlocks the destroy chain (especially on a Leader host). Steal permanence stays on `canBeMoved()`; dying unequip is the only escape hatch.
+
+**eventCheck vs handleEvent:** unequip veto runs in `eventCheck` *before* EventHub clears `AttachedToId`, so `$this->attachedTo($event->theah)` still works. Do not move this gate into `handleEvent`.
+
+**Panzerhand vs Hand:** Kaspar's Panzerhand `_01047` is move-only (`canBeMoved` + `EventAttachmentMoved` throw) — no destroy/unequip veto. Use Hand/Heart when text says destroyed (or Locker).
+
+References: CityAttachment `_01204` (Syrneth Hand — canonical destroy/move permanence), FactionAttachment `_05TimebombFlipped` (adds Locker veto). Steal-filter callers: `Technique_01096`, `Action_04029`, `Maneuver_01113`.
+
+### Forced adversary combat-card −N Parry
+
+When text is **`<b>Forced:</b> When the equipped character's adversary announces a combat card • it has -N[Parry]`** (always-on, no engage, not deferred):
+
+```php
+if ($event instanceof EventDuelCalculateCombatCardStats && $this->isAttached())
+{
+    if ($event->adversaryId == $this->AttachedToId)
+    {
+        $event->explanations[] = sprintf("%s: … -%d Parry.", $this->getInjectCode(), $n);
+        $event->removeParry($n);
+
+        if (! $event->dashedParry)
+        {
+            $note = sprintf("%s: -%d Parry to combat card", $this->Name, $n);
+            $event->theah->recordDuelRoundColumnNote('maneuver', 'note_' . $this->Id, $note);
+        }
+    }
+}
+```
+
+- Gate: `isAttached()` + `$event->adversaryId == $this->AttachedToId` (announcer is the host's duel adversary).
+- Use **`removeParry`**, not a floor-at-zero subtract. WHY: negatives must stick so a later Technique/Maneuver +Parry nets correctly (`EventDuelCalculateCombatCardStats` comment / Syrneth Hand overflow bug).
+- Duel note → **maneuver** column (Combat Card column only stores card ids). Skip when `dashedParry`.
+- **Not** `EventCombatCardAnnounced` — that event is for Reaction offers (BoyBand `_05BoyBand`). Stats mutate on Calculate.
+- **Not** deferred next-round arm (`Technique_01204` / `ReduceAdversaryParry`) unless text says "during the adversary's next round".
+
+Reference: `_05TimebombFlipped`. Apply siblings: So It Begins `_01183`, Technique_01204 apply half, CAD GaryFlipped note shape.
+
 ### Forced destroy at end of High Drama
 
 When text is **`<b>Forced:</b> At the end of High Drama • Destroy this attachment`** (often paired with B'' on the same card — `_03066`):

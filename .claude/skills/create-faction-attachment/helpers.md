@@ -18,6 +18,9 @@
 - `$game->getGameDeckObject(int $playerId = 0): Deck` — get a player's deck wrapper. `getCardsInLocation(getPlayerDiscardDeckName($playerId))` queries discard; `getPlayerHand($playerId)` queries hand.
 - `$game->getPlayerFactionDeckName(int $playerId): string` — the deck-table location string for a player's faction deck.
 - `$game->getPlayerNameById(int $playerId): string` — use this instead of deprecated `getActivePlayerName()`.
+- `$attachment->canBeMoved(): bool` — default `true`. Override `false` for printed "cannot be moved" (Panzerhand / Syrneth Hand / Porcelain Heart). Steal/take-control choosers filter this; dying-host unequip is a separate `eventCheck` (Hand/Heart).
+- `$event->removeParry(int $n)` / `addParry` / `removeThrust` / … on `EventDuelCalculateCombatCardStats` — prefer these over raw `$event->parry -= n`. `removeParry` allows negatives so later +Parry techniques net correctly (do not floor at 0 on the event).
+- `$theah->recordDuelRoundColumnNote('maneuver'|'technique', $sourceId, $displayName)` — reload-safe duel UI label. Combat Card column only stores card ids — put Forced/passive combat-card modifiers in **maneuver** (or technique when the source is a Technique). No-ops outside `IN_DUEL` / missing duel id+round. Skip when the affected stat is dashed.
 - `$card->hasTrait(string $trait): bool` — check a trait.
 - `$character->addTrait(Game $game, string $trait)` / `$character->removeTrait(Game $game, string $trait)` — for passive trait grants.
 - `$card->addCondition($condition)` / `hasCondition($condition)` / `removeCondition($condition)` — lasting stamped state (Harpoon remainder-of-duel, Lodestone/Shackles while-equipped, Soline, Indomitable Will). Define the string on `Game` as `final const`. JS constant must match exactly.

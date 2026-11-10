@@ -42,6 +42,8 @@ The framework hydrates each ability separately. No cross-talk needed between the
 
 **Academic equip + Covert Action (adjacent Renown in):** `_05Forsythe` (Syrneth Morosometer) hosts Pattern A Academic dual-gate and `Action_05Forsythe` — Covert uncontrolled gate + Engage this card on resolve + from-adjacent Renown picker to host location. Direction inverted from `Action_04036a`. No pressure/claim (unlike Character Overcoat). Prototype CAD plain strings; one HD GameState.
 
+**Leader-force + permanence + Forced −Parry (no ability class):** `_05TimebombFlipped` (Porcelain Heart) combines Pattern A Leader redirect (`getRequiredAttachTargetId`, no `canAttachTo`), Pattern B permanence (`canBeMoved` + unequip dying-host + locker veto), and Forced adversary combat-card −1 Parry on Calculate. All on the attachment `eventCheck` / `handleEvent`. Flip-from-Character is A-side create-character work — do not reimplement destroy→flip on the B-side.
+
 **Finesse-threshold equip + ignore-wound Reaction:** `_04053` (Leather Spaulders) hosts Pattern A `ModifiedFinesse >= 2` dual-gate and `Reaction_04053` (Cascade ignore-wound gates + engage cost). No Technique/Action; no GameState. Same Risk→Attachment cost swap shape as Pompon vs Objection.
 
 **Two Techniques (free PlusOne* + engage +stat):** `_04054` (Sabre) hosts `Technique_PlusOneThrust` with `setId('Technique_04054a')` and `Technique_04054b` (engage +1 Riposte, Pompon availability/Resolve, Calculate `riposte += 1`). No equip restriction. `setId` only works because PlusOneThrust already has the right (non-Gambling) gates.

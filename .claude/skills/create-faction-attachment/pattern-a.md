@@ -128,6 +128,18 @@ public function handleEvent(Event $event)
 
 Reference: `_01050` (Unsavory Salve).
 
+### Force-equip to Leader (`getRequiredAttachTargetId`)
+
+When printed text **forces** the attach target to the owner's Leader ("When equipping this card • It always equips to your Leader", "equips it to their Leader" on reveal/flip) — this is **not** classic Pattern A trait dual-gate:
+
+1. Override `getRequiredAttachTargetId(Theah $theah, int $originalTargetId): int` — resolve the Leader of `$character->ControllerId` (or the equipping player's Leader for Object of Wonder). Throw `UserException` when no Leader is in play (not in locker).
+2. `eventCheck(EventAttachmentEquipping)` — Leader in play; optionally refuse when `$event->characterId != $leader->Id` (Porcelain Heart) or rely on the redirect alone (Object of Wonder only checks Leader exists).
+3. **Do not** require `canAttachTo` — Object of Wonder `_01202` omits it; the redirect rewrites any chosen target to the Leader. Adding a Leader-only `canAttachTo` can fight flows that pick a non-Leader then get redirected.
+
+**CAD / flip path:** Character→Attachment reveal (Klim `_05Timebomb` → Porcelain Heart) calls `getRequiredAttachTargetId` then `createAttachmentEquippedEvent`. If no Leader in play, leave the Heart at owner's Home and notify — do **not** throw mid-Forced destroy→flip. Flip orchestration lives on the Character (create-character); the Attachment only owns the Leader redirect + permanence + its Forced.
+
+References: `_01202` (Object of Wonder — CityAttachment, same redirect API), `_05TimebombFlipped` (FactionAttachment CAD).
+
 ### Opponent-equip (`CanEquipToOpponents`)
 
 When printed text says the card equips to an **opposing** character (not "your" character):
