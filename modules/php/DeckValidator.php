@@ -191,6 +191,17 @@ class DeckValidator
             $cardCount = $factionCard->count;
             $totalCount += $cardCount;
 
+            // WHY: Klim / Porcelain Heart are Nevermore out-of-play muster tokens (Snow White
+            // Orel/Volk shape) — not deckbuildable. A-side is a non-Brute Character (already
+            // blocked below) but B-side is a FactionAttachment that would otherwise be legal.
+            // Plain string, no clienttranslate (prototype CAD — GaryFlipped / Overcoat).
+            // WHY: B-side class id is 05TimebombB (varchar(16) — Flipped overflows).
+            if ($cardId === '05Timebomb' || $cardId === '05TimebombB')
+            {
+                $errors[] = '05Timebomb - Klim Grabiezca / The Porcelain Heart cannot be included in a Faction deck.';
+                continue;
+            }
+
             $className = $game->getCardClassName($factionCard->id);
             if (! class_exists($className))
             {

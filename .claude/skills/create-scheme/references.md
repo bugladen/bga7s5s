@@ -145,4 +145,7 @@
 | `modules/php/cards/cad/reactions/Reaction_05SnowWhite.php` | Planning-End Sorcerer Reaction: buttons Muster Orel/Volk/Pass; `ISorcererAbility`; createCardInLocation or locker/discard remuster at Home; `getAllCards()` not private `$cards`. |
 | `modules/php/theah/reactions/Reaction_CrewCapLimit.php` | Crew Cap sink buttons + remaining use `characterCountsAgainstCrewCap` (Wildcall Animal exempt). |
 | `modules/php/cards/tac/_02031.php` (Lucas Doomed) | `createCardInLocation` from out of play sibling (Damned into locker). |
+| `modules/php/cards/cad/_05Nevermore.php` (The Raven's Designs) | **Fixed Docks Renown + Villain Planning-End Reaction (opponent musters Klim) + Leader City Action (draw = Artifacts).** CAD prototype (plain strings). No GameStates. Initiative 13 / Panache -1 / Villainous+Hunt. |
+| `modules/php/cards/cad/reactions/Reaction_05Nevermore.php` | Planning-End Villain Reaction: opponent buttons + Pass; muster Klim for opponent with OwnerId=scheme controller; create or remuster; Heart/in-play Name Gate. |
+| `modules/php/cards/cad/actions/Action_05Nevermore.php` | Pattern H Leader City Action: draw = controlled Artifact count; clamp to drawable. |
 

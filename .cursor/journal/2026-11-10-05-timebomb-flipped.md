@@ -25,3 +25,9 @@ Extended `Card_05Timebomb_Test` — construct, unequip veto/allow dying, locker 
 
 ## Unfinished elsewhere
 Nevermore scheme still has Klim paste text unimplemented.
+
+## OwnerId Leader fix (follow-up)
+User: reveal equip must key OwnerId, not ControllerId. Fixed `getRequiredAttachTargetId` + Equipping `eventCheck` to `$this->OwnerId`. WHY: Object of Wonder uses ControllerId/playerId; Porcelain Heart text is "its owner … their Leader" — opponent-controlled Klim / wrong originalTarget must not resolve opponent's Leader. Test: `required attach target is owner leader not original target controller`. Skill pattern-a/checklist/references updated.
+
+## Faction-deck ban (follow-up)
+User: cannot add via DeckValidator. Nevermore musters Klim from out of play — A-side already fails non-Brute faction check, but B-side FactionAttachment would be legal. Ban both `05Timebomb` and `05TimebombFlipped` in `validateFactionDeck` (CAD plain string, GaryFlipped/Overcoat shape). FakeGame gained `getCardClassName` for the suite.

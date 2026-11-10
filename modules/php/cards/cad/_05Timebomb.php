@@ -19,6 +19,7 @@ class _05Timebomb extends Character
         $this->Name = "Klim Grabiezca";
         $this->Title = "Kill 'Em!";
         $this->Image = "05Timebomb.v5.jpg";
+        $this->InPlayXImageOffset = -25;
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 26;
@@ -150,8 +151,10 @@ class _05Timebomb extends Character
 
         $aInject = $this->getInjectCode();
 
-        $b = $game->instantiateCard('05TimebombFlipped', $this->Id);
-        if (! ($b instanceof _05TimebombFlipped))
+        // WHY: `05TimebombB` not `05TimebombFlipped` — card.card_type is varchar(16);
+        // Flipped suffix overflows (17 chars). Asset jpg keeps the Flipped filename.
+        $b = $game->instantiateCard('05TimebombB', $this->Id);
+        if (! ($b instanceof _05TimebombB))
         {
             return;
         }
@@ -167,7 +170,7 @@ class _05Timebomb extends Character
         $theah->addCardToWorld($b);
 
         // WHY: Keep card_type aligned with serialized class for getCardIdByType lookups (Gary).
-        $game->DbQuery("UPDATE card SET card_type = '05TimebombFlipped' WHERE card_id = {$b->Id}");
+        $game->DbQuery("UPDATE card SET card_type = '05TimebombB' WHERE card_id = {$b->Id}");
 
         // WHY: cardRemovedFromPlay (not characterDestroyed) — destroy notif flies to locker
         // and pushes the card into the locker array. We only need the city/Home token gone

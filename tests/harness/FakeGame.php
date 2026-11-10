@@ -464,16 +464,10 @@ class Game
     /** @var array<int, callable(): Card> */
     public array $cardRecreateById = [];
 
-    public function instantiateCard(string $cardClass, ?int $id = null): Card
+    // WHY: DeckValidator + UtilitiesTrait — CAD flips (05TimebombB) and expansion
+    // recreates resolve. Was hardcoded to _7s5s only inside instantiateCard.
+    public function getCardClassName(string $cardClass): string
     {
-        if ($id !== null && isset($this->cardRecreateById[$id])) {
-            $card = ($this->cardRecreateById[$id])();
-            $card->setId($id);
-            return $card;
-        }
-
-        // WHY: Mirror UtilitiesTrait::getCardClassName so CAD flips (05TimebombFlipped)
-        // and other expansion recreates resolve — was hardcoded to _7s5s only.
         $set = match (substr($cardClass, 0, 2)) {
             '01' => '_7s5s',
             '02' => 'tac',
@@ -482,7 +476,19 @@ class Game
             '05' => 'cad',
             default => '_7s5s',
         };
-        $fqcn = "\\Bga\\Games\\SeventhSeaCityOfFiveSails\\cards\\{$set}\\_{$cardClass}";
+
+        return "\\Bga\\Games\\SeventhSeaCityOfFiveSails\\cards\\{$set}\\_{$cardClass}";
+    }
+
+    public function instantiateCard(string $cardClass, ?int $id = null): Card
+    {
+        if ($id !== null && isset($this->cardRecreateById[$id])) {
+            $card = ($this->cardRecreateById[$id])();
+            $card->setId($id);
+            return $card;
+        }
+
+        $fqcn = $this->getCardClassName($cardClass);
         if (!class_exists($fqcn)) {
             throw new \RuntimeException("instantiateCard: unknown class {$cardClass}");
         }

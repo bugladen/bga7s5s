@@ -176,6 +176,17 @@ Printed **`<b>Merchant Reaction:</b> At the end of Planning • Look at the top 
 
 Reference: `Reaction_04025` + `State_planningPhaseEnd_04025`. Look/reorder City Deck sibling: `Reaction_03052`. Sink-from-look opponent deck: `_02005`.
 
+### Villain Reaction at Planning End — opponent musters named character from out of play
+
+Printed **`<b>Villain Reaction:</b> At the end of Planning • Target opponent musters Klim Grabiezca from out of play and takes control of him.`** — Reaction, not Forced. Canonical: `Reaction_05Nevermore` (The Raven's Designs).
+
+1. **Trigger:** `EventPhasePlanningEnd` + `$this->isAvailable()` + scheme `Location == LOCATION_PLAYER_HOME` + ≥1 controlled Villain + named character musterable + ≥1 opponent.
+2. **UX:** buttons per opponent (`opponent-{id}`) + Pass — no GameState / no JS. Pass does **not** `setUsed`.
+3. **"Takes control":** `createCharacterMusteredEvent($opponentId, …)` — EventHub sets `ControllerId` from muster `playerId`. Keep **`OwnerId` = scheme controller** (createCardInLocation owner arg / preserve on remuster) so Klim's flip→Porcelain Heart still returns to the Nevermore player (`_05Timebomb::flipToPorcelainHeart`).
+4. **Musterability:** create when absent; remuster A-side from any locker/discard; skip when A-side `cardInPlay` or B-side Heart exists (same card identity).
+
+Reference: `Reaction_05Nevermore`; muster/create sibling `Reaction_05SnowWhite`; OwnerId-on-flip `_05Timebomb`.
+
 ### Sorcerer Reaction at Planning End — muster named characters from out of play
 
 Printed **`<b>Sorcerer Reaction:</b> At the end of Planning • Muster Orel or Volk at your Home from out of play.`** — Reaction, not Pattern F. Canonical: `Reaction_05SnowWhite` (Wildcall).

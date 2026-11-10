@@ -12,7 +12,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
-class _05TimebombFlipped extends FactionAttachment
+// WHY: Class id `05TimebombB` (not `05TimebombFlipped`) — card.card_type is varchar(16).
+// `05TimebombFlipped` is 17 chars and overflows the column on flip UPDATE.
+class _05TimebombB extends FactionAttachment
 {
     public function __construct()
     {
@@ -21,7 +23,8 @@ class _05TimebombFlipped extends FactionAttachment
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
         $this->Name = "The Porcelain Heart";
         $this->Title = "Syrneth Artifact";
-        $this->Image = "05TimebombFlipped.v5.jpg";
+        // WHY: Asset filename keeps Flipped; DB/class id is the short 05TimebombB.
+        $this->Image = "05TimebombB.v5.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 26;
@@ -61,18 +64,20 @@ class _05TimebombFlipped extends FactionAttachment
         return false;
     }
 
-    // WHY: Always equips to the owner's Leader (Object of Wonder _01202). Flip path and
-    // any later equip attempt must land on Leader, not an arbitrary originalTargetId.
+    // WHY: Printed "its owner takes control … equips it to their Leader" — OwnerId, not
+    // ControllerId of originalTarget / equipping playerId. Opponent-controlled Klim (or a
+    // redirected non-owner target) must still land on the owner's Leader. Object of Wonder
+    // uses ControllerId; Porcelain Heart text is owner-scoped.
     public function getRequiredAttachTargetId(Theah $theah, int $originalTargetId): int
     {
-        $character = $theah->getCharacterById($originalTargetId);
-        if ($character === null)
+        $ownerId = $this->OwnerId;
+        if ($ownerId <= 0)
         {
             throw new UserException("You must equip this card to your Leader, and you have no Leader in play.");
         }
 
-        $leader = $theah->getLeaderByPlayerId($character->ControllerId);
-        $playerLockerName = $theah->game->getPlayerLockerName($character->ControllerId);
+        $leader = $theah->getLeaderByPlayerId($ownerId);
+        $playerLockerName = $theah->game->getPlayerLockerName($ownerId);
 
         if (! $leader || $leader->Location == $playerLockerName)
         {
@@ -86,11 +91,13 @@ class _05TimebombFlipped extends FactionAttachment
     {
         parent::eventCheck($event);
 
-        // WHY: Same Leader gate as Object of Wonder when someone tries to equip elsewhere.
+        // WHY: Owner's Leader only — same OwnerId gate as getRequiredAttachTargetId.
+        // Do not use $event->playerId (equipper) when it can differ from OwnerId.
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
-            $leader = $event->theah->getLeaderByPlayerId($event->playerId);
-            $playerLockerName = $event->theah->game->getPlayerLockerName($event->playerId);
+            $ownerId = $this->OwnerId;
+            $leader = $event->theah->getLeaderByPlayerId($ownerId);
+            $playerLockerName = $event->theah->game->getPlayerLockerName($ownerId);
 
             if (! $leader || $leader->Location == $playerLockerName)
             {

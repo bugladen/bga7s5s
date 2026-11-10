@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
 use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\DeckValidator;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
@@ -14,7 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Timebomb;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05TimebombFlipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05TimebombB;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
@@ -31,14 +32,14 @@ class Card_05Timebomb_Test extends TestCase
     }
 
     /**
-     * @return array{0:_05TimebombFlipped,1:GenericLeader,2:GenericCharacter}
+     * @return array{0:_05TimebombB,1:GenericLeader,2:GenericCharacter}
      */
     private function equippedHeart(TestWorld $world): array
     {
         $leader = $world->placeCharacter(new GenericLeader(), Game::LOCATION_CITY_DOCKS, 1);
         $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
-        /** @var _05TimebombFlipped $heart */
-        $heart = $world->placeCard(new _05TimebombFlipped(), Game::LOCATION_CITY_DOCKS, 1);
+        /** @var _05TimebombB $heart */
+        $heart = $world->placeCard(new _05TimebombB(), Game::LOCATION_CITY_DOCKS, 1);
         $heart->AttachedToId = $leader->Id;
         $leader->Attachments[] = $heart->Id;
         $world->theah->leadersByPlayerId[1] = $leader;
@@ -63,7 +64,7 @@ class Card_05Timebomb_Test extends TestCase
             },
 
             'porcelain heart is unique syrneth artifact attachment' => function () {
-                $heart = new _05TimebombFlipped();
+                $heart = new _05TimebombB();
                 Assert::instanceOf(FactionAttachment::class, $heart, 'FactionAttachment');
                 Assert::same(1, $heart->ResolveModifier, '+1 Resolve');
                 Assert::same(1, $heart->InfluenceModifier, '+1 Influence');
@@ -73,6 +74,31 @@ class Card_05Timebomb_Test extends TestCase
                 Assert::true($heart->hasTrait('Syrneth'), 'Syrneth');
                 Assert::true($heart->hasTrait('Unique'), 'Unique');
                 Assert::false($heart->canBeMoved(), 'cannot be moved');
+            },
+
+            // WHY: Nevermore musters Klim from out of play — not deckbuildable. B-side is a
+            // FactionAttachment that would otherwise pass faction_deck Attachment checks.
+            'deck validator rejects klim and porcelain heart from faction deck' => function () {
+                $world = new TestWorld();
+                $ban = '05Timebomb - Klim Grabiezca / The Porcelain Heart cannot be included in a Faction deck.';
+
+                foreach (['05Timebomb', '05TimebombB'] as $cardId) {
+                    $errors = [];
+                    $deck = (object) [
+                        'name' => 'Test',
+                        'faction' => 'Ussura',
+                        'leader' => '01116',
+                        'approach_deck' => [
+                            '01125', '01126', '01144', '01150', '01145',
+                            '01123', '01124', '01118', '01122', '01120',
+                        ],
+                        'faction_deck' => [
+                            (object) ['id' => $cardId, 'count' => 1],
+                        ],
+                    ];
+                    DeckValidator::validate($world->game, $deck, $errors);
+                    Assert::true(in_array($ban, $errors, true), "ban for {$cardId}");
+                }
             },
 
             // WHY: Forced at end of HD only while at Home — city Klim is a no-op.
@@ -120,7 +146,7 @@ class Card_05Timebomb_Test extends TestCase
 
                 Assert::true($destroy->canceled, 'destroy canceled');
                 $heart = $world->theah->getCardById($klim->Id);
-                Assert::instanceOf(_05TimebombFlipped::class, $heart, 'flipped');
+                Assert::instanceOf(_05TimebombB::class, $heart, 'flipped');
                 Assert::same(1, $heart->ControllerId, 'owner controls');
                 Assert::same(1, $heart->OwnerId, 'owner');
 
@@ -133,7 +159,7 @@ class Card_05Timebomb_Test extends TestCase
                 Assert::true(
                     (bool) array_filter(
                         $world->game->dbQueries,
-                        fn($sql) => str_contains($sql, "card_type = '05TimebombFlipped'")
+                        fn($sql) => str_contains($sql, "card_type = '05TimebombB'")
                     ),
                     'card_type updated'
                 );
@@ -159,6 +185,28 @@ class Card_05Timebomb_Test extends TestCase
                 $equip = $world->theah->queuedOfType(EventAttachmentEquipping::class)[0];
                 Assert::same($ownerLeader->Id, $equip->characterId, 'owner leader');
                 Assert::same(1, $equip->playerId, 'owner player');
+            },
+
+            // WHY: getRequiredAttachTargetId must key OwnerId, not originalTarget's ControllerId.
+            // Passing an opponent-controlled character as originalTarget must still resolve
+            // to the Heart owner's Leader.
+            'required attach target is owner leader not original target controller' => function () {
+                $world = new TestWorld();
+                $ownerLeader = $world->placeCharacter(new GenericLeader(), Game::LOCATION_CITY_FORUM, 1);
+                $opponentLeader = $world->placeCharacter(new GenericLeader(), Game::LOCATION_CITY_DOCKS, 2);
+                $world->theah->leadersByPlayerId[1] = $ownerLeader;
+                $world->theah->leadersByPlayerId[2] = $opponentLeader;
+
+                /** @var _05TimebombB $heart */
+                $heart = $world->placeCard(new _05TimebombB(), Game::LOCATION_CITY_DOCKS, 2);
+                $heart->OwnerId = 1;
+                $heart->ControllerId = 2;
+
+                Assert::same(
+                    $ownerLeader->Id,
+                    $heart->getRequiredAttachTargetId($world->theah, $opponentLeader->Id),
+                    'owner leader'
+                );
             },
 
             // WHY: Syrneth Hand shape — stuck unless host IsDying (Leader death softlock otherwise).

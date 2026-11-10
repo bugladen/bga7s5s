@@ -27,5 +27,10 @@ Implemented on Flipped: canBeMoved false, Leader-only attach (01202), equip even
 `tests/regression/cad/Card_05Timebomb_Test.php` — 5/5 PASS (stats/approach, HD home wounds, HD city no-op, destroy flip+equip, opponent-control returns to owner).
 
 ## Unfinished
-- Finish `_05TimebombFlipped` Forced Parry + permanence (destroy/locker)
-- Nevermore scheme still unimplemented (same pasted text lives there for real)
+- Nevermore scheme (done in later session — see Nevermore journals)
+
+## card_type varchar(16) rename (same day follow-up)
+Live BGA error: `UPDATE card SET card_type = '05TimebombFlipped'` → Data too long.
+`dbmodel.sql`: `card_type varchar(16)`. `05TimebombFlipped` = 17 chars; `05GaryFlipped` = 13 fits.
+Renamed class/file to `_05TimebombB` / `05TimebombB` (12). Asset jpg stays `05TimebombFlipped.v5.jpg`.
+Touched: flip UPDATE, DeckValidator ban, Nevermore instanceof, tests, FakeGame comment.
