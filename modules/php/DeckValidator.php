@@ -101,8 +101,16 @@ class DeckValidator
         $schemeCount = 0;
         $characterCount = 0;
 
-        foreach ($deck->approach_deck as $approachCard)
+            foreach ($deck->approach_deck as $approachCard)
         {
+            // WHY temporary: 05Overcoat (Varvara) is gated out of decks until its CAD playtest issues are resolved.
+            // Mirror 05GaryFlipped leader ban — plain string, no clienttranslate (prototype CAD).
+            if ($approachCard == '05Overcoat')
+            {
+                $errors[] = '05Overcoat - Varvara Kurakina cannot be included in a deck.';
+                continue;
+            }
+
             $className = $game->getCardClassName($approachCard);
             if (! class_exists($className))
             {
