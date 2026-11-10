@@ -105,12 +105,12 @@
                 </div>
 
                 <div class="_7sfs-deck-picker-tab-buttons">
-                <button class="deck-picker-group-button _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core Cards Only</button>
-                <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Balanced Leaders</button>
+                <button class="deck-picker-group-button _7sfs-deck-picker-group-core _7sfs-deck-picker-tab-selected" onclick="gameui.deckPickerGroupShowTab(1)">Core Set Pre-Built Decks</button>
+                <button class="deck-picker-group-button _7sfs-deck-picker-group-balanced" onclick="gameui.deckPickerGroupShowTab(2)">Balanced Decks for Each Leader</button>
                 </div>
 
-                <!-- WHY: All five Core factions on one row. -->
-                <div id="deck-picker-faction-buttons" class="_7sfs-deck-picker-button-stack">
+                <!-- WHY: All five Core factions on one row. Group class tints buttons to match Core group tab. -->
+                <div id="deck-picker-faction-buttons" class="_7sfs-deck-picker-button-stack _7sfs-deck-picker-group-core">
                 <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Castille</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Eisen</button>
@@ -120,8 +120,8 @@
                 </div>
                 </div>
 
-                <!-- WHY: Separate from faction buttons — Balanced has 10 leaders in two rows of 5. Hidden until group 2. -->
-                <div id="deck-picker-balanced-buttons" class="_7sfs-deck-picker-button-stack" style="display: none;">
+                <!-- WHY: Separate from faction buttons — Balanced has 10 leaders in two rows of 5. Hidden until group 2. Group class tints to match Balanced group tab. -->
+                <div id="deck-picker-balanced-buttons" class="_7sfs-deck-picker-button-stack _7sfs-deck-picker-group-balanced" style="display: none;">
                 <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Angeline</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Cesca</button>

@@ -173,21 +173,44 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     background: #c9a97a;
 }
 
-/* WHY: Cooler slate vs parchment so group tabs (Core / Balanced) read as a
-   different tier from faction/leader deck-picker-button choices. */
-._7sfs-deck-picker-tab-buttons .deck-picker-group-button {
-    background: #4a6678;
+/* WHY: Core = mahogany coat / wine; Balanced = deep sea. Both pirate-palette,
+   warm vs cool so the two groups are instantly distinct. Same class on the
+   group tab and its button stack so faction/leader children match the tab. */
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-group-core,
+._7sfs-deck-picker-group-core .deck-picker-button {
+    background: #703535;
     color: #f0ebe3;
-    border-color: #2d4454;
+    border-color: #3b1a1a;
 }
 
-._7sfs-deck-picker-tab-buttons .deck-picker-group-button:hover {
-    background: #355468;
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-group-core:hover,
+._7sfs-deck-picker-group-core .deck-picker-button:hover {
+    background: #5a2a2a;
     color: #f0ebe3;
 }
 
-._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-tab-selected {
-    background: #1e3340;
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-group-core._7sfs-deck-picker-tab-selected,
+._7sfs-deck-picker-group-core .deck-picker-button._7sfs-deck-picker-tab-selected {
+    background: #421f1f;
+    color: #f0ebe3;
+}
+
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-group-balanced,
+._7sfs-deck-picker-group-balanced .deck-picker-button {
+    background: #2f5c5a;
+    color: #f0ebe3;
+    border-color: #1a3534;
+}
+
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-group-balanced:hover,
+._7sfs-deck-picker-group-balanced .deck-picker-button:hover {
+    background: #244846;
+    color: #f0ebe3;
+}
+
+._7sfs-deck-picker-tab-buttons .deck-picker-group-button._7sfs-deck-picker-group-balanced._7sfs-deck-picker-tab-selected,
+._7sfs-deck-picker-group-balanced .deck-picker-button._7sfs-deck-picker-tab-selected {
+    background: #1a3534;
     color: #f0ebe3;
 }
 
