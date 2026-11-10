@@ -143,7 +143,6 @@ class Game extends \Bga\GameFramework\Table
     final const ADVERSARY_OF_YEVGENI = "Adversary of Yevgeni";
     final const CRYSTAL_EYE_TARGET = "Crystal Eye Target";
     final const CATS_EMBARGO_TARGET = "Cat's Embargo Target";
-    final const OLD_CATS_EMBARGO_TARGET = "Cats Embargo Target";
     final const MARYAM_BENU_PLEROMA_ABILITY_USED = "Maryam Benu Pleroma Ability Used";
     final const CARMELLA_ABILITY_USED = "Carmella Ability Used";
     final const SILVER_SPINE_ABILITY_USED = "Silver Spine Ability Used";

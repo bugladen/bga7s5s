@@ -175,7 +175,6 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.ADVERSARY_OF_YEVGENI = 'Adversary of Yevgeni';
             this.CRYSTAL_EYE_TARGET = 'Crystal Eye Target';
             this.CATS_EMBARGO_TARGET = "Cat's Embargo Target";
-            this.OLD_CATS_EMBARGO_TARGET = 'Cats Embargo Target';
             this.MARYAM_BENU_PLEROMA_ABILITY_USED = 'Maryam Benu Pleroma Ability Used';
             this.CARMELLA_ABILITY_USED = 'Carmella Ability Used';
             this.SILVER_SPINE_ABILITY_USED = 'Silver Spine Ability Used';

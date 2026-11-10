@@ -290,8 +290,6 @@ class Card_01098_Test extends TestCase
                 $world = new TestWorld();
                 [$scheme, , $handHat, $otherTheirHat, $myHat] = $this->scene($world);
                 $this->chooseOpponent($world, $scheme, 2);
-                // Legacy stamp from before the constant was renamed must also be swept.
-                $otherTheirHat->addCondition(Game::OLD_CATS_EMBARGO_TARGET);
                 $world->game->notify->messages = [];
 
                 $event = new EventCardSentToLocker();
@@ -300,7 +298,6 @@ class Card_01098_Test extends TestCase
 
                 Assert::false($handHat->hasCondition(Game::CATS_EMBARGO_TARGET), 'revealed copy cleared');
                 Assert::false($otherTheirHat->hasCondition(Game::CATS_EMBARGO_TARGET), 'other copy cleared');
-                Assert::false($otherTheirHat->hasCondition(Game::OLD_CATS_EMBARGO_TARGET), 'legacy stamp cleared');
                 Assert::false($myHat->hasCondition(Game::CATS_EMBARGO_TARGET), 'own copy untouched');
 
                 $removed = array_values(array_filter(

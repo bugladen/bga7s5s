@@ -2591,7 +2591,7 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const card = this.cardProperties[args.cardId];
         if (card)
         {
-            card.conditions = card.conditions.filter(condition => condition !== this.CATS_EMBARGO_TARGET && condition !== this.OLD_CATS_EMBARGO_TARGET);
+            card.conditions = card.conditions.filter(condition => condition !== this.CATS_EMBARGO_TARGET);
 
             const id = `${args.cardId}_cats_embargo_target`;
             dojo.destroy(id);

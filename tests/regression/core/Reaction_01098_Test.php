@@ -134,18 +134,6 @@ class Reaction_01098_Test extends TestCase
                 Assert::same(1, $this->offered($world), 'city discard offered');
             },
 
-            // WHY: stamps written before the constant rename (OLD_CATS_EMBARGO_TARGET) must still be honored.
-            'honors the legacy embargo stamp' => function () {
-                $world = new TestWorld();
-                [, $reaction] = $this->scene($world);
-                $card = $world->placeCard(new GenericCharacter('Legacy'), Game::LOCATION_HAND, 2);
-                $card->addCondition(Game::OLD_CATS_EMBARGO_TARGET);
-
-                $reaction->handleEvent($this->discardFromHand($world, $card));
-
-                Assert::same(1, $this->offered($world), 'legacy stamp');
-            },
-
             'does not offer when the discarded card is not stamped' => function () {
                 $world = new TestWorld();
                 [, $reaction] = $this->scene($world);
