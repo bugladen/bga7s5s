@@ -12,3 +12,6 @@ Highlight logic unchanged — `querySelectorAll('.deck-picker-button')` on the f
 
 ## Blank row exact height
 `min-height: 30px` was an approximation and still short. Replaced with a `visibility:hidden` spacer `<button>` that shares the same font/pad/border box as stack `.deck-picker-button` (class `_7sfs-deck-picker-row-spacer`, deliberately NOT `deck-picker-button` so the highlight query doesn't count a 6th "choice").
+
+## Removed blank row
+User: remove the blank line. Dropped the spacer row + CSS; Core is just one row of five again. Height will jump vs Balanced — accepted.

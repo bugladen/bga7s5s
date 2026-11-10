@@ -142,7 +142,7 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     gap: 10px;
 }
 
-/* WHY: Stacks explicit button rows (Core 3+2, Balanced 5+5) instead of flex-wrap. */
+/* WHY: Stacks explicit button rows (Core single row, Balanced 5+5) instead of flex-wrap. */
 ._7sfs-deck-picker-button-stack {
     display: flex;
     flex-direction: column;

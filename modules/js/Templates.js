@@ -109,14 +109,12 @@
                 <button class="deck-picker-group-button" onclick="gameui.deckPickerGroupShowTab(2)">Balanced Leaders</button>
                 </div>
 
-                <!-- WHY: Core factions as 3+2 rows so the five names don't crowd one line. -->
+                <!-- WHY: All five Core factions on one row. -->
                 <div id="deck-picker-faction-buttons" class="_7sfs-deck-picker-button-stack">
                 <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 1)">Castille</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 2)">Eisen</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 3)">Montaigne</button>
-                </div>
-                <div class="_7sfs-deck-picker-tab-buttons">
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 4)">Ussura</button>
                 <button class="deck-picker-button" onclick="gameui.deckPickerShowTab(gameui.deckPickerGroup + 5)">Vodacce</button>
                 </div>
