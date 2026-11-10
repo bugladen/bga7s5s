@@ -149,7 +149,6 @@ class Theah
             // getCardObjectFromDb + CHALLENGE_LAST_KNOWN_* / CHOSEN_LOCATION instead.
         }
 
-        $this->backfillIndomitableWillFlags();
         $this->backfillLeshiyeOfTheWoodFlags();
 
         $this->cityBuilt = true;
@@ -192,27 +191,6 @@ class Theah
 
             $card->Location = $discardPileName;
             $this->game->updateCardObjectInDb($card);
-        }
-    }
-
-    // STOPGAP: Games that had a character with INDOMITABLE_WILL_CONDITION before the
-    // CityLocation->CanBeClaimed / CanBecomeUncontrolled flags existed won't have the
-    // flags written. Recompute them here so the protections survive the upgrade.
-    // Idempotent, cheap; remove once any in-flight games predating this change have completed.
-    private function backfillIndomitableWillFlags(): void
-    {
-        foreach ($this->cards as $card) {
-            if ( ! $card instanceof Character) continue;
-            if ( ! $card->hasCondition(Game::INDOMITABLE_WILL_CONDITION)) continue;
-            if ( ! array_key_exists($card->Location, $this->cityLocations)) continue;
-
-            $cityLocation = $this->cityLocations[$card->Location];
-            if ($cityLocation->CanBeClaimed) {
-                $this->setLocationCanBeClaimed($card->Location, false);
-            }
-            if ($cityLocation->CanBecomeUncontrolled) {
-                $this->setLocationCanBecomeUncontrolled($card->Location, false);
-            }
         }
     }
 
