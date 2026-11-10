@@ -44,6 +44,8 @@ The framework hydrates each ability separately. No cross-talk needed between the
 
 **Leader-force + permanence + Forced −Parry (no ability class):** `_05TimebombFlipped` (Porcelain Heart) combines Pattern A Leader redirect (`getRequiredAttachTargetId`, no `canAttachTo`), Pattern B permanence (`canBeMoved` + unequip dying-host + locker veto), and Forced adversary combat-card −1 Parry on Calculate. All on the attachment `eventCheck` / `handleEvent`. Flip-from-Character is A-side create-character work — do not reimplement destroy→flip on the B-side.
 
+**Issue-challenge Reaction + free +1 Riposte (no equip restriction):** `_05Excalibur` (Dietrich Blade) hosts `Reaction_05Excalibur` (Pattern D — equipped performer issues challenge; self-wound + Combat-gated opposing picker at location, not Stiletto / not defender-only) and `Technique_05Excalibur` (Pattern E free +1 Riposte, CAD plain strings). No cross-talk; no engage; no GameState.
+
 **Finesse-threshold equip + ignore-wound Reaction:** `_04053` (Leather Spaulders) hosts Pattern A `ModifiedFinesse >= 2` dual-gate and `Reaction_04053` (Cascade ignore-wound gates + engage cost). No Technique/Action; no GameState. Same Risk→Attachment cost swap shape as Pompon vs Objection.
 
 **Two Techniques (free PlusOne* + engage +stat):** `_04054` (Sabre) hosts `Technique_PlusOneThrust` with `setId('Technique_04054a')` and `Technique_04054b` (engage +1 Riposte, Pompon availability/Resolve, Calculate `riposte += 1`). No equip restriction. `setId` only works because PlusOneThrust already has the right (non-Gambling) gates.
