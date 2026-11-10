@@ -1318,6 +1318,23 @@ Printed variants (often stacked on Familiars / Brutes / Damned):
 
 Reference: `_05Orel` (all three); Approach-only sibling `_02032` Damned; Brute Approach via default `!hasTrait("Brute")`.
 
+### Destroy → flip Character to Attachment
+
+Printed: **`Forced: When <Name> would be destroyed • Flip him.`** with a double-sided B-face that is a `FactionAttachment` (not another Character).
+
+1. In `handleEvent` on `EventCharacterDestroyed` when `characterId == $this->Id`: set `$event->canceled = true`, then flip. **Return before `parent::handleEvent`** for that event. WHY cancel works: `runEventHubAfterCards = true` — card handlers run before the hub locker recreate; canceled events skip the hub.
+2. Same numeric Id `instantiateCard('05…Flipped')` + `UPDATE card SET card_type = …` (Gary `_05Gary::flipToBSide`). B-side class extends `FactionAttachment`.
+3. **Owner takes control:** `$b->ControllerId = $this->OwnerId` (not current ControllerId — opponent-held Klim still returns the Artifact to its owner).
+4. Equip: `getRequiredAttachTargetId` (force Leader — Object of Wonder `_01202`) + `createAttachmentEquippedEvent` (cost 0). No Leader in play → leave Heart at owner's Home (do not throw mid-Forced).
+5. Client: notify `cardRemovedFromPlay` to clear the character token — **do not** use `characterDestroyed` (flies into locker UI). Equip notif then paints the Heart on the Leader.
+6. Unequip first when `!$this->IsDying` (wound-threshold path already unequipped; direct destroy may not).
+7. Challenge-participant cleanup mirrors EventHub destroy (`clearChallengeParticipantMarkers` when `!IN_DUEL`).
+8. **Silence:** Theah skips `handleEvent` while blanked and runs `handleCoreCharacterEvent` instead — wound→destroy still queues, hub destroys normally, no flip. Do not add a redundant `abilitiesAreBlanked` gate inside the destroy handler unless testing via `fireOn` bypasses Theah.
+
+Contrast Gary `_05Gary` (Leader→Leader, stays in play as character, flips on wound threshold not destroy). B-side permanence / Forced Parry live on `_05TimebombFlipped`.
+
+Reference: `_05Timebomb` / `_05TimebombFlipped`.
+
 ### Covert pressure aura (+N at Owner's uncontrolled location)
 
 Printed: **`<i>Covert</i> - During pressures at <Owner>'s location, add +N to your total.`** plus parenthetical **`(Covert Abilities may only be used at uncontrolled locations.)`**.

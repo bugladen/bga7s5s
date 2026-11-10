@@ -472,7 +472,17 @@ class Game
             return $card;
         }
 
-        $fqcn = "\\Bga\\Games\\SeventhSeaCityOfFiveSails\\cards\\_7s5s\\_{$cardClass}";
+        // WHY: Mirror UtilitiesTrait::getCardClassName so CAD flips (05TimebombFlipped)
+        // and other expansion recreates resolve — was hardcoded to _7s5s only.
+        $set = match (substr($cardClass, 0, 2)) {
+            '01' => '_7s5s',
+            '02' => 'tac',
+            '03' => 'faf',
+            '04' => 'bas',
+            '05' => 'cad',
+            default => '_7s5s',
+        };
+        $fqcn = "\\Bga\\Games\\SeventhSeaCityOfFiveSails\\cards\\{$set}\\_{$cardClass}";
         if (!class_exists($fqcn)) {
             throw new \RuntimeException("instantiateCard: unknown class {$cardClass}");
         }
