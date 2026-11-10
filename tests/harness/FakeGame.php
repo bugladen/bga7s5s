@@ -325,6 +325,9 @@ class Game
     final const OREL_PRESSURE_TYPE = 524288;
     final const OREL_ID = 'orelId';
     final const OREL_WIN_TIES_PRESSURE_TYPE = 1048576;
+    // WHY: Reaction_05Wardogb ORs this onto PRESSURE_TYPE. Must match Game.php (2097152).
+    final const WARDOG_PRESSURE_TYPE = 2097152;
+    final const WARDOG_PLAYER_ID = 'wardogPlayerId';
     final const EVENT_BATCH_ID = 'eventBatchId';
     final const CHALLENGE_LAST_KNOWN_CHALLENGER = 'challengeLastKnownChallenger';
     final const CHALLENGE_LAST_KNOWN_DEFENDER = 'challengeLastKnownDefender';

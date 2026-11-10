@@ -835,6 +835,16 @@ trait UtilitiesTrait
             }
         }
 
+        // WHY: Wardog Covert Reaction — +1 to chosen player's total (Loyal shape; any pressure type).
+        if ($this->isGlobalFlagSet(Game::PRESSURE_TYPE, Game::WARDOG_PRESSURE_TYPE))
+        {
+            $wardogPlayerId = $this->globals->get(Game::WARDOG_PLAYER_ID, 0);
+            if ($wardogPlayerId && isset($playerInfluences[$wardogPlayerId]))
+            {
+                $playerInfluences[$wardogPlayerId]['influence'] += 1;
+            }
+        }
+
         //Get the player with the most influence
         $maxInfluence = 0;
         $maxPlayerId = 0;

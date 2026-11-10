@@ -58,6 +58,9 @@ The attachment card class itself (the file under `cards/<expansion>/_NNNNN.php`)
 - **Pressure fails instead (≤1 difference):** `EventLocationPressured` → `deletePressureResultEvents` + failed Result. Attachment = engage in `performReaction`; Risk Objection = wealth pay via `ICancelReaction` — do not mix. `"at this location"` = host location match. Own-pressure gate mirrors Objection. `HIGH_PRIORITY` offer. See Pattern D / `_04026`.
 - **Ignore wound (opponent's ability):** cancel-first `EventCharacterBeingWounded` + engage. Adapt Cascade `02059` gates; do not copy Risk pay. Equipped host only. No `HIGH_PRIORITY`. See Pattern D / `_04053`.
 - **"Equipped performer issues a challenge" wound Reaction:** `challengerId == host` — **not** Stiletto "at this location". Opposing wound target with Combat gate = any at location via `getOpposingCharactersAtLocation`, **not** defender-only. Sniper buttons; stash PerformerId. See Pattern D / `_05Excalibur`.
+- **Covert Reaction:** uncontrolled City gate on host; still `AttachmentReaction`. See `_05Wardog` / Seadog.
+- **"Enemy moves to adjacent City • Wound":** no Kaiser `fromLocation` gate — "enemy" ≠ "opposing". See `Reaction_05Wardoga`.
+- **Adjacent pressure +1 Reaction:** Loyal-flag bit (`WARDOG_PRESSURE_TYPE`), not aura. Wire Game/FakeGame/`pressureLocation`/`stNextPlayer`. See `Reaction_05Wardogb`.
 - **Stat-threshold equip** ("N[Finesse]/[Combat]/[Influence] or more"): `Modified* >= N` dual-gate — not printed base, not Shackles ally-compare. See Pattern A / `_04053` (Finesse) / `_04055` (Combat).
 - **Engage + +N Parry / Riposte** = same shape as engage + Thrust (`04017`); Calculate `parry += N` (`04026` / `04055a`) or `riposte += N` (`04054b`). No GameState when no picker.
 - **Gambling free +N Parry / Thrust / Riposte:** own class with `DUEL_GAMBLED` — **never** `Technique_PlusOne*` + `setId` (those only gate `IN_DUEL`). Co-printed engage half stays ungambled. See Pattern E / `_04055`.

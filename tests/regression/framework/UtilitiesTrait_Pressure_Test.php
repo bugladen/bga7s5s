@@ -299,6 +299,22 @@ class UtilitiesTrait_Pressure_Test extends TestCase
                 Assert::contains('Player One:(2)', $totals, 'orel +1');
             },
 
+            'WARDOG adds +1 to the chosen player' => function () {
+                $host = $this->host();
+                $host->setGlobalFlag(Game::PRESSURE_TYPE, Game::WARDOG_PRESSURE_TYPE);
+                $host->globals->set(Game::WARDOG_PLAYER_ID, 1);
+                $a = $host->place(new GenericCharacter('A'), Game::LOCATION_CITY_DOCKS, 1);
+                $a->Influence = 1;
+                $a->resetCard();
+                $b = $host->place(new GenericCharacter('B'), Game::LOCATION_CITY_DOCKS, 2);
+                $b->Influence = 1;
+                $b->resetCard();
+
+                [$ok, $totals] = $this->pressure($host, 1, $a, Game::LOCATION_CITY_DOCKS);
+                Assert::true($ok, 'wardog tip');
+                Assert::contains('Player One:(2)', $totals, '+1 wardog');
+            },
+
             'MEETING_OF_THE_MINDS counts Academics from a fresh location query' => function () {
                 $host = $this->host();
                 // WHY: Claude-style filters shrink $charactersAtLocation; Academic bonus must

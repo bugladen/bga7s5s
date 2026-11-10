@@ -56,6 +56,7 @@ class TraitNames
             "Compass",
             "Compromise",
             "Conscription",
+            "Contraband",
             "Corruption",
             "Cossack",
             "Covetous",

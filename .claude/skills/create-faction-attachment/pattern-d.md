@@ -295,6 +295,44 @@ $event->theah->queueEvent($transition);
 
 Reference: `Reaction_04016` (Drachenblut). Heal siblings: `Reaction_03027a`, `Reaction_01181`. Character-side equip Reactions (not self): `Reaction_01039`, `Reaction_01146a`.
 
+### Covert Reaction (keyword)
+
+Printed **`<b>Covert Reaction:</b>`** still uses `AttachmentReaction` (no Covert base class). Add the uncontrolled City gate on the **equipped host** before offering:
+
+```php
+if (! $event->theah->cardInCity($owningCharacter)) return;
+$cityLocation = $event->theah->getCityLocation($owningCharacter->Location);
+if ($cityLocation === null || $cityLocation->isControlled()) return;
+```
+
+Same gate as Character Covert (`Reaction_05Seadog`) and Covert Action (`Action_05Forsythe`) / passive Covert (`_05Robin`). Reminder text may be omitted — the keyword alone is enough. Home never qualifies (`cardInCity` fails; `getCityLocation` throws for Home).
+
+Reference: `_05Wardog` (both reactions), `Reaction_05Seadog`.
+
+### "After an enemy moves to an adjacent City location • Wound them"
+
+Printed (Smuggled Long Rifle `_05Wardog`): **`<b>Covert Reaction:</b> After an enemy moves to an adjacent City location • Wound them.`**
+
+**"Enemy" ≠ "opposing."** Do **not** copy Kaiser's `fromLocation == owningCharacter->Location` gate. "Enemy" = different `ControllerId`. Destination = City location adjacent to the host (`getAdjacentCityLocations(..., false)`). Arrivals from elsewhere (teleport, recruit-into-adjacent, far move) still offer — that is intentional sniper range, not a bug.
+
+Trigger `EventCardMoved` (after move). Covert gate on host. Stash enemy id; Wound / Pass buttons; `createCharacterBeingWoundedEvent` with `sourceId` = attachment. No engage unless printed. Pass does not `setUsed`.
+
+Contrast: Kaiser `_03019` / Horatio `_01066` use the opposing `fromLocation` gate because their text says **opposing**.
+
+Reference: `Reaction_05Wardoga`.
+
+### "When a pressure occurs at an adjacent City location • Add +1 to your total"
+
+Printed (`_05Wardog`): **`<b>Covert Reaction:</b> When a pressure occurs at an adjacent City location • Add +1 to your total for that pressure.`**
+
+**Reaction, not aura.** Mirror Loyal `_03035` / Meeting of the Minds `_04035`: offer on `EventPressureOccuring`; on accept `setGlobalFlag(PRESSURE_TYPE, WARDOG_PRESSURE_TYPE)` + store `WARDOG_PLAYER_ID`; `UtilitiesTrait::pressureLocation` adds +1 later. Do **not** auto-stamp on Occuring like Valeri/Orel auras.
+
+Gates: Covert on host; `$event->location` is City and adjacent to host. **No** "you must be the pressuring player" gate unless printed — "your total" applies even when an opponent initiates at the adjacent site.
+
+New binary bit on `Game` (+ `FakeGame` mirror); clear `WARDOG_PLAYER_ID` in `stNextPlayer` with the other pressure player ids. Add a `UtilitiesTrait_Pressure_Test` case.
+
+Reference: `Reaction_05Wardogb`, Loyal `Reaction_03035` / Meeting `Reaction_04035` (flag path only — not Risk pay).
+
 ### "After an opposing character moves to an adjacent location" triggers
 
 Trigger on `EventCardMoved` (fires *after* the move resolves — `EventCardMoving` fires before). The classic gates:
