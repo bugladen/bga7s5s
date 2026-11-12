@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01169;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
@@ -95,6 +96,43 @@ class Card_01169_Test extends TestCase
                 Assert::same(Game::LOCATION_PLAYER_HOME, $moves[0]->toLocation, 'Home');
                 Assert::true($moves[0]->engage, 'engaged');
                 Assert::same($card->Id, $moves[0]->sourceId, 'source');
+                // WHY: After MEDIUM wound/destroy so a lethal Not Today does not park the corpse at Home.
+                Assert::same(Event::LOW_PRIORITY, $moves[0]->priority, 'after wound chain');
+            },
+
+            // WHY: Lethal wound → IsDying / locker before the deferred Home move; cancel so
+            // EventHub never queues CardMoved (Friends at Court must not see Home).
+            'Forced: cancels Home move when the participant is dying or already discarded' => function () {
+                $world = new TestWorld();
+                $card = $world->placeCard(new _01169(), Game::LOCATION_HAND, 1);
+                $actor = $world->placeCharacter(new GenericCharacter('Actor'), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->theah->duelActor = $actor;
+                $world->theah->duelOpponent = $foe;
+
+                $moving = new EventCardMoving();
+                $moving->initiatingPlayerId = $actor->ControllerId;
+                $moving->cardId = $actor->Id;
+                $moving->fromLocation = Game::LOCATION_CITY_DOCKS;
+                $moving->toLocation = Game::LOCATION_PLAYER_HOME;
+                $moving->engage = true;
+                $moving->sourceId = $card->Id;
+                $moving->theah = $world->theah;
+
+                $actor->IsDying = true;
+                $card->handleEvent($moving);
+                Assert::true($moving->canceled, 'dying cancels');
+
+                $moving->canceled = false;
+                $actor->IsDying = false;
+                $world->game->forceInDiscardOrLocker = true;
+                $card->handleEvent($moving);
+                Assert::true($moving->canceled, 'discard/locker cancels');
+
+                $moving->canceled = false;
+                $world->game->forceInDiscardOrLocker = false;
+                $card->handleEvent($moving);
+                Assert::false($moving->canceled, 'live participant still moves');
             },
 
             'Forced: flag is one-shot and cleared by end of round' => function () {

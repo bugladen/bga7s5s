@@ -2,10 +2,12 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 
@@ -75,9 +77,27 @@ class _01169 extends Risk
                     (string) $this->Id
                 );
                 $event->theah->queueEvent($woundEvent);
-    
+
+                // WHY: LOW_PRIORITY so the MEDIUM wound → destroy chain drains first. Same-priority
+                // FIFO let CardMoving/CardMoved run before CharacterDestroyed; a lethal wound then
+                // briefly parked the corpse at Home, and Friends at Court (_01080) snapshot that.
                 $moveEvent = EventFactory::createCardMovingEvent($actor->ControllerId, $actor->Id, $actor->Location, Game::LOCATION_PLAYER_HOME, true, $this->Id);
+                $moveEvent->priority = Event::LOW_PRIORITY;
                 $event->theah->queueEvent($moveEvent);
+            }
+        }
+
+        // WHY: EventCardMoving.runEventHubAfterCards — cancel before hub queues CardMoved so a
+        // destroyed participant is not dragged Home out of the locker/discard.
+        if ($event instanceof EventCardMoving
+            && ! $event->canceled
+            && $event->sourceId == $this->Id)
+        {
+            $character = $event->theah->getCharacterById($event->cardId);
+            if ($character instanceof Character
+                && ($character->IsDying || $event->theah->game->characterIsInDiscardOrLocker($character)))
+            {
+                $event->canceled = true;
             }
         }
     }

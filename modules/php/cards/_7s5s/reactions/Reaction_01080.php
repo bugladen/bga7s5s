@@ -72,9 +72,14 @@ class Reaction_01080 extends RiskReaction
                             //Is the dying character not mine?
                             if ($dyingCharacter->ControllerId != $owner->ControllerId)
                             {
-                                //Save our participant so we can choose to claim the location later
+                                // Save our participant so we can choose to claim the location later.
+                                // WHY: Card text is "Pressure your performer's location". Capturing the
+                                // dying character's Location breaks when Not Today (_01169) queues Home
+                                // move ahead of destroy — Location is Player Home by the time this
+                                // fires, and Home cannot be claimed.
                                 $this->DuelOpponentId = $game->theah->getDuelOpponentId($event->characterId);
-                                $this->DuelLocation = $dyingCharacter->Location;
+                                $performer = $game->theah->getCharacterById($this->DuelOpponentId);
+                                $this->DuelLocation = $performer->Location;
                                 $owner->IsUpdated = true;
                             }
                         }
@@ -106,11 +111,13 @@ class Reaction_01080 extends RiskReaction
                 $game->theah->queueEvent($event);
     
                 $owner = $this->getOwningCard($game->theah);
+                // WHY: Use captured DuelLocation — performer->Location can diverge if they moved
+                // after arming; the pressure call below already targets DuelLocation.
                 $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used the Reaction to Pressure ${location_name}'), [
                     "i18n" => ["location_name"],
                     "reaction_inject_code" => $owner->getInjectCode(),
                     'player_name' => $game->getPlayerNameById($performer->ControllerId),
-                    'location_name' => $performer->Location,
+                    'location_name' => $this->DuelLocation,
                 ]);
     
                 [$success, $totals, $difference] = $game->pressureLocation($performer->ControllerId, $performer, $this->DuelLocation, Game::STAT_INFLUENCE);

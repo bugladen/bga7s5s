@@ -208,7 +208,7 @@ class Reaction_01080_Test extends TestCase
 
                 $ids = array_map(fn($b) => $b['reaction'], $buttons);
                 Assert::same(['pressure', 'pass'], $ids, 'buttons');
-                Assert::contains(Game::LOCATION_CITY_DOCKS, $buttons[0]['text'], 'names the dying character\'s location');
+                Assert::contains(Game::LOCATION_CITY_DOCKS, $buttons[0]['text'], 'names our performer\'s location');
                 Assert::contains('Faction Hand', $reaction->getReactionDescription($world->theah), 'risk reaction prefix');
             },
 
@@ -242,9 +242,9 @@ class Reaction_01080_Test extends TestCase
                 Assert::same(['done'], $world->game->gamestate->transitions, 'done');
             },
 
-            // WHY: "Pressure your performer's location" - the performer is OUR duel participant; the location is where the
-            // destroyed enemy was (captured at destroy time, since the enemy has left play by the time the reaction fires).
-            'RiskReactionTriggered pressures the dying character\'s location with Influence for our participant' => function () {
+            // WHY: "Pressure your performer's location" — performer is OUR duel participant; location is
+            // theirs at destroy time (not the dying character's — Not Today can move the corpse Home first).
+            'RiskReactionTriggered pressures our performer\'s location with Influence' => function () {
                 $world = new TestWorld();
                 [, $reaction, $mine, $enemy] = $this->duel($world);
                 $this->arm($world, $reaction, $enemy);
@@ -268,6 +268,26 @@ class Reaction_01080_Test extends TestCase
                 Assert::count(1, $pressured, 'pressured result');
                 Assert::same($reaction->Id, $pressured[0]->abilityId, 'tagged with the reaction so only its success can claim');
                 Assert::true($pressured[0]->success, 'success');
+            },
+
+            // WHY: Not Today (_01169) can move the dying adversary Home before EventCharacterDestroyed;
+            // arming must still use our performer's city site, not Player Home.
+            'arms using our performer location even when the dying character is already at Home' => function () {
+                $world = new TestWorld();
+                [, $reaction, $mine, $enemy] = $this->duel($world);
+                $enemy->Location = Game::LOCATION_PLAYER_HOME;
+
+                $reaction->handleEvent($this->destroyed($world, $enemy->Id));
+                $reaction->handleEvent($this->duelEnd($world));
+
+                Assert::true($this->wasOffered($world, $reaction), 'offered');
+                $buttons = $reaction->getReactionButtonProperties($world->theah);
+                Assert::contains(Game::LOCATION_CITY_DOCKS, $buttons[0]['text'], 'button names performer site');
+                Assert::same($mine->Location, Game::LOCATION_CITY_DOCKS, 'performer still at docks');
+
+                $world->game->pressureLocationResult = [true, 'ok', 2];
+                $reaction->handleEvent($this->triggered($world, $reaction));
+                Assert::same(Game::LOCATION_CITY_DOCKS, $world->game->pressureLocationCalls[0]['location'], 'pressures docks not Home');
             },
 
             'RiskReactionTriggered for another reaction does nothing' => function () {
