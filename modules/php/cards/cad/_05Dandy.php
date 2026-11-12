@@ -58,10 +58,10 @@ class _05Dandy extends Leader implements IHasActions
 
         $this->Resolve = 8;
         $this->Combat = 2;
-        $this->Finesse = 2;
+        $this->Finesse = 1;
         $this->Influence = 4;
 
-        $this->CrewCap = 7;
+        $this->CrewCap = 6;
         $this->Panache = 6;
 
         $this->Traits = [
