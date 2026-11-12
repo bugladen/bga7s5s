@@ -434,9 +434,32 @@
                 <!-- Begin City -->
                 <div id="city-wrapper">
                 <div id="city">
+                    <!-- WHY: Concentric circles (tan disc + grey inset core) — a single
+                         stroked circle read as a square core once CSS border-radius
+                         clipped the host. Rim is 270° so the city-facing quadrant
+                         has no black stroke; rotate per corner so the gap faces in.
+                         Core gradient ids are per-tower — duplicate #ids across SVGs
+                         resolve to the first in-document and break objectBoundingBox. -->
                     <div id="city-ul-tower">
-                        <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="30" height="30" class="_7sfs-city-tower" />
+                        <svg width="33" height="33" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <!-- WHY: Warm matte stops (not cool chrome greys) + noise grain —
+                                     specular lit ellipse read metallic; stone should match city chrome. -->
+                                <radialGradient id="city-ul-tower-core-grad" cx="64%" cy="66%" r="80%" fx="64%" fy="66%">
+                                    <stop offset="0%" stop-color="#c4b6a4"/>
+                                    <stop offset="45%" stop-color="#8f8272"/>
+                                    <stop offset="100%" stop-color="#3f3830"/>
+                                </radialGradient>
+                                <filter id="city-ul-tower-stone" x="0%" y="0%" width="100%" height="100%">
+                                    <feTurbulence type="fractalNoise" baseFrequency="1.35" numOctaves="2" seed="2" result="n"/>
+                                    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.32  0 0 0 0.28 0" result="g"/>
+                                    <feBlend in="SourceGraphic" in2="g" mode="soft-light"/>
+                                </filter>
+                            </defs>
+                            <circle cx="15" cy="15" r="15" class="_7sfs-city-tower-disc" />
+                            <circle cx="15" cy="15" r="10" class="_7sfs-city-tower-core" fill="url(#city-ul-tower-core-grad)" filter="url(#city-ul-tower-stone)" />
+                            <circle cx="15" cy="15" r="9" class="_7sfs-city-tower-core-shade" />
+                            <circle cx="15" cy="15" r="14.5" class="_7sfs-city-tower-rim" />
                         </svg>
                     </div>
                     <div id="city-discard"></div>
@@ -456,8 +479,23 @@
                     </div>
 
                     <div id="city-ur-tower">
-                        <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="30" height="30" class="_7sfs-city-tower" />
+                        <svg width="33" height="33" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <radialGradient id="city-ur-tower-core-grad" cx="64%" cy="66%" r="80%" fx="64%" fy="66%">
+                                    <stop offset="0%" stop-color="#c4b6a4"/>
+                                    <stop offset="45%" stop-color="#8f8272"/>
+                                    <stop offset="100%" stop-color="#3f3830"/>
+                                </radialGradient>
+                                <filter id="city-ur-tower-stone" x="0%" y="0%" width="100%" height="100%">
+                                    <feTurbulence type="fractalNoise" baseFrequency="1.35" numOctaves="2" seed="5" result="n"/>
+                                    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.32  0 0 0 0.28 0" result="g"/>
+                                    <feBlend in="SourceGraphic" in2="g" mode="soft-light"/>
+                                </filter>
+                            </defs>
+                            <circle cx="15" cy="15" r="15" class="_7sfs-city-tower-disc" />
+                            <circle cx="15" cy="15" r="10" class="_7sfs-city-tower-core" fill="url(#city-ur-tower-core-grad)" filter="url(#city-ur-tower-stone)" />
+                            <circle cx="15" cy="15" r="9" class="_7sfs-city-tower-core-shade" />
+                            <circle cx="15" cy="15" r="14.5" class="_7sfs-city-tower-rim" transform="rotate(90 15 15)" />
                         </svg>
                     </div>
                     <div id="city-oles-inn" class="_7sfs-city-location">
@@ -534,14 +572,47 @@
                             </div>
                         </div>
                     </div>
+                    <!-- WHY: Sibling under #city (absolute) so width:100% spans
+                         ll/lr tower centers (left/right:0 of the padding box). -->
+                    <div id="city-flags" aria-hidden="true"></div>
                     <div id="city-ll-tower">
-                        <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="30" height="30" class="_7sfs-city-tower" />
+                        <svg width="33" height="33" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <radialGradient id="city-ll-tower-core-grad" cx="64%" cy="66%" r="80%" fx="64%" fy="66%">
+                                    <stop offset="0%" stop-color="#c4b6a4"/>
+                                    <stop offset="45%" stop-color="#8f8272"/>
+                                    <stop offset="100%" stop-color="#3f3830"/>
+                                </radialGradient>
+                                <filter id="city-ll-tower-stone" x="0%" y="0%" width="100%" height="100%">
+                                    <feTurbulence type="fractalNoise" baseFrequency="1.35" numOctaves="2" seed="8" result="n"/>
+                                    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.32  0 0 0 0.28 0" result="g"/>
+                                    <feBlend in="SourceGraphic" in2="g" mode="soft-light"/>
+                                </filter>
+                            </defs>
+                            <circle cx="15" cy="15" r="15" class="_7sfs-city-tower-disc" />
+                            <circle cx="15" cy="15" r="10" class="_7sfs-city-tower-core" fill="url(#city-ll-tower-core-grad)" filter="url(#city-ll-tower-stone)" />
+                            <circle cx="15" cy="15" r="9" class="_7sfs-city-tower-core-shade" />
+                            <circle cx="15" cy="15" r="14.5" class="_7sfs-city-tower-rim" transform="rotate(-90 15 15)" />
                         </svg>
                     </div>
                     <div id="city-lr-tower">
-                        <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="30" height="30" class="_7sfs-city-tower" />
+                        <svg width="33" height="33" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <radialGradient id="city-lr-tower-core-grad" cx="64%" cy="66%" r="80%" fx="64%" fy="66%">
+                                    <stop offset="0%" stop-color="#c4b6a4"/>
+                                    <stop offset="45%" stop-color="#8f8272"/>
+                                    <stop offset="100%" stop-color="#3f3830"/>
+                                </radialGradient>
+                                <filter id="city-lr-tower-stone" x="0%" y="0%" width="100%" height="100%">
+                                    <feTurbulence type="fractalNoise" baseFrequency="1.35" numOctaves="2" seed="11" result="n"/>
+                                    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0 0.32  0 0 0 0.28 0" result="g"/>
+                                    <feBlend in="SourceGraphic" in2="g" mode="soft-light"/>
+                                </filter>
+                            </defs>
+                            <circle cx="15" cy="15" r="15" class="_7sfs-city-tower-disc" />
+                            <circle cx="15" cy="15" r="10" class="_7sfs-city-tower-core" fill="url(#city-lr-tower-core-grad)" filter="url(#city-lr-tower-stone)" />
+                            <circle cx="15" cy="15" r="9" class="_7sfs-city-tower-core-shade" />
+                            <circle cx="15" cy="15" r="14.5" class="_7sfs-city-tower-rim" transform="rotate(180 15 15)" />
                         </svg>
                     </div>
                 </div>

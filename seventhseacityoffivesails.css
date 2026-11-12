@@ -52,6 +52,11 @@
     /* WHY: Single city chrome hue — #city frame, discard/locker/day chips, tower
        stroke, Halloween lantern borders. Was saddlebrown; now Stone grey. */
     --_7sfs-city-color: #9F9484;
+    /* WHY: Absolute #city-flags take no layout space; homes would paint over
+       hanging pennants. Clearance ≈ scale * cityWidth * 255/820 (pole at y=15
+       of 270). 110px clears ~700px-wide cities at 50% with a little gap. */
+    --_7sfs-city-flags-scale: 0.5;
+    --_7sfs-city-flags-clearance: 70px;
 }
 
 html {
@@ -360,7 +365,9 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     padding: 15px 15px 24px;
     background-color: var(--_7sfs-city-color);
     border: 1px solid black;
-    margin: 20px 0;
+    /* WHY: Bottom margin clears hanging #city-flags so #home_wrapper stays below
+       the pennants (flags are absolute and don't push layout). */
+    margin: 20px 0 var(--_7sfs-city-flags-clearance);
     width: fit-content;
     display: grid;
     grid-template-columns: auto auto auto auto;
@@ -638,52 +645,111 @@ body._7sfs-halloween {
     50% { margin-top: -4px; }
 }
 
+/* WHY: Towers are SVG discs (no CSS border). line-height:0 kills inline-SVG
+   baseline gap. Size is 33×33 (30 + 10%); -11 keeps the same city-inset
+   center as the old 30px @ -10 (center ≈ +5.5 into the padding box). */
+#city-ul-tower,
+#city-ur-tower,
+#city-ll-tower,
+#city-lr-tower {
+    line-height: 0;
+}
+
 #city-ul-tower {
     position: absolute;
-    left: -15px;
-    top: -15px;
-    border: 1px solid black;
+    left: -11px;
+    top: -11px;
 }
 
 #city-ur-tower {
     position: absolute;
-    right: -15px;
-    top: -15px;
-    border: 1px solid black;
+    right: -11px;
+    top: -11px;
 }
 
 #city-ll-tower {
     position: absolute;
-    left: -15px;
-    bottom: -15px;
-    border: 1px solid black;
+    left: -11px;
+    bottom: -11px;
+    /* WHY: Above #city-flags so corner blocks cover the pole finials. */
+    z-index: 2;
 }
 
 #city-lr-tower {
     position: absolute;
-    right: -15px;
-    bottom: -15px;
-    border: 1px solid black;
+    right: -11px;
+    bottom: -11px;
+    /* WHY: Above #city-flags so corner blocks cover the pole finials. */
+    z-index: 2;
 }
 
-._7sfs-city-tower {
-    fill: black;
-    stroke-width: 10;
-    stroke: var(--_7sfs-city-color);
+/* WHY: Faction pennants under the city. Scale/centering via
+   --_7sfs-city-flags-scale (was 100% spanning ll/lr tower centers). Pole center
+   in flags.png is ~y=15 of 270; bottom:1px is the tower vertical center
+   (bottom:-15 + half of 32px border-box). translateY drops the asset so that
+   pole line sits on the tower centers and pennants hang below the city.
+   Layout clearance for homes is --_7sfs-city-flags-clearance on #city margin. */
+#city-flags {
+    position: absolute;
+    left: calc(50% * (1 - var(--_7sfs-city-flags-scale)));
+    width: calc(100% * var(--_7sfs-city-flags-scale));
+    aspect-ratio: 820 / 270;
+    bottom: 12px;
+    background-image: url('img/flags.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    pointer-events: none;
+    z-index: 1;
+    transform: translateY(calc(100% * (1 - 15 / 270)));
+}
+
+/* WHY: Two fills (not one stroked circle) so the core stays a true disc.
+   Core fill MUST stay on the SVG fill="url(#…grad)" — a CSS fill here
+   overrides the attribute and flattens the inset. Warm shade only (no white
+   specular blob — that read metallic). Grain is feTurbulence in Templates.js.
+   Rim: 1px black, dash 3/4 of C=2π·14.5≈91.11 — gap is the city-facing
+   quadrant; Templates.js rotates the rim per corner. */
+._7sfs-city-tower-disc {
+    fill: var(--_7sfs-city-color);
+}
+
+._7sfs-city-tower-core {
+    stroke: rgba(45, 38, 30, 0.75);
+    stroke-width: 1;
+}
+
+._7sfs-city-tower-core-shade {
+    fill: none;
+    stroke: rgba(40, 32, 24, 0.4);
+    stroke-width: 1.75;
+}
+
+._7sfs-city-tower-rim {
+    fill: none;
+    stroke: black;
+    stroke-width: 1;
+    stroke-dasharray: 68.33 22.78;
+    stroke-dashoffset: 68.33;
 }
 
 /* WHY: CITY_HALLOWEEN === 1 adds _7sfs-city-halloween on #city (Holiday.js).
-   Hide SVG rects; paint same 30x30 slots with lit jack-o-lantern art.
-   Border uses --_7sfs-city-color like #city / day chip / SVG tower stroke — without it the
-   black-backed JPG reads as a plain black block at this size. */
+   Hide SVG; paint same 33×33 slots with lit jack-o-lantern art.
+   border-radius makes the lantern circular (no SVG rim in this mode).
+   Black 1px rim matches normal turret outline (city-color-only border vanished
+   against the stone wall). Inset city-color ring keeps the JPG from reading as
+   a plain black disc — same role as the old 3px city-color border. */
 ._7sfs-city-halloween #city-ul-tower,
 ._7sfs-city-halloween #city-ur-tower,
 ._7sfs-city-halloween #city-ll-tower,
 ._7sfs-city-halloween #city-lr-tower {
     box-sizing: border-box;
-    width: 30px;
-    height: 30px;
-    border: 3px solid var(--_7sfs-city-color);
+    width: 33px;
+    height: 33px;
+    border: 1px solid black;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 3px var(--_7sfs-city-color);
     background-image: url('img/holiday/halloween/jackolantern.jpg');
     background-size: cover;
     background-repeat: no-repeat;
