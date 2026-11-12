@@ -12,3 +12,12 @@ User: more headroom + try cream. `line-height` 25→28px; color → `#F5E6D3` (w
 
 ## Follow-up: back to dark, lighter
 Cream rejected. Back to dark ink but lighter than `#1F1A14` → `#3A3228` (warm mid-dark). Line-height 28 stays.
+
+## Follow-up: day-indicator cream
+User: `#day-indicator` → cream `#F5E6D3` (phase keeps dark `#3A3228`). White was the old day number color.
+
+## Follow-up: day-indicator Pirata
+User ("data indicator"): `#day-indicator` → `PirataOne-Regular` to match phase chip.
+
+## Follow-up: phase cream again
+User: phase → cream `#F5E6D3` (same as day-indicator). Dark `#3A3228` abandoned for phase after cream/day alignment.

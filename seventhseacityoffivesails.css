@@ -526,7 +526,10 @@ body._7sfs-halloween {
     padding: 3px 3px 0;
 
     text-align: center;
-    color: white;
+    /* WHY: Warm cream on Stone grey — same face as the phase cream trial; day
+       number sits on icon chrome so light text still reads. */
+    color: #F5E6D3;
+    font-family: PirataOne-Regular, serif;
     font-size: 20pt;
     /* WHY: Same tab border as #city-day-phase — black edge, no bottom into city. */
     border: 1px solid black;
@@ -550,9 +553,9 @@ body._7sfs-halloween {
     line-height: 28px;
 
     text-align: center;
-    /* WHY: Warm dark ink on Stone grey — cream tried and rejected; lifted from
-       #1F1A14 so Pirata strokes don't sink into black. */
-    color: #3A3228;
+    /* WHY: Warm cream on Stone grey — matches #day-indicator; dark ink was the
+       prior try (#3A3228 / #1F1A14). */
+    color: #F5E6D3;
     font-size: 18pt;
     /* WHY: Same pirate face as duel ledger / number chips — phase names are short
        single words so Pirata stays readable (unlike multi-word maneuver labels). */
