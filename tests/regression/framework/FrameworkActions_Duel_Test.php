@@ -422,6 +422,7 @@ class FrameworkActions_Duel_Test extends TestCase
                 Assert::count(1, $game->queriesMatching('gambled = 1'), 'gamble spent in duel_round');
                 Assert::contains('duel_id = 7 AND round = 1', $game->queriesMatching('gambled = 1')[0], 'for this round');
                 Assert::same(Game::LOCATION_DUELING_LINE, $chosen->Location, 'in the dueling line');
+                Assert::same(1, $chosen->ControllerId, 'controller is the gambling actor');
                 Assert::same($chosen->Id, $game->globals->get(Game::DUEL_PENDING_MANEUVER_CARD), 'pending maneuver card');
 
                 Assert::same(
@@ -499,6 +500,22 @@ class FrameworkActions_Duel_Test extends TestCase
 
                 Assert::true(in_array($chosen->Id, $game->updatedCardObjectIds, true), 'repaired card persisted');
                 Assert::same(['noManeuver'], $game->gamestate->transitions, 'gamble accepted');
+            },
+
+            // WHY: Live report — gambled Adaptable logged as the opponent's play and Maneuver
+            // missing. Faction-deck ControllerId can be the thief (Improvising) or 0 after
+            // AddedToHand; combat-card attribution used card->ControllerId.
+            'actGambleCardChosen rewrites a stale ControllerId to the gambling actor' => function () {
+                [$game] = $this->duelScene();
+                $chosen = $this->deckCard($game, 'Adaptable');
+                $chosen->ControllerId = 2;
+                $this->setTop($game, [$chosen]);
+                $game->globals->set(Game::GAMBLE_REVEAL_COUNT, 1);
+
+                $game->actGambleCardChosen($chosen->Id);
+
+                Assert::same(1, $chosen->ControllerId, 'controller is the actor, not the stale owner');
+                Assert::same($chosen->Id, $game->globals->get(Game::DUEL_PENDING_MANEUVER_CARD), 'pending maneuver armed');
             },
 
             'actGambleCardChosen always uses the actor\'s deck, even if another player is active (Proper Drama)' => function () {

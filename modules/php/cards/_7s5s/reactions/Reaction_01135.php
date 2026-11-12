@@ -71,7 +71,14 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
             // "01135" transition (state 52740 historically lacked that edge).
             $this->clearSiblingMireliReactionTransitions($game, $owner->Id, $owner->ControllerId);
 
-            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($card->ControllerId, $this->cancelledCombatCardId, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
+            // WHY actor ControllerId, not card->ControllerId: gambled Risks can carry a
+            // stale controller; the duel-round actor is who must take the free replacement.
+            $actor = $game->theah->getDuelRoundActor();
+            $announcerId = $actor !== null && $actor->ControllerId
+                ? $actor->ControllerId
+                : $card->ControllerId;
+
+            $discardEvent = EventFactory::createCardDiscardedFromHandEvent($announcerId, $this->cancelledCombatCardId, $owner->Id, $asPayment = false, $asPlayed = false, $asEffect = true);
             $game->theah->queueEvent($discardEvent);
 
             // WHY: Card text — forced replacement "does not count against their total
@@ -81,11 +88,10 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
             // - cancelled play was from hand → gambled stays NULL (free replacement)
             // - cancelled play was itself a voluntary gamble → gambled stays 1
             //   (do NOT clear — clearing refunded the spent gamble and gave an extra)
-            $actor = $game->theah->getDuelRoundActor();
             [$cardCount, $explanations] = $game->theah->getNumberOfGambleCardsToReveal($actor);
             if ($explanations != '')
             {
-                $game->notify->player($actor->ControllerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
+                $game->notify->player($announcerId, "message", clienttranslate('Private: Explanations for modification of number of gamble cards to reveal:<br>${explanations}'), [
                     "explanations" => $explanations,
                 ]);
             }
@@ -93,13 +99,13 @@ class Reaction_01135 extends RiskReaction implements ICancelReaction
             $game->globals->set(Game::GAMBLE_REVEAL_COUNT, $cardCount);
             $game->globals->set(Game::GAMBLE_REVEAL_EXPLANATIONS, $explanations);
 
-            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $owner->Id, "01135", $this->Id);
+            $transitionEvent = EventFactory::createTransitionEvent($announcerId, $owner->Id, "01135", $this->Id);
             $game->theah->queueEvent($transitionEvent);
 
             $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} cancels the Combat Card and has ${opponent_name} Gamble instead'), [
                 "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                "opponent_name" => $game->getPlayerNameById($card->ControllerId),
+                "opponent_name" => $game->getPlayerNameById($announcerId),
             ]);
         }
 

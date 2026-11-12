@@ -1834,12 +1834,23 @@ trait FrameworkActionsTrait
         // WHY: Commit at play time so Technique and Maneuver are both offered from the hub.
         $this->globals->set(Game::DUEL_PENDING_MANEUVER_CARD, $card->Id);
 
+        // WHY: moveCard never writes ControllerId. Hand cards are usually correct from
+        // playerDrawCard, but EventCardAddedToHand / Improvising / reshuffle can leave a
+        // stale controller. Combat-card stats log + Mireli free-gamble both read
+        // card->ControllerId as "who played this".
+        $card->ControllerId = $playerId;
+        // WHY: Quiet clear (no ManeuverUsed events). Stuck Used from a prior duel where
+        // the Risk was in the deck/locker (EventDuelEnd never saw it) must not hide the
+        // combat-card Maneuver if any path still gates on isAvailable().
+        $card->clearAbilityUsedFlags();
+        $this->updateCardObjectInDb($card);
+
         $event = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
         $this->theah->queueEvent($event);
 
         $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
-        $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
+        $transitionEvent = EventFactory::createTransitionEvent($playerId, $card->Id, "applyCombatCardStats");
         $this->theah->queueEvent($transitionEvent);
 
         $this->gamestate->nextState("combatCardChosen");
@@ -2061,6 +2072,15 @@ trait FrameworkActionsTrait
             $this->gamestate->nextState("noManeuver");
             return;
         }
+
+        // WHY: Faction-deck Risks can carry a stale ControllerId (EventCardAddedToHand
+        // never sets it; Improvising leaves the thief's id after discard→reshuffle).
+        // EventHub "played as Combat Card" and Mireli's free-gamble transition both
+        // attribute the play via card->ControllerId — without this the log can name
+        // the opponent and Maneuver/reaction follow-up targets the wrong player.
+        $card->ControllerId = $playerId;
+        $card->clearAbilityUsedFlags();
+        $this->updateCardObjectInDb($card);
 
         $event = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
         $this->theah->queueEvent($event);

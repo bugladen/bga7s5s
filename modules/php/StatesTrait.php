@@ -1765,10 +1765,20 @@ trait StatesTrait
 
             $this->globals->set(Game::CHOSEN_CARD, $card->Id);
 
+            // WHY: Same stale-ControllerId hazard as actGambleCardChosen — faction-deck
+            // Risks may not match the duel-round actor. Attribute play to the actor.
+            $actor = $this->theah->getDuelRoundActor();
+            $playerId = $actor !== null && $actor->ControllerId
+                ? $actor->ControllerId
+                : $card->ControllerId;
+            $card->ControllerId = $playerId;
+            $card->clearAbilityUsedFlags();
+            $this->updateCardObjectInDb($card);
+
             // WHY: Broken-Time's additional combat card is a real play — announce it
             // the same way actDuelActionChooseCombatCard does so reactions on
             // CombatCardAnnounced (02039, 01135, etc.) can fire before stats.
-            $announceEvent = EventFactory::createCombatCardAnnouncedEvent($card->ControllerId, $card->Id);
+            $announceEvent = EventFactory::createCombatCardAnnouncedEvent($playerId, $card->Id);
             $this->theah->queueEvent($announceEvent);
 
             // WHY: Playing the additional combat card is atomic with resolving
@@ -1776,13 +1786,13 @@ trait StatesTrait
             // Technique in between. So it is played here rather than being offered
             // back on the duel action hub. The card comes straight from the Faction
             // Deck, never through the hand, so there is no hand stock to correct.
-            $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $card->ControllerId, $card);
+            $this->moveCard($card->Id, Game::LOCATION_DUELING_LINE, $playerId, $card);
 
             // WHY: The new combat card carries its own Maneuver option, offered from
             // the hub once its stats are applied.
             $this->globals->set(Game::DUEL_PENDING_MANEUVER_CARD, $card->Id);
 
-            $transitionEvent = EventFactory::createTransitionEvent($card->ControllerId, $card->Id, "applyCombatCardStats");
+            $transitionEvent = EventFactory::createTransitionEvent($playerId, $card->Id, "applyCombatCardStats");
             $this->theah->queueEvent($transitionEvent);
 
             $this->gamestate->nextState("announceCombatCard");

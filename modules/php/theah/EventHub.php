@@ -421,6 +421,8 @@ trait EventHub
                     $deckName = $theah->game->getPlayerFactionDeckName($event->playerId);
                     $card = $theah->getCardById($event->cardId);
                     $card->Location = $deckName;
+                    // WHY: Mirror AddedToHand — deck ownership for later gambles.
+                    $card->ControllerId = $event->playerId;
                     $card->IsUpdated = true;
 
                     // WHY: Helper inserts + fires factionDeckCount (raw insert would not).
@@ -444,6 +446,10 @@ trait EventHub
                     //Move card in DB
                     $deck = $theah->game->getGameDeckObject();
                     $card = $theah->game->moveCard($event->cardId, Game::LOCATION_HAND, $event->playerId);
+                    // WHY: moveCard does not set ControllerId. playerDrawCard does; this
+                    // path must too or a later combat-card play / hand gate can attribute
+                    // the card to a stale controller (Improvising thief, ControllerId 0).
+                    $card->ControllerId = $event->playerId;
                     $card->IsUpdated = true;
                     $theah->addCardToWorld($card);
 
@@ -1895,7 +1901,13 @@ trait EventHub
                     $duelId = $theah->game->globals->get(Game::DUEL_ID);
                     $round = $theah->game->globals->get(Game::DUEL_ROUND);
                     $card = $theah->game->getCardObjectFromDb($event->combatCardId);
-                    $playerId = $card->ControllerId;
+                    // WHY prefer actor ControllerId: gambled faction-deck Risks can carry a
+                    // stale card->ControllerId (moveCard never rewrites it). The duel-round
+                    // actor is who is playing the combat card this round.
+                    $actor = $theah->getCharacterById($event->actorId);
+                    $playerId = $actor !== null && $actor->ControllerId
+                        ? $actor->ControllerId
+                        : $card->ControllerId;
                     $playerName = $theah->game->getPlayerNameById($playerId);
 
                     // WHY: Unravel the Thread (_04010) may already be back in the faction

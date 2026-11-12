@@ -10,6 +10,16 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
  */
 trait RiskClonePropertyTrait
 {
+    /**
+     * WHY: Shells look like the stolen Risk (name/image/Unique) but card_type is the
+     * clone class — deck validation cannot catch a reshuffled shell. Never shuffle
+     * one into a faction deck.
+     */
+    public function isTemporaryRiskCloneShell(): bool
+    {
+        return true;
+    }
+
     public function getPropertyArray(Game $game): array
     {
         $properties = parent::getPropertyArray($game);

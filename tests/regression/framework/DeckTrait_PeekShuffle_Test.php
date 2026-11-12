@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\DeckTraitHost;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericRisk;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericRiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01106_RiskClone;
 
 /**
  * DeckTrait peeks + discard reshuffles for faction and city decks.
@@ -102,6 +103,21 @@ class DeckTrait_PeekShuffle_Test extends TestCase
                 Assert::count(1, $host->notifsOfType('factionDeckCount'), 'batched count');
                 Assert::same(1, $host->notifsOfType('factionDeckCount')[0]['args']['deckCount'], 'size');
                 Assert::true(in_array($host->getPlayerFactionDeckName(1), $host->deckShuffles, true), 'shuffled');
+            },
+
+            // WHY: Improvising shell left in OwnerId discard must not become a second Unique Risk.
+            'shufflePlayerDiscardIntoPlayerFactionDeck hides RiskClone shells instead of decking them' => function () {
+                $host = $this->host();
+                $discard = $host->getPlayerDiscardDeckName(1);
+                $shell = $host->place(new _01106_RiskClone(), $discard, 1);
+                $shell->OwnerId = 1;
+                $shell->ControllerId = 2;
+                $real = $host->place(new GenericRisk('Real'), $discard, 1);
+
+                $host->shufflePlayerDiscardIntoPlayerFactionDeck(1);
+
+                Assert::same(Game::LOCATION_PERMANENTLY_HIDDEN, $shell->Location, 'shell hidden');
+                Assert::same($host->getPlayerFactionDeckName(1), $real->Location, 'real card decked');
             },
 
             'getCardsOnTopOfCityDeck returns tops when deep enough' => function () {

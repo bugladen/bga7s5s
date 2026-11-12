@@ -49,7 +49,10 @@ class Card_04cd01_RiskClone_Test extends TestCase
                 $removed = $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class)[0];
                 Assert::same($clone->Id, $removed->cardId, 'shell leaves discard');
                 Assert::same(1, $removed->playerId, 'owner');
-                Assert::same(Game::LOCATION_PERMANENTLY_HIDDEN, $clone->Location, 'shell hidden');
+                // WHY permanentlyHide on the queued event (not an immediate moveCard):
+                // discard hub runs after cards and would undo a same-handler hide.
+                Assert::true($removed->permanentlyHide, 'hub will hide after discard move');
+                Assert::same(Game::LOCATION_HAND, $clone->Location, 'still pre-hub until remove drains');
 
                 $sink = $world->theah->queuedOfType(EventCardAddedToFactionDeck::class)[0];
                 Assert::same($original->Id, $sink->cardId, 'original');

@@ -29,11 +29,16 @@ class _04cd01_RiskClone extends Risk implements IHasActions
 
         if ($event instanceof EventCardDiscardedFromHand && $event->cardId == $this->Id)
         {
-            // Remove the clone from the discard pile and hide it
+            // WHY permanentlyHide queued (not moveCard here): see _01106_RiskClone —
+            // discard hub runs after cards and would undo an immediate hide.
             $game = $event->theah->game;
-            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($event->ownerId, $this->Id);
+            $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent(
+                $event->ownerId,
+                $this->Id,
+                $messageHidden = false,
+                $permanentlyHide = true
+            );
             $event->theah->queueEvent($removeEvent);
-            $game->moveCard($this->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $this);
 
             // Sink the cloned risk to the bottom of the controller's faction deck
             // (card text: "After it resolves, sink it.")

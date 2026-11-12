@@ -494,6 +494,20 @@ trait DeckTrait
             }
             // WHY: See Card::clearAbilityUsedFlags — mid-day recycle before dusk.
             $card->clearAbilityUsedFlags();
+
+            // WHY: Improvising / Corpse Speak / Vedma / Penya shells must never enter the
+            // faction deck. A prior discard-order bug left them in OwnerId's discard; they
+            // look like the stolen Unique Risk but have no Maneuvers and a thief ControllerId.
+            if (method_exists($card, 'isTemporaryRiskCloneShell') && $card->isTemporaryRiskCloneShell())
+            {
+                $this->moveCard($cardId, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $card);
+                continue;
+            }
+
+            // WHY: Improvising / similar leave ControllerId as the thief after discard to
+            // OwnerId's pile. Restore control to the faction owner so a later gamble does
+            // not attribute the combat card to the opponent.
+            $card->ControllerId = $card->OwnerId ?: $playerId;
             $this->moveCard($cardId, $location, 0, $card);
         }
         $this->cards->shuffle($location);
