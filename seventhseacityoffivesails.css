@@ -49,6 +49,9 @@
     --jpg-board-resource-height: 78px;
     --png-board-resource-width: 941px;
     --png-board-resource-height: 257px;
+    /* WHY: Single city chrome hue — #city frame, discard/locker/day chips, tower
+       stroke, Halloween lantern borders. Was saddlebrown; now Stone grey. */
+    --_7sfs-city-color: #9F9484;
 }
 
 html {
@@ -352,8 +355,10 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
 
 #city {
     position: relative;
-    padding: 15px;
-    background-color: saddlebrown;
+    /* WHY: Extra 2px on bottom — a bit more Stone grey wall under the last location
+       (whichever that is for the player count). On #city, not a location row. */
+    padding: 15px 15px 24px;
+    background-color: var(--_7sfs-city-color);
     border: 1px solid black;
     margin: 20px 0;
     width: fit-content;
@@ -370,13 +375,26 @@ html[data-theme="dark"] ._7sfs-deck-picker-custom-textarea {
     position: absolute;
     left: 30px;
     top: -15px;
-    background-image: url('img/boardResources.png');
-    background-size: calc(var(--png-board-resource-width) * .50) calc(var(--png-board-resource-height) * .50);
-    background-color: saddlebrown;
-    background-position: -208px 0px;
+    /* WHY: Two layers — sprite clipped to content-box (pad inset); solid gradient
+       clipped to border-box so city color reaches the black edge. background-color
+       alone shares the image layer's clip, so a second layer is required. */
+    background-image:
+        url('img/boardResources.png'),
+        linear-gradient(var(--_7sfs-city-color), var(--_7sfs-city-color));
+    background-size:
+        calc(var(--png-board-resource-width) * .50) calc(var(--png-board-resource-height) * .50),
+        auto;
+    background-position: -208px 0px, 0 0;
+    background-repeat: no-repeat, no-repeat;
+    background-origin: content-box, border-box;
+    background-clip: content-box, border-box;
+    background-color: var(--_7sfs-city-color);
     width: 36px;
     height: 24px;
-    border: 3px solid saddlebrown;
+    padding: 3px 3px 0;
+    /* WHY: Same tab border as #city-day-phase — black edge, no bottom into city. */
+    border: 1px solid black;
+    border-bottom: none;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
@@ -400,40 +418,42 @@ body._7sfs-halloween {
     background-color: transparent;
 }
 
-._7sfs-halloween ._7sfs-home-discard,
-._7sfs-halloween #city-discard {
+._7sfs-halloween ._7sfs-home-discard {
     background-image: url('img/holiday/halloween/home-discard.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-}
-
-/* WHY: Transparent PNG must show faction colors on home rows; city chip keeps
-   saddlebrown (same as non-Halloween #city-discard). */
-._7sfs-halloween ._7sfs-home-discard {
+    /* WHY: Transparent PNG must show faction colors on home rows. */
     background-color: transparent;
 }
 
+/* WHY: Keep dual-layer fill so city color still reaches the black tab border. */
 ._7sfs-halloween #city-discard {
-    background-color: saddlebrown;
+    background-image:
+        url('img/holiday/halloween/home-discard.png'),
+        linear-gradient(var(--_7sfs-city-color), var(--_7sfs-city-color));
+    background-size: contain, auto;
+    background-position: center, 0 0;
+    background-repeat: no-repeat, no-repeat;
 }
 
 /* WHY: White skull @ 25×23 — solid dark sockets (not hollow) so face reads on
-   faction-colored home rows and saddlebrown city chip. Same asset for both. */
-._7sfs-halloween ._7sfs-home-locker,
-._7sfs-halloween #city-locker {
+   faction-colored home rows and city-color chip. Same asset for both. */
+._7sfs-halloween ._7sfs-home-locker {
     background-image: url('img/holiday/halloween/home-locker.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-}
-
-._7sfs-halloween ._7sfs-home-locker {
     background-color: transparent;
 }
 
 ._7sfs-halloween #city-locker {
-    background-color: saddlebrown;
+    background-image:
+        url('img/holiday/halloween/home-locker.png'),
+        linear-gradient(var(--_7sfs-city-color), var(--_7sfs-city-color));
+    background-size: contain, auto;
+    background-position: center, 0 0;
+    background-repeat: no-repeat, no-repeat;
 }
 
 /* WHY: Witch hat replaces panache plume on home + score chips.
@@ -458,13 +478,21 @@ body._7sfs-halloween {
     position: absolute;
     left: 75px;
     top: -15px;
-    background-image: url('img/boardResources.png');
-    background-position: -389px 0px;
-    background-size: var(--png-board-resource-width) var(--png-board-resource-height);
-    background-color: saddlebrown;
+    background-image:
+        url('img/boardResources.png'),
+        linear-gradient(var(--_7sfs-city-color), var(--_7sfs-city-color));
+    background-position: -389px 0px, 0 0;
+    background-size: var(--png-board-resource-width) var(--png-board-resource-height), auto;
+    background-repeat: no-repeat, no-repeat;
+    background-origin: content-box, border-box;
+    background-clip: content-box, border-box;
+    background-color: var(--_7sfs-city-color);
     height: 23px;
     width: 25px;
-    border: 3px solid saddlebrown;
+    padding: 3px 3px 0;
+    /* WHY: Same tab border as #city-day-phase — black edge, no bottom into city. */
+    border: 1px solid black;
+    border-bottom: none;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
@@ -474,18 +502,28 @@ body._7sfs-halloween {
     position: absolute;
     left: 110px;
     top: -15px;
-    background-image: url('img/boardResources.png');
-    background-size: calc(var(--png-board-resource-width) * .25) calc(var(--png-board-resource-height) * .25);
-    background-color: saddlebrown;
-    background-position: -23px -39px;
+    background-image:
+        url('img/boardResources.png'),
+        linear-gradient(var(--_7sfs-city-color), var(--_7sfs-city-color));
+    background-size:
+        calc(var(--png-board-resource-width) * .25) calc(var(--png-board-resource-height) * .25),
+        auto;
+    background-position: -23px -39px, 0 0;
+    background-repeat: no-repeat, no-repeat;
+    background-origin: content-box, border-box;
+    background-clip: content-box, border-box;
+    background-color: var(--_7sfs-city-color);
     width: 35px;
     height: 25px;
     line-height: 25px;
+    padding: 3px 3px 0;
 
     text-align: center;
     color: white;
     font-size: 20pt;
-    border: 3px solid saddlebrown;
+    /* WHY: Same tab border as #city-day-phase — black edge, no bottom into city. */
+    border: 1px solid black;
+    border-bottom: none;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
@@ -506,8 +544,11 @@ body._7sfs-halloween {
     text-align: center;
     color: white;
     font-size: 18pt;
-    background-color: saddlebrown;
-    border: 3px solid saddlebrown;
+    background-color: var(--_7sfs-city-color);
+    /* WHY: Black edge matches #city / location strips; no bottom so the chip
+       reads as a tab sitting on the city top edge (top: -15px). */
+    border: 1px solid black;
+    border-bottom: none;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     padding-left:5px;
@@ -628,12 +669,12 @@ body._7sfs-halloween {
 ._7sfs-city-tower {
     fill: black;
     stroke-width: 10;
-    stroke: saddlebrown;
+    stroke: var(--_7sfs-city-color);
 }
 
 /* WHY: CITY_HALLOWEEN === 1 adds _7sfs-city-halloween on #city (Holiday.js).
    Hide SVG rects; paint same 30x30 slots with lit jack-o-lantern art.
-   Border uses saddlebrown like #city / day chip / SVG tower stroke — without it the
+   Border uses --_7sfs-city-color like #city / day chip / SVG tower stroke — without it the
    black-backed JPG reads as a plain black block at this size. */
 ._7sfs-city-halloween #city-ul-tower,
 ._7sfs-city-halloween #city-ur-tower,
@@ -642,7 +683,7 @@ body._7sfs-halloween {
     box-sizing: border-box;
     width: 30px;
     height: 30px;
-    border: 3px solid saddlebrown;
+    border: 3px solid var(--_7sfs-city-color);
     background-image: url('img/holiday/halloween/jackolantern.jpg');
     background-size: cover;
     background-repeat: no-repeat;
@@ -706,6 +747,9 @@ body._7sfs-halloween {
     grid-template-columns: subgrid;
     align-items: center;
     box-sizing: border-box;
+    /* WHY: 1px black edge separates location strips from Stone grey city chrome
+       (same stroke as #city outer border). */
+    border: 1px solid black;
     border-radius: 10px;
 }
 
