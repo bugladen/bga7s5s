@@ -546,11 +546,17 @@ body._7sfs-halloween {
 }
 
 #city-day-phase {
-    line-height: 25px;
+    /* WHY: +3px vs discard/locker band — Pirata caps need headroom on the tab. */
+    line-height: 28px;
 
     text-align: center;
-    color: white;
+    /* WHY: Warm dark ink on Stone grey — cream tried and rejected; lifted from
+       #1F1A14 so Pirata strokes don't sink into black. */
+    color: #3A3228;
     font-size: 18pt;
+    /* WHY: Same pirate face as duel ledger / number chips — phase names are short
+       single words so Pirata stays readable (unlike multi-word maneuver labels). */
+    font-family: PirataOne-Regular, serif;
     background-color: var(--_7sfs-city-color);
     /* WHY: Black edge matches #city / location strips; no bottom so the chip
        reads as a tab sitting on the city top edge (top: -15px). */
@@ -558,8 +564,8 @@ body._7sfs-halloween {
     border-bottom: none;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    padding-left:5px;
-    padding-right: 5px;
+    padding-left: 9px;
+    padding-right: 9px;
 }
 
 /* WHY: Absolute chase group on #city (not inside day-phase-row) so Holiday.js can
