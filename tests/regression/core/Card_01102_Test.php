@@ -13,8 +13,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01102;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01102_Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01102;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardHidden;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
 
 class Card_01102_Test extends TestCase
@@ -98,15 +102,45 @@ class Card_01102_Test extends TestCase
             },
 
             // --- _01102_Attachment ---
-            'attachment is a FakeAttachment Hubris with -1 Finesse and Action_01102' => function () {
+            // WHY: FactionAttachment + copied RPT — Silence-style clone tooltip, and
+            // stApplyCombatCardStats must not undefined-property if a clone leaks into a deck.
+            'attachment is a FakeAttachment Hubris with -1 Finesse, RPT, and Action_01102' => function () {
                 $att = new _01102_Attachment();
                 Assert::instanceOf(Attachment::class, $att, 'Attachment');
+                Assert::instanceOf(FactionAttachment::class, $att, 'FactionAttachment');
                 Assert::instanceOf(IRiskAttachment::class, $att, 'IRiskAttachment');
                 Assert::true($att->FakeAttachment, 'FakeAttachment');
                 Assert::same(-1, $att->FinesseModifier, 'Finesse');
+                Assert::same(1, $att->Riposte, 'Riposte');
+                Assert::same(0, $att->Parry, 'Parry');
+                Assert::same(3, $att->Thrust, 'Thrust');
                 Assert::true($att->hasTrait('Hubris'), 'Hubris');
                 Assert::count(1, $att->getActions(), 'one action');
                 Assert::instanceOf(Action_01102::class, $att->getActions()[0], 'Action_01102');
+            },
+
+            // WHY: Host death used to plain-discard the FakeAttachment into the owner's
+            // discard → faction deck. Must call removeRiskAttachment instead.
+            'host unEquipAllAttachments restores via removeRiskAttachment' => function () {
+                $world = new TestWorld();
+                $original = $world->placeCard(new _01102(), Game::LOCATION_PERMANENTLY_HIDDEN, 1);
+                $host = $world->placeCharacter(new GenericCharacter('Host'), Game::LOCATION_CITY_DOCKS, 2);
+                $att = $world->placeCard(new _01102_Attachment(), Game::LOCATION_CITY_DOCKS, 2);
+                $att->OwnerId = 1;
+                $att->AttachedToId = $host->Id;
+                $att->setOriginalCardId($original->Id);
+                $host->Attachments[] = $att->Id;
+
+                $host->unEquipAllAttachments($world->theah);
+
+                Assert::count(1, $world->theah->queuedOfType(EventAttachmentUnequipped::class), 'unequip');
+                Assert::count(1, $world->theah->queuedOfType(EventCardDiscardedFromPlay::class), 'discard clone');
+                Assert::count(1, $world->theah->queuedOfType(EventCardHidden::class), 'hide clone');
+                Assert::same(
+                    $world->game->getPlayerDiscardDeckName(1),
+                    $original->Location,
+                    'original Risk back in owner discard'
+                );
             },
         ];
     }

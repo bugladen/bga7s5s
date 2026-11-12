@@ -676,6 +676,17 @@ abstract class Character extends Card implements IHasTechniques
             if ($attachment == null)
                 continue;
 
+            // WHY: RiskAttachment clones (Unfortunate / Burden / Boon / Silence) must
+            // restore the hidden original Risk and hide the FakeAttachment. The plain
+            // discard path put the clone in the owner's discard → faction deck; gambling
+            // it then fataled in stApplyCombatCardStats on missing Riposte (01102).
+            // removeRiskAttachment already queues unequip + discard + hide + original move.
+            if ($attachment instanceof IRiskAttachment)
+            {
+                $attachment->removeRiskAttachment($theah);
+                continue;
+            }
+
             $unattached = EventFactory::createAttachmentUnequippedEvent($this->ControllerId, $this->Id, $attachment->Id);
             $theah->queueEvent($unattached);
 
