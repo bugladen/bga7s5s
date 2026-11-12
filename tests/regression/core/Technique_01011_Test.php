@@ -102,9 +102,62 @@ class Technique_01011_Test extends TestCase
                 Assert::same(1, $event->adversaryThreat, 'locker uses CHOSEN_LOCATION Red Hands');
             },
 
-            'source filters own controller on both event paths' => function () {
+            'source filters own controller via helper' => function () {
                 $src = file_get_contents(dirname(__DIR__, 3) . '/modules/php/cards/_7s5s/techniques/Technique_01011.php');
-                Assert::same(2, substr_count($src, 'ControllerId == $actor->ControllerId'), 'both paths own Red Hands');
+                Assert::true(str_contains($src, 'getOtherControlledRedHandsAtLocation'), 'shared Red Hand filter');
+                Assert::true(str_contains($src, 'ControllerId == $controllerId'), 'own Red Hands only');
+            },
+
+            // WHY: +0 Thrust is a no-op — hide at challenge ActivateTechnique and in duel.
+            'available with other controlled Red Hand at location' => function () {
+                $world = new TestWorld();
+                $servo = $world->placeCharacter(new _01011(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('Ally RH', ['Red Hand']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+
+                /** @var Technique_01011 $technique */
+                $technique = $servo->getTechniques()[0];
+                Assert::true($technique->isAvailableToPlayer(1, $world->theah), 'ally Red Hand');
+            },
+
+            'unavailable when alone at location' => function () {
+                $world = new TestWorld();
+                $servo = $world->placeCharacter(new _01011(), Game::LOCATION_CITY_DOCKS, 1);
+
+                /** @var Technique_01011 $technique */
+                $technique = $servo->getTechniques()[0];
+                Assert::false($technique->isAvailableToPlayer(1, $world->theah), 'alone');
+            },
+
+            'unavailable when only opponent Red Hand at location' => function () {
+                $world = new TestWorld();
+                $servo = $world->placeCharacter(new _01011(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('Enemy RH', ['Red Hand']),
+                    Game::LOCATION_CITY_DOCKS,
+                    2
+                );
+
+                /** @var Technique_01011 $technique */
+                $technique = $servo->getTechniques()[0];
+                Assert::false($technique->isAvailableToPlayer(1, $world->theah), 'enemy only');
+            },
+
+            'unavailable when only non-Red Hand ally at location' => function () {
+                $world = new TestWorld();
+                $servo = $world->placeCharacter(new _01011(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('Ally'),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+
+                /** @var Technique_01011 $technique */
+                $technique = $servo->getTechniques()[0];
+                Assert::false($technique->isAvailableToPlayer(1, $world->theah), 'non-RH ally');
             },
         ];
     }
