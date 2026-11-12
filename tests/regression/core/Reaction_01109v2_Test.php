@@ -6,6 +6,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
+use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
@@ -15,10 +16,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01169;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01109v2;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02057;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02059;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02059;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionActivated;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverActivated;
@@ -334,6 +339,55 @@ class Reaction_01109v2_Test extends TestCase
                 $resolved = $world->theah->queuedOfType(EventActionResolved::class);
                 Assert::count(1, $resolved, 'ActionResolved for Soline window');
                 Assert::same(2, $resolved[0]->playerId, 'announcer player');
+            },
+
+            // WHY: Same offer-time hold restore as original 01109 — QR cancels the wound
+            // before pay; NoD must re-queue it or Relentless' adversary wound is lost.
+            'triggered cancel of Quick Reflexes restores the held wound' => function () {
+                $world = new TestWorld();
+                [$nod, $reaction] = $this->scene($world);
+                $qr = $world->placeCard(new _02059(), Game::LOCATION_HAND, 2);
+                $victim = $world->placeCharacter(new GenericCharacter('Sanjay'), Game::LOCATION_CITY_DOCKS, 2);
+                $source = $world->placeCard(new _02057(), Game::LOCATION_HAND, 1);
+                /** @var Reaction_02059 $qrReaction */
+                $qrReaction = $qr->getReactions()[0];
+
+                $wound = new EventCharacterBeingWounded();
+                $wound->characterId = $victim->Id;
+                $wound->sourceId = $source->Id;
+                $wound->abilityId = $source->getManeuvers()[0]->Id;
+                $wound->wounds = 1;
+                $wound->theah = $world->theah;
+                $qrReaction->handleEvent($wound);
+                Assert::true($wound->canceled, 'held at offer');
+                $world->theah->takeQueuedEvents();
+
+                $pending = new EventRiskReactionTriggered();
+                $pending->sourceId = $qr->Id;
+                $pending->internalId = $qrReaction->Id;
+                $world->theah->queueEvent($pending);
+
+                $reaction->handleEvent($this->riskPlayed($world, $qr, 2));
+                $world->theah->takeQueuedEvents();
+
+                $pending = new EventRiskReactionTriggered();
+                $pending->sourceId = $qr->Id;
+                $pending->internalId = $qrReaction->Id;
+                $world->theah->queueEvent($pending);
+
+                $event = new EventRiskReactionTriggered();
+                $event->playerId = 1;
+                $event->sourceId = $nod->Id;
+                $event->internalId = $reaction->Id;
+                $event->reactionId = 'cancel';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::count(0, $world->theah->queuedOfType(EventRiskReactionTriggered::class), 'QR trigger deleted');
+                $restored = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $restored, 'wound restored');
+                Assert::same($victim->Id, $restored[0]->characterId, 'Sanjay');
+                Assert::false($restored[0]->canceled, 'pre-cancel clone');
             },
         ];
     }

@@ -187,6 +187,30 @@ class Reaction_02059_Test extends TestCase
                 Assert::true($again->canceled, 'listening again');
                 Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'offered');
             },
+
+            // WHY: Night of Drinking deletes EventRiskReactionTriggered, so Accept never
+            // clears the hold. Without revertCancellation the Relentless wound stays gone.
+            'revertCancellation re-queues the held wound once' => function () {
+                $world = new TestWorld();
+                [, $reaction, $character, $source] = $this->scene($world);
+                $event = $this->wound($world, $character->Id, $source->Id, $source->getManeuvers()[0]->Id);
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                $reaction->revertCancellation($world->theah);
+                $replay = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $replay, 're-emitted');
+                Assert::false($replay[0]->canceled, 'clone was taken before cancel');
+                Assert::same($character->Id, $replay[0]->characterId, 'same character');
+
+                $world->theah->takeQueuedEvents();
+                $reaction->handleEvent($replay[0]);
+                Assert::false($replay[0]->canceled, 'skip lets it through');
+                Assert::count(0, $world->theah->queuedEvents, 'no second offer');
+
+                $reaction->revertCancellation($world->theah);
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'noop when empty');
+            },
         ];
     }
 }

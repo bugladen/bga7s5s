@@ -129,6 +129,29 @@ class Reaction_02059 extends RiskReaction
         }
     }
 
+    // WHY: Night of Drinking deletes EventRiskReactionTriggered after pay, so the
+    // accept path never runs and the wound stays canceled from offer-time hold.
+    // Same restore contract as Stubborn / Unyielding Loyalty.
+    public function revertCancellation(Theah $theah): void
+    {
+        if ($this->savedWoundEvent === null)
+        {
+            return;
+        }
+
+        $theah->queueEvent($this->savedWoundEvent);
+        $this->savedWoundEvent = null;
+        // WHY: Match Decline — the re-queued clone must not be re-held by this
+        // same reaction instance (e.g. if NoD cancelled before discard).
+        $this->skipNextEvent = true;
+
+        $owner = $this->getOwningCard($theah);
+        if ($owner !== null)
+        {
+            $owner->IsUpdated = true;
+        }
+    }
+
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
     {
         parent::performReaction($game, $state, $internalId, $reactionId);

@@ -8,6 +8,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01032;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02059;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02059;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -152,6 +154,18 @@ class Reaction_01109v2 extends RiskReaction implements ICancelReaction
                 foreach ($risk->getReactions() as $reaction)
                 {
                     if ($reaction instanceof Reaction_01032)
+                    {
+                        $reaction->revertCancellation($game->theah);
+                    }
+                }
+            }
+
+            //Edge case: Quick Reflexes — restore the wound it held at offer time
+            if ($risk instanceof _02059)
+            {
+                foreach ($risk->getReactions() as $reaction)
+                {
+                    if ($reaction instanceof Reaction_02059)
                     {
                         $reaction->revertCancellation($game->theah);
                     }
