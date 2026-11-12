@@ -56,7 +56,7 @@ class _05Dandy extends Leader implements IHasActions
 
         $this->initializeFaction("Montaigne");
 
-        $this->Resolve = 7;
+        $this->Resolve = 8;
         $this->Combat = 2;
         $this->Finesse = 2;
         $this->Influence = 4;
