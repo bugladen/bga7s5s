@@ -13,8 +13,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_05Wardoga extends AttachmentReaction
 {
-    // WHY: Buttons / perform run after EventCardMoved is gone.
-    private int $EnemyId = 0;
+    // WHY: Blood Mark (and any multi-move) queues several EventCardMoved before the first
+    // reaction UI runs. A single EnemyId was overwritten by the second mover, then cleared
+    // on Pass — so the second prompt only had Pass. FIFO like Reaction_01182.
+    public array $EnemyIds = [];
 
     public function __construct()
     {
@@ -26,15 +28,19 @@ class Reaction_05Wardoga extends AttachmentReaction
 
     public function getReactionDescription(Theah $theah): string
     {
+        // WHY: Name the current mover so dual arrivals (Blood Mark) are distinguishable.
+        $enemy = $this->currentEnemy($theah);
+        $who = $enemy !== null ? $enemy->Name : 'the enemy';
+
         // WHY: single quotes — ${you} is a BGA client token, not PHP.
         return parent::getReactionDescription($theah)
-            . '${you} may wound the enemy that moved to an adjacent City location: ';
+            . '${you} may wound ' . $who . ' that moved to an adjacent City location: ';
     }
 
     public function getReactionButtonProperties(Theah $theah): array
     {
         $array = parent::getReactionButtonProperties($theah);
-        $enemy = $this->woundableEnemy($theah, $this->EnemyId);
+        $enemy = $this->currentEnemy($theah);
         if ($enemy !== null)
         {
             $array[] = $this->createButtonProperty($theah->game, 'Wound ' . $enemy->Name, 'wound');
@@ -109,7 +115,7 @@ class Reaction_05Wardoga extends AttachmentReaction
             return;
         }
 
-        $this->EnemyId = $character->Id;
+        $this->EnemyIds[] = $character->Id;
         $owner->IsUpdated = true;
 
         $transition = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -124,7 +130,11 @@ class Reaction_05Wardoga extends AttachmentReaction
 
         if ($reactionId === 'wound')
         {
-            $enemy = $this->woundableEnemy($game->theah, $this->EnemyId);
+            $enemyId = array_shift($this->EnemyIds);
+            // WHY: Used spends the reaction — drop remaining movers and cancel their queued UIs
+            // (same as Reaction_01182) so dead Pass-only prompts do not appear.
+            $this->EnemyIds = [];
+            $enemy = $this->woundableEnemy($game->theah, (int) $enemyId);
             if ($owner === null || $enemy === null)
             {
                 throw new UserException("Choose the enemy that moved to an adjacent City location");
@@ -145,16 +155,32 @@ class Reaction_05Wardoga extends AttachmentReaction
             );
             $game->theah->queueEvent($woundEvent);
 
+            $game->theah->deleteTransitionEvents($this->Id);
             $this->setUsed($game->theah, true);
         }
 
-        $this->EnemyId = 0;
+        if ($reactionId === 'pass')
+        {
+            // WHY: Pass only declines this arrival; later movers in the FIFO still get Wound.
+            array_shift($this->EnemyIds);
+        }
+
         if ($owner !== null)
         {
             $owner->IsUpdated = true;
         }
 
         $game->gamestate->nextState("done");
+    }
+
+    private function currentEnemy(Theah $theah): ?Character
+    {
+        if ($this->EnemyIds === [])
+        {
+            return null;
+        }
+
+        return $this->woundableEnemy($theah, (int) $this->EnemyIds[0]);
     }
 
     private function woundableEnemy(Theah $theah, int $characterId): ?Character

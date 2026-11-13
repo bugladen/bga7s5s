@@ -315,9 +315,11 @@ Printed (Smuggled Long Rifle `_05Wardog`): **`<b>Covert Reaction:</b> After an e
 
 **"Enemy" ≠ "opposing."** Do **not** copy Kaiser's `fromLocation == owningCharacter->Location` gate. "Enemy" = different `ControllerId`. Destination = City location adjacent to the host (`getAdjacentCityLocations(..., false)`). Arrivals from elsewhere (teleport, recruit-into-adjacent, far move) still offer — that is intentional sniper range, not a bug.
 
-Trigger `EventCardMoved` (after move). Covert gate on host. Stash enemy id; Wound / Pass buttons; `createCharacterBeingWoundedEvent` with `sourceId` = attachment. No engage unless printed. Pass does not `setUsed`.
+Trigger `EventCardMoved` (after move). Covert gate on host. Stash enemy ids in a **FIFO queue** (`EnemyIds[]`); Wound / Pass buttons; `createCharacterBeingWoundedEvent` with `sourceId` = attachment. No engage unless printed. Pass does not `setUsed`.
 
-Contrast: Kaiser `_03019` / Horatio `_01066` use the opposing `fromLocation` gate because their text says **opposing**.
+**WHY FIFO, not a single `EnemyId`:** Blood Mark (and any multi-move) queues several `EventCardMoved` before the first reaction UI. A scalar id is overwritten by the second mover, then cleared on Pass — the second prompt only has Pass. Mirror `Reaction_01182`: append on each Moved; Pass `array_shift`; Wound shifts, clears the rest, `deleteTransitionEvents`, `setUsed`. Name the current enemy in the description so dual arrivals are distinguishable.
+
+Contrast: Kaiser `_03019` / Horatio `_01066` use the opposing `fromLocation` gate because their text says **opposing**. Do **not** copy Rosa `_02033` once-per-`abilityId` dedupe here — rifle should offer per enemy until Used is spent.
 
 Reference: `Reaction_05Wardoga`.
 

@@ -207,7 +207,93 @@ class Card_05Wardog_Test extends TestCase
 
                 $reaction->performReaction($world->game, 0, $reaction->Id, 'pass');
                 Assert::false($reaction->Used, 'pass');
+                Assert::same([], $reaction->EnemyIds, 'cleared');
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
+            },
+
+            // WHY (Blood Mark dual arrival): single EnemyId was overwritten then cleared on
+            // Pass — second prompt had only Pass. FIFO keeps each mover for its own UI.
+            'two enemy arrivals queue two offers and keep both targets until resolved' => function () {
+                $world = new TestWorld();
+                [, , $reaction] = $this->attach($world);
+                $first = $world->placeCharacter(new GenericCharacter('Ravenna'), Game::LOCATION_CITY_BAZAAR, 2);
+                $second = $world->placeCharacter(new GenericCharacter('Maxime'), Game::LOCATION_CITY_BAZAAR, 2);
+
+                $reaction->handleEvent($this->moved(
+                    $world,
+                    $first->Id,
+                    Game::LOCATION_CITY_BAZAAR,
+                    Game::LOCATION_CITY_FORUM
+                ));
+                $reaction->handleEvent($this->moved(
+                    $world,
+                    $second->Id,
+                    Game::LOCATION_CITY_BAZAAR,
+                    Game::LOCATION_CITY_FORUM
+                ));
+
+                Assert::same([$first->Id, $second->Id], $reaction->EnemyIds, 'fifo');
+                Assert::count(2, $world->theah->queuedOfType(EventTransition::class), 'two offers');
+
+                $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::same(['wound', 'pass'], $ids, 'first prompt has wound');
+            },
+
+            'pass on the first arrival still offers wound for the second' => function () {
+                $world = new TestWorld();
+                [, , $reaction] = $this->attach($world);
+                $first = $world->placeCharacter(new GenericCharacter('Ravenna'), Game::LOCATION_CITY_BAZAAR, 2);
+                $second = $world->placeCharacter(new GenericCharacter('Maxime'), Game::LOCATION_CITY_BAZAAR, 2);
+                $reaction->handleEvent($this->moved(
+                    $world,
+                    $first->Id,
+                    Game::LOCATION_CITY_BAZAAR,
+                    Game::LOCATION_CITY_FORUM
+                ));
+                $reaction->handleEvent($this->moved(
+                    $world,
+                    $second->Id,
+                    Game::LOCATION_CITY_BAZAAR,
+                    Game::LOCATION_CITY_FORUM
+                ));
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'pass');
+
+                Assert::false($reaction->Used, 'not spent');
+                Assert::same([$second->Id], $reaction->EnemyIds, 'second remains');
+                $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::same(['wound', 'pass'], $ids, 'second prompt still has wound');
+            },
+
+            'wounding the first arrival cancels the second queued offer' => function () {
+                $world = new TestWorld();
+                [, , $reaction] = $this->attach($world);
+                $first = $world->placeCharacter(new GenericCharacter('Ravenna'), Game::LOCATION_CITY_BAZAAR, 2);
+                $second = $world->placeCharacter(new GenericCharacter('Maxime'), Game::LOCATION_CITY_BAZAAR, 2);
+                $reaction->handleEvent($this->moved(
+                    $world,
+                    $first->Id,
+                    Game::LOCATION_CITY_BAZAAR,
+                    Game::LOCATION_CITY_FORUM
+                ));
+                $reaction->handleEvent($this->moved(
+                    $world,
+                    $second->Id,
+                    Game::LOCATION_CITY_BAZAAR,
+                    Game::LOCATION_CITY_FORUM
+                ));
+                Assert::count(2, $world->theah->queuedOfType(EventTransition::class), 'two offers');
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'wound');
+
+                Assert::true($reaction->Used, 'spent');
+                Assert::same([], $reaction->EnemyIds, 'cleared');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'second offer deleted');
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'one wound');
+                Assert::same($first->Id, $wounds[0]->characterId, 'first target');
             },
 
             'pressure reaction offers when pressure is at an adjacent City location' => function () {
