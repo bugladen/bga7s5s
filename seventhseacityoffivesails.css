@@ -55,8 +55,8 @@
     /* WHY: Fixed flag width (not % of #city) so characters at locations don't
        grow the pennants. Was scale*cityWidth; 280px ≈ half of a mid empty city.
        Clearance ≈ width * 255/820 - bottom offset (pole at y=15 of 270). */
-    --_7sfs-city-flags-width: 280px;
-    --_7sfs-city-flags-clearance: 75px;
+    --_7sfs-city-flags-width: 220px;
+    --_7sfs-city-flags-clearance: 55px;
 }
 
 html {
