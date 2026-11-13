@@ -532,6 +532,53 @@ class Game
         ]);
     }
 
+    // WHY: Mirror UtilitiesTrait::clearResetOnDuelEndTechniquesForCharacter — StatesTrait
+    // stDuelEnd / challenge cancel/fizzle/reject call it. FakeGame does not use the trait.
+    public function clearResetOnDuelEndTechniquesForCharacter(?int $characterId): void
+    {
+        if (! $characterId || $this->theah === null) {
+            return;
+        }
+
+        $character = $this->theah->getCharacterById($characterId);
+        if ($character === null) {
+            $fromDb = $this->getCardObjectFromDb($characterId);
+            $character = $fromDb instanceof Character ? $fromDb : null;
+            if ($character !== null) {
+                $this->theah->addCardToWorld($character);
+            }
+        }
+        if ($character === null) {
+            return;
+        }
+
+        $this->clearResetOnDuelEndTechniquesOnCard($character);
+        foreach ($character->Attachments as $attachmentId) {
+            $attachment = $this->theah->getCardById((int) $attachmentId);
+            if ($attachment === null) {
+                $attachment = $this->getCardObjectFromDb((int) $attachmentId);
+                if ($attachment !== null) {
+                    $this->theah->addCardToWorld($attachment);
+                }
+            }
+            if ($attachment !== null) {
+                $this->clearResetOnDuelEndTechniquesOnCard($attachment);
+            }
+        }
+    }
+
+    private function clearResetOnDuelEndTechniquesOnCard(Card $card): void
+    {
+        if (! ($card instanceof \Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques)) {
+            return;
+        }
+        foreach ($card->getTechniques() as $technique) {
+            if ($technique->ResetOnDuelEnd && $technique->Used) {
+                $technique->setUsed($this->theah, false);
+            }
+        }
+    }
+
     // WHY: Action_01187 (Smuggled Item) gates on hand attachments via UtilitiesTrait.
     // FakeGame has no $cards Deck property — walk dbCards (same source as getGameDeckObject).
     public function getAttachmentsInHand(int $playerId): array

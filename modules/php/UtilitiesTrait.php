@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Attachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasManeuvers;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRiskAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01006;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05DabneyUS01;
@@ -1159,6 +1160,77 @@ trait UtilitiesTrait
             "challengerId" => $challengerId ?? 0,
             "defenderId" => $defenderId ?? 0,
         ]);
+    }
+
+    /**
+     * Re-open once-per-duel Techniques on a character and their equipped attachments.
+     *
+     * WHY: Challenge Techniques set Used at ActivateTechnique. EventDuelEnd is the
+     * normal clear, but fizzle / cancel skip it, and an attachment can miss the
+     * EventDuelEnd walk if it was only reachable via DB fallback when Used was set.
+     * Call this from duel/challenge exit paths so Sabre +1 Thrust (and siblings) are
+     * available again on the next challenge the same Day.
+     */
+    public function clearResetOnDuelEndTechniquesForCharacter(?int $characterId): void
+    {
+        if (! $characterId)
+        {
+            return;
+        }
+
+        $this->theah->buildCity();
+
+        $character = $this->theah->getCharacterById($characterId);
+        if ($character === null)
+        {
+            $fromDb = $this->getCardObjectFromDb($characterId);
+            $character = $fromDb instanceof Character ? $fromDb : null;
+            if ($character !== null)
+            {
+                $this->theah->addCardToWorld($character);
+            }
+        }
+
+        if ($character === null)
+        {
+            return;
+        }
+
+        $this->clearResetOnDuelEndTechniquesOnCard($character);
+
+        foreach ($character->Attachments as $attachmentId)
+        {
+            $attachment = $this->theah->getCardById((int) $attachmentId);
+            if ($attachment === null)
+            {
+                $attachment = $this->getCardObjectFromDb((int) $attachmentId);
+                if ($attachment !== null)
+                {
+                    $this->theah->addCardToWorld($attachment);
+                }
+            }
+
+            if ($attachment !== null)
+            {
+                $this->clearResetOnDuelEndTechniquesOnCard($attachment);
+            }
+        }
+    }
+
+    private function clearResetOnDuelEndTechniquesOnCard(Card $card): void
+    {
+        if (! ($card instanceof IHasTechniques))
+        {
+            return;
+        }
+
+        foreach ($card->getTechniques() as $technique)
+        {
+            if ($technique->ResetOnDuelEnd && $technique->Used)
+            {
+                $technique->setUsed($this->theah, false);
+            }
+        }
     }
 
     public function getNextEventBatchId(): int

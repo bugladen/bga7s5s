@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bga\Games\SeventhSeaCityOfFiveSails\Tests\Regression\Framework;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01042;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04054;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericAttachment;
@@ -483,6 +484,23 @@ class StatesTrait_DuelEnd_Test extends TestCase
 
                 Assert::count(0, $game->queued(EventCardAddedToHand::class), 'nothing returned');
                 Assert::same([$weapon->Id], array_map(fn($e) => $e->cardId, $game->queued(EventCardDiscardedFromHand::class)), 'discarded');
+            },
+
+            // WHY: Challenge Technique Used must not stick across duels (Sabre +1 Thrust report).
+            // stDuelEnd safety-net clears ResetOnDuelEnd Techniques on participants + attachments
+            // even before EventDuelEnd is drained.
+            'stDuelEnd reopens a Used Sabre +1 Thrust Technique for the next challenge' => function () {
+                $game = new StatesTraitGame();
+                [$c, $t] = $this->duel($game);
+                $sabre = $game->place(new _04054(), Game::LOCATION_CITY_DOCKS, 1);
+                $sabre->AttachedToId = $c->Id;
+                $c->Attachments[] = $sabre->Id;
+                $technique = $sabre->getTechniques()[0];
+                $technique->Used = true;
+
+                $game->stDuelEnd();
+
+                Assert::true($technique->isAvailable(), 'Sabre thrust available again');
             },
 
             // ---- stFromCard ---------------------------------------------------------------------------

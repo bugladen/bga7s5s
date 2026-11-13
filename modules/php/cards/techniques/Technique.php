@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICardAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -53,7 +54,12 @@ abstract class Technique implements ICardAbility
             }
         }
 
-        if ($event instanceof EventDuelEnd && $this->ResetOnDuelEnd)
+        // WHY: Once-per-duel Techniques activate at challenge time (Sabre +1 Thrust,
+        // etc.). Refuse / no-duel ends never fire EventDuelEnd, so Used would stick
+        // for the rest of the Day (ResetOnDayEnd defaults false). Treat reject like
+        // duel end for ResetOnDuelEnd techniques.
+        if (($event instanceof EventDuelEnd || $event instanceof EventChallengeRejected)
+            && $this->ResetOnDuelEnd)
         {
             $this->setUsed($event->theah, false);
         }

@@ -1114,6 +1114,11 @@ trait StatesTrait
                 $this->updateCardObjectInDb($defender);
             }
 
+            // WHY: Challenge Technique may already be Used (ActivateTechnique ran before
+            // ChallengeIssued). Cancel skips EventDuelEnd / ChallengeRejected.
+            $this->clearResetOnDuelEndTechniquesForCharacter((int) $challengerId);
+            $this->clearResetOnDuelEndTechniquesForCharacter((int) $defenderId);
+
             $this->globals->set(Game::PASS_COUNT, 0);
             $this->globals->delete(Game::CHALLENGE_ACCEPTED);
             // WHY: Consume the flag here. Leaving it true after "cancelled" → NEXT_PLAYER
@@ -1267,6 +1272,10 @@ trait StatesTrait
                 // challenger leaving Mourad's Defender markers).
                 $this->clearChallengeParticipantMarkers($performerId, $targetId);
 
+                // WHY: Fizzle skips EventDuelEnd — challenge Technique Used would stick.
+                $this->clearResetOnDuelEndTechniquesForCharacter((int) $performerId);
+                $this->clearResetOnDuelEndTechniquesForCharacter((int) $targetId);
+
                 $resolvedPlayerId = $performer !== null
                     ? $performer->ControllerId
                     : (int) $this->globals->get(GAME::CURRENT_PLAYER);
@@ -1384,6 +1393,12 @@ trait StatesTrait
                     }
                 }
             }
+
+            // WHY: EventChallengeRejected clears ResetOnDuelEnd Techniques via handleEvent;
+            // belt-and-suspenders for attachments that miss the card walk (same shape as
+            // stDuelEnd safety-net). Challenge Technique was Used at ActivateTechnique.
+            $this->clearResetOnDuelEndTechniquesForCharacter((int) $performerId);
+            $this->clearResetOnDuelEndTechniquesForCharacter((int) $targetId);
 
             $resolvedPlayerId = $performer !== null
                 ? $performer->ControllerId
@@ -2157,6 +2172,13 @@ trait StatesTrait
             $event->defenderId = $defenderId;
         }
         $this->theah->queueEvent($event);
+
+        // WHY: Safety-net — EventDuelEnd clears ResetOnDuelEnd Techniques via card
+        // handleEvent, but an attachment that was Used via getTechniqueById's DB
+        // fallback can miss that walk. Explicit participant+attachment clear so
+        // Sabre +1 Thrust is available again on the next challenge the same Day.
+        $this->clearResetOnDuelEndTechniquesForCharacter((int) $challengerId);
+        $this->clearResetOnDuelEndTechniquesForCharacter((int) $defenderId);
 
         //Get all the cards in the dueling line and move them to the discard pile
         $cards = $this->cards->getCardsInLocation(Game::LOCATION_DUELING_LINE);
