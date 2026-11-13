@@ -21,4 +21,7 @@ User: scale down 25%, keep centered. `width:75%; left:12.5%` — same vertical p
 User: 50% of original. `width:50%; left:25%`.
 
 ## Follow-up: homes clearance
-User: move homes down so they don't obscure flags. Absolute flags take no layout space. Added `--_7sfs-city-flags-scale: 0.5` + `--_7sfs-city-flags-clearance: 110px`; `#city` bottom margin uses the clearance (was 20px). Flags width/left derived from the scale var. WHY 110px: hang ≈ scale×cityWidth×255/820 ≈ 0.155×cityWidth; 110 clears ~700px city + gap. If city is much wider and tips still clip, bump the clearance var.
+User: move homes down so they don't obscure flags. Absolute flags take no layout space. Added `--_7sfs-city-flags-scale: 0.5` + `--_7sfs-city-flags-clearance: 110px`; `#city` bottom margin uses the clearance (was 20px). Flags width/left derived from the scale var. WHY 110px: hang ≈ scale×cityWidth×255/820 ≈ 0.155×cityWidth; 110 clears ~700px city + gap. If city is much wider and tips still clip, bump the clearance var. User later tuned clearance to 70px / bottom 12px / towers -11px (outside this agent turn).
+
+## Follow-up: fixed flag width
+User: flags grow as city widens with characters. Root cause: width was `% of #city`. Switched to `--_7sfs-city-flags-width: 280px` + `left:50%; transform: translate(-50%, …)` so size is constant and stays centered. Clearance 75px matches hang for 280px. Dropped the scale var.

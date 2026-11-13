@@ -52,11 +52,11 @@
     /* WHY: Single city chrome hue — #city frame, discard/locker/day chips, tower
        stroke, Halloween lantern borders. Was saddlebrown; now Stone grey. */
     --_7sfs-city-color: #9F9484;
-    /* WHY: Absolute #city-flags take no layout space; homes would paint over
-       hanging pennants. Clearance ≈ scale * cityWidth * 255/820 (pole at y=15
-       of 270). 110px clears ~700px-wide cities at 50% with a little gap. */
-    --_7sfs-city-flags-scale: 0.5;
-    --_7sfs-city-flags-clearance: 70px;
+    /* WHY: Fixed flag width (not % of #city) so characters at locations don't
+       grow the pennants. Was scale*cityWidth; 280px ≈ half of a mid empty city.
+       Clearance ≈ width * 255/820 - bottom offset (pole at y=15 of 270). */
+    --_7sfs-city-flags-width: 280px;
+    --_7sfs-city-flags-clearance: 75px;
 }
 
 html {
@@ -692,16 +692,15 @@ body._7sfs-halloween {
     z-index: 2;
 }
 
-/* WHY: Faction pennants under the city. Scale/centering via
-   --_7sfs-city-flags-scale (was 100% spanning ll/lr tower centers). Pole center
-   in flags.png is ~y=15 of 270; bottom:1px is the tower vertical center
-   (bottom:-15 + half of 32px border-box). translateY drops the asset so that
-   pole line sits on the tower centers and pennants hang below the city.
-   Layout clearance for homes is --_7sfs-city-flags-clearance on #city margin. */
+/* WHY: Faction pennants under the city. Fixed --_7sfs-city-flags-width so city
+   growth from characters does not rescale them; left:50% + translateX(-50%)
+   keeps centered. Pole center in flags.png is ~y=15 of 270; bottom + translateY
+   puts that line on the lower tower vertical centers. Homes clearance is
+   --_7sfs-city-flags-clearance on #city margin. */
 #city-flags {
     position: absolute;
-    left: calc(50% * (1 - var(--_7sfs-city-flags-scale)));
-    width: calc(100% * var(--_7sfs-city-flags-scale));
+    left: 50%;
+    width: var(--_7sfs-city-flags-width);
     aspect-ratio: 820 / 270;
     bottom: 12px;
     background-image: url('img/flags.png');
@@ -710,7 +709,7 @@ body._7sfs-halloween {
     background-position: center;
     pointer-events: none;
     z-index: 1;
-    transform: translateY(calc(100% * (1 - 15 / 270)));
+    transform: translate(-50%, calc(100% * (1 - 15 / 270)));
 }
 
 /* WHY: Two fills (not one stroked circle) so the core stays a true disc.
