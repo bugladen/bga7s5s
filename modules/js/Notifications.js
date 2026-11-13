@@ -1044,6 +1044,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
             card.divId = null;
         }
 
+        // WHY: Brutes destroy via discard, not locker; same Actor-column corpse case.
+        if (this.inDuel) {
+            this.markDestroyedDuelActorCards(args.cardId);
+        }
+
         const player = this.gamedatas.players[args.playerId];
         player.discard.push(card);
     },
@@ -1565,6 +1570,12 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
             dojo.destroy(card.divId);
             card.divId = null;
+        }
+
+        // WHY: Duel table keeps a copy in the Actor column; if threat remains the
+        // duel continues and that corpse needs the lethal skill-icon overlay.
+        if (this.inDuel) {
+            this.markDestroyedDuelActorCards(args.characterId);
         }
 
         const player = this.gamedatas.players[args.playerId];
@@ -2837,7 +2848,11 @@ return declare('seventhseacityoffivesails.notifications', null, {
         const args = notif.args;
         let divId = `duel_round_${args.round}_actor`
         dojo.empty(divId);
-        this.createCard(`duel_${args.round}_${args.actor.id}`, args.actor, divId, true);
+        const actorDivId = `duel_${args.round}_${args.actor.id}`;
+        this.createCard(actorDivId, args.actor, divId, true);
+        if (this.isCharacterDestroyedOutOfPlay(args.actor.id)) {
+            this.placeDuelDestroyedActorLethalIcon(actorDivId);
+        }
 
         if (dojo.hasClass(`duel_round_${args.round}_starting_challenger_threat_row`, '_7sfs-duel-acting-character'))
         {

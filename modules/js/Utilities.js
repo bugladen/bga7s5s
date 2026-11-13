@@ -1920,6 +1920,65 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTippyTooltip( chipId, `<div class='_7sfs-basic-tooltip'>${_("Challenge Stat")}: ${_(challengeStat)}</div>` );
     },
 
+    // WHY: Live destroy notifs rewrite cardProperties.location to "Player Locker"/
+    // "Player Discard". On refresh, corpses are only in gamedatas players' locker/
+    // discard arrays (not mirrored into cardProperties — piles open on click).
+    // Serialized duel actors keep the round-start city location, so pile membership
+    // is the refresh source of truth.
+    isCharacterDestroyedOutOfPlay: function(characterId) {
+        const idNum = Number(characterId);
+        const card = this.cardProperties[characterId];
+        if (card && card.location) {
+            const loc = String(card.location);
+            if (loc === this.LOCATION_PLAYER_LOCKER
+                || loc === this.LOCATION_PLAYER_DISCARD
+                || loc.indexOf('Locker-') === 0
+                || loc.indexOf('Discard-') === 0) {
+                return true;
+            }
+        }
+
+        const players = this.gamedatas && this.gamedatas.players;
+        if (!players) return false;
+        for (const player of Object.values(players)) {
+            if ((player.locker || []).some((c) => Number(c.id) === idNum)) return true;
+            if ((player.discard || []).some((c) => Number(c.id) === idNum)) return true;
+        }
+        return false;
+    },
+
+    // WHY: When a participant is destroyed but the duel continues (adversary threat
+    // remains — e.g. Stiletto short duel, actor death with leftover pool), their
+    // card stays in the Actor column. Overlay the same skull used on lethal threat
+    // chips so that corpse still reads as a lethal/threat seat.
+    placeDuelDestroyedActorLethalIcon: function(actorDivId) {
+        if (!actorDivId) return;
+        const imageId = `${actorDivId}_image`;
+        if (!$(imageId)) return;
+
+        const chipId = `${actorDivId}_duel_lethal`;
+        if ($(chipId)) return;
+
+        dojo.place( this.format_block( 'jstpl_generic_chip', {
+            id: chipId,
+            class: '_7sfs-duel-actor-lethal-chip',
+        }), imageId, 'last');
+        $(chipId).innerHTML = '<span class="_7sfs-lethal">&#9760;</span>';
+
+        this.addTippyTooltip( chipId, `<div class='_7sfs-basic-tooltip'>${_("Lethal Threat")}</div>` );
+    },
+
+    markDestroyedDuelActorCards: function(characterId) {
+        if (!this.inDuel || !characterId) return;
+        const idStr = String(characterId);
+        dojo.query('._7sfs-duel-round-actor > div').forEach((node) => {
+            // WHY: ids are duel_{round}_{characterId} — endsWith('_12') would also hit 112.
+            const parts = (node.id || '').split('_');
+            if (parts.length !== 3 || parts[0] !== 'duel' || parts[2] !== idStr) return;
+            this.placeDuelDestroyedActorLethalIcon(node.id);
+        });
+    },
+
     removeChallengeStatChip: function(divId) {
         if (!divId) return;
         const chipId = `${divId}_challenge_stat`;
@@ -2092,6 +2151,13 @@ return declare('seventhseacityoffivesails.utilities', null, {
         });
         this.createCard(actorDivId, row.actor, containerDivId, true);
         dojo.addClass(actorDivId, '_7sfs-attachment-container');
+
+        // WHY: Serialized actor_location is a round-start snapshot; live cardProperties
+        // has Locker/Discard after destroy. Stiletto / actor-death+continuing-threat
+        // leave a corpse in the Actor column for later rounds.
+        if (this.isCharacterDestroyedOutOfPlay(row.actor.id)) {
+            this.placeDuelDestroyedActorLethalIcon(actorDivId);
+        }
 
         const combatCards = row.combatCards;
         if (combatCards)

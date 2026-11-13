@@ -2547,6 +2547,32 @@ body._7sfs-halloween {
     width: 150px;
 }
 
+/* WHY: Destroyed participant still shown in Actor column while duel continues
+   (leftover adversary threat). Center the same skull used on lethal threat
+   chips over the corpse so it does not read as a normal acting character. */
+._7sfs-duel-actor-lethal-chip {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* WHY 54px / 27pt: 50% larger than the original 36px / 18pt chip. */
+    width: 54px;
+    height: 54px;
+    background-color: #d3d3d3;
+    border: 2px solid gold;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+._7sfs-duel-actor-lethal-chip > ._7sfs-lethal {
+    font-size: 27pt;
+    line-height: 1;
+}
+
 ._7sfs-combat-chip {
     background-image: url('img/boardResources.png');
     background-size: calc(var(--png-board-resource-width) * 0.3) calc(var(--png-board-resource-height) * 0.3);
