@@ -2298,6 +2298,44 @@ body._7sfs-halloween {
     margin-bottom: 10px;
 }
 
+/* WHY: Newest rounds sit immediately under the header (displayDuelRow places
+   after #duel_header_row). Hide older rounds so only stats + header + the
+   newest few stay visible until the player expands. */
+#duel_table._7sfs-duel-collapsed > tbody > tr:nth-child(n+6) {
+    display: none;
+}
+
+/* WHY: Same parchment/wood chrome as #duel_table so the expand control reads
+   as part of the ledger, not a bare text link under it. */
+._7sfs-duel-expand-prompt {
+    text-align: center;
+    margin: 0 0 10px;
+    padding: 8px 12px;
+    color: #f3e6c8;
+    font-family: PirataOne-Regular, serif;
+    font-size: 12pt;
+    letter-spacing: 0.03em;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    user-select: none;
+    background:
+        linear-gradient(180deg, #6b4f34 0%, #4a3420 100%);
+    border: 3px solid #4a3420;
+    border-top: 2px solid #c9a46a;
+    border-radius: 0 0 6px 6px;
+    outline: 1px solid #c9a46a;
+    outline-offset: -5px;
+    box-shadow:
+        0 0 0 1px #2a1a0e,
+        0 6px 18px rgba(42, 26, 14, 0.45);
+}
+
+._7sfs-duel-expand-prompt:hover {
+    background:
+        linear-gradient(180deg, #7a5c3d 0%, #5a4028 100%);
+    color: #fff6dc;
+}
+
 /* WHY: Ship's-log / parchment ledger instead of bare silver HTML table.
    Palette matches deck-picker + confirm dialog wood/parchment; structure
    (collapse, nth-child cols, threat-table separate) stays for JS + gold acting row. */
@@ -2321,6 +2359,22 @@ body._7sfs-halloween {
         0 0 0 1px #2a1a0e,
         0 6px 18px rgba(42, 26, 14, 0.45);
     /* WHY no overflow:hidden — gambled combat cards use ._7sfs-engaged rotate and must not clip */
+}
+
+/* WHY: When the expand bar is visible it sits flush under the ledger, so drop
+   the table's bottom radius/margin and let the bar own the bottom chrome.
+   Class toggled from updateDuelExpandPrompt — not :has(style) (fragile). */
+#duel_wrapper._7sfs-duel-expand-visible #duel_table {
+    margin-bottom: 0;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    box-shadow:
+        0 0 0 1px #2a1a0e,
+        0 2px 8px rgba(42, 26, 14, 0.35);
+}
+
+#duel_wrapper._7sfs-duel-expand-visible #duel {
+    margin-bottom: 0;
 }
 
 #duel_table, ._7sfs-threat-table {

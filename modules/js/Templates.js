@@ -329,7 +329,7 @@
         <div id="duel_wrapper">
         <div id="duel_scroll_top"><div id="duel_scroll_top_inner"></div></div>
         <div id="duel">
-        <table id="duel_table" class="duel">
+        <table id="duel_table" class="duel _7sfs-duel-collapsed">
         <tr><td id="duel_stats" colspan="11"><div class="_7sfs-duel-stats-row"><span class="_7sfs-duel-stats-left">Duel Stat: <span id="duel_stat_value"><div class="_7sfs-card-\${challengeStatClass}-image"></div></span></span><span id="duel_participants" class="_7sfs-duel-participants">\${participantsText}</span></div></td></tr>
         <tr id="duel_header_row">
             <th>Round</th>
@@ -343,6 +343,7 @@
         </tr>
         </table>
         </div>
+        <div id="duel_expand_prompt" class="_7sfs-duel-expand-prompt" style="display:none;"></div>
         </div>
         `;
         

@@ -1899,6 +1899,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
             participantsText: participantsText,
         }),  'city-wrapper', 'before');
         this.setupDuelScrollSync();
+        this.setupDuelExpandPrompt();
     },
 
     // WHY: Same Combat/Finesse/Influence sprites as in-play character stats, in a light-grey
@@ -2083,6 +2084,52 @@ return declare('seventhseacityoffivesails.utilities', null, {
             inner.style.width = table.scrollWidth + 'px';
     },
 
+    // WHY: Newest rounds insert after the header, so the first rows are always
+    // stats + header + recent rounds. Collapse older rounds by default so the
+    // ledger does not push the board (and mobile combat hand) off-screen.
+    setupDuelExpandPrompt: function() {
+        const prompt = $('duel_expand_prompt');
+        const table = $('duel_table');
+        if (!prompt || !table) return;
+
+        prompt.onclick = () => {
+            const collapsed = dojo.hasClass(table, '_7sfs-duel-collapsed');
+            if (collapsed) {
+                dojo.removeClass(table, '_7sfs-duel-collapsed');
+            } else {
+                dojo.addClass(table, '_7sfs-duel-collapsed');
+            }
+            this.updateDuelExpandPrompt();
+            this.updateDuelScrollWidth();
+        };
+
+        this.updateDuelExpandPrompt();
+    },
+
+    updateDuelExpandPrompt: function() {
+        const prompt = $('duel_expand_prompt');
+        const table = $('duel_table');
+        const wrapper = $('duel_wrapper');
+        if (!prompt || !table) return;
+
+        const rowCount = table.rows ? table.rows.length : 0;
+        // WHY: Only offer expand when there is at least one hidden older round
+        // (rows beyond the visible top 5: stats + header + 3 newest rounds).
+        if (rowCount <= 5) {
+            prompt.style.display = 'none';
+            if (wrapper) dojo.removeClass(wrapper, '_7sfs-duel-expand-visible');
+            return;
+        }
+
+        prompt.style.display = '';
+        if (wrapper) dojo.addClass(wrapper, '_7sfs-duel-expand-visible');
+        if (dojo.hasClass(table, '_7sfs-duel-collapsed')) {
+            prompt.innerHTML = _('Show earlier rounds') + ' ▾';
+        } else {
+            prompt.innerHTML = _('Hide earlier rounds') + ' ▴';
+        }
+    },
+
     displayDuelRow: function(row)
     {
         const headerRow = $('duel_header_row');
@@ -2257,6 +2304,7 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.addTippyTooltip(`duel_round_${row.round}_wounds`, `<div class='_7sfs-basic-tooltip'>${_("The amount of wounds the Actor took, or will take, for this round")}</div>` );
 
         this.updateDuelScrollWidth();
+        this.updateDuelExpandPrompt();
     },
 
     showApproachDeckAtTop: function() {
