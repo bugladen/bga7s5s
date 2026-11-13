@@ -176,14 +176,14 @@ Printed shapes:
 - **Volk `_05Volk`:** `<b>Reaction:</b> After an opposing character moves • Move Volk to their new location.`
 - **Horatio `_01066`:** `<b>City Reaction:</b> After an opposing character moved to an adjacent location • Move Horatio to their new location.`
 
-Listen on `EventCardMoved` (past-tense). **Do not treat these as the same pattern** — playtests split them:
+Listen on `EventCardMoved` (past-tense). **Both require leave-from-here** ("opposing" = co-located). Horatio alone adds adjacent; Volk cannot follow Home:
 
 | | Volk (plain Reaction) | Horatio (City Reaction) |
 |---|---|---|
-| Owner scope | `cardInCity` ("opposing" is city-scoped; Home has none) | `cardInCity` |
+| Owner scope | `cardInCity` (Home has no opposing) | `cardInCity` |
 | Who | enemy-controlled Character | enemy-controlled Character |
-| Origin | any play site (Home or city) | **`fromLocation == owner.Location`** (leave-from-here) |
-| Destination | any other play site | **adjacent** city only (`getAdjacentCityLocations(..., false)`) |
+| Origin | **`fromLocation == owner.Location`** (leave-from-here) | **`fromLocation == owner.Location`** |
+| Destination | **other city** only (not Home) | **adjacent** city only (`getAdjacentCityLocations(..., false)`) |
 
 ```php
 if (! ($event instanceof EventCardMoved) || ! $this->isAvailable()) return;
@@ -198,14 +198,12 @@ $character = $event->theah->getCardById($event->cardId);
 if (! ($character instanceof Character)) return;
 if ($character->ControllerId == 0 || $character->ControllerId == $owner->ControllerId) return;
 
-// Horatio ONLY — leave-from-here (City opposing). Volk omits this:
-// if ($event->fromLocation != $owner->Location) return;
+// Both: leave-from-here. Enemy leaving their Home was never opposing.
+if ($event->fromLocation != $owner->Location) return;
 
-$from = $event->fromLocation;
 $to = $event->toLocation;
-if ($from != Game::LOCATION_PLAYER_HOME && ! $event->theah->locationInCity($from)) return;
-if ($to != Game::LOCATION_PLAYER_HOME && ! $event->theah->locationInCity($to)) return;
-if ($to == $owner->Location) return;  // already there — useless Follow
+// Volk: other city only — cannot follow Home (dead prompt + shared HOME string).
+if (! $event->theah->locationInCity($to) || $to == $owner->Location) return;
 
 // Horatio ONLY — adjacent city:
 // if (! in_array($to, $event->theah->getAdjacentCityLocations($owner->Location, false))) return;
@@ -215,13 +213,13 @@ $owner->IsUpdated = true;
 $event->theah->queueEvent(EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id));
 ```
 
-**UI:** Follow + Pass buttons (no state / no JS). On Follow: `createCardMovingEvent(..., $engage=false, …)`; `setUsed(true)` only on a real move. Re-check `cardInCity($owner)` in `performReaction`.
+**UI:** Follow + Pass buttons (no state / no JS). On Follow: `createCardMovingEvent(..., $engage=false, …)`; `setUsed(true)` only on a real move. Re-check `cardInCity($owner)` + city dest in `performReaction`.
 
-**WHY Volk is not leave-from-here:** copying Horatio's `fromLocation == owner.Location` blocked Volk in the city when an opponent left **their** Home for another city. Printed text has no City / adjacent / "at this location" wording — "opposing" = enemy-controlled **while Volk is in the city** (not `cardInPlay`; Home has no opposing characters).
+**WHY leave-from-here on Volk:** "opposing" means co-located. An earlier playtest wrongly widened to any enemy play→play (so city-Volk followed Home→Forum). Corrected: Home leavers were never opposing. **WHY not Home dest:** playtest — prompt offered on Home move but Volk cannot follow Home; also `LOCATION_PLAYER_HOME` is shared across players. Difference from Horatio is **any city dest vs adjacent city**, not Home.
 
 Contrast Ise `Reaction_03016b` (arrive-here → pull ally).
 
-Reference: `Reaction_05Volk` (city owner + any enemy play→play), `Reaction_01066` (leave-from-here + adjacent).
+Reference: `Reaction_05Volk` (leave-from-here + other city), `Reaction_01066` (leave-from-here + adjacent).
 
 ### After a character equips an attachment at a location
 
@@ -687,7 +685,7 @@ Reference: `Reaction_03003` (Don Constanzo) — the canonical muster/pay impleme
 | `Reaction_03016a` (Schwester Ise — Dusk opt-out) | **Canonical cancel-and-reissue Reaction.** Listens on `EventCardMoving` for the Dusk auto-move home (`sourceId == 0`, `toLocation == LOCATION_PLAYER_HOME`, `TURN_PHASE == DUSK`). Cancels and prompts; "Keep in city" calls `setUsed`, "Decline" re-queues the cloned event with `cancelDeclinedByCardIds[] = owner.Id`. Uses `stackEvent` so the prompt jumps ahead of other queued dusk cleanup. In-hand sibling: `Reaction_01140`. |
 | `Reaction_03016b` (Schwester Ise — pull a friendly) | **Canonical "after enemy moves to my location" reaction.** Listens on `EventCardMoved` with `cardId != owner.Id`, `toLocation == owner.Location`, `cardInCity(owner)`, enemy controller check; button per eligible mover (own characters not at owner's location); queues `createCardMovingEvent` for the chosen character to the owner's location. |
 | `Reaction_01066` (Horatio — follow adjacent) | **"After opposing moved to adjacent • Move Owner there."** Leave-from-here (`fromLocation == owner.Location`) + adjacent city gate; stash destination; Follow/Pass; Owner `createCardMovingEvent(engage=false)`. City Reaction. |
-| `Reaction_05Volk` (Volk — follow any enemy move) | Enemy play→play anywhere while Owner is `cardInCity` (Home has no opposing). **Not** leave-from-here (unlike Horatio). Prototype: no `clienttranslate`. Contrast Ise arrive-here. |
+| `Reaction_05Volk` (Volk — follow opposing leave) | Leave-from-here while Owner is `cardInCity`; other city dest only (not Home; no adjacent gate). Prototype: no `clienttranslate`. Contrast Horatio adjacent / Ise arrive-here. |
 | `Reaction_03040` (Soline el Gato — any character arrives) | **"After a character moves here"** without enemy gate — allies trigger too. Effect: button-per-other-city-location + Pass; `createCardMovingEvent(engage=false)` for Soline herself. Contrast `Reaction_03016b` (enemy-only) and `Reaction_01089` (adjacent-only after Action resolves). |
 | `Reaction_04003a` (Desideria — Thug destroy → hand) | **En Garde City Reaction** + duel/opponent cause gate + **deferred mid-duel Hand return**. `EventCharacterWounded` marks opponent lethal; Destroyed ORs `IN_DUEL`; locker/discard → hand; `stDuelEnd` flush. |
 | `Reaction_04003b` (Desideria — after Sorcerer ability) | Wound self + draw; **not** `ISorcererAbility`; Cesca/Elina `sourceId`/`performerId` identity. |

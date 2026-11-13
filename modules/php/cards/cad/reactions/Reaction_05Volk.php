@@ -55,9 +55,9 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
-        // WHY: "After an opposing character moves" — "opposing" is city-scoped (Home has
-        // none). Plain Reaction (not Horatio City Reaction) but still requires Volk in the
-        // city — not cardInPlay. Horatio additionally needs leave-from-here + adjacent.
+        // WHY: "opposing" = enemy at same location (city-scoped; Home has none). Volk must
+        // be in the city — not cardInPlay. Leave-from-here is required: an enemy leaving
+        // their Home was never opposing Volk. Horatio adds adjacent; Volk does not.
         if (! $event->theah->cardInCity($owner))
         {
             return;
@@ -69,31 +69,23 @@ class Reaction_05Volk extends CardReaction
             return;
         }
 
-        // WHY: "opposing" = enemy-controlled (not leave-from-here). Horatio needs
-        // fromLocation == owner. Volk follows any enemy play→play move while in city,
-        // including Home → city while Volk is elsewhere.
         if ($character->ControllerId == 0 || $character->ControllerId == $owner->ControllerId)
         {
             return;
         }
 
+        // WHY: Must have been opposing Volk — fromLocation is where they left (EventCardMoved
+        // fires after the move, so character.Location is already the destination).
         $fromLocation = $event->fromLocation;
-        if ($fromLocation != Game::LOCATION_PLAYER_HOME
-            && ! $event->theah->locationInCity($fromLocation))
+        if ($fromLocation != $owner->Location)
         {
             return;
         }
 
-        // WHY: Any city destination or Home. Skip discard/locker so Follow is never dead.
+        // WHY: City destinations only — Volk cannot follow Home (shared HOME string would
+        // also be ambiguous). Skip discard/locker so Follow is never a dead prompt.
         $toLocation = $event->toLocation;
-        if ($toLocation != Game::LOCATION_PLAYER_HOME
-            && ! $event->theah->locationInCity($toLocation))
-        {
-            return;
-        }
-
-        // WHY: Already there — "move to their new location" would be a no-op prompt.
-        if ($toLocation == $owner->Location)
+        if (! $event->theah->locationInCity($toLocation) || $toLocation == $owner->Location)
         {
             return;
         }
@@ -118,7 +110,7 @@ class Reaction_05Volk extends CardReaction
                 && $game->theah->cardInCity($owner)
                 && $destination !== ''
                 && $destination != $owner->Location
-                && ($destination == Game::LOCATION_PLAYER_HOME || $game->theah->locationInCity($destination)))
+                && $game->theah->locationInCity($destination))
             {
                 $game->notify->all("message", '${reaction_inject_code}: ${player_name} used Reaction and followed to ${location_name}.', [
                     "reaction_inject_code" => $owner->getInjectCode(),

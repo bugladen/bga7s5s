@@ -56,23 +56,20 @@ class Reaction_05Volk_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'Home has no opposing');
             },
 
-            // WHY: Not leave-from-here; Volk follows any enemy play→play move while in city
-            // (unlike Horatio). Includes opponent Home → other city.
-            'offers when Volk is in the city and an opponent leaves Home for another city' => function () {
+            // WHY: Leaving Home is never "opposing" — they weren't at Volk's location.
+            'does not offer when an opponent leaves Home' => function () {
                 $world = new TestWorld();
-                [$volk, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
+                [, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
 
                 $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM));
 
-                $transitions = $world->theah->queuedOfType(EventTransition::class);
-                Assert::count(1, $transitions, 'offered');
-                Assert::same($volk->Id, $transitions[0]->sourceId, 'source');
+                Assert::count(0, $world->theah->queuedEvents, 'not opposing');
             },
 
-            'follow from city moves Volk to the Forum without engaging' => function () {
+            'follow from city moves Volk to the destination without engaging' => function () {
                 $world = new TestWorld();
                 [$volk, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
-                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM));
+                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM));
 
                 $reaction->performReaction($world->game, 0, $reaction->Id, 'followCharacter');
 
@@ -96,13 +93,23 @@ class Reaction_05Volk_Test extends TestCase
                 Assert::same($volk->Id, $transitions[0]->sourceId, 'source');
             },
 
-            'does not offer when the destination is already Volk location' => function () {
+            // WHY: Volk cannot follow Home — dead prompt if offered.
+            'does not offer when opposing leaves Volk for Home' => function () {
+                $world = new TestWorld();
+                [, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
+
+                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_CITY_DOCKS, Game::LOCATION_PLAYER_HOME));
+
+                Assert::count(0, $world->theah->queuedEvents, 'cannot follow Home');
+            },
+
+            'does not offer when an enemy arrives at Volk without leaving from here' => function () {
                 $world = new TestWorld();
                 [, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_FORUM);
 
-                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM));
+                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_CITY_BAZAAR, Game::LOCATION_CITY_FORUM));
 
-                Assert::count(0, $world->theah->queuedEvents, 'already there');
+                Assert::count(0, $world->theah->queuedEvents, 'arrive is not leave-from-here');
             },
 
             'does not offer for own characters moving' => function () {
@@ -110,7 +117,7 @@ class Reaction_05Volk_Test extends TestCase
                 [, , $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
                 $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_FORUM, 1);
 
-                $reaction->handleEvent($this->moved($world, $ally->Id, Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM));
+                $reaction->handleEvent($this->moved($world, $ally->Id, Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM));
 
                 Assert::count(0, $world->theah->queuedEvents, 'friendly');
             },
@@ -119,7 +126,7 @@ class Reaction_05Volk_Test extends TestCase
                 $world = new TestWorld();
                 [, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
 
-                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_PLAYER_HOME, 'Discard-2'));
+                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_CITY_DOCKS, 'Discard-2'));
 
                 Assert::count(0, $world->theah->queuedEvents, 'discard');
             },
@@ -129,7 +136,7 @@ class Reaction_05Volk_Test extends TestCase
                 [, $foe, $reaction] = $this->armedAt($world, Game::LOCATION_CITY_DOCKS);
                 $reaction->Used = true;
 
-                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_PLAYER_HOME, Game::LOCATION_CITY_FORUM));
+                $reaction->handleEvent($this->moved($world, $foe->Id, Game::LOCATION_CITY_DOCKS, Game::LOCATION_CITY_FORUM));
 
                 Assert::count(0, $world->theah->queuedEvents, 'used');
             },
