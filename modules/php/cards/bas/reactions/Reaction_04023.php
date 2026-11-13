@@ -298,6 +298,7 @@ class Reaction_04023 extends CardReaction
         $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($owner->ControllerId, 4);
         $names = [];
         $ids = [];
+        $cards = [];
         $attachmentCount = 0;
         foreach ($deckCards as $deckCard)
         {
@@ -308,6 +309,11 @@ class Reaction_04023 extends CardReaction
             }
             $ids[] = (int) $card->Id;
             $names[] = $card->getInjectCode();
+            // WHY cards[]: faction-deck cards are not in opponents' cardProperties;
+            // format_string_recursive_with_injection seeds logCardCache from notify
+            // args (id+type objects, including arrays) so text/image log tooltips
+            // hydrate. Inject codes alone fall back to "Name (Attachment)".
+            $cards[] = $card->getPropertyArray($game);
             if ($card instanceof Attachment)
             {
                 $attachmentCount++;
@@ -319,6 +325,7 @@ class Reaction_04023 extends CardReaction
             'player_name' => $game->getPlayerNameById($owner->ControllerId),
             'count' => $attachmentCount,
             'names' => implode(', ', $names),
+            'cards' => $cards,
         ]);
 
         $this->remainingCardIds = $ids;
@@ -550,11 +557,16 @@ class Reaction_04023 extends CardReaction
 
         $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $character->Id);
 
+        // WHY card_* property arrays: attachment was still in the faction deck —
+        // opponents lack it in cardProperties. Seed logCardCache via id+type objects
+        // (same as Reaction_04042 / Risk-play announce).
         $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} equips ${attachment_inject_code} to ${character_inject_code} from the revealed cards.'), [
             "reaction_inject_code" => $owner->getInjectCode(),
             "player_name" => $game->getPlayerNameById($owner->ControllerId),
             "attachment_inject_code" => $attachment->getInjectCode(),
             "character_inject_code" => $character->getInjectCode(),
+            "card_" . $attachment->Id => $attachment->getPropertyArray($game),
+            "card_" . $character->Id => $character->getPropertyArray($game),
         ]);
 
         $equipEvent = EventFactory::createAttachmentEquippedEvent(

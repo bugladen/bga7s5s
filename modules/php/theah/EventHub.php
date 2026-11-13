@@ -406,10 +406,14 @@ trait EventHub
                         ? clienttranslate('${player_name} added ${card_inject_code} to the top of the City Deck.') 
                         : clienttranslate('${player_name} sunk ${card_inject_code} to the bottom of the City Deck.');
 
+                    // WHY card: deck cards (esp. just-revealed / city) are often absent from
+                    // opponents' cardProperties. Seed logCardCache so sink/add log hover
+                    // hydrates — inject codes alone fall back to "Name (Type)".
                     $theah->game->notify->all("cardAddedToCityDeck", $message, [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
                         "cardId" => $card->Id,
+                        "card" => $card->getPropertyArray($theah->game),
                     ]);
                 };
                 $handler($this, $event);
@@ -432,9 +436,12 @@ trait EventHub
                         ? clienttranslate('${player_name} added ${card_inject_code} to the top of their Faction Deck.') 
                         : clienttranslate('${player_name} sunk ${card_inject_code} to the bottom of their Faction Deck.');
 
+                    // WHY card: same as CityDeck sink — Monet reveal-then-sink and other
+                    // faction-deck sinks need logCardCache seeded for text hover.
                     $theah->game->notify->all("message", $message, [
                         "player_name" => $theah->game->getPlayerNameById($event->playerId),
                         "card_inject_code" => $card->getInjectCode(),
+                        "card" => $card->getPropertyArray($theah->game),
                     ]);
                 };
                 $handler($this, $event);

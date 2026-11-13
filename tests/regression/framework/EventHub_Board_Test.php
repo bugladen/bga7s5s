@@ -293,6 +293,21 @@ class EventHub_Board_Test extends TestCase
                 );
             },
 
+            // WHY: Faction-deck sinks (Monet reveal rest, Otto, etc.) put inject codes in
+            // the public log. Without card property arrays, text hover falls back to
+            // "Name (Type)" because opponents lack those cards in cardProperties.
+            'CardAddedToFactionDeck sink notify seeds card for log hover' => function () {
+                $world = $this->world();
+                $c = $world->placeCard(new GenericAttachment('Jacket'), 'Deck-1', 1);
+                $world->game->notify->messages = [];
+                $world->applyHub(EventFactory::createCardAddedToFactionDeckEvent(1, $c->Id, false));
+                $note = $world->game->notify->messages[0];
+                Assert::contains('sunk ${card_inject_code}', $note['message'], 'sink log');
+                Assert::true(isset($note['args']['card']), 'card present');
+                Assert::same($c->Id, $note['args']['card']['id'], 'id');
+                Assert::same('Attachment', $note['args']['card']['type'], 'type');
+            },
+
             'CardHidden moves to permanently hidden' => function () {
                 $world = $this->world();
                 $c = $world->placeCard(new GenericAttachment('Secret'), Game::LOCATION_HAND, 1);

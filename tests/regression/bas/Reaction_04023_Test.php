@@ -63,6 +63,14 @@ class Reaction_04023_Test extends TestCase
                 Assert::same($risk->Id, $sink->cardId, 'sunk card');
                 Assert::false($sink->onTop, 'bottom');
 
+                // WHY: Hub sink notify must seed card so log hover hydrates (same class
+                // of bug as reveal without cards[]). Drain via applyHub.
+                $world->game->notify->messages = [];
+                $world->applyHub($sink);
+                $sinkNote = $world->game->notify->messages[0];
+                Assert::contains('sunk ${card_inject_code}', $sinkNote['message'], 'sink log');
+                Assert::same($risk->Id, $sinkNote['args']['card']['id'], 'hydrated');
+
                 $reaction->Used = false;
                 $monet->Engaged = true;
                 $world->theah->takeQueuedEvents();
@@ -100,6 +108,28 @@ class Reaction_04023_Test extends TestCase
                 Assert::same($monet->Id, $equip->characterId, 'host');
                 Assert::same($bow->Id, $equip->attachmentId, 'attachment');
                 Assert::same(0, $equip->cost, 'free');
+            },
+
+            // WHY: Faction-deck reveals are not in opponents' cardProperties. Without
+            // cards[] on the reveal notify, text hover falls back to "Name (Attachment)".
+            'reveal notify seeds cards[] for log hover hydration' => function () {
+                $world = new TestWorld();
+                $monet = $world->placeCharacter(new _04023(), Game::LOCATION_CITY_DOCKS, 1);
+                $bow = $world->placeCard(new _04017(), 'Deck-1', 1);
+                $risk = $world->placeCard(new _04027(), 'Deck-1', 1);
+                $world->game->topFactionCards = [['id' => $bow->Id], ['id' => $risk->Id]];
+                /** @var Reaction_04023 $reaction */
+                $reaction = $monet->getReactions()[0];
+
+                $world->game->notify->messages = [];
+                $reaction->performReaction($world->game, 0, '', 'reveal');
+                $note = $world->game->notify->messages[0];
+                Assert::contains('reveals the top cards', $note['message'], 'reveal log');
+                Assert::true(isset($note['args']['cards']), 'cards[] present');
+                Assert::count(2, $note['args']['cards'], 'both revealed');
+                Assert::same($bow->Id, $note['args']['cards'][0]['id'], 'attachment first');
+                Assert::same('Attachment', $note['args']['cards'][0]['type'], 'attachment type');
+                Assert::same($risk->Id, $note['args']['cards'][1]['id'], 'risk second');
             },
         ];
     }
