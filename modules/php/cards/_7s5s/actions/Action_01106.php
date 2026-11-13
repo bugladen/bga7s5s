@@ -264,9 +264,11 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
                 $game->theah->queueEvent($transition);
             }
 
-            // createActionResolvedEvent for this action is queued by _01106_RiskClone::handleEvent
-            // after the cloned risk is discarded from hand — the action is only truly resolved once
-            // the chosen risk has been paid for and played.
+            // Improvising cleanup (sink stolen risk, locker this card) is deferred by
+            // _01106_RiskClone until EventActionResolved for the cloned action — card text
+            // "After it resolves". Do not resolve/hide the shell on discard-from-hand.
+            // createActionResolvedEvent() is emitted by the stolen action (or UL cancel),
+            // not by Improvising itself — RiskClone cleanup keys off that event.
 
             $game->gamestate->nextState("actionChosen");
         }

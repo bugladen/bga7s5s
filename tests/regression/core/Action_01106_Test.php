@@ -10,16 +10,23 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\Assert;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01058;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01105;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01106;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01106_RiskClone;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01058;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01105;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01106;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01106_Test extends TestCase
@@ -193,6 +200,75 @@ class Action_01106_Test extends TestCase
                     'performer chooser (RequiresPerformerSelected)'
                 );
                 Assert::same(['actionChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            // WHY (live report): Improvising → Press the Advantage. Costs paid, target
+            // chosen (log: engage and move HOME), but Permanently Hidden on discard
+            // dropped the shell from buildCity — CharacterTargeted never reached
+            // Action_01058::handleEvent, so no board move. Shell must stay PendingCleanup
+            // in discard until the stolen action's ActionResolved.
+            'Improvised Press the Advantage still engages and moves after clone discard' => function () {
+                $world = new TestWorld();
+                $performer = $world->placeCharacter(new GenericCharacter('Mine'), Game::LOCATION_CITY_DOCKS, 1);
+                $performer->Combat = 3;
+                $performer->ModifiedCombat = 3;
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $foe->Combat = 1;
+                $foe->ModifiedCombat = 1;
+
+                $original = $world->placeCard(new _01058(), Game::LOCATION_PERMANENTLY_HIDDEN, 2);
+                $improv = $world->placeCard(new _01106(), 'Discard-1', 1);
+                $clone = $world->placeCard(new _01106_RiskClone(), Game::LOCATION_HAND, 1);
+                $clone->OwnerId = 2;
+                $clone->ControllerId = 1;
+                $clone->ClonedCardId = $original->Id;
+                $clone->ParentCardId = $improv->Id;
+                $clone->Name = $original->Name;
+
+                /** @var Action_01058 $stolenAction */
+                $stolenAction = $original->getActions()[0];
+                $clonedAction = clone $stolenAction;
+                $clonedAction->setOwnerId($clone->Id);
+                $clone->addAction($clonedAction, $world->game, false);
+
+                $discarded = new EventCardDiscardedFromHand();
+                $discarded->cardId = $clone->Id;
+                $discarded->ownerId = 2;
+                $world->fireOn($clone, $discarded);
+                $clone->Location = 'Discard-2';
+
+                Assert::true($clone->PendingCleanup, 'awaiting resolve');
+                Assert::count(0, $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class), 'not hidden yet');
+
+                $world->theah->queuedEvents = [];
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $world->game->globals->set(Game::CHOSEN_ACTION, $clonedAction->Id);
+
+                // Simulate post-pay request: shell still in discard → in $this->cards.
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $clonedAction->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $clone->Id;
+                $targeted->batchId = 7;
+                $world->fire($targeted);
+
+                Assert::count(1, $world->theah->queuedOfType(EventCardEngaged::class), 'engage');
+                $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::count(1, $moves, 'move');
+                Assert::same($foe->Id, $moves[0]->cardId, 'foe moves');
+                Assert::same(Game::LOCATION_PLAYER_HOME, $moves[0]->toLocation, 'Home');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'stolen resolves');
+
+                $world->theah->queuedEvents = [];
+                $resolved = new EventActionResolved();
+                $resolved->playerId = 1;
+                $world->fire($resolved);
+
+                Assert::false($clone->PendingCleanup, 'cleaned');
+                Assert::true(
+                    $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class)[0]->permanentlyHide,
+                    'shell hidden after resolve'
+                );
             },
         ];
     }
