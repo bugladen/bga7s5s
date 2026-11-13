@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01014 extends CardReaction
@@ -49,18 +50,20 @@ class Reaction_01014 extends CardReaction
     public function getReactionDescription(Theah $theah): string
     {
         $message = '';
-        if ($this->inHandThug)
-        {
-            $message = $theah->game->translate('${you} may choose a Thug in your Hand to put into play: ');
-        }
-        if ($this->inPlayThug)
-        {
-            $message = $theah->game->translate('${you} may choose a Thug at Vittoria\'s Location as the new target: ');
-        }
-
+        // WHY: Phases are mutually exclusive. Non-exclusive ifs used to let a stale
+        // inPlayThug overwrite the hand-muster prompt while hand buttons still showed
+        // (UL 01032 same class of flag leak).
         if ($this->moveHome)
         {
             $message = $theah->game->translate('${you} may choose to move Vittoria Home: ');
+        }
+        else if ($this->inHandThug)
+        {
+            $message = $theah->game->translate('${you} may choose a Thug in your Hand to put into play: ');
+        }
+        else if ($this->inPlayThug)
+        {
+            $message = $theah->game->translate('${you} may choose a Thug at Vittoria\'s Location as the new target: ');
         }
 
         return parent::getReactionDescription($theah) . $message;
@@ -71,14 +74,18 @@ class Reaction_01014 extends CardReaction
         $array = parent::getReactionButtonProperties($theah);
 
         $owner = $this->getOwningCharacter($theah);
-        if ($this->inHandThug)
+        if ($this->moveHome)
+        {
+            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Move Home'), 'moveHome');
+        }
+        else if ($this->inHandThug)
         {
             foreach ($this->getEligibleHandThugs($theah) as $card)
             {
                 $array[] = $this->createButtonProperty($theah->game, $card->Name, "putIntoPlay-$card->Id");
             }
         }
-        if ($this->inPlayThug)
+        else if ($this->inPlayThug)
         {
             $characters = $theah->getCharactersAtLocation($owner->Location);
             $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
@@ -87,13 +94,39 @@ class Reaction_01014 extends CardReaction
                 $array[] = $this->createButtonProperty($theah->game, $character->Name, "putIntoPlay-$character->Id");
             }
         }
-        if ($this->moveHome)
-        {
-            $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Move Home'), 'moveHome');
-        }
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Decline'), 'decline');
         return $array;
+    }
+
+    // WHY: Exactly one phase flag at a time. Decline-hand-with-no-in-play used to leave
+    // inPlayThug=true; dusk only clears Used, so the next day's CharacterTargeted set
+    // inHandThug without clearing inPlayThug. UI then said "new target" while offering
+    // hand Thugs; performReaction prefers inPlayThug → no muster → isValidTarget fails
+    // (still in HAND) → Challenge cancelled. Same shape as UL Reaction_01032 flag leak.
+    private function clearPhaseFlags(): void
+    {
+        $this->inHandThug = false;
+        $this->inPlayThug = false;
+        $this->moveHome = false;
+    }
+
+    private function beginHandThugPhase(): void
+    {
+        $this->clearPhaseFlags();
+        $this->inHandThug = true;
+    }
+
+    private function beginInPlayThugPhase(): void
+    {
+        $this->clearPhaseFlags();
+        $this->inPlayThug = true;
+    }
+
+    private function beginMoveHomePhase(): void
+    {
+        $this->clearPhaseFlags();
+        $this->moveHome = true;
     }
 
     // WHY: Match Unyielding Loyalty / Maryam — abilities that gate effects on
@@ -198,6 +231,13 @@ class Reaction_01014 extends CardReaction
     {
         parent::handleEvent($event);
 
+        // WHY: CardReaction dusk only clears Used. Phase flags persist on the serialized
+        // reaction — clear them here so a prior day's decline leak cannot poison today.
+        if ($event instanceof EventDuskEndOfDay)
+        {
+            $this->clearPhaseFlags();
+        }
+
         if ($event instanceof EventCardEngaged && $this->isAvailable() && !$event->canceled)
         {
             $owner = $this->getOwningCharacter($event->theah);
@@ -215,7 +255,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->engagedEvent = clone $event;
                     unset($this->engagedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->beginHandThugPhase();                    
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -227,7 +267,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->engagedEvent = clone $event;
                     unset($this->engagedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;                        
 
                     $this->cancelHeldEvent($event);
@@ -255,7 +295,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->engardedEvent = clone $event;
                     unset($this->engardedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->beginHandThugPhase();                    
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -267,7 +307,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->engardedEvent = clone $event;
                     unset($this->engardedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;                        
 
                     $this->cancelHeldEvent($event);
@@ -295,7 +335,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->cardMovingEvent = clone $event;
                     unset($this->cardMovingEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->beginHandThugPhase();                    
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -307,7 +347,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->cardMovingEvent = clone $event;
                     unset($this->cardMovingEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;                        
 
                     $this->cancelHeldEvent($event);
@@ -336,7 +376,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterWoundedEvent = clone $event;
                     unset($this->characterWoundedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->beginHandThugPhase();                    
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -348,7 +388,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterWoundedEvent = clone $event;
                     unset($this->characterWoundedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;                        
 
                     $this->cancelHeldEvent($event);
@@ -377,7 +417,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterHealedEvent = clone $event;
                     unset($this->characterHealedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->beginHandThugPhase();                    
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -389,7 +429,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterHealedEvent = clone $event;
                     unset($this->characterHealedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;                        
 
                     $this->cancelHeldEvent($event);
@@ -417,7 +457,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterTargetedEvent = clone $event;
                     unset($this->characterTargetedEvent->theah);
-                    $this->inHandThug = true;
+                    $this->beginHandThugPhase();
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -429,7 +469,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterTargetedEvent = clone $event;
                     unset($this->characterTargetedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -464,7 +504,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->challengeIssuedEvent = clone $event;
                     unset($this->challengeIssuedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->beginHandThugPhase();                    
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -480,7 +520,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->challengeIssuedEvent = clone $event;
                     unset($this->challengeIssuedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;                        
 
                     $this->cancelHeldEvent($event);
@@ -511,7 +551,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterIntervenedEvent = clone $event;
                     unset($this->characterIntervenedEvent->theah);
-                    $this->inHandThug = true;                    
+                    $this->beginHandThugPhase();                    
                     $owner->IsUpdated = true;
 
                     $this->cancelHeldEvent($event);
@@ -523,7 +563,7 @@ class Reaction_01014 extends CardReaction
                 {
                     $this->characterIntervenedEvent = clone $event;
                     unset($this->characterIntervenedEvent->theah);
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $owner->IsUpdated = true;                        
 
                     $this->cancelHeldEvent($event);
@@ -690,13 +730,10 @@ class Reaction_01014 extends CardReaction
                 $event = EventFactory::createCardMovingEvent($owner->ControllerId, $owner->Id, $owner->Location, Game::LOCATION_PLAYER_HOME, $engage=false, $owner->Id);
                 $game->theah->queueEvent($event);
 
-                $this->moveHome = false;
                 $owner->IsUpdated = true;
             }
 
-            $this->inHandThug = false;
-            $this->inPlayThug = false;
-            $this->moveHome = false;
+            $this->clearPhaseFlags();
             $this->setUsed($game->theah, true);
         }
         else if ($this->inPlayThug)
@@ -755,18 +792,17 @@ class Reaction_01014 extends CardReaction
                     }
                 }
 
-                $this->inPlayThug = false;
                 $owner->IsUpdated = true;
 
                 if ($thugWasTargeted)
                 {
-                    $this->inHandThug = false;
-                    $this->moveHome = true;
+                    $this->beginMoveHomePhase();
                     $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $game->theah->queueEvent($transitionEvent);
                 }
                 else
                 {
+                    $this->clearPhaseFlags();
                     $this->setUsed($game->theah, true);
                 }
             }
@@ -775,7 +811,7 @@ class Reaction_01014 extends CardReaction
             {
                 $owner = $this->getOwningCharacter($game->theah);
                 $this->releaseEvent($game, $owner->Id);
-                $this->inPlayThug = false;
+                $this->clearPhaseFlags();
                 $this->skipNextEvent = true;
                 $owner->IsUpdated = true;
 
@@ -798,8 +834,7 @@ class Reaction_01014 extends CardReaction
                     "character_inject_code" => $character->getInjectCode(),
                 ]);
 
-                $this->inHandThug = false;
-                $this->inPlayThug = true;
+                $this->beginInPlayThugPhase();
                 $owner->IsUpdated = true;
 
                 $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -810,22 +845,24 @@ class Reaction_01014 extends CardReaction
             if ($reactionId == 'decline')
             {
                 $owner = $this->getOwningCharacter($game->theah);
-                $this->inHandThug = false;
-                $this->inPlayThug = true;
                 $owner->IsUpdated = true;
 
                 $characters = $game->theah->getCharactersAtLocation($owner->Location);
                 $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
                 if (count($characters) > 0)
                 {
-                    $this->inPlayThug = true;
+                    $this->beginInPlayThugPhase();
                     $transitionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
-                    $game->theah->queueEvent($transitionEvent);                    
+                    $game->theah->queueEvent($transitionEvent);
                 }
                 else
                 {
-                    $this->releaseEvent($game, $owner->Id);  // Add this line!
-                    $this->skipNextEvent = true;              // Add this to prevent re-triggering
+                    // WHY: Do not set inPlayThug before this check — that leaked true when
+                    // there were no location Thugs, survived dusk Used-reset, and poisoned
+                    // the next day's hand-muster UI (inPlayThug path + hand buttons).
+                    $this->clearPhaseFlags();
+                    $this->releaseEvent($game, $owner->Id);
+                    $this->skipNextEvent = true;
                     $this->setUsed($game->theah, true);
                 }
             }

@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01014;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01018;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01014;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04045;
@@ -25,6 +26,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use ReflectionProperty;
@@ -545,6 +547,99 @@ class Reaction_01014_Test extends TestCase
                 Assert::same($thug->Id, $released[0]->targetId, 'thug is new target');
                 Assert::same($thug->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'CHOSEN_TARGET');
                 Assert::false($reaction->Used, 'move-home still pending');
+            },
+
+            // WHY: Decline hand-muster with no location Thug used to leave inPlayThug=true.
+            // Dusk only cleared Used — next challenge set inHandThug too → UI said "new
+            // target" while offering hand Thugs; click ran inPlayThug path → no muster →
+            // isValidTarget fails → Challenge cancelled (Joern vs Vittoria + Angelo report).
+            'decline hand with no location Thug clears inPlayThug' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $angelo = $world->placeCard(new _01018(), Game::LOCATION_HAND, 1);
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 2);
+                $prop = new ReflectionProperty(Theah::class, 'Actions');
+                $prop->setAccessible(true);
+                $actions = $prop->getValue($world->theah);
+                $actions[] = new BasicChallengeAction();
+                $prop->setValue($world->theah, $actions);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $vittoria->Id;
+                $event->sourceId = $challenger->Id;
+                $event->abilityId = 'BasicChallenge';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'decline');
+
+                $inPlay = new ReflectionProperty(Reaction_01014::class, 'inPlayThug');
+                $inPlay->setAccessible(true);
+                $inHand = new ReflectionProperty(Reaction_01014::class, 'inHandThug');
+                $inHand->setAccessible(true);
+                Assert::false($inPlay->getValue($reaction), 'inPlayThug cleared');
+                Assert::false($inHand->getValue($reaction), 'inHandThug cleared');
+                Assert::true($reaction->Used, 'spent');
+                Assert::same($angelo->Location, Game::LOCATION_HAND, 'Angelo stays in hand');
+            },
+
+            'stale inPlayThug plus hand Thug still musters on challenge target' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $angelo = $world->placeCard(new _01018(), Game::LOCATION_HAND, 1);
+                $challenger = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 2);
+                $prop = new ReflectionProperty(Theah::class, 'Actions');
+                $prop->setAccessible(true);
+                $actions = $prop->getValue($world->theah);
+                $actions[] = new BasicChallengeAction();
+                $prop->setValue($world->theah, $actions);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $challenger->Id);
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                // Simulate prior-day decline leak that survived dusk Used-reset.
+                $inPlay = new ReflectionProperty(Reaction_01014::class, 'inPlayThug');
+                $inPlay->setAccessible(true);
+                $inPlay->setValue($reaction, true);
+
+                $dusk = new EventDuskEndOfDay();
+                $dusk->theah = $world->theah;
+                $reaction->handleEvent($dusk);
+                Assert::false($inPlay->getValue($reaction), 'dusk clears stale inPlayThug');
+
+                // Re-poison as if dusk fix were missing — beginHandThugPhase must still win.
+                $inPlay->setValue($reaction, true);
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $vittoria->Id;
+                $event->sourceId = $challenger->Id;
+                $event->abilityId = 'BasicChallenge';
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'held');
+                $desc = $reaction->getReactionDescription($world->theah);
+                Assert::contains('Hand', $desc, 'hand-muster prompt, not new-target');
+                Assert::false($inPlay->getValue($reaction), 'beginHandThugPhase cleared stale inPlay');
+
+                $world->theah->takeQueuedEvents();
+                $reaction->performReaction(
+                    $world->game,
+                    States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS,
+                    $reaction->Id,
+                    'putIntoPlay-' . $angelo->Id
+                );
+
+                Assert::count(1, $world->theah->queuedOfType(EventCharacterMustered::class), 'mustered');
+                Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'challenge not cancelled');
             },
         ];
     }
