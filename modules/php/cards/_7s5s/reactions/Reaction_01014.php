@@ -5,6 +5,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02034;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
@@ -652,6 +653,25 @@ class Reaction_01014 extends CardReaction
         if ($cancelsInFlightChallenge)
         {
             $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+        }
+
+        // WHY: Torvo's accept/decline (02034_2) is emitted only if CharacterTargeted
+        // survives. Failed Thug redirect (Combat < 2) drops the held event with no
+        // re-queue — nothing else ActionResolves and High Drama would hang. Same
+        // special-case shape as UL → Action_01078 (Defending Honor) outside 4511.
+        // Do not generalize: Giacinto/Sibella may already have queued unbatched
+        // ActionResolved before we canceled (city order) → double resolve.
+        if ($targeted !== null
+            && ! $cancelsInFlightChallenge
+            && $state !== States::HIGH_DRAMA_CHALLENGE_ACTION_TARGET_CHOSEN_REACTIONS)
+        {
+            $source = $game->theah->getCardById($targeted->sourceId);
+            $ability = $source?->getAbilityById($targeted->abilityId);
+            if ($ability instanceof Action_02034)
+            {
+                $playerId = ($source->ControllerId) ? (int) $source->ControllerId : (int) $targeted->playerId;
+                $game->theah->queueEvent(EventFactory::createActionResolvedEvent($playerId));
+            }
         }
     }
 

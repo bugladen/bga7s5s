@@ -55,9 +55,10 @@ class Card_05Dandy_Test extends TestCase
         return [
             'is a leader with two character actions' => function () {
                 $claude = new _05Dandy();
-                Assert::same(7, $claude->Resolve, 'Resolve');
+                // WHY: Card stats lagged the test — Resolve 8 (377cce19), CrewCap 6 (e074aca4).
+                Assert::same(8, $claude->Resolve, 'Resolve');
                 Assert::same(4, $claude->Influence, 'Influence');
-                Assert::same(7, $claude->CrewCap, 'CrewCap');
+                Assert::same(6, $claude->CrewCap, 'CrewCap');
                 Assert::true($claude->hasTrait('Leader'), 'Leader trait');
                 Assert::count(2, $claude->getActions(), 'two actions');
                 Assert::instanceOf(Action_05Dandya::class, $claude->getActions()[0], 'move action');

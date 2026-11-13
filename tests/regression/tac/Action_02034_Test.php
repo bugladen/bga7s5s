@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02034;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_02034_Test extends TestCase
@@ -114,7 +115,9 @@ class Action_02034_Test extends TestCase
                 Assert::same([$foe->Id], $args['ids'], 'only 2 combat');
             },
 
-            'choosing a target stores them and offers the challenge' => function () {
+            // WHY: Act queues only CharacterTargeted; accept/decline waits for survival
+            // (Vittoria/UL/Premonition at the printed Target moment — Sanjay 03037 shape).
+            'choosing a target fires CharacterTargeted and does not offer yet' => function () {
                 $world = new TestWorld();
                 [$torvo, $action, $foe] = $this->scene($world);
 
@@ -126,12 +129,66 @@ class Action_02034_Test extends TestCase
                 );
 
                 Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_CARD), 'chosen');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'CharacterTargeted hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'foe targeted');
+                Assert::same($torvo->Id, $targeted[0]->sourceId, 'torvo source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no offer yet');
+                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            'surviving CharacterTargeted syncs CHOSEN_CARD and queues the offer' => function () {
+                $world = new TestWorld();
+                [$torvo, $action, $foe] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->theah = $world->theah;
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = false;
+                $action->handleEvent($targeted);
+
+                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_CARD), 'chosen');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'offer');
                 Assert::same('02034_2', $transitions[0]->transition, 'name');
                 Assert::same($foe->ControllerId, $transitions[0]->playerId, 'their turn');
                 Assert::same($torvo->Id, $transitions[0]->sourceId, 'source');
-                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            'canceled CharacterTargeted queues no offer' => function () {
+                $world = new TestWorld();
+                [, $action, $foe] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->theah = $world->theah;
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no 02034_2');
+            },
+
+            'redirected CharacterTargeted offers to the new target controller' => function () {
+                $world = new TestWorld();
+                [$torvo, $action] = $this->scene($world);
+                $thug = $world->placeCharacter(new GenericCharacter('Thug', ['Thug']), Game::LOCATION_CITY_DOCKS, 2);
+                $thug->ModifiedCombat = 3;
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->theah = $world->theah;
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $thug->Id;
+                $targeted->canceled = false;
+                $action->handleEvent($targeted);
+
+                Assert::same($thug->Id, $world->game->globals->get(Game::CHOSEN_CARD), 'thug chosen');
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::same('02034_2', $transitions[0]->transition, 'offer');
+                Assert::same($thug->ControllerId, $transitions[0]->playerId, 'thug controller');
+                Assert::same($torvo->Id, $transitions[0]->sourceId, 'torvo source');
             },
 
             'rejects an illegal target' => function () {

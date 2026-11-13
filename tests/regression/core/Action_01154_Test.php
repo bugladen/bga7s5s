@@ -193,6 +193,8 @@ class Action_01154_Test extends TestCase
 
             // WHY (journal 2026-06-05-01): ActionResolved fires from RiskClone discard after
             // Corpse Speak unequips + Locker — the moment the action actually resolved.
+            // WHY (787bf092): permanentlyHide is queued, not moveCard here — discard hub
+            // runs after cards and would undo an immediate hide (_01106_RiskClone pattern).
             'RiskClone discard hides clone, restores original, lockers Corpse Speak, and resolves' => function () {
                 $world = new TestWorld();
                 [$speak, , $host, $risk] = $this->scene($world);
@@ -208,9 +210,12 @@ class Action_01154_Test extends TestCase
                 $event->ownerId = 1;
                 $world->fireOn($clone, $event);
 
-                Assert::same(Game::LOCATION_PERMANENTLY_HIDDEN, $clone->Location, 'clone hidden');
+                Assert::same(Game::LOCATION_HAND, $clone->Location, 'not hidden yet — hub still to run');
                 Assert::same(self::DISCARD, $risk->Location, 'original restored');
-                Assert::count(1, $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class), 'clone removed');
+                $removed = $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class);
+                Assert::count(1, $removed, 'clone removed');
+                Assert::same($clone->Id, $removed[0]->cardId, 'clone id');
+                Assert::true($removed[0]->permanentlyHide, 'hide after hub discard move');
 
                 $unequip = $world->theah->queuedOfType(EventAttachmentUnequipped::class);
                 Assert::count(1, $unequip, 'unequip');

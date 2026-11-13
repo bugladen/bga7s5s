@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_02034 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -75,6 +76,37 @@ class Action_02034 extends CharacterAction implements IAbilityThatTargetsCharact
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, '02034', $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        // WHY: Gate the accept/decline offer on EventCharacterTargeted surviving so
+        // Vittoria/UL/Premonition can redirect or cancel at the printed "Target …"
+        // moment — before "They may issue a Combat challenge". Before this, act
+        // queued 02034_2 alone (Sanjay 03037 / Dabney / framework challenge picker).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled) {
+            $game = $event->theah->game;
+            $torvo = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($target === null) {
+                return;
+            }
+
+            // Sync after Vittoria/DI redirect — offer goes to the (new) target's controller.
+            $game->globals->set(Game::CHOSEN_CARD, $target->Id);
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            // WHY: Decline/Pass re-delivers targeting — strip a prior offer first.
+            // batchId: if Torvo processes before Vittoria holds, deleteEventBatch
+            // must strip this transition with the canceled CharacterTargeted.
+            $event->theah->deleteQueuedTransitionsNamed('02034_2');
+            $transitionEvent = EventFactory::createTransitionEvent(
+                $target->ControllerId,
+                $torvo->Id,
+                '02034_2',
+                $this->Id
+            );
+            $transitionEvent->batchId = $batchId;
+            $event->theah->queueEvent($transitionEvent);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -115,8 +147,21 @@ class Action_02034 extends CharacterAction implements IAbilityThatTargetsCharact
             $game->globals->set(Game::CHOSEN_CARD, $target->Id);
 
             $torvo = $this->getOwningCharacter($game->theah);
-            $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $torvo->Id, '02034_2', $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+
+            // WHY: Fire targeting alone here. Accept/decline (02034_2) is queued from
+            // handleEvent only when EventCharacterTargeted is not canceled.
+            // batchId: UL / Maryam / Vittoria deleteEventBatch on cancel so
+            // Pass/Decline re-emit is clean (Sanjay Action_03037 / Dabney).
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $torvo->ControllerId,
+                $target->Id,
+                $torvo->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState('targetChosen');
         }

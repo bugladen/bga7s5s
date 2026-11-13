@@ -17,7 +17,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01014;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04045;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04045;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Thomas;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02034;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
@@ -444,6 +446,105 @@ class Reaction_01014_Test extends TestCase
 
                 Assert::true((bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'cancelled');
                 Assert::true($reaction->Used, 'spent');
+            },
+
+            // WHY: Torvo now fires CharacterTargeted before accept/decline — Vittoria
+            // must react at the printed Target moment (not only after ChallengeIssued).
+            'Torvo CharacterTargeted offers reaction before accept/decline' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $torvo = $world->placeCharacter(new _02034(), Game::LOCATION_CITY_DOCKS, 2);
+                $torvoAction = $torvo->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $vittoria->Id;
+                $event->sourceId = $torvo->Id;
+                $event->abilityId = $torvoAction->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'targeting held');
+                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'reaction offered');
+            },
+
+            // WHY: Combat < 2 fails Torvo's gate → ability cancels. Outside 4511 so no
+            // CHALLENGE_CANCELLED; Torvo never queues 02034_2 — ActionResolved must fire
+            // or High Drama hangs (UL → Action_01078 shape).
+            'Torvo CharacterTargeted invalid Combat Thug cancels ability and ActionResolves' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $thug = $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $thug->ModifiedCombat = 1;
+                $torvo = $world->placeCharacter(new _02034(), Game::LOCATION_CITY_DOCKS, 2);
+                $torvoAction = $torvo->getActions()[0];
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $vittoria->Id;
+                $event->sourceId = $torvo->Id;
+                $event->abilityId = $torvoAction->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'putIntoPlay-' . $thug->Id);
+
+                Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'not armed');
+                $resolved = $world->theah->queuedOfType(EventActionResolved::class);
+                Assert::count(1, $resolved, 'ActionResolved');
+                Assert::same($torvo->ControllerId, $resolved[0]->playerId, 'torvo player');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterTargeted::class), 'no re-release');
+                Assert::true($reaction->Used, 'spent');
+            },
+
+            'Torvo CharacterTargeted valid Combat Thug re-releases onto the Thug' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $thug = $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $thug->ModifiedCombat = 2;
+                $torvo = $world->placeCharacter(new _02034(), Game::LOCATION_CITY_DOCKS, 2);
+                $torvoAction = $torvo->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterTargeted();
+                $event->playerId = 2;
+                $event->targetId = $vittoria->Id;
+                $event->sourceId = $torvo->Id;
+                $event->abilityId = $torvoAction->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'putIntoPlay-' . $thug->Id);
+
+                $released = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $released, 're-released');
+                Assert::same($thug->Id, $released[0]->targetId, 'thug is new target');
+                Assert::same($thug->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'CHOSEN_TARGET');
+                Assert::false($reaction->Used, 'move-home still pending');
             },
         ];
     }
