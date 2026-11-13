@@ -1005,7 +1005,10 @@ trait StatesTrait
         // attachment only (Action_04019). "They issue a challenge" is not an Engage
         // cost on the performer. Type still exists so choose-target Back stays hidden
         // after the attachment cost (NORMAL-only Back in OnUpdateActionButtons).
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::TORVO_ESPADA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE)
+        // WHY TORVO_ESPADA off this list: Action_02034 has no Engage cost; the targeted
+        // opponent may issue a Combat challenge to Torvo, but issuing does not Engage
+        // them. Aug 2026 removed Torvo; an Aug merge put him back — keep him off.
+        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE)
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);

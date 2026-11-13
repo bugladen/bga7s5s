@@ -260,7 +260,7 @@ class StatesTrait_Challenge_Test extends TestCase
 
             'stIssueChallenge engages the challenger for the normal challenge types' => function () {
                 foreach ([
-                    Game::NORMAL_CHALLENGE_TYPE, Game::SERVO_SCARPA_CHALLENGE_TYPE, Game::TORVO_ESPADA_CHALLENGE_TYPE,
+                    Game::NORMAL_CHALLENGE_TYPE, Game::SERVO_SCARPA_CHALLENGE_TYPE,
                     Game::AJA_CHALLENGE_TYPE, Game::DANILO_CHALLENGE_TYPE, Game::RAVEN_CHALLENGE_TYPE,
                 ] as $type) {
                     $game = new StatesTraitGame();
@@ -275,10 +275,12 @@ class StatesTrait_Challenge_Test extends TestCase
                 }
             },
 
+            // WHY: Torvo's City Action has no Engage; accepting only issues a challenge.
             'stIssueChallenge does not engage the challenger for attachment / special challenge types' => function () {
                 foreach ([
                     Game::TRISKELION_CHALLENGE_TYPE, Game::CAVALIER_HAT_CHALLENGE_TYPE, Game::MOVE_ALONG_CHALLENGE_TYPE,
                     Game::UNSANCTIONED_DUEL_CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE, Game::ANDRIANA_DONDOLOS_CHALLENGE_TYPE,
+                    Game::TORVO_ESPADA_CHALLENGE_TYPE,
                 ] as $type) {
                     $game = new StatesTraitGame();
                     $this->duelists($game);
