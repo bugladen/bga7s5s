@@ -904,6 +904,23 @@ trait StatesTrait
 
         $this->globals->delete(Game::CHALLENGE_CANCELLED);
 
+        // WHY: Engage is the Challenge cost for types on challengeTypeEngagesChallengerOnIssue.
+        // stIssueChallenge pays it; Unyielding Loyalty (and other cancels) abort earlier via
+        // CHALLENGE_CANCELLED at stTechniqueAvailable, so the cost never fired and the
+        // challenger stayed en garde after "Challenge was cancelled." Cancel does not
+        // refund costs — pay engage here when skipping, before ActionResolved.
+        $challengeType = (int) $this->globals->get(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+        if ($performer !== null
+            && ! $performer->Engaged
+            && $this->challengeTypeEngagesChallengerOnIssue($challengeType))
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent(
+                (int) $performer->ControllerId,
+                $performer->Id
+            );
+            $this->theah->queueEvent($engageEvent);
+        }
+
         if ($resolvedPlayerId)
         {
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($resolvedPlayerId);
@@ -919,6 +936,24 @@ trait StatesTrait
         ]);
 
         $this->gamestate->nextState('challengeSkipped');
+    }
+
+    // Shared by stIssueChallenge and skipChallengeBeforeTechnique so a pre-issue cancel
+    // still pays the same Engage cost the issue path would have.
+    // WHY NO_MORE_WORDS off this list: print engages the Melee Weapon/Eisenfaust
+    // attachment only (Action_04019). "They issue a challenge" is not an Engage
+    // cost on the performer. Type still exists so choose-target Back stays hidden
+    // after the attachment cost (NORMAL-only Back in OnUpdateActionButtons).
+    // WHY TORVO_ESPADA off this list: Action_02034 has no Engage cost; the targeted
+    // opponent may issue a Combat challenge to Torvo, but issuing does not Engage
+    // them. Aug 2026 removed Torvo; an Aug merge put him back — keep him off.
+    protected function challengeTypeEngagesChallengerOnIssue(int $challengeType): bool
+    {
+        return $challengeType == Game::NORMAL_CHALLENGE_TYPE
+            || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE
+            || $challengeType == Game::AJA_CHALLENGE_TYPE
+            || $challengeType == Game::DANILO_CHALLENGE_TYPE
+            || $challengeType == Game::RAVEN_CHALLENGE_TYPE;
     }
 
     /**
@@ -1001,14 +1036,9 @@ trait StatesTrait
         $this->theah->eventCheck($challengeEvent);
         $this->theah->queueEvent($challengeEvent);
 
-        // WHY NO_MORE_WORDS off this list: print engages the Melee Weapon/Eisenfaust
-        // attachment only (Action_04019). "They issue a challenge" is not an Engage
-        // cost on the performer. Type still exists so choose-target Back stays hidden
-        // after the attachment cost (NORMAL-only Back in OnUpdateActionButtons).
-        // WHY TORVO_ESPADA off this list: Action_02034 has no Engage cost; the targeted
-        // opponent may issue a Combat challenge to Torvo, but issuing does not Engage
-        // them. Aug 2026 removed Torvo; an Aug merge put him back — keep him off.
-        if ($challengeType == Game::NORMAL_CHALLENGE_TYPE || $challengeType == Game::SERVO_SCARPA_CHALLENGE_TYPE || $challengeType == Game::AJA_CHALLENGE_TYPE || $challengeType == Game::DANILO_CHALLENGE_TYPE || $challengeType == Game::RAVEN_CHALLENGE_TYPE)
+        // WHY NO_MORE_WORDS / TORVO_ESPADA off the shared list: see
+        // challengeTypeEngagesChallengerOnIssue / its callers' comments.
+        if ($this->challengeTypeEngagesChallengerOnIssue((int) $challengeType))
         {
             $engageEvent = EventFactory::createCardEngagedEvent($playerId, $performer->Id);
             $this->theah->queueEvent($engageEvent);

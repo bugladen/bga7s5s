@@ -63,14 +63,21 @@ class StatesTrait_Challenge_Test extends TestCase
         return [
             // ---- stTechniqueAvailable ---------------------------------------------
 
+            // WHY: Unyielding Loyalty cancels at target-pick before stIssueChallenge.
+            // Engage is the Challenge cost for NORMAL — cancel must not leave the
+            // challenger en garde. skipChallengeBeforeTechnique pays it.
             'stTechniqueAvailable skips the challenge when it was cancelled before the technique step' => function () {
                 $game = new StatesTraitGame();
                 [$c, $t] = $this->duelists($game);
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
                 $game->globals->set(Game::CHALLENGE_CANCELLED, true);
 
                 $game->stTechniqueAvailable();
 
                 Assert::false($game->globals->has(Game::CHALLENGE_CANCELLED), 'cancel flag consumed');
+                $engaged = $game->queued(EventCardEngaged::class);
+                Assert::count(1, $engaged, 'challenger still pays Engage cost');
+                Assert::same($c->Id, $engaged[0]->cardId, 'challenger engaged');
                 $resolved = $game->queued(EventActionResolved::class);
                 Assert::count(1, $resolved, 'action resolved');
                 Assert::same(1, $resolved[0]->playerId, 'performer controller');
@@ -83,6 +90,33 @@ class StatesTrait_Challenge_Test extends TestCase
                 ], 'participants in the notification');
                 Assert::same(['challengeSkipped'], $game->gamestate->transitions, 'transition');
                 Assert::count(0, $game->queued(EventChallengeIssued::class), 'no challenge issued');
+            },
+
+            'stTechniqueAvailable cancel does not engage for challenge types without an Engage cost' => function () {
+                $game = new StatesTraitGame();
+                [$c] = $this->duelists($game);
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::TORVO_ESPADA_CHALLENGE_TYPE);
+                $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+
+                $game->stTechniqueAvailable();
+
+                Assert::count(0, $game->queued(EventCardEngaged::class), 'Torvo path has no Engage cost');
+                Assert::count(0, $game->queued(EventChallengeIssued::class), 'no challenge issued');
+                Assert::same(['challengeSkipped'], $game->gamestate->transitions, 'transition');
+                Assert::same($c->Id, $game->globals->get(Game::CHOSEN_PERFORMER), 'performer unchanged');
+            },
+
+            'stTechniqueAvailable cancel does not re-engage an already engaged challenger' => function () {
+                $game = new StatesTraitGame();
+                [$c] = $this->duelists($game);
+                $c->Engaged = true;
+                $game->globals->set(Game::CHALLENGE_TYPE, Game::NORMAL_CHALLENGE_TYPE);
+                $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+
+                $game->stTechniqueAvailable();
+
+                Assert::count(0, $game->queued(EventCardEngaged::class), 'already engaged');
+                Assert::same(['challengeSkipped'], $game->gamestate->transitions, 'transition');
             },
 
             'stTechniqueAvailable skips safely with no performer, resolving for the current player' => function () {
