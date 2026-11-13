@@ -70,7 +70,8 @@ class _01021 extends FactionAttachment
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardEngarded && $event->cardId == $this->AttachedToId)
+        // WHY: asCostUndo is Parley Back refunding engage — not a printed En Garde.
+        if ($event instanceof EventCardEngarded && $event->cardId == $this->AttachedToId && ! $event->asCostUndo)
         {
             $game = $event->theah->game;
             $character = $event->theah->getCharacterById($event->cardId);

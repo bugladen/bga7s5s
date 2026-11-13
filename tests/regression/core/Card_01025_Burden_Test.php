@@ -66,6 +66,20 @@ class Card_01025_Burden_Test extends TestCase
                 );
             },
 
+            // WHY: Parley Back refunds engage via Engarded+asCostUndo — not printed En Garde
+            'does not destroy on asCostUndo EventCardEngarded' => function () {
+                $world = new TestWorld();
+                [$host, $burden] = $this->attachBurden($world);
+
+                $event = new EventCardEngarded();
+                $event->cardId = $host->Id;
+                $event->asCostUndo = true;
+                $world->fireOn($burden, $event);
+
+                Assert::false($event->canceled, 'cost undo not canceled');
+                Assert::count(0, $world->theah->queuedOfType(EventAttachmentUnequipped::class), 'still attached');
+            },
+
             'does not cancel EventCardEngaged (Engage)' => function () {
                 $world = new TestWorld();
                 [$host, $burden] = $this->attachBurden($world);

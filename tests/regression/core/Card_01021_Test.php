@@ -92,6 +92,21 @@ class Card_01021_Test extends TestCase
                 Assert::same(1, $wounds[0]->wounds, '1 wound');
             },
 
+            // WHY: Parley Back refunds engage via Engarded+asCostUndo — not printed En Garde
+            'does not wound on asCostUndo EventCardEngarded' => function () {
+                $world = new TestWorld();
+                $host = $world->placeCharacter(new GenericCharacter('Host'), Game::LOCATION_CITY_DOCKS, 2);
+                $caress = $world->placeCard(new _01021(), Game::LOCATION_CITY_DOCKS, 1);
+                $caress->AttachedToId = $host->Id;
+
+                $event = new EventCardEngarded();
+                $event->cardId = $host->Id;
+                $event->asCostUndo = true;
+                $world->fireOn($caress, $event);
+
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
+            },
+
             'does not wound on EventCardEngaged (Engage)' => function () {
                 $world = new TestWorld();
                 $host = $world->placeCharacter(new GenericCharacter('Host'), Game::LOCATION_CITY_DOCKS, 2);

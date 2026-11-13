@@ -33,7 +33,8 @@ class _01025_Burden extends Attachment implements IRiskAttachment
     {
         parent::handleEvent($event);
 
-        if ($event instanceof EventCardEngarded && $this->isAttached())
+        // WHY: asCostUndo is Parley Back refunding engage — not "would en garde".
+        if ($event instanceof EventCardEngarded && $this->isAttached() && ! $event->asCostUndo)
         {
             if ($event->cardId == $this->AttachedToId)
             {

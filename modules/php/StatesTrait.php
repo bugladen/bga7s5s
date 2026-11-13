@@ -744,7 +744,10 @@ trait StatesTrait
             if ($performer && $performer->Engaged)
             {
                 $playerId = $performer->ControllerId;
+                // WHY: asCostUndo — refund only. Fate's Burden / Legion's Caress must
+                // not treat this as a printed En Garde (Burden was falling off on Back).
                 $engardeEvent = EventFactory::createCardEngardedEvent($playerId, $performer->Id);
+                $engardeEvent->asCostUndo = true;
                 $this->theah->queueEvent($engardeEvent);
                 $this->theah->runEvents($skipTransitions = true);
             }
@@ -766,7 +769,9 @@ trait StatesTrait
             if ($performer && $performer->Engaged)
             {
                 $playerId = $performer->ControllerId;
+                // WHY: same as stRecruitUndoEngage — provisional Parley cost refund.
                 $engardeEvent = EventFactory::createCardEngardedEvent($playerId, $performer->Id);
+                $engardeEvent->asCostUndo = true;
                 $this->theah->queueEvent($engardeEvent);
                 $this->theah->runEvents($skipTransitions = true);
                 $this->theah->buildCity();

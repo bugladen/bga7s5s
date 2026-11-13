@@ -373,6 +373,8 @@ class StatesTrait_HighDrama_Test extends TestCase
                 Assert::count(1, $events, 'engarde queued');
                 Assert::same($performer->Id, $events[0]->cardId, 'performer');
                 Assert::same(1, $events[0]->playerId, 'controller');
+                // WHY: Fate's Burden / Legion's Caress skip asCostUndo Engarded
+                Assert::true($events[0]->asCostUndo, 'Parley Back is cost undo, not En Garde');
                 Assert::same([true], $game->theah->runEventsCalls, 'ran with skipTransitions');
                 Assert::false($game->globals->get(Game::PERFORMER_PARLEYED), 'flag cleared');
                 Assert::same([''], $game->gamestate->transitions, 'continues');
@@ -413,7 +415,9 @@ class StatesTrait_HighDrama_Test extends TestCase
 
                 $game->stRecruitUndoEngageToMerc();
 
-                Assert::count(1, $game->queued(EventCardEngarded::class), 'engarde queued');
+                $events = $game->queued(EventCardEngarded::class);
+                Assert::count(1, $events, 'engarde queued');
+                Assert::true($events[0]->asCostUndo, 'Parley Back is cost undo, not En Garde');
                 Assert::same([true], $game->theah->runEventsCalls, 'ran with skipTransitions');
                 Assert::same(2, $game->theah->buildCityCalls, 'city rebuilt before and after the undo');
                 Assert::same($performer->ModifiedInfluence, $game->globals->get(Game::DISCOUNT), 'parley discount restored');
