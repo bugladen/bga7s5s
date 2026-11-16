@@ -346,25 +346,41 @@ return declare('seventhseacityoffivesails.actions', null, {
         };
 
         const action = actionArray[this.gamedatas.gamestate.name];
-        let errors = false;
-        this.bgaPerformAction(action, { 
-            'payWithCards': JSON.stringify(payWithCards),
-        }).catch(() =>  {
-            errors = true;
-        }).then(() =>  {
-            if (!errors) 
-            {
-                // WHY not remove chosenCardId here for hand equip: notif_attachmentEquipped
-                // flies it from the hand node. Optimistic remove left fromHand empty and
-                // the equip popped with no fly. Payment cards still leave here / via discard notif.
-                if (action !== 'actHighDramaEquipAttachment' && this.clientStateArgs.chosenCardId) {
-                    const chosenCard = this.cardProperties[this.clientStateArgs.chosenCardId];
-                    if (chosenCard) this.factionHand.removeCard(chosenCard);
-                }
+        const perform = () => {
+            let errors = false;
+            this.bgaPerformAction(action, {
+                'payWithCards': JSON.stringify(payWithCards),
+            }).catch(() => {
+                errors = true;
+            }).then(() => {
+                if (!errors)
+                {
+                    // WHY not remove chosenCardId here for hand equip: notif_attachmentEquipped
+                    // flies it from the hand node. Optimistic remove left fromHand empty and
+                    // the equip popped with no fly. Payment cards still leave here / via discard notif.
+                    if (action !== 'actHighDramaEquipAttachment' && this.clientStateArgs.chosenCardId) {
+                        const chosenCard = this.cardProperties[this.clientStateArgs.chosenCardId];
+                        if (chosenCard) this.factionHand.removeCard(chosenCard);
+                    }
 
-                selectedCards.forEach((card) => this.factionHand.removeCard(card));
-            }
-        });            
+                    selectedCards.forEach((card) => this.factionHand.removeCard(card));
+                }
+            });
+        };
+
+        // WHY: Soft warn when equip will trip Reaction_AttachmentTypeLimit (same idea as crew-cap recruit).
+        if (action === 'actHighDramaEquipAttachment') {
+            const privateArgs = (this.gamedatas.gamestate.args && this.gamedatas.gamestate.args._private) || {};
+            const performerId = this.clientStateArgs.performerId || privateArgs.performerId;
+            const attachmentId = this.clientStateArgs.chosenAttachmentId
+                || this.clientStateArgs.chosenCardId
+                || privateArgs.chosenAttachmentId;
+            // WHY prefer args.chosenAttachment (hand pay): fresh server property array with offHand/traits.
+            const attachment = privateArgs.chosenAttachment || this.cardProperties[attachmentId];
+            this.withAttachmentTypeLimitWarning(perform, performerId, attachment);
+        } else {
+            perform();
+        }
     },
 
     onPaymentConfirmedFromCard: function()

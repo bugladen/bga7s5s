@@ -2435,6 +2435,65 @@ return declare('seventhseacityoffivesails.utilities', null, {
         this.withCrewCapWarning(() => this.bgaPerformAction('actHighDramaRecruitActionStart', {}));
     },
 
+    // WHY: Mirrors Reaction_AttachmentTypeLimit — after equip, >1 non-OffHand Weapon/Armor/Attire
+    // of the same type, or >1 OffHand, forces a discard pick. Warn before paying so the player
+    // is not surprised. OffHands do not count against the typed slots (same as the reaction).
+    // Returns the conflicting type label (Weapon/Armor/Attire/Offhand) or null if OK.
+    attachmentTypeLimitConflict: function(performerId, attachment) {
+        if (!performerId || !attachment) {
+            return null;
+        }
+
+        const performer = this.cardProperties[performerId];
+        if (!performer) {
+            return null;
+        }
+
+        // WHY attachedCards not attachments: server property array `attachments` is id[] and
+        // goes stale — notif_attachmentEquipped / attachCard only maintain attachedCards
+        // (full objects). Using attachments missed the first Sabre on Soline (_04054/_01089).
+        const existing = Array.isArray(performer.attachedCards)
+            ? performer.attachedCards
+            : (Array.isArray(performer.attachments)
+                ? performer.attachments.map((id) => this.cardProperties[id]).filter(Boolean)
+                : []);
+
+        if (attachment.offHand) {
+            return existing.some((a) => a.offHand) ? _('Offhand') : null;
+        }
+
+        const traits = attachment.traits || [];
+        const limitedTypes = ['Weapon', 'Armor', 'Attire'];
+        for (const type of limitedTypes) {
+            if (!traits.includes(type)) {
+                continue;
+            }
+            const sameType = existing.some((a) =>
+                !a.offHand && Array.isArray(a.traits) && a.traits.includes(type)
+            );
+            if (sameType) {
+                return _(type);
+            }
+        }
+
+        return null;
+    },
+
+    withAttachmentTypeLimitWarning: function(callback, performerId, attachment) {
+        const conflictType = this.attachmentTypeLimitConflict(performerId, attachment);
+        if (conflictType) {
+            this.confirmationDialog(
+                dojo.string.substitute(
+                    _("Equipping this will require discarding a ${type}. Are you sure you want to continue?"),
+                    { type: conflictType }
+                ),
+                callback
+            );
+        } else {
+            callback();
+        }
+    },
+
     displayForumInterveneList: function(interveneList) {
         this.removeForumInterveneList();
 

@@ -274,6 +274,8 @@ onEnteringState: function( stateName, args )
                 const image = $(`${performer.divId}_image`);
                 this.clearCardAsSelectable(image);
                 dojo.addClass(image, '_7sfs-chosen');
+                // WHY: Needed for attachment type-limit warning on pay confirm (same as from-play path).
+                this.clientStateArgs.performerId = performer.id;
 
                 const chosenAttachmentId = args.args._private.chosenAttachmentId;
                 const cardData = args.args._private.chosenAttachment;
