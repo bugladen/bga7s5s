@@ -945,9 +945,15 @@
             'highDramaPhase01046a': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
+                    // WHY: Action_01046a uses getAdjacentCityLocations with includeHome=true;
+                    // Home needs the endcap marker, not city-location selectable styling.
                     args.args.args.locationIds.forEach((locationId) => {
-                        const imageElement = this.getCityLocationElement(locationId);
-                        this.makeCityLocationSelectable(imageElement);
+                        if (locationId == this.LOCATION_PLAYER_HOME) {
+                            this.makeHomeEndcapMarkerSelectable();
+                        } else {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
                     });
 
                     card = this.cardProperties[args.args.args.performerId];
@@ -1085,9 +1091,14 @@
             'highDramaPhase01060_3': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
+                    // WHY: Action_01060 dest step uses getAdjacentCityLocations with includeHome=true.
                     args.args.args.locationIds.forEach((locationId) => {
-                        const imageElement = this.getCityLocationElement(locationId);
-                        this.makeCityLocationSelectable(imageElement);
+                        if (locationId == this.LOCATION_PLAYER_HOME) {
+                            this.makeHomeEndcapMarkerSelectable();
+                        } else {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
                     });
 
                     args.args.args.characterIds.forEach((characterId) => {

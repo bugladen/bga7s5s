@@ -262,9 +262,14 @@
             'highDramaPhase03032': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;
+                    // WHY: Action_03032 destinations explicitly include Player Home.
                     args.args.args.locationIds.forEach((locationId) => {
-                        const imageElement = this.getCityLocationElement(locationId);
-                        this.makeCityLocationSelectable(imageElement);
+                        if (locationId == this.LOCATION_PLAYER_HOME) {
+                            this.makeHomeEndcapMarkerSelectable();
+                        } else {
+                            const imageElement = this.getCityLocationElement(locationId);
+                            this.makeCityLocationSelectable(imageElement);
+                        }
                     });
 
                     card = this.cardProperties[args.args.args.performerId];
