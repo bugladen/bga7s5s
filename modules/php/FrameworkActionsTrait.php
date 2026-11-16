@@ -129,7 +129,7 @@ trait FrameworkActionsTrait
             $deck = current(array_filter($starter_decks->decks, fn($deck) => $deck->id === $deck_id));
             if (! $deck)
             {
-                throw new \BgaUserException(sprintf(clienttranslate("%s is not a starter valid deck."), $deck_id));
+                throw new UserException(sprintf(clienttranslate("%s is not a starter valid deck."), $deck_id));
             }
 
             $this->notifyPlayer($playerId, 'message', clienttranslate('Private: You have chosen ${deck_name} as your Starter Deck.'), [
@@ -144,7 +144,7 @@ trait FrameworkActionsTrait
             //Validate the deck JSON
             if (! json_validate($deck_json))
             {
-                throw new \BgaUserException(clienttranslate("Invalid deck JSON."));
+                throw new UserException(clienttranslate("Invalid deck JSON."));
             }
 
             $deck = json_decode($deck_json);

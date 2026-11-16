@@ -280,6 +280,17 @@ class StatesTrait_Challenge_Test extends TestCase
                 Assert::contains('is issuing a challenge', $game->notify->messages[0]['message'], 'announced');
             },
 
+            // WHY: Ambush Brute discount (and issue-time consumers) need the site before
+            // ACTIVATE_TECHNIQUE_EVENTS processes ChallengeIssued — SETUP is too late.
+            'stIssueChallenge records CHOSEN_LOCATION from the challenger site' => function () {
+                $game = new StatesTraitGame();
+                $this->duelists($game);
+
+                $game->stIssueChallenge();
+
+                Assert::same(Game::LOCATION_CITY_DOCKS, $game->globals->get(Game::CHOSEN_LOCATION), 'site at issue');
+            },
+
             'stIssueChallenge resets the cancelled and accepted flags' => function () {
                 $game = new StatesTraitGame();
                 $this->duelists($game);

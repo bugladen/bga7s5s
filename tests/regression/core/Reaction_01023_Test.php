@@ -75,6 +75,30 @@ class Reaction_01023_Test extends TestCase
                 $explanations = [];
                 $discount = $reaction->getReactionFromHandDiscount($world->theah, $reaction, $explanations);
                 Assert::same(1, $discount, 'Brute discount');
+                Assert::true(count($explanations) > 0, 'explanation');
+            },
+
+            // WHY: Technique-activated ChallengeIssued paid Ambush before SETUP stamped
+            // CHOSEN_LOCATION — fall back to challenger site so Buratino still discounts.
+            'discount +1 falls back to CHOSEN_PERFORMER location when CHOSEN_LOCATION unset' => function () {
+                $world = new TestWorld();
+                $ambush = $world->placeCard(new _01023(), Game::LOCATION_HAND, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('My Brute', ['Brute']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $challenger = $world->placeCharacter(
+                    new GenericCharacter('Challenger', []),
+                    Game::LOCATION_CITY_DOCKS,
+                    2
+                );
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $challenger->Id);
+
+                /** @var Reaction_01023 $reaction */
+                $reaction = $ambush->getReactions()[0];
+                $explanations = [];
+                Assert::same(1, $reaction->getReactionFromHandDiscount($world->theah, $reaction, $explanations), 'fallback Brute');
             },
 
             'no discount when only opponent controls Brute at location' => function () {

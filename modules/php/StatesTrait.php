@@ -1028,6 +1028,11 @@ trait StatesTrait
         // Yourself / Move Along / Unyielding challenge-cancel.
         $this->globals->set(Game::CHALLENGE_ACCEPTED, false);
 
+        // WHY: ChallengeIssued is processed in ACTIVATE_TECHNIQUE_EVENTS when a technique
+        // is activated — before stSetupChallenge. Ambush (Reaction_01023) Brute discount
+        // and other issue-time consumers need the site now, not only at SETUP.
+        $this->globals->set(Game::CHOSEN_LOCATION, $performer->Location);
+
         $challengeEvent = $this->theah->createEvent(Events::ChallengeIssued);
         if ($challengeEvent instanceof EventChallengeIssued)
         {

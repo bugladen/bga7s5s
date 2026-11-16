@@ -137,23 +137,43 @@ class Reaction_01023 extends RiskReaction
         $owner = $this->getOwningCard($theah);
         if ($owner->Location == Game::LOCATION_HAND && $reaction->Id == $this->Id)
         {
-            $challengeLocation = $theah->game->globals->get(GAME::CHOSEN_LOCATION);
-            if ($challengeLocation == null)
+            // WHY: Prefer CHOSEN_LOCATION (set at stIssueChallenge / stSetupChallenge).
+            // Fall back to performer/target like interventionCheck — technique-activated
+            // ChallengeIssued used to process Ambush pay before SETUP stamped the site.
+            $challengeLocation = $theah->game->globals->get(Game::CHOSEN_LOCATION);
+            if ($challengeLocation === null || $challengeLocation === '')
+            {
+                $performerId = (int) $theah->game->globals->get(Game::CHOSEN_PERFORMER, 0);
+                $performer = $performerId !== 0 ? $theah->getCharacterById($performerId) : null;
+                if ($performer !== null)
+                {
+                    $challengeLocation = $performer->Location;
+                }
+                else
+                {
+                    $targetId = (int) $theah->game->globals->get(Game::CHOSEN_TARGET, 0);
+                    $target = $targetId !== 0 ? $theah->getCharacterById($targetId) : null;
+                    $challengeLocation = $target !== null ? $target->Location : null;
+                }
+            }
+
+            if ($challengeLocation === null || $challengeLocation === '')
             {
                 return $discount;
             }
 
-            //Get all characters at the location of the challenge controlled by the player
             $characters = $theah->getCharactersAtLocationByPlayerId($challengeLocation, $owner->ControllerId);
-            //Filter to characters that have the Brute trait
             $characters = array_filter($characters, fn($character) => $character->hasTrait('Brute'));
             if (count($characters) > 0)
             {
                 $discount += 1;
+                $explanations[] = sprintf(
+                    $theah->game->translate("%s: -1 because you control a Brute at the challenge location."),
+                    $owner->getInjectCode()
+                );
             }
         }
 
         return $discount;
-
     }
 }
