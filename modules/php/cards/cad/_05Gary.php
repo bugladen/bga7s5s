@@ -26,8 +26,8 @@ class _05Gary extends Leader implements IHasReactions
 
         $this->Name = "Rena Klingenhalter";
         $this->Title = "Collected";
-        $this->Image = "05Gary.v5.jpg";
-        $this->FlippedImage = "05GaryFlipped.v5.jpg";
+        $this->Image = "05Gary.v4.3.jpg";
+        $this->FlippedImage = "05GaryFlipped.v4.3.jpg";
         $this->IsDoubleSided = true;
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
@@ -52,7 +52,7 @@ class _05Gary extends Leader implements IHasReactions
 
         $this->Text = "<p>During setup, reveal an attachment from your deck and equip it to Rena, at -1 cost.</p>
 <p>Reaction: When your character at this location would suffer a wound • Wound Rena instead</p>
-<p>Forced: When Rena has four or more wounds • Flip her.</p>";
+<p>Forced: When Rena has four or more wounds • Draw two cards, then Flip her.</p>";
 
         $this->resetCard();
 
@@ -89,11 +89,25 @@ class _05Gary extends Leader implements IHasReactions
             $event->theah->queueEvent($transition);
         }
 
-        // WHY: Forced flip after wounds land. parent::handleEvent already updated $this->Wounds.
+        // WHY: Forced after wounds land. parent::handleEvent already updated $this->Wounds.
+        // Printed: Draw two, then Flip. Queue draws first so EventHub drains them next;
+        // flip stays sync (same-Id class swap must finish before later handlers see A-side).
         if ($event instanceof EventCharacterWounded && $event->characterId == $this->Id)
         {
             if ($this->Wounds >= 4 && ! $event->theah->game->characterIsInDiscardOrLocker($this))
             {
+                $game = $event->theah->game;
+                $game->notify->all("message", '${rena_inject_code}: ${player_name} draws two cards, then Rena flips.', [
+                    'rena_inject_code' => $this->getInjectCode(),
+                    'player_name' => $game->getPlayerNameById($this->ControllerId),
+                ]);
+
+                for ($i = 0; $i < 2; $i++)
+                {
+                    $drawEvent = EventFactory::createCardDrawnEvent($this->ControllerId, $this->getInjectCode());
+                    $event->theah->queueEvent($drawEvent);
+                }
+
                 $this->flipToBSide($event->theah);
             }
         }

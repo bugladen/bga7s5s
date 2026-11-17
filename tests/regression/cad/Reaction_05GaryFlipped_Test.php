@@ -26,26 +26,30 @@ class Reaction_05GaryFlipped_Test extends TestCase
     public function tests(): array
     {
         return [
-            // WHY: Printed trigger is Rena's duel adversary, not any opposing character.
-            // Claim is her location at that moment, including a location an opponent
-            // already controls. Pass does not spend the reaction.
-            'claims her location when her adversary is destroyed' => function () {
+            // WHY: Printed trigger is any opposing character (enemy at Rena's
+            // location), not her duel adversary / IN_DUEL. Claim is her location
+            // at that moment, including a location an opponent already controls.
+            // Pass does not spend the reaction.
+            'claims her location when an opposing character is destroyed' => function () {
                 $world = new TestWorld();
                 $rena = $world->placeCharacter(new _05GaryFlipped(), Game::LOCATION_CITY_DOCKS, 1);
-                $foe = $world->placeCharacter(new GenericCharacter('Adversary'), Game::LOCATION_CITY_DOCKS, 2);
-                $bystander = $world->placeCharacter(new GenericCharacter('Bystander'), Game::LOCATION_CITY_DOCKS, 2);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $elsewhere = $world->placeCharacter(new GenericCharacter('Elsewhere'), Game::LOCATION_CITY_FORUM, 2);
+                $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
                 /** @var Reaction_05GaryFlipped $reaction */
                 $reaction = $rena->getReactions()[0];
 
-                $world->theah->duelActor = $rena;
-                $world->theah->duelOpponent = $foe;
-                $world->game->globals->set(Game::IN_DUEL, true);
                 $world->game->setControllerForLocation(Game::LOCATION_CITY_DOCKS, 2);
 
                 $destroyed = new EventCharacterDestroyed();
-                $destroyed->characterId = $bystander->Id;
+
+                $destroyed->characterId = $ally->Id;
                 $world->fireOn($rena, $destroyed);
-                Assert::count(0, $this->reactionOffers($world), 'bystander is not her adversary');
+                Assert::count(0, $this->reactionOffers($world), 'own character');
+
+                $destroyed->characterId = $elsewhere->Id;
+                $world->fireOn($rena, $destroyed);
+                Assert::count(0, $this->reactionOffers($world), 'enemy elsewhere');
 
                 // WHY: Destroying the Leader queues endOfGame. That is not this reaction.
                 $destroyed->characterId = $rena->Id;
@@ -54,16 +58,13 @@ class Reaction_05GaryFlipped_Test extends TestCase
                 $world->theah->takeQueuedEvents();
 
                 $destroyed->characterId = $foe->Id;
-                $world->game->globals->set(Game::IN_DUEL, false);
-                $world->fireOn($rena, $destroyed);
-                Assert::count(0, $this->reactionOffers($world), 'not in a duel');
-
-                $world->game->globals->set(Game::IN_DUEL, true);
                 $rena->Location = Game::LOCATION_PLAYER_HOME;
+                $foe->Location = Game::LOCATION_PLAYER_HOME;
                 $world->fireOn($rena, $destroyed);
                 Assert::count(0, $this->reactionOffers($world), 'home');
 
                 $rena->Location = Game::LOCATION_CITY_DOCKS;
+                $foe->Location = Game::LOCATION_CITY_DOCKS;
                 $world->theah->setLocationCanBeClaimed(Game::LOCATION_CITY_DOCKS, false);
                 $world->fireOn($rena, $destroyed);
                 Assert::count(0, $this->reactionOffers($world), 'cannot be claimed');
@@ -99,14 +100,6 @@ class Reaction_05GaryFlipped_Test extends TestCase
                 }
                 Assert::true($threw, 'claim went illegal');
                 Assert::false($reaction->Used, 'throw does not spend');
-
-                $world->theah->setLocationCanBeClaimed(Game::LOCATION_CITY_DOCKS, true);
-                $world->theah->takeQueuedEvents();
-                $world->theah->duelChallengerIdOverride = $foe->Id;
-                $world->theah->duelOpponent = $rena;
-                $destroyed->characterId = $foe->Id;
-                $world->fireOn($rena, $destroyed);
-                Assert::same('reaction', $this->reactionOffers($world)[0]->transition, 'defender seat');
             },
         ];
     }

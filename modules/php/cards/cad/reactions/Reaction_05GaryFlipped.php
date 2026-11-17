@@ -12,20 +12,20 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_05GaryFlipped extends CardReaction
 {
-    // WHY: "Rena's adversary" is the other duel seat (challenger/defender), not any
-    // opposing character. Round actor/opponent can be the corpse by destroy time, so
-    // the seats are the stable ids (same lookup as Victorious / Glorious).
-    // "This location" is Rena's location when the adversary is destroyed. Stash it:
-    // the click is a later request, and the text does not say "uncontrolled", so an
-    // opponent-controlled city location is still a legal claim. Home and Indomitable
-    // Will fail canLocationBeClaimedBy and never open the window.
+    // WHY: Printed "opposing character" = enemy at Rena's location (same as
+    // Reaction_04004), not her duel adversary. Destroy-time Location is still
+    // readable because EventCharacterDestroyed.runEventHubAfterCards = true.
+    // "This location" is Rena's location when that enemy dies. Stash it: the
+    // click is a later request, and the text does not say "uncontrolled", so an
+    // opponent-controlled city location is still a legal claim. Home and
+    // Indomitable Will fail canLocationBeClaimedBy and never open the window.
     private string $location = '';
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->Name = "Claim this location when Rena's adversary is destroyed";
+        $this->Name = "Claim this location when an opposing character is destroyed";
     }
 
     public function getReactionDescription(Theah $theah): string
@@ -53,11 +53,6 @@ class Reaction_05GaryFlipped extends CardReaction
             return;
         }
 
-        if (! $event->theah->game->globals->get(Game::IN_DUEL))
-        {
-            return;
-        }
-
         $owner = $this->getOwningCharacter($event->theah);
         if ($owner === null || ! $owner->isControlled())
         {
@@ -69,13 +64,18 @@ class Reaction_05GaryFlipped extends CardReaction
             return;
         }
 
-        $challengerId = (int) $event->theah->getDuelChallengerId();
-        $defenderId = (int) $event->theah->getDuelDefenderId();
-        $destroyedId = (int) $event->characterId;
+        $destroyed = $event->theah->getCharacterById($event->characterId);
+        if ($destroyed === null)
+        {
+            return;
+        }
 
-        $renasAdversaryDestroyed = ($owner->Id == $challengerId && $destroyedId == $defenderId)
-            || ($owner->Id == $defenderId && $destroyedId == $challengerId);
-        if (! $renasAdversaryDestroyed)
+        if ($destroyed->ControllerId == $owner->ControllerId)
+        {
+            return;
+        }
+
+        if ($destroyed->Location != $owner->Location)
         {
             return;
         }
