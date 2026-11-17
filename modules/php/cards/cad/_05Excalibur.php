@@ -9,6 +9,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\TechniqueTrait;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 
 class _05Excalibur extends FactionAttachment implements IHasReactions, IHasTechniques
 {
@@ -48,8 +51,9 @@ class _05Excalibur extends FactionAttachment implements IHasReactions, IHasTechn
             "Unique"
         ];
 
-        $this->Text = "<b>Reaction:</b> When the equipped performer issues a challenge • Wound the performer and target opposing character with equal or greater [Combat].
-<p><b>Technique:</b> +1 [Riposte].</p>";
+        $this->Text = "<p>The equipped character gains <b>Knight</b></p>
+        <p><b>Reaction:</b> When the equipped performer issues a challenge • Wound the performer and target opposing character with equal or greater [Combat].</p>
+        <p><b>Technique:</b> +1 [Riposte].</p>";
 
         $this->resetCard();
 
@@ -60,5 +64,23 @@ class _05Excalibur extends FactionAttachment implements IHasReactions, IHasTechn
         $this->Techniques = [
             new Technique_05Excalibur(),
         ];
+    }
+
+    public function handleEvent(Event $event)
+    {
+        parent::handleEvent($event);
+
+        // WHY: Pattern B pair — Text grants Knight while equipped; unequip must clear or the trait leaks.
+        if ($event instanceof EventAttachmentEquipped && $event->attachmentId == $this->Id)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            $character->addTrait($event->theah->game, "Knight");
+        }
+
+        if ($event instanceof EventAttachmentUnequipped && $event->attachmentId == $this->Id)
+        {
+            $character = $event->theah->getCharacterById($event->characterId);
+            $character->removeTrait($event->theah->game, "Knight");
+        }
     }
 }

@@ -15,6 +15,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasTechniques;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Excalibur;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Excalibur;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\techniques\Technique_05Excalibur;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechniqueValues;
@@ -67,6 +69,25 @@ class Card_05Excalibur_Test extends TestCase
                 Assert::true($blade->hasTrait('Relic'), 'Relic');
                 Assert::instanceOf(Reaction_05Excalibur::class, $blade->getReactions()[0], 'reaction');
                 Assert::instanceOf(Technique_05Excalibur::class, $blade->getTechniques()[0], 'technique');
+            },
+
+            'equipping grants Knight, and unequipping removes it' => function () {
+                $world = new TestWorld();
+                $blade = $world->placeCard(new _05Excalibur(), Game::LOCATION_CITY_DOCKS, 1);
+                $host = $world->placeCharacter(new GenericCharacter('Host'), Game::LOCATION_CITY_DOCKS, 1);
+                $equipped = new EventAttachmentEquipped();
+                $equipped->theah = $world->theah;
+                $equipped->attachmentId = $blade->Id;
+                $equipped->characterId = $host->Id;
+                $blade->handleEvent($equipped);
+                Assert::true($host->hasTrait('Knight'), 'gained Knight');
+
+                $unequipped = new EventAttachmentUnequipped();
+                $unequipped->theah = $world->theah;
+                $unequipped->attachmentId = $blade->Id;
+                $unequipped->characterId = $host->Id;
+                $blade->handleEvent($unequipped);
+                Assert::false($host->hasTrait('Knight'), 'removed');
             },
 
             'offers when equipped performer challenges and an opposing equal Combat is present' => function () {
