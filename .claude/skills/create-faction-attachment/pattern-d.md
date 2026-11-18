@@ -88,19 +88,19 @@ class Reaction_NNNNN extends AttachmentReaction
 
 `CardReaction::setUsed` resets at dusk automatically (via `EventDuskEndOfDay`).
 
-References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047` (hard cancel Technique), `Reaction_01146b` (hard cancel Maneuver or Technique on a Scheme), `Reaction_01181` (cancel + re-queue pattern), `Reaction_03044` (cancel unless discard), `Reaction_04053` (ignore opponent-ability wound), `Reaction_05Excalibur` (issue-challenge self+opposing Combat-gated wound).
+References: `Reaction_01022` (simple wound-challenger/wound-challenged/pass), `Reaction_01040`, `Reaction_01047` (hard cancel Technique), `Reaction_01146b` (hard cancel Maneuver or Technique on a Scheme), `Reaction_01181` (cancel + re-queue pattern), `Reaction_03044` (cancel unless discard), `Reaction_04053` (ignore opponent-ability wound), `Reaction_05Excalibur` (issue-challenge self+opposing wound).
 
-### "When the equipped performer issues a challenge • Wound the performer and target opposing …"
+### "When the equipped performer issues a challenge • Wound the performer and target opposing character"
 
-Printed (Dietrich Blade `_05Excalibur`): **`<b>Reaction:</b> When the equipped performer issues a challenge • Wound the performer and target opposing character with equal or greater [Combat].`**
+Printed (Dietrich Blade `_05Excalibur` PTv0.4.3): **`<b>Reaction:</b> When the equipped performer issues a challenge, wound them • Wound target opposing character.`**
 
 **Trigger ≠ Stiletto.** Stiletto `_01022` is "When a challenge is issued **at this location**" (any challenger, location match, engage cost, pick wound challenger *or* challenged). Excalibur is "**When the equipped performer** issues a challenge" — gate `EventChallengeIssued` with `$event->challengerId === $owningCharacter->Id`. Do **not** copy Stiletto's location-of-challenger gate or engage cost unless printed.
 
-**Wound target ≠ challenge defender by default.** "Target opposing character with equal or greater [Combat]" is a **picker among qualifying opposing characters at the performer's location**, not a lock to `$event->defenderId`. WHY: playtesting + Rules reading — a weak defender with a strong bystander at the same location must still offer the Reaction; locking to the defender silently no-ops that case and looks like a missing trigger.
+**Wound target ≠ challenge defender by default.** "Target opposing character" is a **picker among opposing characters at the performer's location**, not a lock to `$event->defenderId`. WHY: a bystander at the same location must still be choosable; locking to the defender silently no-ops that case and looks like a missing trigger. PTv0.4.3 dropped the old equal-or-greater Combat filter — do **not** reintroduce `$character->ModifiedCombat >= $performer->ModifiedCombat`.
 
-**Combat gate:** `$character->ModifiedCombat >= $performer->ModifiedCombat` (printed `[Combat]` = modified value, same as Pattern A spaulders/shield). Equal passes. Offer only when `count(validTargets) >= 1`. Re-check the chosen id at perform time.
+**Offer gate:** Offer only when `count(validTargets) >= 1`. Re-check the chosen id at perform time.
 
-**UI:** Sniper-style `wound-{id}` buttons (no GameState — reactions fire from many hubs). Recompute the list in `getReactionButtonProperties` / perform via `getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)` + Combat + not discard/locker. Stash **`PerformerId` only** (buttons/perform run after ChallengeIssued is gone); clear after resolve. `$owner->IsUpdated = true` to persist.
+**UI:** Sniper-style `wound-{id}` buttons (no GameState — reactions fire from many hubs). Recompute the list in `getReactionButtonProperties` / perform via `getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)` + not discard/locker. Stash **`PerformerId` only** (buttons/perform run after ChallengeIssued is gone); clear after resolve. `$owner->IsUpdated = true` to persist.
 
 **Effect:** queue two `createCharacterBeingWoundedEvent` — performer first, then chosen target. `sourceId` = attachment. No engage unless printed. Pass does not `setUsed`.
 

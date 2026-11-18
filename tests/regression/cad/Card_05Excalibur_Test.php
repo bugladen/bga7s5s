@@ -90,12 +90,10 @@ class Card_05Excalibur_Test extends TestCase
                 Assert::false($host->hasTrait('Knight'), 'removed');
             },
 
-            'offers when equipped performer challenges and an opposing equal Combat is present' => function () {
+            'offers when equipped performer challenges with an opposing character present' => function () {
                 $world = new TestWorld();
                 [$host, $blade, $reaction] = $this->attach($world);
-                $host->ModifiedCombat = 2;
                 $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_DOCKS, 2);
-                $target->ModifiedCombat = 2;
 
                 $reaction->handleEvent($this->issued($world, $host->Id, $target->Id));
 
@@ -104,28 +102,24 @@ class Card_05Excalibur_Test extends TestCase
                 Assert::same($blade->Id, $transitions[0]->sourceId, 'source');
             },
 
-            'offers when challenge defender is weak but another opposing character meets Combat' => function () {
-                $world = new TestWorld();
-                [$host, , $reaction] = $this->attach($world);
-                $host->ModifiedCombat = 2;
-                $weakDefender = $world->placeCharacter(new GenericCharacter('Weak'), Game::LOCATION_CITY_DOCKS, 2);
-                $weakDefender->ModifiedCombat = 1;
-                $strongBystander = $world->placeCharacter(new GenericCharacter('Strong'), Game::LOCATION_CITY_DOCKS, 2);
-                $strongBystander->ModifiedCombat = 3;
-
-                $reaction->handleEvent($this->issued($world, $host->Id, $weakDefender->Id));
-                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'bystander qualifies');
-            },
-
-            'does not offer when no opposing character meets Combat' => function () {
+            'offers when only a weaker opposing character is present' => function () {
                 $world = new TestWorld();
                 [$host, , $reaction] = $this->attach($world);
                 $host->ModifiedCombat = 3;
-                $target = $world->placeCharacter(new GenericCharacter('Weak'), Game::LOCATION_CITY_DOCKS, 2);
-                $target->ModifiedCombat = 1;
+                $weak = $world->placeCharacter(new GenericCharacter('Weak'), Game::LOCATION_CITY_DOCKS, 2);
+                $weak->ModifiedCombat = 1;
 
-                $reaction->handleEvent($this->issued($world, $host->Id, $target->Id));
-                Assert::count(0, $world->theah->queuedEvents, 'combat gate');
+                $reaction->handleEvent($this->issued($world, $host->Id, $weak->Id));
+                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'no combat gate');
+            },
+
+            'does not offer when no opposing character is at the location' => function () {
+                $world = new TestWorld();
+                [$host, , $reaction] = $this->attach($world);
+                $elsewhere = $world->placeCharacter(new GenericCharacter('Elsewhere'), Game::LOCATION_CITY_FORUM, 2);
+
+                $reaction->handleEvent($this->issued($world, $host->Id, $elsewhere->Id));
+                Assert::count(0, $world->theah->queuedEvents, 'empty location');
             },
 
             'does not offer when a different character issues the challenge' => function () {
@@ -133,8 +127,6 @@ class Card_05Excalibur_Test extends TestCase
                 [$host, , $reaction] = $this->attach($world);
                 $other = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
                 $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_DOCKS, 2);
-                $other->ModifiedCombat = 1;
-                $target->ModifiedCombat = 1;
 
                 $reaction->handleEvent($this->issued($world, $other->Id, $target->Id));
                 Assert::count(0, $world->theah->queuedEvents, 'not equipped challenger');
@@ -152,24 +144,19 @@ class Card_05Excalibur_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'hand');
             },
 
-            'buttons list every qualifying opposing character, not only the defender' => function () {
+            'buttons list every opposing character at the location, not only the defender' => function () {
                 $world = new TestWorld();
                 [$host, , $reaction] = $this->attach($world);
-                $host->ModifiedCombat = 2;
                 $defender = $world->placeCharacter(new GenericCharacter('Defender'), Game::LOCATION_CITY_DOCKS, 2);
-                $defender->ModifiedCombat = 2;
                 $bystander = $world->placeCharacter(new GenericCharacter('Bystander'), Game::LOCATION_CITY_DOCKS, 2);
-                $bystander->ModifiedCombat = 4;
                 $weak = $world->placeCharacter(new GenericCharacter('Weak'), Game::LOCATION_CITY_DOCKS, 2);
-                $weak->ModifiedCombat = 1;
                 $elsewhere = $world->placeCharacter(new GenericCharacter('Elsewhere'), Game::LOCATION_CITY_FORUM, 2);
-                $elsewhere->ModifiedCombat = 5;
 
                 $reaction->handleEvent($this->issued($world, $host->Id, $defender->Id));
                 $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
                 Assert::true(in_array("wound-{$defender->Id}", $ids, true), 'defender');
                 Assert::true(in_array("wound-{$bystander->Id}", $ids, true), 'bystander');
-                Assert::false(in_array("wound-{$weak->Id}", $ids, true), 'weak');
+                Assert::true(in_array("wound-{$weak->Id}", $ids, true), 'weak');
                 Assert::false(in_array("wound-{$elsewhere->Id}", $ids, true), 'elsewhere');
                 Assert::true(in_array('pass', $ids, true), 'pass');
             },
@@ -177,11 +164,8 @@ class Card_05Excalibur_Test extends TestCase
             'wounding a bystander wounds performer and that bystander' => function () {
                 $world = new TestWorld();
                 [$host, $blade, $reaction] = $this->attach($world);
-                $host->ModifiedCombat = 2;
                 $defender = $world->placeCharacter(new GenericCharacter('Defender'), Game::LOCATION_CITY_DOCKS, 2);
-                $defender->ModifiedCombat = 1;
                 $bystander = $world->placeCharacter(new GenericCharacter('Bystander'), Game::LOCATION_CITY_DOCKS, 2);
-                $bystander->ModifiedCombat = 2;
                 $reaction->handleEvent($this->issued($world, $host->Id, $defender->Id));
 
                 $reaction->performReaction($world->game, 0, $reaction->Id, "wound-{$bystander->Id}");
@@ -199,9 +183,7 @@ class Card_05Excalibur_Test extends TestCase
             'pass does not spend the reaction' => function () {
                 $world = new TestWorld();
                 [$host, , $reaction] = $this->attach($world);
-                $host->ModifiedCombat = 1;
                 $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_DOCKS, 2);
-                $target->ModifiedCombat = 1;
                 $reaction->handleEvent($this->issued($world, $host->Id, $target->Id));
 
                 $reaction->performReaction($world->game, 0, $reaction->Id, 'pass');

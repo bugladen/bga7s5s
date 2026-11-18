@@ -25,7 +25,7 @@ class _05Excalibur extends FactionAttachment implements IHasReactions, IHasTechn
         // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
         $this->Name = "Dietrich Blade";
         $this->Title = "Honored Heirloom";
-        $this->Image = "05Excalibur.v4.jpg";
+        $this->Image = "05Excalibur.v4.3.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 27;
@@ -52,7 +52,7 @@ class _05Excalibur extends FactionAttachment implements IHasReactions, IHasTechn
         ];
 
         $this->Text = "<p>The equipped character gains <b>Knight</b></p>
-        <p><b>Reaction:</b> When the equipped performer issues a challenge • Wound the performer and target opposing character with equal or greater [Combat].</p>
+        <p><b>Reaction:</b> When the equipped performer issues a challenge, wound them • Wound target opposing character.</p>
         <p><b>Technique:</b> +1 [Riposte].</p>";
 
         $this->resetCard();

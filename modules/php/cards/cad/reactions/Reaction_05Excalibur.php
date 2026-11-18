@@ -22,14 +22,14 @@ class Reaction_05Excalibur extends AttachmentReaction
         parent::__construct();
 
         // WHY: Prototype CAD — plain strings, no clienttranslate.
-        $this->Name = "Wound performer and opposing character of equal or greater Combat";
+        $this->Name = "Wound performer and target opposing character";
     }
 
     public function getReactionDescription(Theah $theah): string
     {
         // WHY: single quotes — ${you} is a BGA client token, not PHP.
         return parent::getReactionDescription($theah)
-            . '${you} may wound the performer and an opposing character of equal or greater Combat: ';
+            . '${you} may wound the performer and a target opposing character: ';
     }
 
     public function getReactionButtonProperties(Theah $theah): array
@@ -80,8 +80,7 @@ class Reaction_05Excalibur extends AttachmentReaction
 
         $this->PerformerId = $performer->Id;
 
-        // WHY: "target opposing character with equal or greater [Combat]" — any opposing
-        // character at the performer's location, not only the challenge defender.
+        // WHY: PTv0.4.3 dropped the Combat gate — any opposing at the performer's location.
         if (count($this->getValidWoundTargets($event->theah)) === 0)
         {
             $this->PerformerId = 0;
@@ -110,7 +109,7 @@ class Reaction_05Excalibur extends AttachmentReaction
                 || $target === null
                 || $game->characterIsInDiscardOrLocker($performer))
             {
-                throw new UserException("Choose an opposing character of equal or greater Combat at this location");
+                throw new UserException("Choose an opposing character at this location");
             }
 
             $game->notify->all("message", '${owner_inject_code}: ${player_name} wounds ${performer_inject_code} and ${target_inject_code}.', [
@@ -147,7 +146,7 @@ class Reaction_05Excalibur extends AttachmentReaction
     }
 
     /**
-     * Opposing characters at the performer's location with ModifiedCombat >= performer.
+     * Opposing characters at the performer's location.
      *
      * @return Character[]
      */
@@ -163,12 +162,6 @@ class Reaction_05Excalibur extends AttachmentReaction
         foreach ($theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId) as $character)
         {
             if (! ($character instanceof Character))
-            {
-                continue;
-            }
-
-            // WHY: Printed [Combat] = current modified value (Pattern A spaulders/shield).
-            if ($character->ModifiedCombat < $performer->ModifiedCombat)
             {
                 continue;
             }
