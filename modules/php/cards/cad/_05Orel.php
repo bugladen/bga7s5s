@@ -14,7 +14,7 @@ class _05Orel extends Character
         parent::__construct();
         $this->Name = "Orel";
         $this->Title = "CACAW!";
-        $this->Image = "05Orel.v5.jpg";
+        $this->Image = "05Orel.v5.1.jpg";
         $this->ExpansionName = "cad";
         $this->ExpansionNumber = 5;
         $this->CardNumber = 11;
@@ -24,8 +24,8 @@ class _05Orel extends Character
         $this->InPlayXImageOffset = -25;
 
         $this->Resolve = 2;
-        $this->Combat = 2;
-        $this->Finesse = 3;
+        $this->Combat = 1;
+        $this->Finesse = 2;
         $this->Influence = 0;
         $this->DashedInfluence = true;
 
@@ -35,8 +35,8 @@ class _05Orel extends Character
             "Familiar",
         ];
 
-        $this->Text = "<p>Orel cannot be included in Approach decks.</p>
-<p>Orel cannot equip attachments and cannot perform abilities on risks and schemes.</p>
+        $this->Text = "<p>Orel cannot be in an Approach deck.</p>
+<p>Orel cannot equip attachments and cannot perform abilities on risks and schemes. (<i>Actions, Reactions, Maneuvers, etc)</i></p>
 <p>During pressures at Orel's location, add +1 to your total. If you initiated the pressure, you succeed even if tied.</p>";
 
         $this->resetCard();
