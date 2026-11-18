@@ -23,7 +23,7 @@ class _05Volk extends Character implements IHasReactions
 
         $this->initializeFaction("Ussura");
 
-        $this->Resolve = 3;
+        $this->Resolve = 2;
         $this->Combat = 3;
         $this->Finesse = 1;
         $this->Influence = 0;
