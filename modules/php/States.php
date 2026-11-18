@@ -499,6 +499,11 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_05DANDYA = 4050141;
             const HIGH_DRAMA_PLAYER_TURN_05DANDYA_2 = 40501412;
         const HIGH_DRAMA_PLAYER_TURN_05DANDYB = 4050142;
+        // Clone of Claude (_05Dandyv2). Ids sit past 4050142 so they do not collide with the original substates.
+        const HIGH_DRAMA_PLAYER_TURN_05DANDYV2A = 40501420;
+            const HIGH_DRAMA_PLAYER_TURN_05DANDYV2A_2 = 405014202;
+        const HIGH_DRAMA_PLAYER_TURN_05DANDYV2B = 40501421;
+            const HIGH_DRAMA_PLAYER_TURN_05DANDYV2B_2 = 405014212;
         // CAD — Scholarly Sanctuary (_05Refuge). Exp 5 + card 18. Location chooser (Home / controlled City).
         const HIGH_DRAMA_PLAYER_TURN_05REFUGE = 405018;
         // CAD - Smash and Grab (_05Teens). Exp 5 + card 19. Target / attachment / equip target / pay.

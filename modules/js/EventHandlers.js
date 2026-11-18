@@ -575,6 +575,14 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 this.updateDandyWealthPay(2);
             },
 
+            'highDramaPhase05Dandyv2a': () => {
+                this.updateDandyWealthPay();
+            },
+
+            'highDramaPhase05Dandyv2b': () => {
+                this.updateDandyWealthPay(2);
+            },
+
 
             'highDramaPhase01064': () => {
                 if (this.factionHand.getSelection().length > 0) {

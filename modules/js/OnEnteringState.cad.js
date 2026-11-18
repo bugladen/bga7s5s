@@ -300,6 +300,54 @@
                 }
             },
 
+            'highDramaPhase05Dandyv2a': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    $('faction_hand_info').innerHTML = '(0 Wealth worth of cards selected)';
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
+            'highDramaPhase05Dandyv2a_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    this.selectedCityLocations = [];
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.clientStateArgs.locationIds = args.args.args.locationIds || [];
+                    this.clientStateArgs.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'highDramaPhase05Dandyv2b': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    $('faction_hand_info').innerHTML = '(0 Wealth worth of cards selected)';
+                    // WHY: 2 Wealth is one Wealth card, two plain cards, or a Wealth
+                    // card plus one plain card. Single-select cannot express that.
+                    this.factionHand.setSelectionMode('multiple');
+                }
+            },
+
+            'highDramaPhase05Dandyv2b_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    this.selectedCityLocations = [];
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    this.clientStateArgs.locationIds = args.args.args.locationIds || [];
+                    this.clientStateArgs.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
             'setupTable_05Gary': () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');

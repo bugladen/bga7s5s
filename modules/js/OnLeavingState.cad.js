@@ -215,6 +215,44 @@
                 }
             },
 
+            'highDramaPhase05Dandyv2a': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Dandyv2a_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.resetCityLocations();
+                    this.selectedCityLocations = [];
+                    this.numberOfCityLocationsSelectable = 0;
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Dandyv2b': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Dandyv2b_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.resetCityLocations();
+                    this.selectedCityLocations = [];
+                    this.numberOfCityLocationsSelectable = 0;
+                    this.clientStateArgs = {};
+                }
+            },
+
             'setupTable_05Gary': () => {
                 dojo.addClass('choose_container', 'hidden');
                 dojo.addClass('chooseList', 'hidden');

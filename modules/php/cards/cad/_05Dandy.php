@@ -201,11 +201,13 @@ class _05Dandy extends Leader implements IHasActions
         return max(0, $theah->getCityLocation($location)->Renown);
     }
 
+    // WHY: Live path is foldAttachmentInfluence from handleEvent. This entry
+    // point remains for tests (and any manual heal) that need fold + a full
+    // Renown resync in one call. Theah no longer runs it on buildCity — that
+    // was a one-time backfill after the Crystal Eye fold shipped.
     public function repairAttachmentInfluence(Theah $theah): void
     {
         $this->foldAttachmentInfluence($theah, true);
-        // WHY: Tables that already took a stale InfMod absolute write (chip low,
-        // Unclamped/Applied cleared) heal the next time the city is loaded.
         if ($this->ControllerId != 0 && ! $theah->game->characterIsInDiscardOrLocker($this))
         {
             $this->syncRenownPenalty($theah, $this->Location);
