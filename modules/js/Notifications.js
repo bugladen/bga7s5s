@@ -1908,10 +1908,17 @@ return declare('seventhseacityoffivesails.notifications', null, {
         dojo.query('._7sfs-first-player-score').removeClass('_7sfs-first-player-score');
 
         //Add the new classes
+        // WHY: Same guard as Setup.js — home marker is absent before createHome.
         const args = notif.args;
-        dojo.addClass(`${args.playerId}-first-player`, '_7sfs-first-player-home');
-        dojo.removeClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-hidden');
-        dojo.addClass(`${args.playerId}-score-seal-first-player`, '_7sfs-first-player-score');
+        const homeFp = $(`${args.playerId}-first-player`);
+        if (homeFp) {
+            dojo.addClass(homeFp, '_7sfs-first-player-home');
+        }
+        const scoreFp = $(`${args.playerId}-score-seal-first-player`);
+        if (scoreFp) {
+            dojo.removeClass(scoreFp, '_7sfs-first-player-hidden');
+            dojo.addClass(scoreFp, '_7sfs-first-player-score');
+        }
 
         // Hide turn-order badge on the new first player; restore it on everyone else (>2 player games only).
         // Refresh each badge value from args.turnOrders so the rotation is reflected.

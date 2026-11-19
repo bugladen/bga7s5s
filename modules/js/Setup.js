@@ -125,8 +125,12 @@ return declare('seventhseacityoffivesails.setup', null, {
                 dojo.style(`${playerId}-score-turn-order`, 'display', 'none');
             }
 
-            //Display only if we are out of the faction choosing phase
-            if (gamedatas.homeCards.length > 0) {
+            // WHY: Gate on leader, not homeCards.length. Homes are created when a
+            // leader is played (notif_playLeader); homeCards can be empty while
+            // leaders are in the city (and schemes should still be home, but a
+            // desync must not skip the board). Empty homeCards + firstPlayer set
+            // used to crash dojo.addClass on a missing `${id}-first-player` node.
+            if (player.leader) {
                 // Home
                 this.createHome(playerId, player.color, player.leader);
 
@@ -189,16 +193,27 @@ return declare('seventhseacityoffivesails.setup', null, {
 
         // Display the first player marker if there is one
         if (gamedatas.firstPlayer) {
-            dojo.addClass(`${gamedatas.firstPlayer}-first-player`, '_7sfs-first-player-home');
+            // WHY: Home marker only exists after createHome (leader present). Score
+            // seal marker is always in jstpl_player_board. Guard each independently
+            // so a missing home board cannot abort the rest of setup.
+            const homeFp = $(`${gamedatas.firstPlayer}-first-player`);
+            if (homeFp) {
+                dojo.addClass(homeFp, '_7sfs-first-player-home');
+                this.addTippyTooltipToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            }
 
-            dojo.removeClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-hidden');
-            dojo.addClass(`${gamedatas.firstPlayer}-score-seal-first-player`, '_7sfs-first-player-score');
-
-            this.addTippyTooltipToClass('_7sfs-first-player-home', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
-            this.addTippyTooltipToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            const scoreFp = $(`${gamedatas.firstPlayer}-score-seal-first-player`);
+            if (scoreFp) {
+                dojo.removeClass(scoreFp, '_7sfs-first-player-hidden');
+                dojo.addClass(scoreFp, '_7sfs-first-player-score');
+                this.addTippyTooltipToClass('_7sfs-first-player-score', `<div class='_7sfs-basic-tooltip'>${_('First Player')}</div>` );
+            }
 
             if (Object.keys(gamedatas.players).length > 2) {
-                dojo.style(`${gamedatas.firstPlayer}-score-turn-order`, 'display', 'none');
+                const turnOrder = $(`${gamedatas.firstPlayer}-score-turn-order`);
+                if (turnOrder) {
+                    dojo.style(turnOrder, 'display', 'none');
+                }
             }
         }
 
