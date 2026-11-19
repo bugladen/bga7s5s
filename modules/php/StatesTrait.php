@@ -1316,6 +1316,11 @@ trait StatesTrait
                 $this->clearResetOnDuelEndTechniquesForCharacter((int) $performerId);
                 $this->clearResetOnDuelEndTechniquesForCharacter((int) $targetId);
 
+                // WHY: Soline _01089 now applies -1 Fin on Accept/Intervene (before
+                // GenerateThreat). Fizzle skips EventDuelEnd / stDuelEnd, so flush here;
+                // NEXT_PLAYER_EVENTS drains the restore after this transition.
+                _01089::clearLeftoverDebuffs($this);
+
                 $resolvedPlayerId = $performer !== null
                     ? $performer->ControllerId
                     : (int) $this->globals->get(GAME::CURRENT_PLAYER);

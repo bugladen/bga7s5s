@@ -14,11 +14,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01089;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 
 class Card_01089_Test extends TestCase
 {
@@ -91,6 +94,68 @@ class Card_01089_Test extends TestCase
                 Assert::same(0, $soline->AffectedCharacterId, 'no victim yet');
                 Assert::false($soline->FinessePenaltyAbsorbed, 'not absorbed yet');
                 Assert::instanceOf(Reaction_01089::class, $soline->getReactions()[0], 'Reaction_01089');
+            },
+
+            // --- Accept / Intervene: adversaries begin; -1 before Finesse threat ---
+
+            'challenge accept with Soline as defender stacks -1 ahead of pending GenerateThreat' => function () {
+                $world = new TestWorld();
+                [$soline, , $foe] = $this->scene($world);
+
+                // Mirror Accept → GENERATE_THREAT: ChallengeAccepted then GenerateThreat queued,
+                // Soline must stack FinesseModified so it drains first.
+                $pendingThreat = new EventGenerateChallengeThreat();
+                $pendingThreat->actorId = $foe->Id;
+                $pendingThreat->adversaryId = $soline->Id;
+                $pendingThreat->statUsed = Game::STAT_FINESSE;
+                $world->theah->queueEvent($pendingThreat);
+
+                $accepted = new EventChallengeAccepted();
+                $accepted->challengerId = $foe->Id;
+                $accepted->targetId = $soline->Id;
+                $world->fireOn($soline, $accepted);
+
+                $queued = $world->theah->takeQueuedEvents();
+                Assert::true($queued[0] instanceof EventCharacterFinesseModifed, 'stacked -1 is first');
+                Assert::same($foe->Id, $queued[0]->CharacterId, 'challenger is Soline\'s adversary');
+                Assert::same(1, $queued[0]->NewFinesse, '-1');
+                Assert::true($queued[1] instanceof EventGenerateChallengeThreat, 'threat still second');
+                Assert::true($foe->hasCondition(Game::SOLINE_EL_GATO_CONDITION), 'condition stamped');
+                Assert::same($foe->Id, $soline->AffectedCharacterId, 'victim tracked');
+            },
+
+            'challenge intervene with Soline as new defender applies -1 to the challenger' => function () {
+                $world = new TestWorld();
+                [$soline, $ally, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $foe->Id);
+
+                $intervened = new EventCharacterIntervened();
+                $intervened->playerId = 1;
+                $intervened->oldTargetId = $ally->Id;
+                $intervened->newTargetId = $soline->Id;
+                $world->fireOn($soline, $intervened);
+
+                $events = $this->finesseEvents($world);
+                Assert::count(1, $events, 'one finesse change');
+                Assert::same($foe->Id, $events[0]->CharacterId, 'challenger debuffed');
+                Assert::same(1, $events[0]->NewFinesse, '-1');
+                Assert::same($foe->Id, $soline->AffectedCharacterId, 'victim');
+            },
+
+            'duel start after accept is idempotent — no second -1' => function () {
+                $world = new TestWorld();
+                [$soline, , $foe] = $this->scene($world);
+
+                $accepted = new EventChallengeAccepted();
+                $accepted->challengerId = $foe->Id;
+                $accepted->targetId = $soline->Id;
+                $world->fireOn($soline, $accepted);
+                $world->theah->takeQueuedEvents();
+
+                $world->fireOn($soline, $this->started($foe->Id, $soline->Id));
+
+                Assert::count(0, $this->finesseEvents($world), 'no second reduction');
+                Assert::same($foe->Id, $soline->AffectedCharacterId, 'same victim');
             },
 
             // --- Duel start: -1 Finesse on the adversary ---

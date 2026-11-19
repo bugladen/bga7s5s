@@ -10,8 +10,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ReactionTrait;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeAccepted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengerSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterFinesseModifed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDefenderSwapped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
@@ -141,7 +143,12 @@ class _01089 extends Leader implements IHasReactions
         ]);
     }
 
-    private function lowerFinesse(Character $character, Theah $theah)
+    /**
+     * @param bool $stackFinesseChange When true, stack the -1 ahead of any already-queued
+     * EventGenerateChallengeThreat so Accept/Intervene reduces ModifiedFinesse before
+     * Finesse-challenge threat reads it. DuelStarted keeps queue (FIFO with siblings).
+     */
+    private function lowerFinesse(Character $character, Theah $theah, bool $stackFinesseChange = false)
     {
         if ($character->hasCondition(Game::SOLINE_EL_GATO_CONDITION))
         {
@@ -154,7 +161,14 @@ class _01089 extends Leader implements IHasReactions
         if ($character->ModifiedFinesse > 0)
         {
             $event = EventFactory::createCharacterFinesseModifedEvent($this->ControllerId, $character->Id, $character->ModifiedFinesse, $character->ModifiedFinesse - 1, $this->getInjectCode());
-            $theah->queueEvent($event);
+            if ($stackFinesseChange)
+            {
+                $theah->stackEvent($event);
+            }
+            else
+            {
+                $theah->queueEvent($event);
+            }
             $this->FinessePenaltyAbsorbed = true;
         }
         else
@@ -168,6 +182,33 @@ class _01089 extends Leader implements IHasReactions
         $theah->game->notify->all("solineElGatoConditionStarted", '', [
             "cardId" => $character->Id,
         ]);
+    }
+
+    /**
+     * Debuff the opposing participant when a friendly character at Soline's location
+     * is in the challenge/duel. Idempotent via lowerFinesse's condition gate.
+     */
+    private function applyAuraToParticipants(int $challengerId, int $defenderId, Theah $theah, bool $stackFinesseChange = false): void
+    {
+        $challenger = $theah->getCharacterById($challengerId);
+        $defender = $theah->getCharacterById($defenderId);
+        if ($challenger === null || $defender === null)
+        {
+            return;
+        }
+
+        if ($challenger->Location == $this->Location && $challenger->ControllerId == $this->ControllerId)
+        {
+            $this->lowerFinesse($defender, $theah, $stackFinesseChange);
+            $this->AffectedCharacterId = $defender->Id;
+            $this->IsUpdated = true;
+        }
+        else if ($defender->Location == $this->Location && $defender->ControllerId == $this->ControllerId)
+        {
+            $this->lowerFinesse($challenger, $theah, $stackFinesseChange);
+            $this->AffectedCharacterId = $challenger->Id;
+            $this->IsUpdated = true;
+        }
     }
 
     /**
@@ -207,23 +248,28 @@ class _01089 extends Leader implements IHasReactions
     {
         parent::handleEvent($event);
 
+        // WHY: Adversaries begin at Accept/Intervene — not at DuelStarted. Finesse-challenge
+        // threat (GenerateChallengeThreat) runs after Accept in the same events drain, so
+        // the -1 must land first. stackEvent puts FinesseModified ahead of the already-
+        // queued GenerateThreat. Refuse never fires these → no penalty. Accept UI preview
+        // also never fires them → preview correctly shows unpenalized FIN.
+        if ($event instanceof EventChallengeAccepted)
+        {
+            $this->applyAuraToParticipants($event->challengerId, $event->targetId, $event->theah, stackFinesseChange: true);
+        }
+
+        if ($event instanceof EventCharacterIntervened)
+        {
+            // Intervene sets CHALLENGE_ACCEPTED without EventChallengeAccepted.
+            $challengerId = (int) $event->theah->game->globals->get(Game::CHOSEN_PERFORMER, 0);
+            $this->applyAuraToParticipants($challengerId, $event->newTargetId, $event->theah, stackFinesseChange: true);
+        }
+
+        // WHY: Safety for any path that reaches a duel without Accept/Intervene events
+        // (idempotent — lowerFinesse no-ops when the condition is already stamped).
         if ($event instanceof EventDuelStarted)
         {
-            $challenger = $event->theah->getCharacterById($event->challengerId);
-            $defender = $event->theah->getCharacterById($event->defenderId);
-
-            if ($challenger->Location == $this->Location && $challenger->ControllerId == $this->ControllerId)
-            {
-                $this->lowerFinesse($defender, $event->theah);
-                $this->AffectedCharacterId = $defender->Id;
-                $this->IsUpdated = true;
-            }
-            else if ($defender->Location == $this->Location && $defender->ControllerId == $this->ControllerId)
-            {
-                $this->lowerFinesse($challenger, $event->theah);
-                $this->AffectedCharacterId = $challenger->Id;
-                $this->IsUpdated = true;
-            }
+            $this->applyAuraToParticipants($event->challengerId, $event->defenderId, $event->theah);
         }
 
         if ($event instanceof EventDuelEnd)
