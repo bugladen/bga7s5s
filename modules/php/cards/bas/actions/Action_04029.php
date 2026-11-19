@@ -49,6 +49,41 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
     }
 
     /**
+     * Printed "equip it to your character at this location" — any controlled character at the
+     * performer's City location may receive the stolen attachment, not only the Merchant.
+     *
+     * @return list<Character>
+     */
+    private function getCharactersAtPerformerLocation(Theah $theah, Character $performer): array
+    {
+        return $theah->getCharactersAtLocationByPlayerId($performer->Location, $performer->ControllerId);
+    }
+
+    private function canCharacterEquipAttachment(Theah $theah, Character $character, Attachment $attachment, int $handWealth): bool
+    {
+        [$discount, $explanations] = $theah->getEquipDiscount($character, $attachment);
+        $cost = $attachment->WealthCost - $discount;
+        if ($cost < 0)
+        {
+            $cost = 0;
+        }
+
+        // WHY: 0-cost equips (e.g. Langschwert) stay legal once the risk is in hand — no wealth discard required.
+        if ($cost > 0 && $handWealth < $cost)
+        {
+            return false;
+        }
+
+        [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($character, $attachment);
+        if ($hasRestrictions || ! $attachment->canAttachTo($character))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @return list<array{attachment: Attachment, host: Character}>
      */
     private function getStealableAttachments(Theah $theah, Character $performer, ?int $wealthAdjustment = null): array
@@ -60,32 +95,32 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
             $handWealth += $wealthAdjustment;
         }
 
+        $allies = $this->getCharactersAtPerformerLocation($theah, $performer);
         $opposing = $theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId);
         foreach ($opposing as $host)
         {
             foreach ($host->Attachments as $attachmentId)
             {
                 $attachment = $theah->getAttachmentById($attachmentId);
-                if ($attachment === null)
+                if ($attachment === null || ! $attachment->canBeMoved())
                 {
                     continue;
                 }
 
-                [$discount, $explanations] = $theah->getEquipDiscount($performer, $attachment);
-                $cost = $attachment->WealthCost - $discount;
-                if ($cost < 0)
+                // WHY: Printed equip target is any of yours at the location — an attachment is
+                // legal to steal if at least one ally there can attach and afford it (not only
+                // the Merchant performer). Discount/restriction checks are per candidate host.
+                $canEquipSomewhere = false;
+                foreach ($allies as $ally)
                 {
-                    $cost = 0;
+                    if ($this->canCharacterEquipAttachment($theah, $ally, $attachment, $handWealth))
+                    {
+                        $canEquipSomewhere = true;
+                        break;
+                    }
                 }
 
-                // WHY: 0-cost equips (e.g. Langschwert) stay legal once the risk is in hand — no wealth discard required.
-                if ($cost > 0 && $handWealth < $cost)
-                {
-                    continue;
-                }
-
-                [$hasRestrictions, $restrictionExplanation] = $theah->game->hasEquipRestrictions($performer, $attachment);
-                if ($hasRestrictions || ! $attachment->canAttachTo($performer) || ! $attachment->canBeMoved())
+                if (! $canEquipSomewhere)
                 {
                     continue;
                 }
@@ -95,6 +130,26 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
         }
 
         return $stealable;
+    }
+
+    /**
+     * After the steal: your characters at the Merchant's location who can still equip it.
+     *
+     * @return list<Character>
+     */
+    private function getEquipCandidates(Theah $theah, Character $performer, Attachment $attachment): array
+    {
+        $handWealth = $theah->game->handWealthCount($performer->ControllerId);
+        $candidates = [];
+        foreach ($this->getCharactersAtPerformerLocation($theah, $performer) as $character)
+        {
+            if ($this->canCharacterEquipAttachment($theah, $character, $attachment, $handWealth))
+            {
+                $candidates[] = $character;
+            }
+        }
+
+        return $candidates;
     }
 
     /**
@@ -181,9 +236,30 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_04029_2)
         {
+            $performerId = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $game->theah->getCharacterById($performerId);
+            $attachmentId = (int)$game->globals->get(Game::CHOSEN_ATTACHMENT);
+            $attachment = $game->theah->getAttachmentById($attachmentId);
+
+            $args["performerId"] = $performerId;
+            $args["attachmentId"] = $attachmentId;
+            $args["ids"] = [];
+
+            if ($performer !== null && $attachment !== null)
+            {
+                $args["ids"] = array_map(
+                    fn(Character $character) => $character->Id,
+                    $this->getEquipCandidates($game->theah, $performer, $attachment)
+                );
+            }
+        }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_04029_3)
+        {
             $attachmentId = (int)$game->globals->get(Game::CHOSEN_ATTACHMENT);
             $attachment = $game->getCardObjectFromDb($attachmentId);
             $args["cardId"] = $attachmentId;
+            $args["characterId"] = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
             $args["cost"] = $game->globals->get(Game::CHOSEN_CARD_COST);
             $args["discount"] = $game->globals->get(Game::DISCOUNT);
             $args["card"] = $attachment->getPropertyArray($game);
@@ -273,13 +349,54 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
             $addedToHandEvent = EventFactory::createCardAddedToHandEvent($performer->ControllerId, $attachment->Id);
             $game->theah->queueEvent($addedToHandEvent);
 
-            $payEvent = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
-            $game->theah->queueEvent($payEvent);
-
+            // WHY: Equip host is chosen next — pay/discount must use that character, not the Merchant
+            // performer. Defer PAY_STATE_EQUIP_ATTACHMENT until after the location host is locked.
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04029_2", $this->Id);
             $game->theah->queueEvent($transition);
 
             $game->gamestate->nextState("attachmentChosen");
+        }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_04029_2)
+        {
+            $merchantId = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
+            $merchant = $game->theah->getCharacterById($merchantId);
+            if ($merchant === null)
+            {
+                throw new UserException($game->translate("Performer not found"));
+            }
+
+            $attachmentId = (int)$game->globals->get(Game::CHOSEN_ATTACHMENT);
+            $attachment = $game->theah->getAttachmentById($attachmentId);
+            if ($attachment === null)
+            {
+                throw new UserException($game->translate("Attachment not found"));
+            }
+
+            $candidateIds = array_map(
+                fn(Character $character) => $character->Id,
+                $this->getEquipCandidates($game->theah, $merchant, $attachment)
+            );
+            if (! in_array($id, $candidateIds, true))
+            {
+                throw new UserException($game->translate("That character cannot equip this attachment"));
+            }
+
+            $character = $game->theah->getCharacterById($id);
+
+            // WHY: PAY_STATE_EQUIP_ATTACHMENT discount + equip target both read CHOSEN_PERFORMER.
+            // Merchant Action already spent its En Garde gate; re-point to the receiving character
+            // (same as Smash and Grab Action_05Teens).
+            $game->globals->set(Game::CHOSEN_PERFORMER, $character->Id);
+
+            $owner = $this->getOwningCard($game->theah);
+            $payEvent = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $attachment->Id, Game::PAY_STATE_EQUIP_ATTACHMENT);
+            $game->theah->queueEvent($payEvent);
+
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04029_3", $this->Id);
+            $game->theah->queueEvent($transition);
+
+            $game->gamestate->nextState("characterChosen");
         }
     }
 
@@ -313,20 +430,46 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
 
             $game->gamestate->nextState("pass");
         }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_04029_2)
+        {
+            $merchantId = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
+            $merchant = $game->theah->getCharacterById($merchantId);
+            $attachmentId = (int)$game->globals->get(Game::CHOSEN_ATTACHMENT);
+            $attachment = $game->theah->getAttachmentById($attachmentId);
+            $candidates = ($merchant === null || $attachment === null)
+                ? []
+                : $this->getEquipCandidates($game->theah, $merchant, $attachment);
+
+            if (count($candidates) > 0)
+            {
+                throw new UserException($game->translate("You must choose a character to equip the attachment to"));
+            }
+
+            $owner = $this->getOwningCard($game->theah);
+            $game->notify->all("message", clienttranslate('${card_inject_code}: No legal characters to equip to. The Action ends.'), [
+                "card_inject_code" => $owner->getInjectCode(),
+            ]);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($actionResolvedEvent);
+
+            $game->gamestate->nextState("pass");
+        }
     }
 
     public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
     {
         parent::actFromActionWithIds($game, $state, $stateName, $ids);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_04029_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_04029_3)
         {
-            $performerId = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
+            $characterId = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
+            $character = $game->theah->getCharacterById($characterId);
             $attachmentId = (int)$game->globals->get(Game::CHOSEN_ATTACHMENT);
             $attachment = $game->theah->getAttachmentById($attachmentId);
 
-            if ($attachment === null || $attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $performer->ControllerId)
+            if ($character === null || $attachment === null || $attachment->Location != Game::LOCATION_HAND || $attachment->ControllerId != $character->ControllerId)
             {
                 throw new UserException($game->translate("Attachment is not in your hand"));
             }
@@ -370,11 +513,11 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
                 $game->theah->queueEvent($event);
             }
 
-            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $performer->Id);
+            $actualTargetId = $attachment->getRequiredAttachTargetId($game->theah, $character->Id);
 
             $owner = $this->getOwningCard($game->theah);
             $musterEvent = EventFactory::createAttachmentEquippedEvent(
-                $performer->ControllerId,
+                $character->ControllerId,
                 $actualTargetId,
                 $attachment->Id,
                 $discount,
@@ -398,7 +541,7 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
                 $game->theah->queueEvent($drawEvent);
             }
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($character->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState();

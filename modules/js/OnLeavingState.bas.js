@@ -487,6 +487,14 @@
             },
 
             'highDramaPhase04029_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase04029_3': () => {
                 if (this.isCurrentPlayerActive())
                 {
                     this.factionHand.getCards().forEach((card) => {
@@ -498,6 +506,8 @@
                     });
                     this.factionHand.setSelectionMode('none');
                     $('faction_hand_info').innerHTML = '';
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
                 }
             },
 

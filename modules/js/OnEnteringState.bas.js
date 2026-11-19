@@ -651,7 +651,19 @@
                 }
             },
 
+            // Equip host at the Merchant's location (printed "your character at this location").
             'highDramaPhase04029_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids || [];
+                    this.highlightCardsAsSelectable(this.clientStateArgs.ids);
+                }
+            },
+
+            'highDramaPhase04029_3': () => {
                 if (this.isCurrentPlayerActive())
                 {
                     const statusBarTitle = _(args.descriptionmyturn).replace('#{cost}', '${cost}');
@@ -660,6 +672,9 @@
                             cost: Math.max(0, args.args.args.cost - args.args.args.discount),
                         }),
                     });
+
+                    this.highlightCharacterChosen(args.args.args.characterId);
+                    this.clientStateArgs.characterId = args.args.args.characterId;
 
                     const cardId = args.args.args.cardId;
                     const card = this.factionHand.getCards().find(c => c.id === cardId);

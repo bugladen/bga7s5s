@@ -332,7 +332,7 @@ This is **not** B.2 (RiskAttachment fake equip), **not** Robbery City Action (`A
 
 1. **`RiskAction`** + `RequiresPerformerSelected = true` + **`IAbilityThatTargetsCards`** on the Action (marker interface — **no** `isValidTargetForAbility`; validation lives in `getStealableAttachments` + act re-check). **Do not** mark `IRiskThatTargetsCharacters` on the Risk — the chooser is attachments, not characters (Cesca character-target only).
 2. **Heading gates stack:** En Garde → `!$Engaged`; **Merchant** (or other trait in heading) → `hasTrait("Merchant")`. Start from `parent::getPerformersForAction` (plain Action — home in pool), then **also** require `cardInCity($performer)` — printed "at this location" on a City Action-less Risk means City location, not Home (`Action_04011` idiom).
-3. **Stealable pool:** `getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)` → each host's `$host->Attachments` → `getAttachmentById` → filter with `getEquipDiscount`, `hasEquipRestrictions`, `canAttachTo`.
+3. **Stealable pool:** `getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)` → each host's `$host->Attachments` → `getAttachmentById` → filter with `canBeMoved` plus **any** of your characters at the location passing `getEquipDiscount` / `hasEquipRestrictions` / `canAttachTo` / affordability. WHY not only the Merchant: printed **"equip it to your character at this location"** — stealability must match who can receive it.
 4. **Wealth adjustment (availability only while Risk still in hand):** centralize in `getWealthAdjustment(Theah $theah)`:
 
 ```php
@@ -348,13 +348,14 @@ return -($selfWealth + $owner->getWealthCost());
 Use the adjustment for grey/`isAvailable` / `getEligiblePerformers`. Do **not** keep reserving in `getArgsFromAction` / `actFromActionWithId` after the Risk has left hand — that double-count emptied `_04029`'s chooser with one payment card left. Mirror Robbery: adjust only in availability.
 
 5. **0-cost equip:** after discount, if `$cost == 0`, **skip** the `handWealth < $cost` check — risk-in-hand alone is enough (Langschwert `_01048`). When `$cost > 0`, apply adjusted hand wealth.
-6. **Two-step flow:**
+6. **Three-step flow:**
    - `"NNNNN"` → attachment-chooser GameState. Args: `attachments[]` with `id` + `name` = `"{$attachment->Name} ({$host->Name})"` for disambiguation (mirror `Action_04019` button shape, not in-play highlight).
    - On attachment confirm: stash **`CHOSEN_OPPONENT` = `$host->ControllerId`** (last controller for draw rider — reuse global, do not invent Action fields).
-   - Steal sequence (order matters): `ControllerId` → performer → `updateCardObjectInDb` + `addCardToWorld` → `createAttachmentUnequippedEvent` → `createCardDiscardedFromPlayEvent` → set `CHOSEN_ATTACHMENT` / `CHOSEN_CARD_COST` → `createCardRemovedFromPlayerDiscardPileEvent` → `createCardAddedToHandEvent` → `createEnteringPayStateEvent(..., PAY_STATE_EQUIP_ATTACHMENT)` → transition `"NNNNN_2"`.
-   - `"NNNNN_2"` → wealth pay (`actFromActionWithIds`): validate attachment in hand → pay → `createAttachmentEquippedEvent` with `getRequiredAttachTargetId` → draw rider → `createActionResolvedEvent`.
+   - Steal sequence (order matters): `ControllerId` → performer → `updateCardObjectInDb` + `addCardToWorld` → `createAttachmentUnequippedEvent` → `createCardDiscardedFromPlayEvent` → set `CHOSEN_ATTACHMENT` / `CHOSEN_CARD_COST` → `createCardRemovedFromPlayerDiscardPileEvent` → `createCardAddedToHandEvent` → transition `"NNNNN_2"` (**do not** enter pay yet).
+   - `"NNNNN_2"` → equip-host chooser: `ids` = your characters at the Merchant's location who can still attach/afford (`getCharactersAtLocationByPlayerId`). Board highlight + Confirm. Pass only when empty. On confirm: **re-point `CHOSEN_PERFORMER`** to the receiving character (PAY discount + equip target both read it — same as B.13 / `Action_05Teens`) → `createEnteringPayStateEvent(..., PAY_STATE_EQUIP_ATTACHMENT)` → transition `"NNNNN_3"`.
+   - `"NNNNN_3"` → wealth pay (`actFromActionWithIds`): validate attachment in hand → pay → `createAttachmentEquippedEvent` with `getRequiredAttachTargetId` → draw rider → `createActionResolvedEvent`.
 7. **Draw rider:** after equip, if `getLeaderByPlayerId($owner->ControllerId)` is null **or** Leader lacks `Villain` trait → `createCardDrawnEvent($lastControllerId, sprintf($game->translate("%s effect"), $owner->getInjectCode()))`. **Two arguments required** — one-arg call fatals. Draw goes to **last attachment controller** (`CHOSEN_OPPONENT`), not the active player.
-8. **Wire:** `"04029"` / `"04029_2"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`; states `4<NNNNN>` / `4<NNNNN>2`. JS bas trio: step 1 attachment name buttons (`highDramaPhase04019` shape); step 2 `actPayForCards` + `onPaymentConfirmedFromCard` (`01113_3` shape); `EventHandlers.js` `payForCard` on `_2`. 0-cost equip: confirm with **empty** hand selection (`isValidWealthPayment(0, 0, false)`).
+8. **Wire:** `"04029"` / `"04029_2"` / `"04029_3"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`; states `4<NNNNN>` / `4<NNNNN>2` / `4<NNNNN>3`. JS bas trio: step 1 attachment name buttons; step 2 in-play character highlight (`05Teens_3` shape, Pass only when empty); step 3 `actPayForCards` + `onPaymentConfirmedFromCard`; `EventHandlers.js` `payForCard` on `_3`. 0-cost equip: confirm with **empty** hand selection (`isValidWealthPayment(0, 0, false)`).
 9. **Do not** gate on uncontrolled City attachments at the location unless printed text says so — Dawn scheme cards sit at most City spots; that gate hid normal steal play during `_04029` testing.
 
 **Contrast:**
@@ -363,11 +364,11 @@ Use the adjustment for grey/`isAvailable` / `getEligiblePerformers`. Do **not** 
 |---|---|---|---|
 | Source | Opponent discard pile | Adversary equipped + discard | Opposing at performer location equipped |
 | Performer gate | Pirate + city | Pirate duel actor | En Garde Merchant + city |
-| Chooser | Opponent then attachment | Attachment list | Attachment list (host in label) |
-| Pay state | `_01113_3` | In maneuver act | `_04029_2` |
+| Chooser | Opponent then attachment | Attachment list | Attachment → **your character at location** → pay |
+| Pay state | `_01113_3` | In maneuver act | `_04029_3` |
 | Extra rider | None | None | Last controller draws unless your Leader Villain |
 
-References: `_04029` / `Action_04029` / `State_highDramaPhase04029` + `_2`; steal sequence `Maneuver_01113`; wealth pay `Action_01113` / `State_highDramaPhase01113_3`; draw `Action_04010`; city performer `Action_04011`.
+References: `_04029` / `Action_04029` / `State_highDramaPhase04029` + `_2` + `_3`; steal sequence `Maneuver_01113`; equip-host re-point `Action_05Teens`; wealth pay `Action_01113` / `State_highDramaPhase01113_3`; draw `Action_04010`; city performer `Action_04011`.
 
 ### Pattern B.10 — En Garde Academic Action: Discard available City Card • look at City Deck • may add one • sink rest • locked extra action
 

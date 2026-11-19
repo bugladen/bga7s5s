@@ -19,10 +19,12 @@ class State_highDramaPhase04029_2 extends GameState
             type: StateType::ACTIVE_PLAYER,
             name: "highDramaPhase04029_2",
 
-            description: clienttranslate('${actplayer} is choosing their A Fine Addition... options.'),
-            descriptionMyTurn: clienttranslate('A Fine Addition...') . clienttranslate(': ${you} must pay #{cost} Wealth for the chosen Attachment:'),
+            description: clienttranslate('${actplayer} is choosing a character to equip an attachment to.'),
+            descriptionMyTurn: clienttranslate('A Fine Addition...') . clienttranslate(': ${you} must choose a character at this location to equip the attachment to:'),
             transitions: [
-                "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "characterChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
@@ -35,13 +37,27 @@ class State_highDramaPhase04029_2 extends GameState
     }
 
     #[PossibleAction]
-    public function actFromCardWithIds(string $ids): void
+    public function actFromCardWithId(string $id): void
     {
-        $this->game->actFromCardWithIds($ids);
+        $this->game->actFromCardWithId($id);
+    }
+
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->nextState();
+        $args = $this->game->argsForState();
+        $ids = $args["args"]["ids"] ?? [];
+        if (count($ids) > 0)
+        {
+            $this->game->actFromCardWithId((string)$ids[0]);
+            return;
+        }
+
+        $this->game->actFromCardPass();
     }
 }

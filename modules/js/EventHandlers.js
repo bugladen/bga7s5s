@@ -693,7 +693,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 this.payForCard(item_id);
             },
 
-            'highDramaPhase04029_2': () => {
+            'highDramaPhase04029_3': () => {
                 this.payForCard(item_id);
             },
 

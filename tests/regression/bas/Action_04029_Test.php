@@ -38,8 +38,9 @@ class Action_04029_Test extends TestCase
     {
         return [
             // WHY: En Garde Merchant in the city. The attachment is unequipped through
-            // play-discard, then hand, then equip pay. A Villain leader skips the draw
-            // the last controller would otherwise get. Home is not "this location".
+            // play-discard, then hand, then equip-host chooser, then equip pay. A Villain
+            // leader skips the draw the last controller would otherwise get. Home is not
+            // "this location".
             'steals an attachment and draws unless your leader is a villain' => function () {
                 $world = new TestWorld();
                 $risk = $world->placeCard(new _04029(), Game::LOCATION_HAND, 1);
@@ -61,13 +62,20 @@ class Action_04029_Test extends TestCase
                 Assert::same($bow->Id, $world->theah->queuedOfType(EventAttachmentUnequipped::class)[0]->attachmentId, 'unequip');
                 Assert::same($bow->Id, $world->theah->queuedOfType(EventCardDiscardedFromPlay::class)[0]->cardId, 'through play discard');
                 Assert::same($bow->Id, $world->theah->queuedOfType(EventCardAddedToHand::class)[0]->cardId, 'into hand');
-                Assert::same(Game::PAY_STATE_EQUIP_ATTACHMENT, $world->theah->queuedOfType(EventEnteringPayState::class)[0]->payStateType, 'equip pay');
-                Assert::same('04029_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'pay step');
+                Assert::count(0, $world->theah->queuedOfType(EventEnteringPayState::class), 'pay deferred until host chosen');
+                Assert::same('04029_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'equip host step');
 
                 $bow->Location = Game::LOCATION_HAND;
+                $world->theah->takeQueuedEvents();
+                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_2, '', $merchant->Id);
+                Assert::same($merchant->Id, (int) $world->game->globals->get(Game::CHOSEN_PERFORMER), 'equip host re-pointed');
+                Assert::same(Game::PAY_STATE_EQUIP_ATTACHMENT, $world->theah->queuedOfType(EventEnteringPayState::class)[0]->payStateType, 'equip pay');
+                Assert::same('04029_3', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'pay step');
+
                 $world->game->globals->set(Game::DISCOUNT, 0);
                 $world->game->globals->set(Game::DISCOUNT_EXPLAINATIONS, '');
-                $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_2, '', [$pay->Id]);
+                $world->theah->takeQueuedEvents();
+                $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_3, '', [$pay->Id]);
                 Assert::same($merchant->Id, $world->theah->queuedOfType(EventAttachmentEquipping::class)[0]->characterId, 'equipped to merchant');
                 Assert::count(1, $world->theah->queuedOfType(EventCardDrawn::class), 'last controller draws');
 
@@ -77,7 +85,7 @@ class Action_04029_Test extends TestCase
                 $bow->Location = Game::LOCATION_HAND;
                 $bow->ControllerId = 1;
                 $world->theah->takeQueuedEvents();
-                $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_2, '', [$pay->Id]);
+                $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_3, '', [$pay->Id]);
                 Assert::count(0, $world->theah->queuedOfType(EventCardDrawn::class), 'villain leader skips the draw');
 
                 $merchant->Location = Game::LOCATION_PLAYER_HOME;
@@ -86,11 +94,45 @@ class Action_04029_Test extends TestCase
                 $threw = false;
                 try {
                     $world->game->globals->set(Game::CHOSEN_CARD_COST, 5);
-                    $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_2, '', [$pay->Id]);
+                    $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_3, '', [$pay->Id]);
                 } catch (UserException) {
                     $threw = true;
                 }
                 Assert::true($threw, 'short payment');
+            },
+
+            // WHY: Printed "your character at this location" — not the Merchant alone. Ally at
+            // the same City location must be selectable and receive the equip.
+            'equips the stolen attachment to another of your characters at the location' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04029(), Game::LOCATION_HAND, 1);
+                $merchant = $world->placeCharacter(new _04023(), Game::LOCATION_CITY_DOCKS, 1);
+                $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $bow = $world->placeCard(new _04017(), Game::LOCATION_CITY_DOCKS, 2);
+                $bow->WealthCost = 0;
+                $bow->AttachedToId = $foe->Id;
+                $foe->Attachments = [$bow->Id];
+                /** @var Action_04029 $action */
+                $action = $risk->getActions()[0];
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $merchant->Id);
+
+                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029, '', $bow->Id);
+                $bow->Location = Game::LOCATION_HAND;
+                $world->theah->takeQueuedEvents();
+
+                $args = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_2, '');
+                Assert::true(in_array($merchant->Id, $args['ids'], true), 'merchant listed');
+                Assert::true(in_array($ally->Id, $args['ids'], true), 'ally listed');
+
+                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_2, '', $ally->Id);
+                Assert::same($ally->Id, (int) $world->game->globals->get(Game::CHOSEN_PERFORMER), 'ally is equip host');
+
+                $world->game->globals->set(Game::DISCOUNT, 0);
+                $world->game->globals->set(Game::DISCOUNT_EXPLAINATIONS, '');
+                $world->theah->takeQueuedEvents();
+                $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04029_3, '', []);
+                Assert::same($ally->Id, $world->theah->queuedOfType(EventAttachmentEquipping::class)[0]->characterId, 'equipped to ally');
             },
 
             // WHY: "cannot be moved" is the steal lock. Syrneth Hand must not be a target.

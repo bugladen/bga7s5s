@@ -364,6 +364,15 @@
             },
 
             'highDramaPhase04029_2': () => {
+                this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+                // WHY: Pass only when empty — soft-lock escape after steal if no legal host remains.
+                if (!args.args.ids || args.args.ids.length === 0) {
+                    this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                }
+            },
+
+            'highDramaPhase04029_3': () => {
                 this.addActionButton(`actPayForCards`, _('Confirm'), () => this.onPaymentConfirmedFromCard());
             },
 
