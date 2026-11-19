@@ -115,7 +115,9 @@ abstract class LocationAction extends Action
     
     public function announceAction(Game $game): void
     {
-        $game->notify->all("message", clienttranslate('${player_name} announced the [${action}] Action.'), [
+        // WHY no [${action}] brackets: same as CardAction::announceAction — logInject
+        // misreads parenthetical Action names as [name(image)] card badges.
+        $game->notify->all("message", clienttranslate('${player_name} announced the ${action} Action.'), [
             'i18n' => ['action'],
             'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
             'action' => $this->Name,

@@ -77,7 +77,10 @@ abstract class CardAction extends Action implements ICardAbility
         // cardProperties. format_string_recursive_with_injection seeds logCardCache
         // from notify args (objects with id+type) so announce log hover hydrates
         // for everyone. Same pattern as EventCombatCardAnnounced / Risk-play notify.
-        $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} announced the [${action}] Action.'), [
+        // WHY no [${action}] brackets: logInject's legacy [name(image)] regex treats
+        // parenthetical Action names (e.g. "Challenge (Non-Leader)") as card badges
+        // and builds a broken-image hover. Plain ${action} keeps the name as text.
+        $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} announced the ${action} Action.'), [
             'i18n' => ['action'],
             'player_name' => $game->getPlayerNameById($game->getActivePlayerId()),
             'action' => $this->Name,
