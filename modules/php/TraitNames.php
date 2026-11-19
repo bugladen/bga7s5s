@@ -118,6 +118,7 @@ class TraitNames
             "Hunter",
             "Immovable",
             "Innkeeper",
+            "Insimore",
             "Inspiring",
             "Invigorant",
             "Jaragua",

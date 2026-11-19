@@ -567,6 +567,10 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 this.payForCard(item_id);
             },
 
+            'highDramaPhase05Corncob_3': () => {
+                this.payForCard(item_id);
+            },
+
             'highDramaPhase05Dandya': () => {
                 this.updateDandyWealthPay();
             },

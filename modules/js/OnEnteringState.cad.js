@@ -174,6 +174,71 @@
             },
 
             // WHY: Prototype CAD - plain strings, no _() (hide from translators).
+            'highDramaPhase05Corncob': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    (args.args.args.cards || []).forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    $('choose_container_name').innerHTML = 'Weapons in discard piles:';
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase05Corncob_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    // WHY: Chosen Weapon is still in a discard pile — not on the board to highlight.
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase05Corncob_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const statusBarTitle = (args.descriptionmyturn || '').replace('#{cost}', '${cost}');
+                    this.bga.statusBar.setTitle(statusBarTitle, {
+                        cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                            cost: Math.max(0, args.args.args.cost - args.args.args.discount),
+                        }),
+                    });
+
+                    this.highlightCharacterChosen(args.args.args.characterId);
+                    this.clientStateArgs.characterId = args.args.args.characterId;
+
+                    const cardId = args.args.args.cardId;
+                    const card = this.factionHand.getCards().find(c => c.id === cardId);
+                    const cardElement = card ? this.factionHand.getCardElement(card) : null;
+                    if (cardElement) {
+                        dojo.addClass(cardElement, '_7sfs-unselectable');
+
+                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                            id: cardElement.id,
+                            cost: args.args.args.cost,
+                        }), cardElement, "first" );
+
+                        const costDiv = $(`${cardElement.id}_wealth_cost`);
+                        const cost = parseInt(costDiv.innerHTML);
+                        let discountedCost = cost - args.args.args.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        if (discountedCost !== cost)
+                        {
+                            costDiv.innerHTML = parseInt(discountedCost);
+                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                        }
+                    }
+
+                    $('faction_hand_info').innerHTML = '(0 Wealth worth of cards selected)';
+                    this.factionHand.setSelectionMode('multiple');
+                }
+            },
+
             'highDramaPhase05Vulture': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

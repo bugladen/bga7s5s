@@ -505,6 +505,11 @@ class States
             const HIGH_DRAMA_PLAYER_TURN_05DANDYV2A_2 = 405014202;
         const HIGH_DRAMA_PLAYER_TURN_05DANDYV2B = 40501421;
             const HIGH_DRAMA_PLAYER_TURN_05DANDYV2B_2 = 405014212;
+        // CAD — Cobb Roy (_05Corncob). Exp 5 + card 13. Weapon discard pick / host / pay.
+        // WHY 405013: CardNumber 13. Snow White scheme also uses 13 but has no HD states.
+        const HIGH_DRAMA_PLAYER_TURN_05CORNCOB = 405013;
+            const HIGH_DRAMA_PLAYER_TURN_05CORNCOB_2 = 4050132;
+            const HIGH_DRAMA_PLAYER_TURN_05CORNCOB_3 = 4050133;
         // CAD — Scholarly Sanctuary (_05Refuge). Exp 5 + card 18. Location chooser (Home / controlled City).
         const HIGH_DRAMA_PLAYER_TURN_05REFUGE = 405018;
         // CAD - Smash and Grab (_05Teens). Exp 5 + card 19. Target / attachment / equip target / pay.
