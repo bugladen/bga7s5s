@@ -542,6 +542,9 @@ class States
         // WHY 405241: natural 405024 is owned by Quack (same CardNumber stub).
         const HIGH_DRAMA_PLAYER_TURN_05RUM = 405241;
             const HIGH_DRAMA_PLAYER_TURN_05RUM_2 = 4052412;
+        // CAD — Customs Inspection (_05RedTape). Exp 5 + card 26. Target engaged / reveal four / sink one.
+        const HIGH_DRAMA_PLAYER_TURN_05REDTAPE = 405026;
+            const HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2 = 4050262;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;

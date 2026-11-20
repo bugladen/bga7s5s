@@ -443,6 +443,45 @@
                 }
             },
 
+            // WHY: Character chooser then chooseList among revealed hand cards (Hacked / 04032_4 shape).
+            'highDramaPhase05RedTape': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase05RedTape_2': () => {
+                dojo.removeClass('choose_container', 'hidden');
+                dojo.removeClass('chooseList', 'hidden');
+
+                const playerName = args.args.args.playerName || '';
+                (args.args.args.cards || []).forEach((card) => {
+                    this.addCardToDeck(this.chooseList, card);
+                });
+
+                // WHY: Prototype CAD — plain strings, no _() (hide from translators).
+                $('choose_container_name').innerHTML = playerName
+                    ? `${playerName}'s Revealed Cards`
+                    : 'Revealed Cards';
+                this.chooseList.setSelectionMode(1);
+
+                if (this.isCurrentPlayerActive()) {
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+                    if (args.args.args.characterId) {
+                        this.highlightCharacterChosen(args.args.args.characterId);
+                        this.clientStateArgs.characterId = args.args.args.characterId;
+                    }
+                }
+            },
+
             'highDramaPhase05Teens_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.highlightCharacterChosen(args.args.args.performerId);

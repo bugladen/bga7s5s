@@ -212,6 +212,16 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            'highDramaPhase05RedTape': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase05RedTape_2': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             'highDramaPhase05Teens_2': () => {
                 (args.args.attachments || []).forEach((attachment) => {
                     this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', { id: attachment.id }));

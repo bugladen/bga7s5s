@@ -490,3 +490,20 @@ Location chooser on a plain **`RiskAction`** (heading is Academic Action — **n
 **Often + E.2** equipped-Artifact (or similar) Action discount — see pattern-e.md.
 
 References: `_05Refuge` / `Action_05Refuge` / `State_highDramaPhase05Refuge`; Home+City dest pool shape `_03032` / `_03055`; claim-control filter `_04028` / `_04039`; CAD plain strings.
+
+### Pattern B.15 — Academic Action: Target opposing engaged • reveal four from hand • sink one
+
+Printed (Customs Inspection `_05RedTape`): **`<b>Academic Action:</b> Target an opposing engaged character • Their controller reveals four cards from hand. Choose a revealed card and sink it.`**
+
+**Recipe:**
+
+1. **`RiskAction`** + Academic performer gate (`hasTrait`) — **not** City / **not** Sorcerer. Start from `parent::getPerformersForAction`. Grey when no valid target.
+2. **Targets:** opposing at performer location (`getOpposingCharactersAtLocation`) + `Engaged` + controller hand `count > 0`. Printed **"Target"** → Cesca (`IAbilityThatTargetsCharacters` / `IRiskThatTargetsCharacters`).
+3. **Two GameStates** (`405026` / `4050262`): character chooser → `characterChosen` → **EVENTS** (not direct `_2`); `_2` chooseList among revealed. Wire **both** `"05RedTape"` and `"05RedTape_2"` under `HIGH_DRAMA_PLAYER_TURN_EVENTS`.
+4. **CharacterTargeted before reveal** (Teens / `_04040` / Dabney): on confirm queue `createCharacterTargetedEvent` + `batchId` + `eventCheck`; reveal only from `handleEvent` when `!canceled`. UL / Terraria cancel → no reveal (they ActionResolved).
+5. **Reveal:** `array_rand` on `getGameDeckObject()->getCardsInLocation(LOCATION_HAND, controller)`, `min(4, count)` — Julius `_03cd10` / Technique_03043 random shape (**not** Giacinto full-hand reveal). Sticky `$revealedCardIds` on Action (+ `REVEALED_CARDS` global backup). `addCardToWorld` each revealed card; public reveal notify with `card` property.
+6. **Empty / short hand:** grey targets with 0 cards; at resolve if 0 → notify + ActionResolved; if 1–3 → reveal what's there.
+7. **Sink:** Reaction_03006 hand path — `insertCardOnPlayerFactionDeckExtreme($id, $card->OwnerId, false)` + sync `Card->Location` + `cardRemovedFromHand` to the hand player. **Do not** rely on `EventCardAddedToFactionDeck` alone (no hand UI notify). You (Action player) pick via chooseList — not the opponent's factionHand.
+8. **JS:** step 1 Teens character highlight+Confirm; step 2 Hacked / `04032_4` chooseList (`setSelectionMode(1)` + `onChooseListCardConfirmed`). CAD plain strings.
+
+References: `_05RedTape` / `Action_05RedTape` / `State_highDramaPhase05RedTape` + `_2`; random reveal `Reaction_03cd10` / `Technique_03043`; CharacterTargeted gate `Action_05Teens` / `Action_04040`; hand sink `Reaction_03006`; Academic RiskAction gate `_05Refuge`.
