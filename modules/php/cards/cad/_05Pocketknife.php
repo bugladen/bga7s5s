@@ -31,7 +31,7 @@ class _05Pocketknife extends FactionAttachment implements IHasTechniques, IHasMa
         $this->initializeFaction("Castille");
 
         // WHY: Art coin is Roman II — stub had WealthCost 0.
-        $this->WealthCost = 2;
+        $this->WealthCost = 0;
         $this->ResolveModifier = 0;
         $this->CombatModifier = 0;
         $this->FinesseModifier = 0;
