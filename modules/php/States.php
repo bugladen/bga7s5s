@@ -712,6 +712,9 @@ class States
             // CAD — Patricia Moustakas (_05Serenissima). Exp 5 + card 16. Hand discard cost.
             // WHY 52105016: CardNumber 16. Robin attachment also uses 16 but has no duel picker.
             const DUEL_CHOOSE_TECHNIQUE_05SERENISSIMA = 52105016;
+            // CAD — El Estoque Oculto (_05Pocketknife). Adversary hand discard after unequip.
+            // WHY 52105242: CardNumber stub 24 collides (Quack/Rum/…); avoid 52105024.
+            const DUEL_CHOOSE_TECHNIQUE_05POCKETKNIFE = 52105242;
                 const DUEL_CHOOSE_TECHNIQUE_03043_2 = 521030432;
                 const DUEL_CHOOSE_TECHNIQUE_03043_3 = 521030433;
         const DUEL_USE_MANEUVER_FROM_COMBAT_CARD = 522;
@@ -754,6 +757,9 @@ class States
                 const DUEL_RESOLVE_MANEUVER_03059_4 = 525030594;
             const DUEL_RESOLVE_MANEUVER_03069 = 52503069;
             const DUEL_RESOLVE_MANEUVER_04030 = 52504030;
+            // CAD — El Estoque Oculto (_05Pocketknife). Dueling-line → hand picker.
+            // WHY 52505242: same CardNumber-24 collision avoidance as technique state.
+            const DUEL_RESOLVE_MANEUVER_05POCKETKNIFE = 52505242;
             const DUEL_RESOLVE_MANEUVER_REACTIONS = 5251;
             const DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION = 5252;
         const DUEL_RESOLVE_MANEUVER_CHOOSE_NEXT_ABILITY = 5253;

@@ -2903,6 +2903,7 @@ $machinestates = [
                         "05Cooper" => States::DUEL_CHOOSE_TECHNIQUE_05COOPER,
                         "05GaryFlipped" => States::DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED,
                         "05Serenissima" => States::DUEL_CHOOSE_TECHNIQUE_05SERENISSIMA,
+                        "05Pocketknife" => States::DUEL_CHOOSE_TECHNIQUE_05POCKETKNIFE,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral
@@ -3106,6 +3107,7 @@ $machinestates = [
                         "03059_4" => States::DUEL_RESOLVE_MANEUVER_03059_4,
                         "03069" => States::DUEL_RESOLVE_MANEUVER_03069,
                         "04030" => States::DUEL_RESOLVE_MANEUVER_04030,
+                        "05Pocketknife" => States::DUEL_RESOLVE_MANEUVER_05POCKETKNIFE,
                         "reaction" => States::DUEL_RESOLVE_MANEUVER_REACTIONS,
                         "pay" => States::DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,

@@ -194,6 +194,18 @@
                 dojo.addClass('actChooseDiscardCard', 'disabled');
             },
 
+            'duelChooseTechnique_05Pocketknife': () => {
+                this.addActionButton(`actChooseDiscardCard`, 'Confirm Selection', () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
+            // WHY: Button-per-card like 02043b — dueling line is not factionHand selection.
+            'duelResolveManeuver_05Pocketknife': () => {
+                (args.args.cards || []).forEach((card) => {
+                    this.addActionButton(`actChooseCard-${card.id}`, card.name, () => this.bgaPerformAction('actFromCardWithId', { id: card.id }));
+                });
+            },
+
             // WHY: No Back on any Teens state - the performer was engaged at announce.
             'highDramaPhase05Teens': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());

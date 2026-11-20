@@ -284,6 +284,12 @@
                 }
             },
 
+            'duelChooseTechnique_05Pocketknife': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
             'highDramaPhase05Teens': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

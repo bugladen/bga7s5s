@@ -53,6 +53,35 @@ When the Technique forces the **adversary** to discard from hand (they choose wh
 
 Siblings: Maya `Technique_01093`, Íñigo `Technique_03039`, Jägerarmbrust `Technique_04017`. Distinct from **reveal-then-discard** (`_03043`) and **cancel-unless-discard** (`_03044`).
 
+### Covert Technique
+
+Printed **`<b>Covert Technique:</b>`** still `extends Technique` (no Covert base). Add the uncontrolled City gate on the **equipped host** (`cardInCity` + `!isControlled()`) — same as Covert Action/Reaction / Corncob Character Technique. Reminder text may be omitted.
+
+**Unequip → top of deck:** Dame/Lodestone sink chain with `onTop=true`:
+1. `createAttachmentUnequippedEvent`
+2. `createCardRemovedFromPlayEvent(..., $attachment->Location)`
+3. `createCardAddedToFactionDeckEvent($attachment->OwnerId, $attachment->Id, true)`
+
+Contrast sink-to-bottom (`onTop=false` — `Technique_02055` / `Action_03065`).
+
+**Adversary discards a card** after unequip: Maya hand picker (`createTechniqueTransitionEvent` + attachment `sourceId`). WHY queue both unequip (MEDIUM) and transition (HIGHEST): the discard UI runs first while the attachment is still equipped (sourceId hydration), then unequip drains. Empty hand → notify + skip (checklist 9).
+
+**Duel-only vs challenge:** when the effect needs a duel-round adversary (discard / wound), gate `IN_DUEL` + actor == owning character and skip the challenge Accept path unless you deliberately mirror `Technique_04017`. Corncob Covert +1 Parry can stay challenge-capable via PlusOneParry parent.
+
+Reference: `Technique_05Pocketknife` / Character sibling `Technique_05Corncob`.
+
+### "Put a card from your dueling line into your hand" (Maneuver)
+
+1. Availability: usually just the Maneuver keyword gates (Gambling → `IN_DUEL` + `DUEL_GAMBLED`). Do **not** require the attachment to be equipped — combat cards are played from hand into `LOCATION_DUELING_LINE`.
+2. On Resolve: wound / other halves first (FIFO with `createTransitionEvent` at default MEDIUM — contrast HIGHEST technique transitions).
+3. Non-empty line → `createTransitionEvent($controllerId, $attachment->Id, "NNNNN", $this->Id)` → `State_duelResolveManeuver_NNNNN`.
+4. Args: property arrays of `getCardObjectsAtLocation(LOCATION_DUELING_LINE, $controllerId)`.
+5. Act: validate id is in that list → `createCardAddedToHandEvent($controllerId, $id)` (moves from line to hand + sets ControllerId).
+6. JS: button-per-card (`duelChooseTechnique_02043b` shape) — dueling line is not `factionHand` selection.
+7. Empty line → notify + skip (checklist 9).
+
+Reference: `Maneuver_05Pocketknife`.
+
 ### Gambling Technique / Gambling Maneuver
 
 **"Gambling"** is a *mechanical cost of how the combat card was obtained*, NOT a performer trait. Do NOT `hasTrait("Gambling")`. **Always** gate `Game::IN_DUEL` **and** `Game::DUEL_GAMBLED` (plus actor identity):

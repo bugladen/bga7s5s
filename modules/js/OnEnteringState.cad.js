@@ -425,6 +425,13 @@
                 }
             },
 
+            // WHY: Adversary hand discard (Maya / 04017 / Serenissima shape).
+            'duelChooseTechnique_05Pocketknife': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
             'highDramaPhase05Teens': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
