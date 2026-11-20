@@ -25,3 +25,11 @@ WHY not add ActionResolved special-case on Terraria cancel: same as Hexenjagd / 
 
 ## Unfinished
 Did not audit other core Risks that still wound/effect without CharacterTargeted despite `IAbilityThatTargetsCharacters` (e.g. older 01* wounders). Only fixed the reported card.
+
+## Follow-up: "still not triggering"
+User re-reported after CharacterTargeted fix. Integration script (discarded Bleed Out → act → fire CharacterTargeted through all cards):
+
+- Uncontrolled Docks: Terraria offers, cancels hook, strips wound. Works.
+- Controlled Docks: Covert gate blocks; CharacterTargeted survives; wound queues. Correct Covert behavior.
+
+So remaining live misses are most likely (1) host at a controlled City location, or (2) Studio still running old Action_01160 without the CharacterTargeted emit. Not changing Terraria Covert gate — same as Seadog/Wardog/Quack.

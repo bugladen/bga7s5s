@@ -7,12 +7,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\CardAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
-use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01160 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -48,6 +48,34 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCharacters
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01160", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Wound only when EventCharacterTargeted survives. Cloud Bottle / UL /
+        // Maryam set canceled=true on that hook — queuing the wound beside the pick
+        // meant "when targeted" reactions never saw Bleed Out (journal 2026-11-20).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                $character->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $woundEvent->batchId = $batchId;
+            $event->theah->queueEvent($woundEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -125,11 +153,25 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCharacters
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($woundEvent);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "card_inject_code" => $owner->getInjectCode(),
+                "character_inject_code" => $character->getInjectCode(),
+            ]);
+
+            // WHY: Fire targeting alone here. Wound + ActionResolved emit from handleEvent
+            // only when EventCharacterTargeted is not canceled (01174 / Red Tape / Torvo).
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

@@ -14,6 +14,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Terraria;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Terraria;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02034;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01160;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01160;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
@@ -121,6 +123,25 @@ class Card_05Terraria_Test extends TestCase
                 Assert::same($bottle->Id, $transitions[0]->sourceId, 'source');
                 Assert::true($event->canceled, 'canceled first');
                 Assert::true($reaction->characterTargetedEvent !== null, 'held');
+            },
+
+            // WHY: Bleed Out used to wound without EventCharacterTargeted — Cloud Bottle
+            // never offered. Act path now emits the hook; reaction must accept Action_01160.
+            'reaction offers when Bleed Out targets the equipped host' => function () {
+                $world = new TestWorld();
+                [$host, $bottle, $reaction] = $this->attach($world);
+                $host->Wounds = 1;
+                $risk = $world->placeCard(new _01160(), Game::LOCATION_HAND, 2);
+                /** @var Action_01160 $action */
+                $action = $risk->getActions()[0];
+
+                $event = $this->targeted($world, 2, $host->Id, $risk->Id, $action->Id);
+                $reaction->handleEvent($event);
+
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'offered');
+                Assert::same($bottle->Id, $transitions[0]->sourceId, 'source');
+                Assert::true($event->canceled, 'canceled first');
             },
 
             'reaction does not offer at a controlled City location' => function () {

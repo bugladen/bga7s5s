@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01160_Test extends TestCase
@@ -161,7 +162,9 @@ class Action_01160_Test extends TestCase
                 Assert::false(in_array($leader->Id, $args['ids'], true), 'leader excluded');
             },
 
-            'selecting a valid target queues wound and ActionResolved' => function () {
+            // WHY: act queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can
+            // cancel before the wound is emitted (Terraria miss on Bleed Out).
+            'selecting a valid target queues only CharacterTargeted' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $target] = $this->scene($world);
 
@@ -172,14 +175,52 @@ class Action_01160_Test extends TestCase
                     $target->Id
                 );
 
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($target->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
+                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+            },
+
+            'surviving CharacterTargeted queues wound and ActionResolved' => function () {
+                $world = new TestWorld();
+                [$risk, $action, $target] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $target->Id;
+                $targeted->sourceId = $risk->Id;
+                $targeted->batchId = 77;
+                $targeted->canceled = false;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'wound');
                 Assert::same($target->Id, $wounds[0]->characterId, 'target');
                 Assert::same($risk->Id, $wounds[0]->sourceId, 'source');
                 Assert::same(1, $wounds[0]->wounds, 'one wound');
                 Assert::same($action->Id, $wounds[0]->abilityId, 'ability');
+                Assert::same(77, $wounds[0]->batchId, 'shared batch');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+            },
+
+            'canceled CharacterTargeted queues no wound' => function () {
+                $world = new TestWorld();
+                [, $action, $target] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $target->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'UL / Terraria cancel');
             },
 
             'refuses an unwounded character' => function () {
