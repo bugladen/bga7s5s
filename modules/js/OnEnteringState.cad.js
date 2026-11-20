@@ -251,6 +251,31 @@
             },
 
             // WHY: Prototype CAD - plain strings, no _() (hide from translators).
+            'highDramaPhase05Quack': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'highDramaPhase05Quack_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+                    if (args.args.args.targetId) {
+                        this.highlightCardsAsChosen([args.args.args.targetId]);
+                        this.clientStateArgs.targetId = args.args.args.targetId;
+                    }
+                    $('faction_hand_info').innerHTML = '(1 card(s) to discard)';
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
+            // WHY: Prototype CAD - plain strings, no _() (hide from translators).
             'highDramaPhase05Serenissima': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.highlightCharacterChosen(args.args.args.performerId);

@@ -128,6 +128,18 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            // WHY: Plain Action, no Engage — Back legal on target pick. No Back on discard (heal already flushed).
+            'highDramaPhase05Quack': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase05Quack_2': () => {
+                this.addActionButton(`actChooseDiscardCard`, 'Confirm Selection', () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             // WHY: Covert Action — no Engage printed, so Back is legal on the discard pick (Corncob/Vulture).
             'highDramaPhase05Serenissima': () => {
                 this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });

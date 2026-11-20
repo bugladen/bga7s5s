@@ -147,6 +147,24 @@ When Text has two separate `<b>City Action:</b>` (or Action) clauses, **do not**
 
 Reference: `_03038` Damya, `_01095` Patricia (`Action_01095a` / `Action_01095b`). Two Actions on one card keep their own costs — do not collapse "Pay 1" and "Pay 2" into one number because they share a payment helper.
 
+### Heal target • their controller discards
+
+Printed (Takama `_05Quack`): **`<b>Action:</b> Target character at this location heals a wound • Their controller discards a card.`**
+
+Two-step Pattern C. Printed **target** → `IAbilityThatTargetsCharacters`. Plain Action → Home legal (no `cardInCity`).
+
+| Piece | Notes |
+|---|---|
+| Eligible targets | Controlled + `Wounds > 0` + **controller hand nonempty** at Owner's location. Uncontrolled city mercs have no controller to discard. |
+| Why hand gate | Right of `•` is mandatory. Empty hand softlocks step 2. |
+| Step 1 | Character highlight + Confirm; Back legal (no Engage printed). |
+| On pick | Stash `CHOSEN_TARGET`; queue `createCharacterBeingHealedEvent`; **`createTransitionEvent($target->ControllerId, $owner->Id, "NNNNN_2", $this->Id)`**; `nextState("characterChosen")` → EVENTS. |
+| Why EVENTS + `"NNNNN_2"` key | Heal must flush before discard. Active player may be an **opponent** — local `nextState` to step 2 cannot change active (Giacinto `04032` shape). `"NNNNN_2"` **must** be on `HIGH_DRAMA_PLAYER_TURN_EVENTS`. |
+| Step 2 | `factionHand` single + `onCardDiscarded` + `EventHandlers.js` enable. No Back (heal already resolved). Zombie picks first hand card then resolves. |
+| SourceId | `$owner->Id` (int) for heal/discard factories — not the Action's string composite Id. |
+
+Reference: `Action_05Quack`; opponent-hand sibling `Action_04032`; hand-picker UX `Action_01069` / Pattern C "Hand-card picker".
+
 ### In-play Action: Pay N Wealth
 
 For **`<b>Action:</b> / `<b>City Action:</b> / `<b>Covert Action:</b> Pay [N Wealth] • <effect>`** on a character already in play (`Action_05Dandya` City Action pay 1 then move to a City where you control a character; `Action_05Dandyb` Covert Action pay 2 then Collect). This is not a Reaction and not an in-hand card. City/Covert Actions still use the hand-pick pay flow — City adds `cardInCity`; Covert adds `cardInCity` + uncontrolled (`!$cityLocation->isControlled()`), re-checked at resolve.

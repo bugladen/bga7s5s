@@ -619,6 +619,24 @@ WHY Excalibur order (self then target): printed "Wound Leichenberg and target �
 
 Reference: `Reaction_05FunkyCheese`; dual-wound sibling `Reaction_05Excalibur`; Covert pressure sibling `Reaction_05Wardogb`; target interface `Reaction_03001`.
 
+### Covert discard Discovery/Alquimia → wound opposing
+
+Printed (Takama `_05Quack`): **"<b>Covert Reaction:</b> When you discard a <b>Discovery</b> or <b>Alquimia</b> • Wound target opposing character."**
+
+Button-based Pattern D on **`EventCardDiscardedFromHand`** — no state class / no JS.
+
+| Piece | Notes |
+|---|---|
+| Covert | `cardInCity` + location **uncontrolled**; re-check in `performReaction` |
+| "you" | `$event->ownerId == $owner->ControllerId` — opponent discards (e.g. Quack Action forcing them) do **not** trigger |
+| Any discard mode | Do **not** require `asEffect` / `AsPayment` / `AsPlayed` — printed "when you discard" covers all |
+| Trait gate | `$card->hasTrait("Discovery") \|\| hasTrait("Alquimia")` during `handleEvent`. WHY still readable: `runEventHubAfterCards=true` — EventHub move runs after card handlers |
+| Target | Printed **target** → `IAbilityThatTargetsCharacters`. Opposing = `getOpposingCharactersAtLocation`. Leaders legal unless "non-Leader" printed. `canBeWoundedByOpponentAbilities` |
+| Valid-target gate | ≥1 opposing woundable before offer — no Pass-only prompt |
+| Buttons | `wound-{id}` + Pass; Pass does not `setUsed` |
+
+Reference: `Reaction_05Quack`; Covert sibling `Reaction_05FunkyCheese`; discard-from-hand sibling `Reaction_01097`.
+
 ### Destroyed character → take control of attachment
 
 Printed (Vulture `_05Vulture`): **Reaction: When a character at this location is destroyed • Take control of their equipped attachment and equip it to a character you control paying all costs.**

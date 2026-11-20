@@ -174,6 +174,26 @@
                 }
             },
 
+            'highDramaPhase05Quack': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Quack_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    if (this.clientStateArgs.targetId) {
+                        this.unhighlightCards([this.clientStateArgs.targetId]);
+                    }
+                    this.clientStateArgs = {};
+                }
+            },
+
             'highDramaPhase05Serenissima': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

@@ -1322,6 +1322,10 @@ $machinestates = [
                 // WHY: "05Serenissima_2" is reached directly from state 05Serenissima (cardChosen), so it has no key here.
                 "05Serenissima" => States::HIGH_DRAMA_PLAYER_TURN_05SERENISSIMA,
                 "05Vulture" => States::HIGH_DRAMA_PLAYER_TURN_05VULTURE,
+                // WHY: "05Quack_2" must be here — createTransitionEvent sets active to the
+                // healed character's controller (may be an opponent). Local nextState cannot.
+                "05Quack" => States::HIGH_DRAMA_PLAYER_TURN_05QUACK,
+                "05Quack_2" => States::HIGH_DRAMA_PLAYER_TURN_05QUACK_2,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,

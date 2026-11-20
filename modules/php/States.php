@@ -523,6 +523,10 @@ class States
             const HIGH_DRAMA_PLAYER_TURN_05TEENS_4 = 4050194;
         // CAD — Gusev Grabiezca (_05Vulture). Exp 5 + card 23. Covert wound Scion / equipped.
         const HIGH_DRAMA_PLAYER_TURN_05VULTURE = 405023;
+        // CAD — Takama Siad (_05Quack). Exp 5 + card 24. Heal target / controller discards.
+        // WHY 405024: CardNumber 24. Seadog also uses 24 but has no HD states.
+        const HIGH_DRAMA_PLAYER_TURN_05QUACK = 405024;
+            const HIGH_DRAMA_PLAYER_TURN_05QUACK_2 = 4050242;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;
