@@ -9,7 +9,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 // Covert Reaction: When you discard a Discovery or Alquimia • Wound target opposing character.
@@ -118,11 +120,35 @@ class Reaction_05Quack extends CardReaction implements IAbilityThatTargetsCharac
         return $targets;
     }
 
+    // WHY: Hand, faction-from-play, and city-discard are three pipelines. Cloud Bottle
+    // (Alquimia) destroy via Terraria is EventCardDiscardedFromPlay — hand-only missed it.
+    private function isYourDiscardEvent(Event $event, int $controllerId): bool
+    {
+        if ($event instanceof EventCardDiscardedFromHand || $event instanceof EventCardDiscardedFromPlay)
+        {
+            return $event->ownerId == $controllerId;
+        }
+
+        if ($event instanceof EventCardAddedToCityDiscardPile)
+        {
+            return $event->playerId == $controllerId;
+        }
+
+        return false;
+    }
+
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
 
-        if (! ($event instanceof EventCardDiscardedFromHand) || ! $this->isAvailable())
+        if (! $this->isAvailable())
+        {
+            return;
+        }
+
+        if (! ($event instanceof EventCardDiscardedFromHand
+            || $event instanceof EventCardDiscardedFromPlay
+            || $event instanceof EventCardAddedToCityDiscardPile))
         {
             return;
         }
@@ -138,8 +164,8 @@ class Reaction_05Quack extends CardReaction implements IAbilityThatTargetsCharac
             return;
         }
 
-        // WHY: "you discard" = Quack's controller discarded from their hand.
-        if ($event->ownerId != $owner->ControllerId)
+        // WHY: "you discard" — opponent discards (e.g. Quack Action forcing them) do not trigger.
+        if (! $this->isYourDiscardEvent($event, $owner->ControllerId))
         {
             return;
         }
@@ -150,7 +176,7 @@ class Reaction_05Quack extends CardReaction implements IAbilityThatTargetsCharac
             return;
         }
 
-        // WHY runEventHubAfterCards=true: card is still in hand during handleEvent, traits intact.
+        // WHY runEventHubAfterCards=true: card still at from-location during handleEvent, traits intact.
         $card = $event->theah->getCardById($event->cardId);
         if ($card === null)
         {

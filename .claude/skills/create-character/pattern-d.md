@@ -623,19 +623,27 @@ Reference: `Reaction_05FunkyCheese`; dual-wound sibling `Reaction_05Excalibur`; 
 
 Printed (Takama `_05Quack`): **"<b>Covert Reaction:</b> When you discard a <b>Discovery</b> or <b>Alquimia</b> • Wound target opposing character."**
 
-Button-based Pattern D on **`EventCardDiscardedFromHand`** — no state class / no JS.
+Button-based Pattern D — no state class / no JS.
+
+**Trigger all discard pipelines** (hand-only misses destroy costs like Cloud Bottle / Terraria):
+
+| Pipeline | Event | "you" field |
+|---|---|---|
+| Hand | `EventCardDiscardedFromHand` | `ownerId` |
+| Faction / Risk from play | `EventCardDiscardedFromPlay` | `ownerId` |
+| City discard | `EventCardAddedToCityDiscardPile` | `playerId` |
 
 | Piece | Notes |
 |---|---|
 | Covert | `cardInCity` + location **uncontrolled**; re-check in `performReaction` |
-| "you" | `$event->ownerId == $owner->ControllerId` — opponent discards (e.g. Quack Action forcing them) do **not** trigger |
+| "you" | Discard attribution == `$owner->ControllerId` — opponent discards (e.g. Quack Action forcing them) do **not** trigger |
 | Any discard mode | Do **not** require `asEffect` / `AsPayment` / `AsPlayed` — printed "when you discard" covers all |
 | Trait gate | `$card->hasTrait("Discovery") \|\| hasTrait("Alquimia")` during `handleEvent`. WHY still readable: `runEventHubAfterCards=true` — EventHub move runs after card handlers |
 | Target | Printed **target** → `IAbilityThatTargetsCharacters`. Opposing = `getOpposingCharactersAtLocation`. Leaders legal unless "non-Leader" printed. `canBeWoundedByOpponentAbilities` |
 | Valid-target gate | ≥1 opposing woundable before offer — no Pass-only prompt |
 | Buttons | `wound-{id}` + Pass; Pass does not `setUsed` |
 
-Reference: `Reaction_05Quack`; Covert sibling `Reaction_05FunkyCheese`; discard-from-hand sibling `Reaction_01097`.
+Reference: `Reaction_05Quack`; Covert sibling `Reaction_05FunkyCheese`; multi-pipeline discard sibling `Reaction_01098`.
 
 ### Destroyed character → take control of attachment
 
