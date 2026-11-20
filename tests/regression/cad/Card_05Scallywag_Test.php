@@ -122,7 +122,9 @@ class Card_05Scallywag_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'no pirate');
             },
 
-            'does not offer when you are only the defender' => function () {
+            // WHY: "during their duel" = Leader's duel. Owner controls a participant (defender);
+            // leftover-threat wounds after Odette challenged still offer (was challenger-only).
+            'offers during duel when you are the defender and Leader challenger is wounded' => function () {
                 $world = new TestWorld();
                 $scheme = $world->placeCard(new _05Scallywag(), Game::LOCATION_PLAYER_HOME, 1);
                 $myChar = $world->placeCharacter(new GenericCharacter('My Defender'), Game::LOCATION_CITY_DOCKS, 1);
@@ -131,7 +133,6 @@ class Card_05Scallywag_Test extends TestCase
                 /** @var Reaction_05Scallywag $reaction */
                 $reaction = $scheme->getReactions()[0];
 
-                // WHY: Opponent issued the challenge — we are defender. Text requires our performer.
                 $world->game->globals->set(Game::IN_DUEL, true);
                 $world->theah->duelChallengerIdOverride = $enemyLeader->Id;
                 $world->theah->duelOpponent = $myChar;
@@ -139,10 +140,33 @@ class Card_05Scallywag_Test extends TestCase
                 $wound = new EventCharacterWounded();
                 $wound->theah = $world->theah;
                 $wound->characterId = $enemyLeader->Id;
-                $wound->wounds = 1;
+                $wound->wounds = 2;
                 $reaction->handleEvent($wound);
 
-                Assert::count(0, $world->theah->queuedEvents, 'not our challenge');
+                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'defender-side duel offer');
+            },
+
+            'does not offer during duel when you are not a participant' => function () {
+                $world = new TestWorld();
+                $scheme = $world->placeCard(new _05Scallywag(), Game::LOCATION_PLAYER_HOME, 1);
+                $world->placeCharacter(new GenericCharacter('Bystander'), Game::LOCATION_CITY_FORUM, 1);
+                $challenger = $world->placeCharacter(new GenericCharacter('Other Challenger'), Game::LOCATION_CITY_DOCKS, 3);
+                $enemyLeader = $world->placeCharacter(new GenericLeader('Enemy Captain'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->placeCharacter(new GenericCharacter('Corsair', ['Pirate']), Game::LOCATION_APPROACH, 1);
+                /** @var Reaction_05Scallywag $reaction */
+                $reaction = $scheme->getReactions()[0];
+
+                $world->game->globals->set(Game::IN_DUEL, true);
+                $world->theah->duelChallengerIdOverride = $challenger->Id;
+                $world->theah->duelOpponent = $enemyLeader;
+
+                $wound = new EventCharacterWounded();
+                $wound->theah = $world->theah;
+                $wound->characterId = $enemyLeader->Id;
+                $wound->wounds = 2;
+                $reaction->handleEvent($wound);
+
+                Assert::count(0, $world->theah->queuedEvents, 'spectating');
             },
 
             'muster queues engaged Pirate at captured location' => function () {

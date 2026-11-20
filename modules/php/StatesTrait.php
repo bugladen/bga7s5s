@@ -30,6 +30,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\ICityDeckCard;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Leader;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Events;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventNewDay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSchemeCardRevealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
@@ -2025,7 +2026,13 @@ trait StatesTrait
                 $reason .= "<p>" . $this->translate("Wounds were reduced by ") . $reduction . " due to Restricted Hostilities (Stat value of " . $stat . "). ";
             }
 
+            // WHY HIGH: BeingWounded only *queues* CharacterWounded (hub). Default MEDIUM
+            // put CharacterWounded after EventDuelEndOfRound (same priority, later event_id),
+            // so movers ran before wound reactions (Friends at Sea / Scallywag on Odette EoR).
+            // HIGH drains the wound pair before MEDIUM EndOfRound — matches the location →
+            // adversary threat → actor wounds → EndOfRound order documented above.
             $event = EventFactory::createCharacterBeingWoundedEvent($actor->Id, $adversary->Id, $wounds, $reason);
+            $event->priority = Event::HIGH_PRIORITY;
             $this->theah->queueEvent($event);
         }
 

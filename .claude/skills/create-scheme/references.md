@@ -152,7 +152,7 @@
 | `modules/php/States/cad/State_planningPhaseResolveWhenRevealed05Hacked.php` | First When-Revealed player-pick GameState (`2405024`); chooseList from `args.cards`. |
 | `modules/php/States/cad/State_planningPhaseResolveSchemes05Hacked.php` | Non-Academic Renown city pick (`2605024` / `"05Hacked_2"`). |
 | `modules/php/cards/cad/_05Scallywag.php` (Friends at Sea) | **Fixed dual Renown (Forum + Docks) + Reaction (opponent Leader wound from your challenge/duel → Muster Pirate from Approach engaged).** CAD prototype. Init 21 / Panache +1 / Daring+Camaraderie. No resolve GameState (Text was **or**, Eddie updated to **and**). |
-| `modules/php/cards/cad/reactions/Reaction_05Scallywag.php` | `EventCharacterWounded`; challenger-only; Approach Pirate buttons; capture Leader location; muster then engage. |
+| `modules/php/cards/cad/reactions/Reaction_05Scallywag.php` | `EventCharacterWounded`; duel = you control a participant + wounded Leader is a participant (either seat); Approach Pirate buttons; capture Leader location; muster then engage. |
 | `modules/php/cards/cad/_05Rum.php` (X Marks the Spot) | **Place scheme on city + Renown elsewhere + Pirate Finesse pressure → Unique Attachment deck search / pay equip.** CAD prototype. Init 6 / Panache +1 / Daring+Camaraderie. CardNumber 24 stub — resolve `2605241` / HD `405241` (Hacked/Scallywag/Quack own natural 24 ids). |
 | `modules/php/cards/cad/actions/Action_05Rum.php` | Full `isAvailableToPlayer` override (city-placed scheme); Pirate+Finesse at `$ChosenLocation`; private chooseList; deck→hand→`PAY_STATE_EQUIP_ATTACHMENT`; Pass when none equippable; shuffle after search. |
 | `modules/php/States/cad/State_planningPhaseResolveSchemes05Rum.php` | Planning city pick for place (`locationChosen` → state 2). |

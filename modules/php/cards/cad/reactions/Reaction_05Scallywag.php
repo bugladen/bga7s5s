@@ -71,8 +71,16 @@ class Reaction_05Scallywag extends CardReaction
     }
 
     /**
-     * Your performer issued the challenge; the wounded Leader is that challenge's
-     * target (refuse / pre-duel wounds) or a participant in the resulting duel.
+     * Printed: "as a result of your performer's challenge or during their duel".
+     *
+     * WHY two branches:
+     * - Not in duel (refuse / pre-duel threat wounds): "your performer's challenge" —
+     *   owner controls CHOSEN_PERFORMER and wounded is CHOSEN_TARGET.
+     * - In duel: "their duel" = the wounded Leader's duel. Owner must control a
+     *   participant; wounded Leader must be a participant. Challenger-only was too
+     *   narrow — Odette ending the round with leftover threat after *she* challenged
+     *   never offered (2026-11-20). Use challenging/defending player ids from the
+     *   duel row so a destroyed/recreated challenger character cannot false-negative.
      */
     private function isFromYourPerformerChallengeOrDuel(Theah $theah, Character $wounded, int $ownerPlayerId): bool
     {
@@ -80,15 +88,14 @@ class Reaction_05Scallywag extends CardReaction
 
         if ($inDuel)
         {
-            $challengerId = $theah->getDuelChallengerId();
-            $defenderId = $theah->getDuelDefenderId();
-            $challenger = $challengerId ? $theah->getCharacterById((int) $challengerId) : null;
-            if ($challenger === null || $challenger->ControllerId != $ownerPlayerId)
+            $challengerId = (int) ($theah->getDuelChallengerId() ?? 0);
+            $defenderId = (int) $theah->getDuelDefenderId();
+            if ($wounded->Id != $challengerId && $wounded->Id != $defenderId)
             {
                 return false;
             }
 
-            return $wounded->Id == (int) $challengerId || $wounded->Id == (int) $defenderId;
+            return $this->ownerControlsDuelParticipant($theah, $ownerPlayerId, $challengerId, $defenderId);
         }
 
         $performerId = (int) $theah->game->globals->get(Game::CHOSEN_PERFORMER, 0);
@@ -101,6 +108,28 @@ class Reaction_05Scallywag extends CardReaction
         $targetId = (int) $theah->game->globals->get(Game::CHOSEN_TARGET, 0);
 
         return $targetId > 0 && $wounded->Id == $targetId;
+    }
+
+    private function ownerControlsDuelParticipant(
+        Theah $theah,
+        int $ownerPlayerId,
+        int $challengerId,
+        int $defenderId
+    ): bool {
+        foreach ([$challengerId, $defenderId] as $participantId)
+        {
+            if ($participantId <= 0)
+            {
+                continue;
+            }
+            $participant = $theah->getCharacterById($participantId);
+            if ($participant !== null && $participant->ControllerId == $ownerPlayerId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function handleEvent(Event $event)

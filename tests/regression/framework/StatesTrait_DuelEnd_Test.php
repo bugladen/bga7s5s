@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\StatesTraitGame;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
@@ -80,6 +81,8 @@ class StatesTrait_DuelEnd_Test extends TestCase
                 Assert::same([$c->Id, $t->Id, 1], [$wounds[0]->characterId, $wounds[0]->sourceId, $wounds[0]->wounds], 'actor wounded by the adversary');
                 Assert::contains('1 Threat was left over', $wounds[0]->reason, 'reason');
                 Assert::false(str_contains($wounds[0]->reason, 'Restricted Hostilities'), 'no cap needed');
+                // WHY: HIGH so CharacterWounded (inherits) drains before MEDIUM EndOfRound.
+                Assert::same(Event::HIGH_PRIORITY, $wounds[0]->priority, 'wound before EndOfRound movers');
                 Assert::same(0, $game->duelRoundRow['ending_challenger_threat'], 'pool reset');
                 Assert::same(0, $game->duelRoundRow['challenger_threat_is_lethal'], 'lethal flag reset');
                 Assert::same([null], $game->gamestate->transitions, 'bare nextState');

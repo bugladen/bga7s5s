@@ -193,10 +193,10 @@ Printed **`<b>Reaction:</b> When an opponent's Leader is wounded as a result of 
 
 1. **Trigger:** `EventCharacterWounded` + `isAvailable()` + scheme `Location == LOCATION_PLAYER_HOME`.
 2. **Wounded gate:** `hasTrait("Leader")` + `ControllerId != owner` (opponent's Leader).
-3. **"Your performer's challenge"** = owner controls the **challenger**, not the defender.
-   - **In duel (`IN_DUEL`):** `getDuelChallengerId()`'s character is controlled by the scheme owner; wounded id is challenger or defender.
-   - **Not in duel** (refuse-threat / pre-duel wounds): `CHOSEN_PERFORMER` controlled by owner **and** wounded id == `CHOSEN_TARGET`.
-4. **Capture** `$leaderLocation = $wounded->Location` at wound time + `$owner->IsUpdated = true`. WHY: lethal wounds can move the Leader before the player clicks; `EventCharacterWounded` still has city Location during card `handleEvent` (`runEventHubAfterCards`).
+3. **Cause gate** ("your performer's challenge or during their duel"):
+   - **Not in duel** (refuse-threat / pre-duel): `CHOSEN_PERFORMER` controlled by owner **and** wounded id == `CHOSEN_TARGET`.
+   - **In duel:** "their duel" = the Leader's — owner controls a participant; wounded Leader is a participant (challenger **or** defender). Challenger-only false-negatived Odette EoR leftover threat after she challenged.
+4. **Capture** `$leaderLocation = $wounded->Location` at wound time + `$owner->IsUpdated = true`. WHY: lethal wounds can move the Leader before the player clicks; `EventCharacterWounded` still has city Location during card `handleEvent` (`runEventHubAfterCards`). Leftover-threat `BeingWounded` is `HIGH_PRIORITY` so `CharacterWounded` drains before MEDIUM `EventDuelEndOfRound` movers.
 5. **"Muster" with no source named** = from **Approach Deck** — `getCardObjectsAtLocation(LOCATION_APPROACH, $playerId)` filtered to `Character` + printed trait. Contrast "from out of play" (SnowWhite/Nevermore create/remuster) and "from hand/discard" (named sources). Skip offer when none.
 6. **UX:** buttons `muster-{id}` per eligible Approach card + Pass — no GameState / no JS when the pool is small enough for buttons. Pass without `setUsed`.
 7. **Resolve:** `createCharacterMusteredEvent($owner->ControllerId, $pirateId, $leaderLocation)` then **`createCardEngagedEvent`** — printed "engaged"; muster enters En Garde by default. `setUsed(true)` only on success. Surface the captured location in `getReactionDescription`.

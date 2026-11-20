@@ -2222,6 +2222,9 @@ trait EventHub
                             $woundedEvent->wounds = $event->wounds;
                             $woundedEvent->reason = $event->reason;
                             $woundedEvent->abilityId = $event->abilityId;
+                            // WHY: Inherit so HIGH leftover-threat BeingWounded (stDuelEndOfRound)
+                            // still drains CharacterWounded before MEDIUM EventDuelEndOfRound.
+                            $woundedEvent->priority = $event->priority;
                         }
                         $event->theah->queueEvent($woundedEvent);
                     }
