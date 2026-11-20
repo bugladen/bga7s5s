@@ -250,6 +250,39 @@
                 }
             },
 
+            // WHY: Prototype CAD - plain strings, no _() (hide from translators).
+            'highDramaPhase05Serenissima': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    (args.args.args.cards || []).forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    $('choose_container_name').innerHTML = 'Bureaucracy / Discovery in your discard:';
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase05Serenissima_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
+            'duelChooseTechnique_05Serenissima': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
             'highDramaPhase05Teens': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

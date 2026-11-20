@@ -1319,6 +1319,8 @@ $machinestates = [
                 "05Teens_4" => States::HIGH_DRAMA_PLAYER_TURN_05TEENS_4,
                 "05Corncob" => States::HIGH_DRAMA_PLAYER_TURN_05CORNCOB,
                 "05Corncob_3" => States::HIGH_DRAMA_PLAYER_TURN_05CORNCOB_3,
+                // WHY: "05Serenissima_2" is reached directly from state 05Serenissima (cardChosen), so it has no key here.
+                "05Serenissima" => States::HIGH_DRAMA_PLAYER_TURN_05SERENISSIMA,
                 "05Vulture" => States::HIGH_DRAMA_PLAYER_TURN_05VULTURE,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
@@ -2889,6 +2891,7 @@ $machinestates = [
                         "05DabneyUS01" => States::DUEL_CHOOSE_TECHNIQUE_05DABNEYUS01,
                         "05Cooper" => States::DUEL_CHOOSE_TECHNIQUE_05COOPER,
                         "05GaryFlipped" => States::DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED,
+                        "05Serenissima" => States::DUEL_CHOOSE_TECHNIQUE_05SERENISSIMA,
 
                         // Neutral/Ussura maneuver transitions — enabled so Technique_02043a
                         // (Miyato and Ota) can copy state-bearing maneuvers from Ussura/Neutral

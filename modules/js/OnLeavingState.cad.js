@@ -174,6 +174,31 @@
                 }
             },
 
+            'highDramaPhase05Serenissima': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    dojo.addClass('choose_container', 'hidden');
+                    dojo.addClass('chooseList', 'hidden');
+                    this.chooseList.removeAll();
+                    this.chooseList.setSelectionMode(0);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05Serenissima_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCards(this.clientStateArgs.ids);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'duelChooseTechnique_05Serenissima': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
             'highDramaPhase05Teens': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);

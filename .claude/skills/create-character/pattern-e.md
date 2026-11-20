@@ -164,6 +164,24 @@ JS (adversary is active, so their `factionHand` is the picker):
 
 Reference: `Technique_01093` Maya (canonical), `Technique_03039` Íñigo (same picker + follow-on effects).
 
+### Discard a card • +N Parry; adversary discards at random
+
+Printed: **`<b>Technique:</b> Discard a card • +1 [Parry]. The adversary discards a card at random.`** (`Technique_05Serenissima`).
+
+Compose three pieces — there is no single older exemplar:
+
+1. **+N Parry** — subclass `Technique_PlusOneParry` (Calculate shared; duel-only parent).
+2. **Actor discard cost (left of `•`)** — gate `IN_DUEL` + actor-is-owner + nonempty hand. On `EventResolveTechnique`: `createTechniqueTransitionEvent` (HIGHEST_PRIORITY) so the picker finishes before Calculate. `actFromTechniqueWithId`: validate hand ownership; `createCardDiscardedFromHandEvent(..., $asEffect = true)`.
+3. **Adversary discards at random (effect)** — **no** adversary picker / no active-player swap. After own discard: `$hand = getCardObjectsAtLocation(HAND, adversary->ControllerId)`; if nonempty, `$picked = $hand[array_rand($hand)]` then discard as effect. **Guard empty** (`array_rand` on empty warns/fatals — `_01098`). Empty → skip (01093 skip shape).
+
+**Not Covert** unless the keyword is printed (contrast `Technique_05Corncob`).
+
+JS for **actor** hand discard: same `factionHand` + `onCardDiscarded` + EventHandlers map as 01093 (active player is the Technique owner, not the adversary).
+
+Pre-commit: `extends Technique_PlusOneParry` matches `extends Technique` — keep `// EventTechniqueCanceled handler not needed`.
+
+Reference: `Technique_05Serenissima`; adversary-chooses sibling `Technique_01093`; Covert +1 Parry `Technique_05Corncob`; random pick `_01098`.
+
 ### Post-discard hand-size En Garde + EndOfRound move Home
 
 Composite follow-ons after adversary discard (`Technique_03039`):

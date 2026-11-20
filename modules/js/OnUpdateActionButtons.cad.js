@@ -128,6 +128,24 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            // WHY: Covert Action — no Engage printed, so Back is legal on the discard pick (Corncob/Vulture).
+            'highDramaPhase05Serenissima': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseListCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            // WHY: No Back after cost card is chosen — locker+Engarde resolve together on target pick.
+            'highDramaPhase05Serenissima_2': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'duelChooseTechnique_05Serenissima': () => {
+                this.addActionButton(`actChooseDiscardCard`, 'Confirm Selection', () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             // WHY: No Back on any Teens state - the performer was engaged at announce.
             'highDramaPhase05Teens': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());

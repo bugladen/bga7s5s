@@ -510,6 +510,10 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_05CORNCOB = 405013;
             const HIGH_DRAMA_PLAYER_TURN_05CORNCOB_2 = 4050132;
             const HIGH_DRAMA_PLAYER_TURN_05CORNCOB_3 = 4050133;
+        // CAD — Patricia Moustakas (_05Serenissima). Exp 5 + card 16. Discard→Locker / En Garde.
+        // WHY 405016: CardNumber 16. Robin attachment also uses 16 but has no HD states.
+        const HIGH_DRAMA_PLAYER_TURN_05SERENISSIMA = 405016;
+            const HIGH_DRAMA_PLAYER_TURN_05SERENISSIMA_2 = 4050162;
         // CAD — Scholarly Sanctuary (_05Refuge). Exp 5 + card 18. Location chooser (Home / controlled City).
         const HIGH_DRAMA_PLAYER_TURN_05REFUGE = 405018;
         // CAD - Smash and Grab (_05Teens). Exp 5 + card 19. Target / attachment / equip target / pay.
@@ -686,6 +690,9 @@ class States
             const DUEL_CHOOSE_TECHNIQUE_05COOPER = 52105002;
             // CAD — Rena Klingenhalter B-side (_05GaryFlipped). Exp 5 + card 7.
             const DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED = 52105007;
+            // CAD — Patricia Moustakas (_05Serenissima). Exp 5 + card 16. Hand discard cost.
+            // WHY 52105016: CardNumber 16. Robin attachment also uses 16 but has no duel picker.
+            const DUEL_CHOOSE_TECHNIQUE_05SERENISSIMA = 52105016;
                 const DUEL_CHOOSE_TECHNIQUE_03043_2 = 521030432;
                 const DUEL_CHOOSE_TECHNIQUE_03043_3 = 521030433;
         const DUEL_USE_MANEUVER_FROM_COMBAT_CARD = 522;

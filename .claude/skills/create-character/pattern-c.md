@@ -500,6 +500,7 @@ Reference: `Action_04032`; Pass/prevent sibling `Action_02036a`; move-both sibli
 | `Action_03040` | Engage + Finesse pressure (win ties via dedicated `SOLINE_PRESSURE_TYPE`) → mandatory claim-or-engage choice state. |
 | `Action_05Overcoat` | **Covert Action:** Engage + Resolve pressure (NORMAL — no win-ties) → mandatory claim-or-move-adjacent-Renown. Uncontrolled gate; hybrid Claim button + location picker. |
 | `Action_05Corncob` | **Covert Action:** Weapon from any discard → equip paying costs. Uncontrolled; no Engage (Back legal); merged chooseList; pile from Location; Teens `PAY_STATE_EQUIP_ATTACHMENT`. |
+| `Action_05Serenissima` | **Covert Action:** own-discard Bureaucracy/Discovery → Locker • En Garde Engaged at location. Engarde = `createCardEngardedEvent`; Engaged is effect valid-target (not left-of-• cost). |
 | `Action_04032` | En Garde City Action: target → Reveal Hand/Pass → Owner chooseList ack → hand-owner discard **or** adjacent move-both. ACTIVE_PLAYER chooseList (not multi-ack). |
 | `Action_04042` | En Garde Action: control Artifact at location → move opposing **engaged** to City location you do not control. Two-step Makepeace + location picker; not city Kaj `_01180`. |
 
@@ -631,6 +632,32 @@ Contrast Pattern D Vulture/Tomas: Reactions must use click-to-pay because Approa
 Always `createActionResolvedEvent` when finishing or aborting after confirm. Prototype CAD: plain strings, no `clienttranslate`.
 
 Reference: `Action_05Corncob`; take-control siblings `Action_05Teens` / `Action_01113`; Covert no-Engage sibling `Action_05Vulture`; Reaction pay contrast `Reaction_05Vulture` / `Reaction_04013`.
+
+### Covert Action: discard trait to Locker • En Garde Engaged target
+
+Printed: **`<b>Covert Action:</b> Send a <b>Bureaucracy</b> or <b>Discovery</b> in your discard pile to The Locker • En garde target character.`** (`Action_05Serenissima`).
+
+**Bullet semantics (user-corrected):**
+- **Left of `•`** = send from **your** discard (Bureaucracy or Discovery) to The Locker — this is what gates the Action's *cost* side for availability.
+- **Right of `•`** = En Garde **effect**, not a cost. Do not describe Engaged as a "cost." Engaged **is** still the valid-target filter for the Engarde effect (ready characters must not highlight), and offer still requires ≥1 Engaged so state 2 cannot softlock with empty `ids`.
+
+**Covert:** `cardInCity` + uncontrolled (recheck at resolve). **No Engage printed → Back legal** on the discard chooseList.
+
+**Step 1 — discard chooseList:** own discard only (`getPlayerDiscardDeckName($owner->ControllerId)`); `hasTrait("Bureaucracy") || hasTrait("Discovery")`; `args.cards` via `array_values(array_map(... getPropertyArray))`. Stash `Game::CHOSEN_CARD`; `nextState("cardChosen")` **local** to step 2 (do **not** put `"NNNNN_2"` on EVENTS — Corncob/Teens middle-step shape).
+
+**Step 2 — Engaged character Confirm:** `IAbilityThatTargetsCharacters`; same location as Owner; `$character->Engaged`. On resolve: notify → `createCardRemovedFromPlayerDiscardPileEvent` → `createCardSentToLockerEvent` (`_02053`) → **`createCardEngardedEvent`** → `createActionResolvedEvent`.
+
+**Engarde vs Engage factory (load-bearing):**
+| Intent | Factory | Hub result |
+|---|---|---|
+| Engage | `createCardEngagedEvent` | `Engaged = true` |
+| En Garde | `createCardEngagedEvent` | `Engaged = false` |
+
+Do **not** copy `Action_01152a` — its Name says En Garde but it calls `createCardEngagedEvent` (wrong). Correct sibling: `Action_02051`.
+
+JS: step 1 = Corncob chooseList + Back; step 2 = Vulture `highlightCardsAsSelectable(ids)` (no Back after cost card chosen).
+
+Reference: `Action_05Serenissima`; locker `_02053`; Engarde `Action_02051`; Covert no-Engage `Action_05Vulture` / `Action_05Corncob`.
 
 ### Move-a-wound recipe
 

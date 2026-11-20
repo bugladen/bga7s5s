@@ -1146,9 +1146,38 @@ Novel printed trait strings (e.g. **Razor** on Iago's scaffold) must also be add
 
 Reference: `_04033` Iago; participation sibling `_03028` Térence; equip-grant sibling `_03043`; opposing-tag sibling `Action_03013`.
 
+### "You may consider <Owner> to have any trait" — hasTrait override on Owner (Uwe receiver shape)
+
+Printed: **"You may consider Patricia to have any trait when you use abilities or pay costs."** (`_05Serenissima`).
+
+This is the **receiver** fiction — callers ask `$patricia->hasTrait("Diplomat", $queryCard)`. Override `hasTrait` on **Owner** (Uwe `_01043`), **not** Daniella opposing `addTrait` (that tags *other* characters).
+
+```php
+public function hasTrait(string $trait, ?Card $queryCard = null): bool
+{
+    // WHY: Null query = printed only (opponent "is she a Diplomat?" must not see fiction).
+    // Same-controller queryCard = "when YOU use abilities or pay costs".
+    // Blanked = Fate's Silence lifts the fiction.
+    if ($queryCard !== null
+        && ! $this->abilitiesAreBlanked()
+        && $this->ControllerId > 0
+        && $queryCard->ControllerId == $this->ControllerId)
+    {
+        return true; // any trait
+    }
+    return parent::hasTrait($trait, $queryCard);
+}
+```
+
+**Uwe contrast:** Uwe returns true only for `"Mercenary"` and only when `$queryCard` is one of a whitelist of ability owners. Patricia returns true for **any** `$trait` when the same-controller gate holds.
+
+**Systemic limit (load-bearing):** `Card::hasTrait` ignores `$queryCard` by default. Almost all call sites omit it. Fiction only lights for callers that pass `$queryCard` (today: Uwe's Mercenary consumers `Action_01036` / `Technique_01039` / `Maneuver_01051`). Do **not** invent a global `hasTrait` monkey-patch.
+
+Reference: `_05Serenissima`; single-trait sibling `_01043` Uwe; **wrong** direction Daniella `Action_03013`.
+
 ### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
 
-For text like "While using your abilities, characters opposing <Owner> may be considered <Trait>" (Daniella Dietrich `_03013`): the trait must light up on *opposing* characters, not on the owner. The Uwe Zimmerman `_01043` `hasTrait` override pattern is the WRONG fit — that pattern lights up the *receiver* of `hasTrait`, so it only works when the card being considered is the card whose `hasTrait` was overridden. For the opposing-direction case, mirror the Wilhelm Dünst `Action_02013` pattern instead: **mutate the opposing characters' `ModifiedTraits` directly via `addTrait` / `removeTrait`**, keep a tracked set of the ids you tagged, and untag at the scope boundary.
+For text like "While using your abilities, characters opposing <Owner> may be considered <Trait>" (Daniella Dietrich `_03013`): the trait must light up on *opposing* characters, not on the owner. The Uwe Zimmerman `_01043` / Patricia `_05Serenissima` `hasTrait` override pattern is the WRONG fit — that pattern lights up the *receiver* of `hasTrait`, so it only works when the card being considered is the card whose `hasTrait` was overridden. For the opposing-direction case, mirror the Wilhelm Dünst `Action_02013` pattern instead: **mutate the opposing characters' `ModifiedTraits` directly via `addTrait` / `removeTrait`**, keep a tracked set of the ids you tagged, and untag at the scope boundary.
 
 Pattern (typically lives on a continuous Action; see the next subsection):
 
