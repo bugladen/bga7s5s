@@ -48,6 +48,8 @@ The framework hydrates each ability separately. No cross-talk needed between the
 
 **Two Covert Reactions (enemy adjacent wound + adjacent pressure +1):** `_05Wardog` (Smuggled Long Rifle) hosts `Reaction_05Wardoga` (`EventCardMoved` enemy → adjacent City → wound; **no** Kaiser `fromLocation` gate — "enemy" ≠ "opposing") and `Reaction_05Wardogb` (`EventPressureOccuring` at adjacent City → Loyal-style `WARDOG_PRESSURE_TYPE` +1). Both gate Covert on host uncontrolled City. Independent `Used` per reaction. No engage / GameState / JS. Prototype CAD plain strings.
 
+**Self Academic equip −1 + Covert cancel-on-targeted:** `_05Terraria` (Cloud Bottle) overrides `getEquipDiscount` on the attachment (gate `$attachment->Id == $this->Id` + `!$this->isAttached()`) and hosts `Reaction_05Terraria` — Covert + UL cancel-first on CharacterTargeted / ChallengeIssued defender; destroy cost (not wealth). No cross-talk; no GameState.
+
 **Covert Technique + Gambling Maneuver:** `_05Pocketknife` hosts `Technique_05Pocketknife` (Covert uncontrolled + equipped + IN_DUEL; Dame sink `onTop=true`; Maya discard) and `Maneuver_05Pocketknife` (Gambling; Henry wound; dueling-line→hand). No cross-talk — Technique requires equipped host; Maneuver is combat-card-in-line. Prototype CAD plain strings; state ids `52105242` / `52505242`.
 
 **Finesse-threshold equip + ignore-wound Reaction:** `_04053` (Leather Spaulders) hosts Pattern A `ModifiedFinesse >= 2` dual-gate and `Reaction_04053` (Cascade ignore-wound gates + engage cost). No Technique/Action; no GameState. Same Risk→Attachment cost swap shape as Pompon vs Objection.

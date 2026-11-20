@@ -295,6 +295,27 @@ $event->theah->queueEvent($transition);
 
 Reference: `Reaction_04016` (Drachenblut). Heal siblings: `Reaction_03027a`, `Reaction_01181`. Character-side equip Reactions (not self): `Reaction_01039`, `Reaction_01146a`.
 
+### "When the equipped character is targeted, destroy this card • Cancel the effects"
+
+Printed (Cloud Bottle `_05Terraria`): **`<b>Covert Reaction:</b> When the equipped character is targeted, destroy this card • Cancel the effects.`**
+
+**Cancel-first, not offer-then-cancel.** Mirror Unyielding Loyalty `Reaction_01032` bones adapted to AttachmentReaction:
+
+1. Covert uncontrolled gate on host (`cardInCity` + `!isControlled()`).
+2. Primary trigger: `EventCharacterTargeted` with `$event->targetId == owningCharacter->Id`.
+3. Fallback: `EventChallengeIssued` with `$event->defenderId == owningCharacter->Id` — hub-exit challenges never emit CharacterTargeted for the defender (FrameworkActionsTrait / UL comment).
+4. Opposing initiator gate (UL `shouldReactToAbility`) — printed text omits "opponent" but canceling your own targeting is not the intent. `sourceId = 0` falls back to `initiatingPlayerId` / `getInPlayActionById` for BasicChallenge.
+5. On intercept: clone + cancel event + `deleteEventBatch` + stack `createReactionTransitionEvent` at `HIGH_PRIORITY`.
+6. **Cost = destroy this card** — unequip + `createAttachmentDiscardedFromPlayEvent(..., asEffect=true)`. Do **not** route through wealth pay / `ICancelReaction` / `EventRiskReactionTriggered`.
+7. On Cancel: `deleteEventsTargetingCard(host)` + `deleteTransitionEventsBySourceId(source)` **before** queueing unequip/discard (Hexenjagd — cost must land after the sweep). `CHALLENGE_CANCELLED` only when clearing an in-flight challenge target pick (UL `clearEvents` state/abilityId gate — do not set on every cancel).
+8. On Pass: re-queue held event + `skipNextEvent` + `declinedBatchId` (Amour/Giacinto sibling batches).
+
+No GameState / JS — standard `playerReaction` buttons. Public fields for held events (UL serialize footgun).
+
+**Risk vs Attachment footgun:** copying UL wholesale leaves a dead wealth-pay / Red Hand–Thug cost path. Copy the *cancel / CharacterTargeted / ChallengeIssued / CHALLENGE_CANCELLED* math; replace the *cost plumbing* with destroy-this-card.
+
+References: `Reaction_05Terraria` (attachment), `Reaction_01032` (Risk sibling — targeting cancel math only), `Reaction_01053` (Hexenjagd sweep-before-cost), Covert gate `_05Wardog`.
+
 ### Covert Reaction (keyword)
 
 Printed **`<b>Covert Reaction:</b>`** still uses `AttachmentReaction` (no Covert base class). Add the uncontrolled City gate on the **equipped host** before offering:

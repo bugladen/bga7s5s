@@ -122,6 +122,7 @@ class TraitNames
             "Insimore",
             "Inspiring",
             "Invigorant",
+            "Invention",
             "Jaragua",
             "Justice",
             "Kannushi",
