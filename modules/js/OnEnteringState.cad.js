@@ -450,7 +450,7 @@
                 }
             },
 
-            // WHY: Character chooser then chooseList among revealed hand cards (Hacked / 04032_4 shape).
+            // WHY: Character → hand-owner reveals four → owning player sinks one.
             'highDramaPhase05RedTape': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
@@ -462,7 +462,25 @@
                 }
             },
 
+            // WHY: Target's controller picks exactly four from their own factionHand (03041 shape).
             'highDramaPhase05RedTape_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const needed = args.args.args.cardsToReveal || 4;
+                    this.clientStateArgs.cardsToReveal = needed;
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+                    if (args.args.args.characterId) {
+                        this.highlightCharacterChosen(args.args.args.characterId);
+                        this.clientStateArgs.characterId = args.args.args.characterId;
+                    }
+                    $('faction_hand_info').innerHTML = `(${needed} card(s) to reveal)`;
+                    this.factionHand.setSelectionMode('multiple');
+                }
+            },
+
+            'highDramaPhase05RedTape_3': () => {
                 dojo.removeClass('choose_container', 'hidden');
                 dojo.removeClass('chooseList', 'hidden');
 

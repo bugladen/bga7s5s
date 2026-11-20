@@ -1332,10 +1332,11 @@ $machinestates = [
                 "05Quack_2" => States::HIGH_DRAMA_PLAYER_TURN_05QUACK_2,
                 "05Rum" => States::HIGH_DRAMA_PLAYER_TURN_05RUM,
                 "05Rum_2" => States::HIGH_DRAMA_PLAYER_TURN_05RUM_2,
-                // WHY: "05RedTape_2" must be here — createTransitionEvent after CharacterTargeted
-                // reveal; local nextState from step 1 cannot reach the chooseList.
+                // WHY: _2/_3 via createTransitionEvent — hand-owner reveal then owning-player
+                // sink; local nextState cannot change active player across controllers.
                 "05RedTape" => States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE,
                 "05RedTape_2" => States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2,
+                "05RedTape_3" => States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,

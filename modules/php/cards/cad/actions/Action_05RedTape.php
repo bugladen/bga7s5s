@@ -17,12 +17,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 // Customs Inspection: Academic Action - Target an opposing engaged character . Their
 // controller reveals four cards from hand. Choose a revealed card and sink it.
 //
-// Flow (2 GameStates, ids 405026 / 4050262):
+// Flow (3 GameStates, ids 405026 / 4050262 / 4050263):
 //   05RedTape    pick opposing engaged character (board highlight)
-//   05RedTape_2  after CharacterTargeted survives: chooseList among revealed → sink
+//   05RedTape_2  after CharacterTargeted survives: hand owner picks four to reveal
+//                (auto-reveal when hand has ≤4; skip straight to _3)
+//   05RedTape_3  owning player chooseList among revealed → sink
 class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacters
 {
-    /** @var list<int> Randomly revealed hand card ids pending the sink chooser. */
+    /** @var list<int> Hand-owner-chosen revealed card ids pending the sink chooser. */
     public array $revealedCardIds = [];
 
     public function __construct()
@@ -70,6 +72,42 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
             fn(Character $performer) => $performer->hasTrait("Academic")
                 && count($this->getValidTargets($theah, $performer)) > 0
         ));
+    }
+
+    /**
+     * Public reveal notifies + sticky ids for the sink chooser.
+     *
+     * @param list<int> $cardIds
+     */
+    private function revealCards(Game $game, Theah $theah, array $cardIds, int $handPlayerId): void
+    {
+        $owner = $this->getOwningCard($theah);
+        $this->revealedCardIds = [];
+
+        foreach ($cardIds as $cardId)
+        {
+            $card = $game->getCardObjectFromDb((int)$cardId);
+            if ($card === null)
+            {
+                continue;
+            }
+
+            $theah->addCardToWorld($card);
+
+            $game->notify->all("message",
+                '${card_inject_code} reveals ${picked_card} from <strong>${player_name}</strong>\'s hand.',
+                [
+                    "card_inject_code" => $owner->getInjectCode(),
+                    "player_name" => $game->getPlayerNameById($handPlayerId),
+                    "picked_card" => $card->getInjectCode(),
+                    "card" => $card->getPropertyArray($game),
+                ]);
+
+            $this->revealedCardIds[] = $card->Id;
+        }
+
+        $owner->IsUpdated = true;
+        $game->globals->set(Game::REVEALED_CARDS, json_encode($this->revealedCardIds));
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -135,8 +173,8 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
             $event->theah->queueEvent($transition);
         }
 
-        // WHY: Reveal + sink chooser only when targeting survives. UL / Terraria / Maryam set
-        // canceled=true on EventCharacterTargeted — do not reveal a hand after a cancel.
+        // WHY: Hand-owner reveal chooser (or auto-reveal) only when targeting survives.
+        // UL / Terraria / Maryam set canceled=true on EventCharacterTargeted.
         if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
         {
             $game = $event->theah->game;
@@ -148,13 +186,10 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
                 return;
             }
 
-            $deck = $game->getGameDeckObject();
-            $hand = array_values($deck->getCardsInLocation(Game::LOCATION_HAND, $target->ControllerId));
-            $count = min(4, count($hand));
+            $hand = array_values($event->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId));
+            $handCount = count($hand);
 
-            $this->revealedCardIds = [];
-
-            if ($count == 0)
+            if ($handCount == 0)
             {
                 // WHY: Hand may empty between chooser grey and resolve (intervening discards).
                 $game->notify->all("message", '${card_inject_code}: ${player_name}\'s hand is empty — no cards to reveal.', [
@@ -168,33 +203,25 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
                 return;
             }
 
-            $keys = (array) array_rand($hand, $count);
-            foreach ($keys as $key)
+            // WHY: Print "reveals four" — when ≤4, no choice; reveal everything and open sink.
+            // Hand owner only chooses when they have more than four.
+            if ($handCount <= 4)
             {
-                $card = $game->getCardObjectFromDb($hand[$key]['id']);
-                if ($card === null)
-                {
-                    continue;
-                }
+                $this->revealCards(
+                    $game,
+                    $event->theah,
+                    array_map(fn($card) => $card->Id, $hand),
+                    $target->ControllerId
+                );
 
-                $event->theah->addCardToWorld($card);
-
-                $game->notify->all("message",
-                    '${card_inject_code} reveals ${picked_card} from <strong>${player_name}</strong>\'s hand.',
-                    [
-                        "card_inject_code" => $owner->getInjectCode(),
-                        "player_name" => $game->getPlayerNameById($target->ControllerId),
-                        "picked_card" => $card->getInjectCode(),
-                        "card" => $card->getPropertyArray($game),
-                    ]);
-
-                $this->revealedCardIds[] = $card->Id;
+                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05RedTape_3", $this->Id);
+                $event->theah->queueEvent($transition);
+                return;
             }
 
-            $owner->IsUpdated = true;
-            $game->globals->set(Game::REVEALED_CARDS, json_encode($this->revealedCardIds));
-
-            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05RedTape_2", $this->Id);
+            // WHY: createTransitionEvent sets active = hand owner (Quack / Giacinto shape).
+            // Local nextState cannot change the active player to the opponent.
+            $transition = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, "05RedTape_2", $this->Id);
             $event->theah->queueEvent($transition);
         }
     }
@@ -214,6 +241,22 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
         }
 
         if ($state == States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2)
+        {
+            $targetId = (int)$game->globals->get(Game::CHOSEN_TARGET);
+            $target = $game->theah->getCharacterById($targetId);
+            $handCount = 0;
+            if ($target !== null)
+            {
+                $handCount = count($game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $target->ControllerId));
+            }
+
+            $args["performerId"] = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
+            $args["characterId"] = $targetId;
+            // WHY: Exactly four when hand > 4 (short hands auto-reveal and skip this state).
+            $args["cardsToReveal"] = min(4, $handCount);
+        }
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3)
         {
             $revealedIds = $this->revealedCardIds;
             if (count($revealedIds) === 0)
@@ -293,7 +336,7 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
             $game->gamestate->nextState("characterChosen");
         }
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3)
         {
             $revealedIds = $this->revealedCardIds;
             if (count($revealedIds) === 0)
@@ -357,6 +400,62 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
             $game->theah->queueEvent($actionResolvedEvent);
 
             $game->gamestate->nextState("cardChosen");
+        }
+    }
+
+    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
+    {
+        parent::actFromActionWithIds($game, $state, $stateName, $ids);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2)
+        {
+            $owner = $this->getOwningCard($game->theah);
+            $targetId = (int)$game->globals->get(Game::CHOSEN_TARGET);
+            $target = $game->theah->getCharacterById($targetId);
+            if ($owner === null || $target === null)
+            {
+                throw new UserException("Target not found");
+            }
+
+            $playerId = (int)$game->getActivePlayerId();
+            if ($playerId !== $target->ControllerId)
+            {
+                throw new UserException("It is not your turn to reveal.");
+            }
+
+            $needed = 4;
+            if (count($ids) !== $needed)
+            {
+                throw new UserException("You must reveal exactly four cards from your hand.");
+            }
+
+            $uniqueIds = array_values(array_unique(array_map('intval', $ids)));
+            if (count($uniqueIds) !== $needed)
+            {
+                throw new UserException("You must reveal four different cards.");
+            }
+
+            foreach ($uniqueIds as $cardId)
+            {
+                $card = $game->getCardObjectFromDb($cardId);
+                if ($card === null)
+                {
+                    throw new UserException("Card not found");
+                }
+
+                if ($card->Location != Game::LOCATION_HAND || $card->ControllerId != $playerId)
+                {
+                    throw new UserException("Card is not in your hand.");
+                }
+            }
+
+            $this->revealCards($game, $game->theah, $uniqueIds, $playerId);
+
+            // WHY: Sink chooser returns to the Action owning player (not the hand owner).
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05RedTape_3", $this->Id);
+            $game->theah->queueEvent($transition);
+
+            $game->gamestate->nextState("cardsRevealed");
         }
     }
 }

@@ -225,7 +225,19 @@
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
 
+            // WHY: Reveal keeps cards in hand — do not use onCardsDiscarded (it removes from UI).
             'highDramaPhase05RedTape_2': () => {
+                this.addActionButton(`actChooseRevealCards`, 'Confirm Selection', () => {
+                    const selectedCards = this.factionHand.getSelection();
+                    const ids = selectedCards.map((item) => item.id);
+                    this.bgaPerformAction('actFromCardWithIds', {
+                        'ids': JSON.stringify(ids),
+                    });
+                });
+                dojo.addClass('actChooseRevealCards', 'disabled');
+            },
+
+            'highDramaPhase05RedTape_3': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseListCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },

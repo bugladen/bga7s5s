@@ -149,9 +149,9 @@ class Action_05RedTape_Test extends TestCase
                 Assert::same('characterChosen', end($world->game->gamestate->transitions), 'to EVENTS');
             },
 
-            // WHY: Reveal only when targeting survives. UL / Terraria cancel CharacterTargeted.
-            'reveals up to four random hand cards only if targeting survives, then opens the sink chooser' => function () {
-                ['world' => $world, 'risk' => $risk, 'action' => $action, 'foe' => $foe, 'handCards' => $handCards] = $this->scene();
+            // WHY: Hand > 4 → hand owner chooses which four (not random). Cancel skips chooser.
+            'opens the hand-owner reveal chooser only if targeting survives when hand has more than four' => function () {
+                ['world' => $world, 'risk' => $risk, 'action' => $action, 'foe' => $foe] = $this->scene();
                 $world->game->globals->set(Game::CHOSEN_TARGET, $foe->Id);
 
                 $canceled = new EventCharacterTargeted();
@@ -168,15 +168,54 @@ class Action_05RedTape_Test extends TestCase
                 $targeted->canceled = false;
                 $world->fireOn($risk, $targeted);
 
-                Assert::same(4, count($action->revealedCardIds), 'four of five');
-                foreach ($action->revealedCardIds as $revealedId)
-                {
-                    Assert::true(in_array($revealedId, array_map(fn($c) => $c->Id, $handCards), true), 'from hand');
-                }
-                Assert::same('05RedTape_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'sink chooser');
+                Assert::count(0, $action->revealedCardIds, 'not auto-revealed when hand > 4');
+                $transition = $world->theah->queuedOfType(EventTransition::class)[0];
+                Assert::same('05RedTape_2', $transition->transition, 'hand-owner reveal chooser');
+                Assert::same(2, $transition->playerId, 'active = hand owner');
 
                 $args = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2, '');
+                Assert::same(4, $args['cardsToReveal'], 'exactly four');
+            },
+
+            'hand owner reveals four chosen cards then opens the sink chooser for the owning player' => function () {
+                ['world' => $world, 'action' => $action, 'foe' => $foe, 'handCards' => $handCards] = $this->scene();
+                $world->game->globals->set(Game::CHOSEN_TARGET, $foe->Id);
+                $world->game->activePlayerId = 2;
+
+                $pick = [
+                    $handCards[0]->Id,
+                    $handCards[1]->Id,
+                    $handCards[2]->Id,
+                    $handCards[4]->Id,
+                ];
+                $action->actFromActionWithIds(
+                    $world->game,
+                    States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2,
+                    '',
+                    $pick
+                );
+
+                Assert::same($pick, $action->revealedCardIds, 'chosen four sticky');
+                $transition = $world->theah->queuedOfType(EventTransition::class)[0];
+                Assert::same('05RedTape_3', $transition->transition, 'sink chooser');
+                Assert::same(1, $transition->playerId, 'active = owning player');
+                Assert::same('cardsRevealed', end($world->game->gamestate->transitions), 'to EVENTS');
+
+                $args = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3, '');
                 Assert::same(4, count($args['cards']), 'chooseList cards');
+
+                $threw = false;
+                try {
+                    $action->actFromActionWithIds(
+                        $world->game,
+                        States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2,
+                        '',
+                        [$handCards[0]->Id, $handCards[1]->Id, $handCards[2]->Id]
+                    );
+                } catch (UserException) {
+                    $threw = true;
+                }
+                Assert::true($threw, 'not exactly four rejected');
             },
 
             'sinks the chosen revealed card to the owner faction deck bottom and resolves' => function () {
@@ -186,7 +225,7 @@ class Action_05RedTape_Test extends TestCase
                 $pick = $handCards[0];
                 $action->revealedCardIds = [$pick->Id, $handCards[1]->Id];
 
-                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2, '', $pick->Id);
+                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3, '', $pick->Id);
 
                 Assert::same(
                     $world->game->getPlayerFactionDeckName(2),
@@ -209,7 +248,7 @@ class Action_05RedTape_Test extends TestCase
                     $action->revealedCardIds = [$handCards[2]->Id];
                     $action->actFromActionWithId(
                         $world->game,
-                        States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2,
+                        States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3,
                         '',
                         $handCards[3]->Id
                     );
@@ -219,7 +258,8 @@ class Action_05RedTape_Test extends TestCase
                 Assert::true($threw, 'non-revealed rejected');
             },
 
-            'reveals fewer than four when the hand is short' => function () {
+            // WHY: ≤4 cards → no hand-owner choice; auto-reveal and open sink for owning player.
+            'auto-reveals a short hand and opens the sink chooser' => function () {
                 $world = new TestWorld();
                 $risk = $world->placeCard(new _05RedTape(), Game::LOCATION_HAND, 1);
                 $world->placeCharacter(new GenericCharacter('Scholar', ['Academic']), Game::LOCATION_CITY_DOCKS, 1);
@@ -235,6 +275,9 @@ class Action_05RedTape_Test extends TestCase
                 $world->fireOn($risk, $targeted);
 
                 Assert::same([$only->Id], $action->revealedCardIds, 'reveal what is there');
+                $transition = $world->theah->queuedOfType(EventTransition::class)[0];
+                Assert::same('05RedTape_3', $transition->transition, 'sink not hand chooser');
+                Assert::same(1, $transition->playerId, 'owning player sinks');
             },
         ];
     }

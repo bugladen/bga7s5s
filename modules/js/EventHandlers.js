@@ -861,6 +861,16 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }
             },
 
+            // WHY: Exactly four (cardsToReveal) — short hands auto-reveal and skip this state.
+            'highDramaPhase05RedTape_2': () => {
+                const needed = this.clientStateArgs.cardsToReveal || 4;
+                if (this.factionHand.getSelection().length === needed) {
+                    dojo.removeClass('actChooseRevealCards', 'disabled');
+                } else {
+                    dojo.addClass('actChooseRevealCards', 'disabled');
+                }
+            },
+
             'duelChooseTechnique_03039': () => {
                 if (this.factionHand.getSelection().length > 0) {
                     dojo.removeClass('actChooseDiscardCard', 'disabled');

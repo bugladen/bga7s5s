@@ -20,10 +20,10 @@ class State_highDramaPhase05RedTape_2 extends GameState
             name: "highDramaPhase05RedTape_2",
 
             // WHY: Prototype CAD — plain strings, no clienttranslate (hide from translators).
-            description: '${actplayer} is choosing options to perform an Action.',
-            descriptionMyTurn: 'Customs Inspection: ${you} must choose a revealed card to sink:',
+            description: '${actplayer} must reveal four cards from hand.',
+            descriptionMyTurn: 'Customs Inspection: ${you} must choose four cards from your hand to reveal:',
             transitions: [
-                "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "cardsRevealed" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
                 "zombie" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
@@ -37,18 +37,19 @@ class State_highDramaPhase05RedTape_2 extends GameState
     }
 
     #[PossibleAction]
-    public function actFromCardWithId(string $id): void
+    public function actFromCardWithIds(string $ids): void
     {
-        $this->game->actFromCardWithId($id);
+        $this->game->actFromCardWithIds($ids);
     }
 
     public function zombie(int $playerId): void
     {
-        $args = $this->game->argsForState();
-        $cards = $args["args"]["cards"] ?? [];
-        if (count($cards) > 0)
+        $hand = array_values($this->game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId));
+        $pick = array_slice($hand, 0, 4);
+        if (count($pick) === 4)
         {
-            $this->game->actFromCardWithId((string)$cards[0]["id"]);
+            $ids = array_map(fn($card) => $card->Id, $pick);
+            $this->game->actFromCardWithIds(json_encode($ids));
             return;
         }
 

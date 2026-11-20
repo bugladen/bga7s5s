@@ -310,6 +310,16 @@
             },
 
             'highDramaPhase05RedTape_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                    $('faction_hand_info').innerHTML = '';
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.unhighlightCharacterChosen(this.clientStateArgs.characterId);
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05RedTape_3': () => {
                 dojo.addClass('choose_container', 'hidden');
                 dojo.addClass('chooseList', 'hidden');
                 this.chooseList.removeAll();

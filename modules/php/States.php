@@ -542,6 +542,7 @@ class States
         // CAD — Customs Inspection (_05RedTape). Exp 5 + card 26. Target engaged / reveal four / sink one.
         const HIGH_DRAMA_PLAYER_TURN_05REDTAPE = 405026;
             const HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2 = 4050262;
+            const HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3 = 4050263;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;
