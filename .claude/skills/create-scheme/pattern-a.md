@@ -179,16 +179,17 @@ When the scheme says **"Choose a location with one or less Renown. Add a Renown 
 
 Reference: `_04052`; claim-lock sibling `_01126` (Leshiye moves onto the city).
 
-### Docks or Bazaar (two named locations)
+### Two named locations (Docks or Bazaar / Forum or Docks)
 
-When the scheme says **"Add a Renown to [The City Docks] or [The Grand Bazaar]"**:
+When the scheme says **"Add a Renown to [The City Docks] or [The Grand Bazaar]"** or **"… [The City Forum] or [The City Docks]"**:
 
-1. `argsFromCard` / `locationIds` = those two names that exist in `getCityLocations()` (both are always in play, including 2p).
+1. `argsFromCard` / `locationIds` = those two names that exist in `getCityLocations()` (Docks / Forum / Bazaar are always in play, including 2p).
 2. `actFromCardWithLocations` / `actFromCardWithIds`. Re-validate membership.
 3. Do **not** use `actCityLocationsForRenownSelected` (that helper is N free city picks).
 4. JS: same as `_04014` (`locationIds` + Confirm Location).
+5. Contrast printed **and** between the same icons → trivial dual Renown, no pick (`_05SnowWhite` Docks+Forum). Prototype Text may say "or" while art looks like "and" — follow the Text the user points at (or ask).
 
-Reference: `_04045`.
+Reference: `_04045` (Docks/Bazaar); `_05Scallywag` (Forum/Docks).
 
 ### Fixed location + pick another
 

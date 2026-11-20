@@ -55,6 +55,11 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'planningPhaseResolveSchemes_05Scallywag': () => {
+                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'planningPhaseResolveSchemes_05William': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');

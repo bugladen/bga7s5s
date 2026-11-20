@@ -65,6 +65,7 @@ class TraitNames
             "Cunning",
             "Dagger",
             "Dar Matushki",
+            "Daring",
             "Declaration",
             "Demoralize",
             "Dignitary",

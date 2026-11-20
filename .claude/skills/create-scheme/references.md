@@ -151,4 +151,7 @@
 | `modules/php/cards/cad/_05Hacked.php` (Stolen Schematics) | **When-Revealed Academic→copy opponent scheme (Home or Locker) OR non-Academic Renown.** CAD prototype. Gary same-Id swap; `card_type` stays `05Hacked`; `STOLEN_SCHEMATICS_COPY` + EventHub dusk revert. Initiative/Panache 0 / Discovery+Stealth. |
 | `modules/php/States/cad/State_planningPhaseResolveWhenRevealed05Hacked.php` | First When-Revealed player-pick GameState (`2405024`); chooseList from `args.cards`. |
 | `modules/php/States/cad/State_planningPhaseResolveSchemes05Hacked.php` | Non-Academic Renown city pick (`2605024` / `"05Hacked_2"`). |
+| `modules/php/cards/cad/_05Scallywag.php` (Friends at Sea) | **Forum-or-Docks Renown pick + Reaction (opponent Leader wound from your challenge/duel → Muster Pirate from Approach engaged).** CAD prototype. Init 21 / Panache +1 / Daring+Camaraderie. CardNumber 24 stub — resolve state `2605240` (Hacked owns `2605024`). |
+| `modules/php/cards/cad/reactions/Reaction_05Scallywag.php` | `EventCharacterWounded`; challenger-only; Approach Pirate buttons; capture Leader location; muster then engage. |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05Scallywag.php` | Planning Forum/Docks pick (`actFromCardWithLocations`). |
 
