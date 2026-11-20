@@ -165,6 +165,7 @@ class TraitNames
             "Porté",
             "Prepared",
             "Pride",
+            "Priest",
             "Protégé",
             "Provocation",
             "Punctual",

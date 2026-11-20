@@ -990,7 +990,33 @@ Adapting for other stats / conditions:
 - `+N [Resolve]` → no factory exists. Use Joern's `$this->ModifiedResolve` direct-mutation pattern instead (Pattern A's "Phase-conditional Resolve modifier").
 - `+N [Panache]` (Leader only) → `createCharacterPanacheModifiedEvent`.
 
-For non-wound conditions (e.g., "while engaged"), swap the trigger event (`EventCardEngaged` / `EventCardEngarded`) and the `$shouldHaveBonus` predicate. Same flag discipline.
+For non-wound conditions (e.g., "while engaged"), swap the trigger event (`EventCardEngaged` / `EventCardEngaged`) and the `$shouldHaveBonus` predicate. Same flag discipline.
+
+### Stat bonus while Leader has more wounds than Owner
+
+Printed (Geistliche Leichenberg `_05FunkyCheese`): **"While your Leader has more wounds than Leichenberg, he has +1 [Influence]."**
+
+Same **Ise flag ±1** discipline as "while wounded" — attachments also mutate Influence — but the condition is a **comparison against the player's Leader**, not `Owner.Wounds > 0`.
+
+**Parse trap — who is "he"?** The bonus lands on **Owner** (Leichenberg), not the Leader. The Leader is only the wound counter being compared.
+
+**Do not copy Ise's self-only hooks.** Required differences:
+
+| Piece | Ise (self wounded) | FunkyCheese (Leader > Owner) |
+|---|---|---|
+| Predicate | `$this->Wounds > 0` | `leader.Wounds > $this->Wounds` (strict `>`) |
+| Wound/heal identity | `characterId == $this->Id` only | Owner **or** Leader (`getLeaderByPlayerId`) |
+| Stale wounds | Parent updates self before recompute | When the event is on the **other** card, apply Benci `characterHandled` delta (`wounds ± event.wounds` if `!$event->characterHandled`) |
+| Enter play | Not needed (starts at 0 wounds) | **`EventCharacterMustered` OR `EventApproachCharacterPlayed`** when `characterId == $this->Id` — Leader may already be wounded |
+| Missing Leader | N/A | No Leader / Leader in discard/locker → `$shouldHaveBonus = false` |
+
+Still: `parent::handleEvent` first; skip `ControllerId == 0` / `IsDying` / discard/locker; queue `createCharacterInfluenceModifiedEvent(±1)` (or Combat/Finesse factory) only on flag transition; **`onAbilitiesBlanked` / `onAbilitiesUnblanked`**.
+
+WHY muster/approach: Ise only flips when *she* is wounded. Leichenberg can muster onto a table where the Leader already has more wounds — without enter-play hooks the chip stays flat until the next wound/heal.
+
+WHY Benci delta on Leader events: card `handleEvent` order is not guaranteed. If Leichenberg runs before the Leader's own wound handler, `leader->Wounds` is still pre-wound.
+
+Reference: `_05FunkyCheese`; Ise flag `_03016`; stale wound-delta `_04001` Benci; Silence hooks Pattern A "Fate's Silence blanking".
 
 ### Set one stat equal to another while a scoped condition holds — replacement flag + snapshot restore
 

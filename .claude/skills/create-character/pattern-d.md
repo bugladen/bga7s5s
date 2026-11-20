@@ -593,6 +593,32 @@ WHY no opponent-effect gate: text does not say "by an opponent's effect." WHY Co
 
 Reference: `Reaction_05Seadog`; move Decline sibling `Reaction_04041`; Covert location gate `Action_05Overcoat` / `Action_05DabneyUS01`.
 
+### Covert pressure → wound Owner and target opposing non-Leader
+
+Printed (Geistliche Leichenberg `_05FunkyCheese`): **"<b>Covert Reaction:</b> When a pressure occurs at this location • Wound Leichenberg and target opposing non-Leader."**
+
+Button-based Pattern D on **`EventPressureOccuring`** — no state class / no JS. Combines three mirrors; do not invent a new pressure-bit flag.
+
+| Piece | Mirror | Notes |
+|---|---|---|
+| Trigger | Claude `Reaction_01184` / Wardogb `Reaction_05Wardogb` | `EventPressureOccuring` + `isAvailable()` |
+| Covert gate | Seadog / Wardogb / Valeri | `cardInCity` + city location **uncontrolled**; re-check in `performReaction` (claim mid-reaction must fail) |
+| Location | "at this location" | `$event->location == $owner->Location` |
+| Dual wound | Excalibur `Reaction_05Excalibur` | Wound **Owner first**, then chosen target; Pass does not `setUsed` |
+| "target" | Cesca `Reaction_03001` | Printed **target** → `IAbilityThatTargetsCharacters` + `isValidTargetForAbility` |
+
+**Valid-target gate before offer:** ≥1 opposing **non-Leader** at Owner's location that `canBeWoundedByOpponentAbilities()`. Leaders-only / empty location → no Pass-only prompt.
+
+**Buttons:** one `wound-{id}` per eligible character + Pass. Filter `hasTrait("Leader")` out of the list (and reject in `isValidTargetForAbility`).
+
+**Resolve:** Covert recheck → validate target → notify → `createCharacterBeingWoundedEvent` on Owner, then on target (`sourceId` = owner id, `abilityId` = reaction id) → `setUsed(true)`.
+
+WHY not Claude/Loyal/Wardogb `PRESSURE_TYPE` bits: those Reactions change the pressure total. This Reaction wounds characters mid-pressure; the pressure math continues normally after the reaction window.
+
+WHY Excalibur order (self then target): printed "Wound Leichenberg and target …" — left-to-right. Self-wound may flip the Leader-vs-Owner Influence passive in the same batch.
+
+Reference: `Reaction_05FunkyCheese`; dual-wound sibling `Reaction_05Excalibur`; Covert pressure sibling `Reaction_05Wardogb`; target interface `Reaction_03001`.
+
 ### Destroyed character → take control of attachment
 
 Printed (Vulture `_05Vulture`): **Reaction: When a character at this location is destroyed • Take control of their equipped attachment and equip it to a character you control paying all costs.**
