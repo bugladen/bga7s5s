@@ -31,3 +31,6 @@ Art (05Terraria.v5.jpg): WealthCost 1, Riposte 0 / Parry 2 / Thrust +1, traits A
 ## Unfinished / watch
 - Did not unit-test ChallengeIssued fallback (needs BasicChallenge registered in FakeGame or CHOSEN_ACTION technique overwrite). Live path mirrors UL; add if a hub-exit challenge misses Terraria in play.
 - Character.php getEquipDiscount shadow bug is pre-existing — our gate works around it; fixing Character would help future self-discount attachments.
+
+## Follow-up (same day)
+Bleed Out miss: Action_01160 never emitted CharacterTargeted — fixed in `2026-11-20-13-bleedout-terraria-targeted.md`. Terraria reaction itself unchanged.

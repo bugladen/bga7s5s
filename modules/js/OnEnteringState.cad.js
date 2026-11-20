@@ -432,6 +432,23 @@
                 }
             },
 
+            // WHY: Attachment name buttons only — no board highlight (01142 / Teens_2 shape).
+            'duelResolveManeuver_05Stash': () => {
+            },
+
+            // WHY: Owner engages opposing after adversary Decline / no Attachment (03035 ids shape).
+            'duelResolveManeuver_05Stash_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    if (args.args.args.performerId) {
+                        this.highlightCharacterChosen(args.args.args.performerId);
+                        this.clientStateArgs.performerId = args.args.args.performerId;
+                    }
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
             'highDramaPhase05Teens': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;

@@ -102,6 +102,16 @@ When the printed text says **City Reaction: After an opponent passes • They mu
 
 **WHY not GameStates for the opponent choosers:** character + city location both fit reaction buttons (D.1 preference). `_03061` Burn like Mice uses a GameState character chooser because it is a City *Action* with board highlight — different UI channel. Don't copy Action chooser scaffolding onto a RiskReaction that already owns `playerReaction`.
 
+### Pattern D.9 — City Reaction: when a pressure you initiated fails • en garde target character
+
+When the printed text says **`<b>City Reaction:</b> When a pressure you initiated fails, en garde target character at the pressured location`**, wire Pattern D.1 against `EventLocationPressureResult`. Reference: `_05Stash` / `Reaction_05Stash`.
+
+1. **Trigger** — `EventLocationPressureResult && !$event->success && $event->playerId == $owner->ControllerId` + hand guard + City gate (`getCharactersInCityByPlayerId`) + ≥1 Engaged controlled character at `$event->location`. **WHY Result not Pressured:** Objection / Leather Spaulders can delete/replace the Result after Pressured (02004 WHY).
+2. **Engarde targets** — Engaged only (Serenissima 109c — Engarde is a no-op on ready). Printed **"target"** → Cesca (`IAbilityThatTargetsCharacters` + `IRiskThatTargetsCharacters`).
+3. **Pay** — standard Use/Pass → EnteringPayState + ReactionPayTransition.
+4. **After `EventRiskReactionTriggered`** — `$stage = 'chooseCharacter'`; reaction buttons `character-{id}` (no Pass on the mandatory pick). Effect: `createCardEngardedEvent` (not Engaged — 01152a trap).
+5. **No GameStates / JS** — reaction buttons only (D.1 preference). Pressure Result drains into `HIGH_DRAMA_PLAYER_TURN_EVENTS` (has reaction/pay).
+
 ### Pattern D.2 — Single-stage RiskReaction with pay that applies an effect
 
 When the RiskReaction's effect is a single-shot resolution after pay — mutate a global (`CHALLENGE_STAT`), engarde a fixed character, set a flag, etc. — with no cross-player choice and no second transition, the shape collapses to:

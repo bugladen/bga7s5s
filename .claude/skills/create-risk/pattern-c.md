@@ -788,3 +788,15 @@ When the maneuver effect requires the **opposing** controller to pick (e.g., "th
 
 **Empty hand:** never enter the chooser with zero hand cards. If discard is the *only* effect, gate `isAvailableToPlayer` on `count(hand) > 0` (`Maneuver_01108a`). If discard is conditional on top of a still-useful calc (C.4), skip the transition at resolve instead — see Pattern C.4.
 
+### Pattern C.11 — Covert Maneuver: adversary may discard an Attachment • else engage target opposing
+
+When the printed text says **`<b>Covert Maneuver:</b> The adversary may discard an Attachment. If they do not, engage target opposing character`**, wire a pure-resolve Covert Maneuver with a cross-player chooser. Reference: `_05Stash` / `Maneuver_05Stash`.
+
+1. **Covert gate** — duel actor at an uncontrolled City location (`cardInCity` + `!$cityLocation->isControlled()`), same discipline as Covert Technique (`Technique_05Pocketknife` / Corncob). Grey when not `IN_DUEL`.
+2. **Availability stick** — require ≥1 opposing `!Engaged` character at `$actor->Location` (`getOpposingCharactersAtLocation`). Decline without a legal engage target would softlock; Attachments are optional.
+3. **Attachment pool** — real Attachments equipped to the **duel adversary** (skip `FakeAttachment`). Unequip + `createAttachmentDiscardedFromPlayEvent` on pick (01142 destroy shape; print says discard).
+4. **Resolve** — if pool non-empty → `"NNNNN"` to adversary (attachment name buttons + **Decline** `id: 0`). If empty → they did not discard → `"NNNNN_2"` to owner for engage.
+5. **Decline / Pass** → queue `"NNNNN_2"` to Maneuver owner; character highlight (`ids` + `performerId`) → `createCardEngagedEvent` (engage verb).
+6. **Cesca** — printed **"target"** on the engage clause → `IAbilityThatTargetsCharacters` on the Maneuver + `IRiskThatTargetsCharacters` on the Risk. Attachment chooser has **no** printed "target" → do **not** also implement `IAbilityThatTargetsCards` (forbidden mix).
+7. **Wire** both `"NNNNN"` and `"NNNNN_2"` under `DUEL_RESOLVE_MANEUVER_EVENTS`. CAD: plain strings; JS trio for both states (buttons on `_1`, board highlight on `_2`).
+

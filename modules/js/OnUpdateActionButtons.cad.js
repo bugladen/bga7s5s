@@ -206,6 +206,19 @@
                 });
             },
 
+            // WHY: Adversary may discard equipped Attachment; Decline (id 0) → engage stick.
+            'duelResolveManeuver_05Stash': () => {
+                (args.args.attachments || []).forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', { id: attachment.id }));
+                });
+                this.statusBar.addActionButton('Decline', () => this.bgaPerformAction('actFromCardWithId', { id: 0 }), { id: 'actDecline', color: 'alert' });
+            },
+
+            'duelResolveManeuver_05Stash_2': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
             // WHY: No Back on any Teens state - the performer was engaged at announce.
             'highDramaPhase05Teens': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseInPlayCardConfirmed());

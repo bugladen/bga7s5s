@@ -763,6 +763,9 @@ class States
             // CAD — El Estoque Oculto (_05Pocketknife). Dueling-line → hand picker.
             // WHY 52505242: same CardNumber-24 collision avoidance as technique state.
             const DUEL_RESOLVE_MANEUVER_05POCKETKNIFE = 52505242;
+            // CAD — Extra Rations (_05Stash). Exp 5 + card 27. Adversary discard Attachment / engage opposing.
+            const DUEL_RESOLVE_MANEUVER_05STASH = 52505027;
+                const DUEL_RESOLVE_MANEUVER_05STASH_2 = 525050272;
             const DUEL_RESOLVE_MANEUVER_REACTIONS = 5251;
             const DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION = 5252;
         const DUEL_RESOLVE_MANEUVER_CHOOSE_NEXT_ABILITY = 5253;
