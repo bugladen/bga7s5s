@@ -1408,6 +1408,32 @@ WHY gate on `$event->pressureTypes` containing `STAT_INFLUENCE`: Owner may also 
 
 Reference: `_05Overcoat` Varvara (CAD); Valeri sibling `_05DabneyUS01` (aura, not fail); Covert Action follow-up `Action_05Overcoat` (Pattern C).
 
+### Forced: discard top N of each deck (end of Planning)
+
+Printed: **`<b>Forced:</b> At the end of planning • Discard the top 3 cards of each deck.`** (`_05Corncob`).
+
+**"each deck" = faction decks AND City Deck.** Do **not** omit the City Deck because other cards name "City Deck" explicitly — that wording means "only the City Deck," not "City Deck is separate from 'deck'." Corncob's Forced mills:
+
+1. Every player's faction deck (top N via `getCardsOnTopOfPlayerFactionDeck`) into that player's discard.
+2. The City Deck (top N via `getCardsOnTopOfCityDeck`) into City Discard.
+
+**Gates:** `ControllerId > 0` + `!characterIsInDiscardOrLocker($this)`. No player-choice state — pure Forced on `EventPhasePlanningEnd`.
+
+**No EventFactory for deck→discard.** Mirror `Reaction_04023` / `Action_01134`:
+
+| Deck | Notify | Move |
+|---|---|---|
+| Faction | `cardAddedToPlayerDiscardPile` | `moveCard($id, getPlayerDiscardDeckName($playerId), …)` |
+| City | `cardAddedToCityDiscardPile` | `moveCard($id, LOCATION_CITY_DISCARD, …)` |
+
+**Announce once per deck manipulated** (faction player name / "the City Deck") **before** the per-card discard notifs — silent mills hide which decks were hit when some are empty. Skip announce when that deck contributed 0 cards.
+
+**Still-in-this-deck Location gate** after `getCardObjectFromDb`: only mill cards whose `.Location` still equals that deck's location name. WHY: `FakeGame` shares one `topFactionCards` list across players; without the gate, player 1's milled cards get re-milled into player 2's discard. Real per-player decks make this a no-op.
+
+Optional top-level Forced announce ("discard the top N of each deck") is fine; the per-deck announces are the load-bearing ones.
+
+Reference: `_05Corncob`; deck→discard notify shape `Reaction_04023` / `Action_01134`.
+
 ### Phase / lifecycle events worth knowing
 
 | Event | When it fires | Typical use |
@@ -1415,6 +1441,7 @@ Reference: `_05Overcoat` Varvara (CAD); Valeri sibling `_05DabneyUS01` (aura, no
 | `EventNewDay` | Start of each Day | Reset per-day flags |
 | `EventPhaseDawnBeginning` | Dawn begins | "At the beginning of Dawn …" |
 | `EventPhaseDawnEnding` | Dawn ends (fired by `StatesTrait::stDawnEnding`) | "At the end of Dawn …" |
+| `EventPhasePlanningEnd` | Planning phase ends | "At the end of Planning …" Forced mills / deck effects (`_05Corncob`). |
 | `EventDuskPhaseBegin` | Dusk phase begins (fired by `StatesTrait::stDuskPhaseBegin`, BEFORE characters route home) | "At the beginning of Dusk …" / start of a phase-conditional Resolve penalty (Joern `_03015`). |
 | `EventDuskPhaseEnd` | After cleanup/discard, before `EventDuskEndOfDay` | Less commonly used; `EventDuskEndOfDay` is usually the right "Dusk is over" hook |
 | `EventDuskEndOfDay` | End of Day (Brute discards happen here) | Reset per-day Used flags (base classes handle this for Actions/Reactions automatically); restore phase-conditional Resolve penalties |

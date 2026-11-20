@@ -565,6 +565,22 @@ Contrast plain **`<b>Technique:</b> +1[Thrust]`** with no En Garde keyword → u
 
 Reference: `Technique_04021b`; generic `Technique_PlusOneThrust`; En Garde precondition siblings Tijani `_04cd29` / Desideria `Reaction_04003a`.
 
+### Covert Technique +N Parry (or Thrust / Riposte)
+
+Printed: **`<b>Covert Technique:</b> +1 [Parry].`** (`Technique_05Corncob`).
+
+Same subclass-generic shape as En Garde Technique, but the keyword gate is **Covert**, not En Garde:
+
+- Subclass `Technique_PlusOneParry` / `Technique_PlusOneThrust` / `Technique_PlusOneRiposte` so Calculate (and challenge Threat, when the generic has it) stay shared.
+- **Covert = `cardInCity` + location uncontrolled** (`getCityLocation` + `!$cityLocation->isControlled()`). Reminder text may be omitted; "Covert Technique" is still a Covert ability.
+- During `IN_DUEL`, also require `getDuelRoundActor()->Id === owner.Id`.
+- **`Technique_PlusOneParry` is duel-only** — do **not** invent a challenge-threat Parry path. Keep the parent's duel-only availability; only add Covert + actor gates.
+- Pre-commit: `extends Technique_PlusOneParry` matches `extends Technique` — keep `// EventTechniqueCanceled handler not needed` (override `handleEvent` → `parent::handleEvent` + comment if needed).
+
+Contrast En Garde Technique (`Technique_04021b`): gate `!$Engaged` instead of uncontrolled. Do not copy En Garde's challenge-threat openness onto a Parry-only Covert Technique.
+
+Reference: `Technique_05Corncob`; En Garde sibling `Technique_04021b`; generic `Technique_PlusOneParry`.
+
 ### +N stat with Lethal if Owner engaged (ready)
 
 Printed: **`<b>Technique:</b> +1[Riposte]. If Andare is engaged, gain Lethal.`** (`_04031` Andare).

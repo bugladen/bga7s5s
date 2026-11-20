@@ -499,6 +499,7 @@ Reference: `Action_04032`; Pass/prevent sibling `Action_02036a`; move-both sibli
 | `Action_03038b` | Move equipped character (`engage=false`) → attachment button destroy → draw `WealthCost + 1`. Dual-action `a`/`b` sibling of `Action_03038a`. |
 | `Action_03040` | Engage + Finesse pressure (win ties via dedicated `SOLINE_PRESSURE_TYPE`) → mandatory claim-or-engage choice state. |
 | `Action_05Overcoat` | **Covert Action:** Engage + Resolve pressure (NORMAL — no win-ties) → mandatory claim-or-move-adjacent-Renown. Uncontrolled gate; hybrid Claim button + location picker. |
+| `Action_05Corncob` | **Covert Action:** Weapon from any discard → equip paying costs. Uncontrolled; no Engage (Back legal); merged chooseList; pile from Location; Teens `PAY_STATE_EQUIP_ATTACHMENT`. |
 | `Action_04032` | En Garde City Action: target → Reveal Hand/Pass → Owner chooseList ack → hand-owner discard **or** adjacent move-both. ACTIVE_PLAYER chooseList (not multi-ack). |
 | `Action_04042` | En Garde Action: control Artifact at location → move opposing **engaged** to City location you do not control. Two-step Makepeace + location picker; not city Kaj `_01180`. |
 
@@ -595,6 +596,41 @@ Always `createActionResolvedEvent` on pressure failure and after either choice. 
 If the card also has Covert "[Influence] pressures cannot succeed" (Pattern A), gate that flag on `STAT_INFLUENCE ∈ pressureTypes` so **this** Resolve (or other non-Influence) Action is not auto-failed by the passive.
 
 Reference: `Action_05Overcoat`; Soline claim-or-engage sibling `Action_03040`; Renown move recipe `Action_01007` / `Reaction_01062`; Covert uncontrolled sibling `_05DabneyUS01`.
+
+### Covert Action: Weapon from any discard → equip paying costs
+
+Printed: **`<b>Covert Action:</b> Take control of a <b>Weapon</b> in any discard pile. Equip it to your character at this location, paying all costs.`** (`Action_05Corncob`).
+
+**Covert (uncontrolled):** Availability + resolve recheck — `cardInCity` + `!$cityLocation->isControlled()` (Valeri / Overcoat / Vulture). Reminder text may be omitted.
+
+**No Engage printed → Back is legal** on the Weapon chooseList (Vulture Covert Action shape). Do not force Engage.
+
+**"any discard pile"** = City Discard **and** every player's discard. Merge eligible Weapons into **one** chooseList (do not make the player pick a pile first).
+
+**Pile correctness from Location at host-pick:** resolve which pile the Weapon is in via `getDiscardPileOf` (City Discard → city; else match `getPlayerDiscardDeckName`). At take-control time:
+
+| Pile | Remove event |
+|---|---|
+| City | `createCardRemovedFromCityDiscardPileEvent` |
+| Player | `createCardRemovedFromPlayerDiscardPileEvent` |
+
+WHY merge is safe: the list is just ids; the remove event is chosen from **current** `$attachment->Location`, not from how the row was labeled in args.
+
+**Eligibility:** `Attachment` + `!FakeAttachment` + `hasTrait("Weapon")` + still in a discard pile + at least one controlled character at Owner's location who can attach (`canAttachTo` / `hasEquipRestrictions` / `getEquipDiscount` affordability). 0-cost Weapons stay legal with empty hand (Langschwert / Teens / 04029).
+
+**Hosts:** controlled characters at **Owner's location** (04029 wording "your character at this location") — not "any character you control anywhere."
+
+**HD Action pay path (Teens / 01113 — not Tomas):** High Drama Actions **may** use `PAY_STATE_EQUIP_ATTACHMENT`. Flow:
+
+1. Weapon chooseList → `nextState("weaponChosen")` on the state's own transitions (only `"NNNNN"` + `"NNNNN_3"` need EVENTS hub keys — middle step is local).
+2. Host Confirm → take control: set `ControllerId`, remove-from-pile event, `createCardAddedToHandEvent`, `createEnteringPayStateEvent(..., PAY_STATE_EQUIP_ATTACHMENT)`, transition `"NNNNN_3"`.
+3. Pay state reads `CHOSEN_PERFORMER` for discount + equip target (set before entering pay).
+
+Contrast Pattern D Vulture/Tomas: Reactions must use click-to-pay because Approach / mid-event paths cannot enter `PAY_STATE_EQUIP_ATTACHMENT`.
+
+Always `createActionResolvedEvent` when finishing or aborting after confirm. Prototype CAD: plain strings, no `clienttranslate`.
+
+Reference: `Action_05Corncob`; take-control siblings `Action_05Teens` / `Action_01113`; Covert no-Engage sibling `Action_05Vulture`; Reaction pay contrast `Reaction_05Vulture` / `Reaction_04013`.
 
 ### Move-a-wound recipe
 
