@@ -170,11 +170,8 @@ class States
             const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_4 = 26050104;
         // CAD — Stolen Schematics (_05Hacked). Non-Academic Renown pick. Exp 5 + card 24.
         const PLANNING_PHASE_RESOLVE_SCHEMES_05HACKED = 2605024;
-        // CAD — Friends at Sea (_05Scallywag). Forum-or-Docks Renown. Exp 5 + card 24.
-        // WHY 2605240: natural 2605024 is owned by _05Hacked (same CardNumber stub).
-        const PLANNING_PHASE_RESOLVE_SCHEMES_05SCALLYWAG = 2605240;
         // CAD — X Marks the Spot (_05Rum). Place on city + Renown elsewhere. Exp 5 + card 24.
-        // WHY 2605241: 2605024=Hacked, 2605240=Scallywag (same CardNumber stub).
+        // WHY 2605241: 2605024=Hacked; 2605240 freed when Scallywag became fixed dual Renown (no pick state).
         const PLANNING_PHASE_RESOLVE_SCHEMES_05RUM = 2605241;
             const PLANNING_PHASE_RESOLVE_SCHEMES_05RUM_2 = 26052412;
         // Crystal Eye Forced — equip during scheme resolve (e.g. Syrneth Secrets)

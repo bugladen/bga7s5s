@@ -55,11 +55,6 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
-            'planningPhaseResolveSchemes_05Scallywag': () => {
-                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
-                dojo.addClass('actCityLocationsSelected', 'disabled');
-            },
-
             'planningPhaseResolveSchemes_05Rum': () => {
                 this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
                 dojo.addClass('actCityLocationsSelected', 'disabled');

@@ -818,7 +818,6 @@ $machinestates = [
                 "05William_3" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_3,
                 "05William_4" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_4,
                 "05Hacked_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05HACKED,
-                "05Scallywag" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05SCALLYWAG,
                 "05Rum" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05RUM,
                 "01200" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01200,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,

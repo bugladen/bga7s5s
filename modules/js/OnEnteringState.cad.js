@@ -138,16 +138,6 @@
                 }
             },
 
-            'planningPhaseResolveSchemes_05Scallywag': () => {
-                if (this.isCurrentPlayerActive()) {
-                    this.numberOfCityLocationsSelectable = 1;
-                    (args.args.args.locationIds || []).forEach((locationId) => {
-                        const imageElement = this.getCityLocationElement(locationId);
-                        this.makeCityLocationSelectable(imageElement);
-                    });
-                }
-            },
-
             'planningPhaseResolveSchemes_05Rum': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCityLocationsSelectable = 1;

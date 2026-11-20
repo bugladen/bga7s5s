@@ -29,7 +29,7 @@ Prototype CAD Scheme. User: finish via create-scheme skill; no clienttranslate /
 - `Card_05Scallywag_Test` — 7 pass
 
 ## Unfinished / watch
-- Confirm with Eddie if art is AND (fixed dual) vs Text OR (pick).
+- ~~Confirm with Eddie if art is AND (fixed dual) vs Text OR (pick).~~ Done 2026-11-20-15 — Text is AND; pick state removed.
 - No CAD Pirate characters yet — reaction needs Approach Pirate from other sets / future CAD.
 
 ## Skill update (same day)

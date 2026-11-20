@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Scallywag
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveScheme;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -38,8 +39,8 @@ class Card_05Scallywag_Test extends TestCase
                 Assert::instanceOf(Reaction_05Scallywag::class, $scheme->getReactions()[0], 'reaction');
             },
 
-            // WHY: Text is Forum or Docks — one pick transition, not fixed dual Renown.
-            'resolve queues Forum-or-Docks pick' => function () {
+            // WHY: Text updated from Forum or Docks (pick) to and — fixed dual like Wildcall.
+            'resolve adds Renown to Forum and Docks' => function () {
                 $world = new TestWorld();
                 /** @var _05Scallywag $scheme */
                 $scheme = $world->placeCard(new _05Scallywag(), Game::LOCATION_PLAYER_HOME, 1);
@@ -49,14 +50,11 @@ class Card_05Scallywag_Test extends TestCase
                 $event->scheme = $scheme;
                 $world->fireOn($scheme, $event);
 
-                $transitions = $world->theah->queuedOfType(EventTransition::class);
-                Assert::count(1, $transitions, 'one transition');
-                Assert::same('05Scallywag', $transitions[0]->transition, 'pick key');
-
-                $names = $scheme->getRenownLocationNames($world->theah);
-                Assert::true(in_array(Game::LOCATION_CITY_FORUM, $names, true), 'Forum');
-                Assert::true(in_array(Game::LOCATION_CITY_DOCKS, $names, true), 'Docks');
-                Assert::count(2, $names, 'only those two');
+                $renown = $world->theah->queuedOfType(EventRenownAddedToLocation::class);
+                Assert::count(2, $renown, 'both locations');
+                Assert::same(Game::LOCATION_CITY_FORUM, $renown[0]->location, 'Forum');
+                Assert::same(Game::LOCATION_CITY_DOCKS, $renown[1]->location, 'Docks');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no pick');
             },
 
             // WHY: Challenge refuse / pre-duel — CHOSEN_PERFORMER owned + wounded is CHOSEN_TARGET.

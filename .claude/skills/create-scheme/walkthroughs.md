@@ -223,11 +223,11 @@ Card text (CAD prototype — plain strings, no `clienttranslate`):
 > **Reaction:** When an opponent's **Leader** is wounded as a result of your performer's challenge or during their duel • Muster a **Pirate** engaged at their location.
 
 1. **Constructor.** Castille, Init 21 / Panache +1 (match art). Traits Daring + Camaraderie — add `Daring` to TraitNames if missing. `CardNumber=24` stub (footer BAS-C is not the CardNumber). `IHasReactions` + `Reaction_05Scallywag`.
-2. **Resolve.** Forum **or** Docks pick — same shape as `_04045` (not fixed dual **and** like Wildcall). Constant `PLANNING_PHASE_RESOLVE_SCHEMES_05SCALLYWAG = 2605240` — WHY not `2605024`: Hacked already owns that id for the same CardNumber stub. Transition key `"05Scallywag"`. JS cad triple like `_04045` / `_05Hacked` Renown pick.
+2. **Resolve.** Forum **and** Docks — fixed dual Renown like Wildcall (`_05SnowWhite`). No pick GameState / no JS. (Earlier Text said **or**; Eddie updated to **and** — do not restore the `_04045`-style pick.)
 3. **Reaction.** `EventCharacterWounded` + scheme at Home + opponent Leader. Challenger-only: `CHOSEN_PERFORMER` / duel challenger controlled by owner; non-duel wounded == `CHOSEN_TARGET`; duel wounded is a participant. Capture Leader location. Approach Pirates via `getCardObjectsAtLocation(LOCATION_APPROACH)` — "Muster" with no source = Approach. Buttons per Pirate + Pass; Pass without `setUsed`.
 4. **Muster engaged.** `createCharacterMusteredEvent` at captured location, then `createCardEngagedEvent` (muster is En Garde by default).
 
-Full implementation: `modules/php/cards/cad/_05Scallywag.php`, `reactions/Reaction_05Scallywag.php`, `States/cad/State_planningPhaseResolveSchemes05Scallywag.php`.
+Full implementation: `modules/php/cards/cad/_05Scallywag.php`, `reactions/Reaction_05Scallywag.php`.
 
 ## Walkthrough: implementing `_05Rum` (X Marks the Spot)
 
