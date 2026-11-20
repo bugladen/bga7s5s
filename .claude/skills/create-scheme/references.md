@@ -154,4 +154,11 @@
 | `modules/php/cards/cad/_05Scallywag.php` (Friends at Sea) | **Forum-or-Docks Renown pick + Reaction (opponent Leader wound from your challenge/duel → Muster Pirate from Approach engaged).** CAD prototype. Init 21 / Panache +1 / Daring+Camaraderie. CardNumber 24 stub — resolve state `2605240` (Hacked owns `2605024`). |
 | `modules/php/cards/cad/reactions/Reaction_05Scallywag.php` | `EventCharacterWounded`; challenger-only; Approach Pirate buttons; capture Leader location; muster then engage. |
 | `modules/php/States/cad/State_planningPhaseResolveSchemes05Scallywag.php` | Planning Forum/Docks pick (`actFromCardWithLocations`). |
+| `modules/php/cards/cad/_05Rum.php` (X Marks the Spot) | **Place scheme on city + Renown elsewhere + Pirate Finesse pressure → Unique Attachment deck search / pay equip.** CAD prototype. Init 6 / Panache +1 / Daring+Camaraderie. CardNumber 24 stub — resolve `2605241` / HD `405241` (Hacked/Scallywag/Quack own natural 24 ids). |
+| `modules/php/cards/cad/actions/Action_05Rum.php` | Full `isAvailableToPlayer` override (city-placed scheme); Pirate+Finesse at `$ChosenLocation`; private chooseList; deck→hand→`PAY_STATE_EQUIP_ATTACHMENT`; Pass when none equippable; shuffle after search. |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05Rum.php` | Planning city pick for place (`locationChosen` → state 2). |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05Rum_2.php` | Renown elsewhere + `EventSchemeMovedToCity` (`locationChosen` / `back` / `zombie`). |
+| `modules/php/States/cad/State_highDramaPhase05Rum.php` | Private Unique Attachment chooseList (`attachmentChosen` / `pass`). |
+| `modules/php/States/cad/State_highDramaPhase05Rum_2.php` | Pay-to-equip hand wealth (Corncob_3 idiom). |
+| `modules/php/cards/tac/_02045.php` (Path to Poluchatel) | Place-on-city sibling (outermost + two Renown; Sorcerer Influence → trait-to-hand, no equip). |
 

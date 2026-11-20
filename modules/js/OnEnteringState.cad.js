@@ -148,6 +148,33 @@
                 }
             },
 
+            'planningPhaseResolveSchemes_05Rum': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'planningPhaseResolveSchemes_05Rum_2': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    const chosen = args.args.args.chosenLocation;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                    if (chosen) {
+                        const chosenElement = this.getCityLocationElement(chosen);
+                        if (chosenElement) {
+                            this.markCityLocationAsChosen(chosenElement);
+                        }
+                    }
+                }
+            },
+
             'planningPhaseResolveSchemes_05William_4': () => {
                 if (this.isCurrentPlayerActive()) {
                     // WHY: Prototype CAD — plain strings, no _() (hide from translators).
@@ -235,6 +262,62 @@
             },
 
             'highDramaPhase05Corncob_3': () => {
+                if (this.isCurrentPlayerActive()) {
+                    const statusBarTitle = (args.descriptionmyturn || '').replace('#{cost}', '${cost}');
+                    this.bga.statusBar.setTitle(statusBarTitle, {
+                        cost: this.format_block('jstpl_status_bar_wealth_cost_chip', {
+                            cost: Math.max(0, args.args.args.cost - args.args.args.discount),
+                        }),
+                    });
+
+                    this.highlightCharacterChosen(args.args.args.characterId);
+                    this.clientStateArgs.characterId = args.args.args.characterId;
+
+                    const cardId = args.args.args.cardId;
+                    const card = this.factionHand.getCards().find(c => c.id === cardId);
+                    const cardElement = card ? this.factionHand.getCardElement(card) : null;
+                    if (cardElement) {
+                        dojo.addClass(cardElement, '_7sfs-unselectable');
+
+                        dojo.place( this.format_block( 'jstpl_hand_wealth_cost_chip', {
+                            id: cardElement.id,
+                            cost: args.args.args.cost,
+                        }), cardElement, "first" );
+
+                        const costDiv = $(`${cardElement.id}_wealth_cost`);
+                        const cost = parseInt(costDiv.innerHTML);
+                        let discountedCost = cost - args.args.args.discount;
+                        discountedCost = discountedCost < 0 ? 0 : discountedCost;
+                        if (discountedCost !== cost)
+                        {
+                            costDiv.innerHTML = parseInt(discountedCost);
+                            dojo.addClass(costDiv, '_7sfs-discounted-wealth-cost');
+                        }
+                    }
+
+                    $('faction_hand_info').innerHTML = '(0 Wealth worth of cards selected)';
+                    this.factionHand.setSelectionMode('multiple');
+                }
+            },
+
+            // WHY: Prototype CAD — plain strings, no _() (hide from translators).
+            'highDramaPhase05Rum': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.highlightCharacterChosen(args.args._private.args.performerId);
+                    this.clientStateArgs.performerId = args.args._private.args.performerId;
+
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = 'Unique Attachments in Your Faction Deck';
+
+                    (args.args._private.args.cards || []).forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'highDramaPhase05Rum_2': () => {
                 if (this.isCurrentPlayerActive()) {
                     const statusBarTitle = (args.descriptionmyturn || '').replace('#{cost}', '${cost}');
                     this.bga.statusBar.setTitle(statusBarTitle, {

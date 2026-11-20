@@ -173,6 +173,10 @@ class States
         // CAD — Friends at Sea (_05Scallywag). Forum-or-Docks Renown. Exp 5 + card 24.
         // WHY 2605240: natural 2605024 is owned by _05Hacked (same CardNumber stub).
         const PLANNING_PHASE_RESOLVE_SCHEMES_05SCALLYWAG = 2605240;
+        // CAD — X Marks the Spot (_05Rum). Place on city + Renown elsewhere. Exp 5 + card 24.
+        // WHY 2605241: 2605024=Hacked, 2605240=Scallywag (same CardNumber stub).
+        const PLANNING_PHASE_RESOLVE_SCHEMES_05RUM = 2605241;
+            const PLANNING_PHASE_RESOLVE_SCHEMES_05RUM_2 = 26052412;
         // Crystal Eye Forced — equip during scheme resolve (e.g. Syrneth Secrets)
         const PLANNING_PHASE_RESOLVE_SCHEMES_01200 = 2601200;
             const PLANNING_PHASE_RESOLVE_SCHEMES_01200_2 = 26012002;
@@ -534,6 +538,10 @@ class States
         // WHY 405024: CardNumber 24. Seadog also uses 24 but has no HD states.
         const HIGH_DRAMA_PLAYER_TURN_05QUACK = 405024;
             const HIGH_DRAMA_PLAYER_TURN_05QUACK_2 = 4050242;
+        // CAD — X Marks the Spot (_05Rum). Exp 5 + card 24. Deck Unique search / pay equip.
+        // WHY 405241: natural 405024 is owned by Quack (same CardNumber stub).
+        const HIGH_DRAMA_PLAYER_TURN_05RUM = 405241;
+            const HIGH_DRAMA_PLAYER_TURN_05RUM_2 = 4052412;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;

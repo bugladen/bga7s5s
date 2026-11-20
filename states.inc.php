@@ -819,6 +819,7 @@ $machinestates = [
                 "05William_4" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_4,
                 "05Hacked_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05HACKED,
                 "05Scallywag" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05SCALLYWAG,
+                "05Rum" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05RUM,
                 "01200" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01200,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,
@@ -1330,6 +1331,8 @@ $machinestates = [
                 // healed character's controller (may be an opponent). Local nextState cannot.
                 "05Quack" => States::HIGH_DRAMA_PLAYER_TURN_05QUACK,
                 "05Quack_2" => States::HIGH_DRAMA_PLAYER_TURN_05QUACK_2,
+                "05Rum" => States::HIGH_DRAMA_PLAYER_TURN_05RUM,
+                "05Rum_2" => States::HIGH_DRAMA_PLAYER_TURN_05RUM_2,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,
                 "inHandActionChoosePerformer" => States::HIGH_DRAMA_IN_HAND_ACTION_CHOOSE_PERFORMER,
                 "inHandActionPay" => States::HIGH_DRAMA_IN_HAND_ACTION_PAY,

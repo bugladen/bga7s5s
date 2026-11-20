@@ -229,6 +229,20 @@ Card text (CAD prototype — plain strings, no `clienttranslate`):
 
 Full implementation: `modules/php/cards/cad/_05Scallywag.php`, `reactions/Reaction_05Scallywag.php`, `States/cad/State_planningPhaseResolveSchemes05Scallywag.php`.
 
+## Walkthrough: implementing `_05Rum` (X Marks the Spot)
+
+Card text (prototype CAD — plain strings):
+
+> Choose a location. Place this card at that location and add a renown to a different location.
+> **Pirate City Action:** If your performer is at the chosen location • Pressure it with [Finesse]. If successful, search your deck for a Unique Attachment and equip it to your performer paying all costs.
+
+1. **Constructor.** Castille, Init 6 / Panache +1 (match art). Traits Daring + Camaraderie (scaffold Fortune/Discovery was wrong). `CardNumber=24` stub — resolve `2605241` / HD `405241` (Hacked `2605024`, Scallywag `2605240`, Quack `405024`).
+2. **Resolve.** Two planning states: (1) any city → `$ChosenLocation` + `updateCardObjectInDb`; (2) different city → Renown + `EventSchemeMovedToCity`. Named `locationChosen` / `back` / `zombie`. Sibling `_02045` is outermost + two Renown.
+3. **Action.** `SchemeCityAction` + Pirate trait. **Full `isAvailableToPlayer` override** — scheme is in the city; `SchemeAction` Home gate would hide it forever (`Action_02045` same trap). Performers = Pirate at ChosenLocation who can pressure Finesse.
+4. **Pressure success.** Private chooseList of equippable Unique Attachments from faction deck. Pick → deck→hand → `PAY_STATE_EQUIP_ATTACHMENT` (Corncob/01113). Pass only when zero equippable; shuffle after search. Failure still `createActionResolvedEvent`. Use `actFromCardPass` (not bare `actPass`).
+
+Full implementation: `modules/php/cards/cad/_05Rum.php`, `actions/Action_05Rum.php`, `States/cad/State_planningPhaseResolveSchemes05Rum{,_2}.php`, `States/cad/State_highDramaPhase05Rum{,_2}.php`.
+
 ## Walkthrough: implementing `_04005` (Denounced, Disgraced)
 
 Card text:

@@ -60,6 +60,17 @@
                 dojo.addClass('actCityLocationsSelected', 'disabled');
             },
 
+            'planningPhaseResolveSchemes_05Rum': () => {
+                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'planningPhaseResolveSchemes_05Rum_2': () => {
+                this.statusBar.addActionButton('<', () => this.bgaPerformAction('actBack', {}), { id: 'actBack', color: 'alert' });
+                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
             'planningPhaseResolveSchemes_05William': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
@@ -133,6 +144,16 @@
             },
 
             'highDramaPhase05Corncob_3': () => {
+                this.addActionButton(`actPayForCards`, 'Confirm', () => this.onPaymentConfirmedFromCard());
+            },
+
+            'highDramaPhase05Rum': () => {
+                this.addActionButton(`actChooseCardSelected`, 'Confirm Selection', () => this.onChooseListCardConfirmed());
+                this.statusBar.addActionButton('Pass', () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' });
+                dojo.addClass('actChooseCardSelected', 'disabled');
+            },
+
+            'highDramaPhase05Rum_2': () => {
                 this.addActionButton(`actPayForCards`, 'Confirm', () => this.onPaymentConfirmedFromCard());
             },
 
