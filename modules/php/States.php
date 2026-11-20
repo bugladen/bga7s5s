@@ -84,6 +84,8 @@ class States
         const PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_REACTIONS = 246;
         const PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_PAY_FOR_REACTION = 247;
         const PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_CHOOSE_NEXT_ABILITY = 249;
+        // CAD — Stolen Schematics (_05Hacked). When-Revealed scheme-copy pick. Exp 5 + card 24.
+        const PLANNING_PHASE_RESOLVE_WHEN_REVEALED_05HACKED = 2405024;
 
     const PLANNING_PHASE_MUSTER = 25;
         const PLANNING_PHASE_MUSTER_EVENTS = 250;
@@ -166,6 +168,8 @@ class States
             const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_2 = 26050102;
             const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_3 = 26050103;
             const PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_4 = 26050104;
+        // CAD — Stolen Schematics (_05Hacked). Non-Academic Renown pick. Exp 5 + card 24.
+        const PLANNING_PHASE_RESOLVE_SCHEMES_05HACKED = 2605024;
         // Crystal Eye Forced — equip during scheme resolve (e.g. Syrneth Secrets)
         const PLANNING_PHASE_RESOLVE_SCHEMES_01200 = 2601200;
             const PLANNING_PHASE_RESOLVE_SCHEMES_01200_2 = 26012002;

@@ -38,6 +38,8 @@ class Game
     final const PLAYERS_THAT_USED_GOVERNORS_GARDEN = 'playersThatUsedGovernorsGarden';
 
     final const FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
+    // WHY: Must match Game.php — _05Hacked copy/revert regression suites.
+    final const STOLEN_SCHEMATICS_COPY = "Stolen Schematics Copy";
     final const INDOMITABLE_WILL_CONDITION = "Indomitable Will Condition";
     final const HARPOON_CONDITION = "Harpooned (-1 Finesse; cannot swap or move)";
     final const SHACKLES_CONDITION = "Shackled (cannot move)";

@@ -1309,6 +1309,51 @@ return declare('seventhseacityoffivesails.notifications', null, {
             return;
         }
 
+        // WHY: Stolen Schematics (_05Hacked) reuses characterFlipped for a same-Id scheme
+        // face swap at Home. Character path only patches combat/finesse/influence/resolve —
+        // scheme chips are initiative/panache. Recreate the scheme card at the home anchor
+        // so image + Initiative + PanacheModifier all refresh (and tooltip/text).
+        if (newCard.type === 'Scheme')
+        {
+            const preservedDivId = card.divId;
+            const playerId = newCard.controllerId;
+            const anchor = $(`${playerId}-scheme-anchor`);
+            const parent = $(preservedDivId) ? $(preservedDivId).parentNode : null;
+            const placeTarget = anchor || parent;
+
+            if ($(preservedDivId))
+            {
+                dojo.destroy(preservedDivId);
+            }
+
+            if (placeTarget)
+            {
+                this.createSchemeCard(preservedDivId, newCard, placeTarget);
+            }
+            else
+            {
+                this.cardProperties[newCard.id] = newCard;
+            }
+
+            if (this.gamedatas.homeCards)
+            {
+                const idx = this.gamedatas.homeCards.findIndex(
+                    (c) => Number(c.id) === Number(newCard.id)
+                );
+                if (idx >= 0)
+                {
+                    this.gamedatas.homeCards[idx] = Object.assign(
+                        {},
+                        this.gamedatas.homeCards[idx],
+                        newCard,
+                        { divId: preservedDivId }
+                    );
+                }
+            }
+
+            return;
+        }
+
         const imageEl = $(`${card.divId}_image`);
         const newImageUrl = this.getCardImageUrlRoot(newCard.image) + newCard.image;
 

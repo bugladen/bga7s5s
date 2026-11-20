@@ -564,6 +564,7 @@ $machinestates = [
             "chooseNext" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_PAY_FOR_REACTION,
+                "05Hacked" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_05HACKED,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHECK_REMAINING,
                 "endOfGame" => States::END_GAME
             ]
@@ -643,6 +644,7 @@ $machinestates = [
             "chooseNext" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_CHOOSE_NEXT_ABILITY,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHOOSE_ORDER_PAY_FOR_REACTION,
+                "05Hacked" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_05HACKED,
                 "endOfEvents" => States::PLANNING_PHASE_RESOLVE_WHEN_REVEALED_CARDS_CHECK_REMAINING,
                 "endOfGame" => States::END_GAME
             ]
@@ -815,6 +817,7 @@ $machinestates = [
                 "05William" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM,
                 "05William_3" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_3,
                 "05William_4" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05WILLIAM_4,
+                "05Hacked_2" => States::PLANNING_PHASE_RESOLVE_SCHEMES_05HACKED,
                 "01200" => States::PLANNING_PHASE_RESOLVE_SCHEMES_01200,
                 "reaction" => States::PLANNING_PHASE_RESOLVE_SCHEMES_REACTIONS,
                 "pay" => States::PLANNING_PHASE_RESOLVE_SCHEMES_PAY_FOR_REACTION,

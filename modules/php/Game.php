@@ -174,6 +174,10 @@ class Game extends \Bga\GameFramework\Table
     // Condition is the source of truth (Harpoon/Shackles pattern) so ability gates survive
     // if the FakeAttachment leaves $theah->cards mid-resolve; tooltip shows the blanking.
     final const FATES_SILENCE_CONDITION = "Fate's Silence (text box blank)";
+    // WHY: Stolen Schematics (_05Hacked) same-Id class swap to an opponent's scheme.
+    // EventHub reverts to 05Hacked on CardSentToLocker so the player's scheme identity
+    // survives Dusk. Not a printed gameplay condition — copy-marker only.
+    final const STOLEN_SCHEMATICS_COPY = "Stolen Schematics Copy";
     // WHY: Unravel the Thread (_04010) Sorceries +1 Parry this round. Source Risk often
     // returns to the faction deck after gamble choose and leaves $theah->cards — sticky
     // on the Reaction would miss EventDuelCalculateCombatCardStats. Cleared end of round.

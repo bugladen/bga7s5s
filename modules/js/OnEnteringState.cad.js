@@ -114,6 +114,30 @@
                 }
             },
 
+            // WHY: Prototype CAD — plain strings, no _() (hide from translators).
+            // Schemes from Home + opponent lockers arrive as args.cards (not local discard/locker).
+            'planningPhaseResolveWhenRevealed_05Hacked': () => {
+                if (this.isCurrentPlayerActive()) {
+                    dojo.removeClass('choose_container', 'hidden');
+                    dojo.removeClass('chooseList', 'hidden');
+                    $('choose_container_name').innerHTML = 'Opponent schemes in play or The Locker:';
+                    (args.args.args.cards || []).forEach((card) => {
+                        this.addCardToDeck(this.chooseList, card);
+                    });
+                    this.chooseList.setSelectionMode(1);
+                }
+            },
+
+            'planningPhaseResolveSchemes_05Hacked': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    (args.args.args.locationIds || []).forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
             'planningPhaseResolveSchemes_05William_4': () => {
                 if (this.isCurrentPlayerActive()) {
                     // WHY: Prototype CAD — plain strings, no _() (hide from translators).

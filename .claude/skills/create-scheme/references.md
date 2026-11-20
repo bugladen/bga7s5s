@@ -148,4 +148,7 @@
 | `modules/php/cards/cad/_05Nevermore.php` (The Raven's Designs) | **Fixed Docks Renown + Villain Planning-End Reaction (opponent musters Klim) + Leader City Action (draw = Artifacts).** CAD prototype (plain strings). No GameStates. Initiative 13 / Panache -1 / Villainous+Hunt. |
 | `modules/php/cards/cad/reactions/Reaction_05Nevermore.php` | Planning-End Villain Reaction: opponent buttons + Pass; muster Klim for opponent with OwnerId=scheme controller; create or remuster; Heart/in-play Name Gate. |
 | `modules/php/cards/cad/actions/Action_05Nevermore.php` | Pattern H Leader City Action: draw = controlled Artifact count; clamp to drawable. |
+| `modules/php/cards/cad/_05Hacked.php` (Stolen Schematics) | **When-Revealed Academic→copy opponent scheme (Home or Locker) OR non-Academic Renown.** CAD prototype. Gary same-Id swap; `card_type` stays `05Hacked`; `STOLEN_SCHEMATICS_COPY` + EventHub dusk revert. Initiative/Panache 0 / Discovery+Stealth. |
+| `modules/php/States/cad/State_planningPhaseResolveWhenRevealed05Hacked.php` | First When-Revealed player-pick GameState (`2405024`); chooseList from `args.cards`. |
+| `modules/php/States/cad/State_planningPhaseResolveSchemes05Hacked.php` | Non-Academic Renown city pick (`2605024` / `"05Hacked_2"`). |
 

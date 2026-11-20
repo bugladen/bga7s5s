@@ -7,6 +7,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\Brute;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Scheme;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Hacked;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01130;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01121;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\maneuvers\Maneuver_01135;
@@ -2341,6 +2342,16 @@ trait EventHub
                     $locker = $theah->game->getPlayerLockerName($event->playerId);
                     $theah->game->moveCard($event->cardId, $locker, 0, $card);
                     $card->IsUpdated = true;
+
+                    // WHY: Stolen Schematics (_05Hacked) same-Id-swapped to an opponent's
+                    // scheme class for the day. Revert after the locker write so next-day
+                    // scheme pick is still 05Hacked. Hub-before-cards — do this here, not
+                    // on the source scheme's handleEvent.
+                    if ($card instanceof Scheme && $card->hasCondition(Game::STOLEN_SCHEMATICS_COPY))
+                    {
+                        _05Hacked::revertStolenSchematicsCopy($theah, $card);
+                        $card = $theah->getCardById($event->cardId) ?? $card;
+                    }
 
                     // WHY: Destroy path does not fire CardSentToLocker; this covers Spend-to-Locker
                     // characters (e.g. Deal with the Devil dusk, Action_03067) and crew-cap sink.

@@ -59,6 +59,20 @@
                 }
             },
 
+            'planningPhaseResolveWhenRevealed_05Hacked': () => {
+                dojo.addClass('choose_container', 'hidden');
+                dojo.addClass('chooseList', 'hidden');
+                this.chooseList.removeAll();
+            },
+
+            'planningPhaseResolveSchemes_05Hacked': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.resetCityLocations();
+                    this.selectedCityLocations = [];
+                    this.numberOfCityLocationsSelectable = 0;
+                }
+            },
+
             'planningPhaseResolveSchemes_05William': () => {
                 if (this.isCurrentPlayerActive()) {
                     if (this.clientStateArgs.ids && this.clientStateArgs.ids.length > 0) {
