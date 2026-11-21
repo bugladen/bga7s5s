@@ -63,7 +63,7 @@ Scheme text like Meeting of the Minds (`_04035`):
 
 > When a pressure occurs at your performer's location • Add +1 to your total for each of your Academics there.
 
-1. **Trigger:** `EventPressureOccuring` + `isAvailable()` + `$event->playerId == $owner->ControllerId` (you are pressuring — "your performer") + ≥1 controlled traited character at `$event->location`.
+1. **Trigger:** `EventPressureOccuring` + `isAvailable()` + ≥1 controlled traited character at `$event->location` ("your performer's location" = you have a performer there — **not** "you must be the pressuring player"; +1 to your total also defends vs opponent pressure e.g. Pack Tactics).
 2. Capture `$location` for description; Use / Pass buttons.
 3. On Use: `setGlobalFlag(PRESSURE_TYPE, MEETING_OF_THE_MINDS_PRESSURE_TYPE)` + store player id global; `setUsed(true)`. Pass clears capture without `setUsed`.
 4. **Apply in `pressureLocation()`:** count traited chars via a **fresh** `getCharactersAtLocation($location)` — do not reuse the Claude / Reputation Meritée filtered `$charactersAtLocation` list (printed bonus is for Academics *there*).

@@ -47,12 +47,9 @@ class Reaction_04035 extends CardReaction
                 return;
             }
 
-            // WHY: "your performer's location" — you are the pressuring player (your performer is at $event->location).
-            if ($event->playerId != $owner->ControllerId)
-            {
-                return;
-            }
-
+            // WHY: "your performer's location" = pressure at a city location where you have a
+            // performer (Academic). Not "you must be the pressuring player" — +1 to your total
+            // also defends when an opponent pressures (e.g. Pack Tactics). Loyal/Wardog same shape.
             if ($this->countAcademicsAtLocation($event->theah, $owner->ControllerId, $event->location) < 1)
             {
                 return;

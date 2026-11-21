@@ -25,10 +25,9 @@ class Reaction_04035_Test extends TestCase
     public function tests(): array
     {
         return [
-            // WHY: Only your own pressure, and only with an Academic at that location.
-            // Use ORs the flag and records the player. The bonus itself is applied later
-            // by pressure resolution. Pass does not spend the reaction.
-            'marks your pressure when an academic is there' => function () {
+            // WHY: Offer whenever pressure occurs at a location with your Academic — your own
+            // pressure or an opponent's (Pack Tactics). Use ORs the flag; Pass does not spend.
+            'offers on pressure at academic location including opponent' => function () {
                 $world = new TestWorld();
                 $scheme = $world->placeCard(new _04035(), Game::LOCATION_PLAYER_HOME, 1);
                 $world->placeCharacter(new _04033(), Game::LOCATION_CITY_DOCKS, 1);
@@ -41,7 +40,7 @@ class Reaction_04035_Test extends TestCase
                 $pressure->location = Game::LOCATION_CITY_DOCKS;
                 $pressure->theah = $world->theah;
                 $reaction->handleEvent($pressure);
-                Assert::same('reaction', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'offered');
+                Assert::same('reaction', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'offered on your pressure');
 
                 $reaction->performReaction($world->game, 0, '', 'use');
                 Assert::true($reaction->Used, 'spent');
@@ -50,7 +49,7 @@ class Reaction_04035_Test extends TestCase
                     $world->game->globals->get(Game::PRESSURE_TYPE),
                     'flag'
                 );
-                Assert::same(1, $world->game->globals->get(Game::MEETING_OF_THE_MINDS_PLAYER_ID), 'pressuring player');
+                Assert::same(1, $world->game->globals->get(Game::MEETING_OF_THE_MINDS_PLAYER_ID), 'bonus player');
 
                 $reaction->Used = false;
                 $world->game->globals->set(Game::PRESSURE_TYPE, Game::NORMAL_PRESSURE_TYPE);
@@ -59,10 +58,12 @@ class Reaction_04035_Test extends TestCase
                 Assert::false($reaction->Used, 'pass');
                 Assert::same(Game::NORMAL_PRESSURE_TYPE, $world->game->globals->get(Game::PRESSURE_TYPE), 'unchanged');
 
+                // WHY: Opponent Pack Tactics (playerId 2) at your Academic's location must still offer.
                 $pressure->playerId = 2;
                 $reaction->handleEvent($pressure);
-                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'not your pressure');
+                Assert::same('reaction', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'offered on opponent pressure');
 
+                $world->theah->takeQueuedEvents();
                 $pressure->playerId = 1;
                 $pressure->location = Game::LOCATION_CITY_FORUM;
                 $reaction->handleEvent($pressure);
