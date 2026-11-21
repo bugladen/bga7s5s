@@ -200,11 +200,25 @@ class StatesTrait_PlunderDusk_Test extends TestCase
                 Assert::same('Player Two', $game->notify->messages[0]['args']['player_name'], 'winner named');
             },
 
-            'stPlunderCheckEconomicVictory: two players at 7+ play another day before day 5' => function () {
+            'stPlunderCheckEconomicVictory: two players at 7+ with unequal Renown — most Renown wins' => function () {
+                $game = new StatesTraitGame();
+                $game->setGameStateValue(Game::DAY, 4);
+                $game->setPlayerReknown(1, 7);
+                $game->setPlayerReknown(2, 10);
+
+                $game->stPlunderCheckEconomicVictory();
+
+                Assert::same([Game::VICTORY_ECONOMIC], $game->endOfGameCalls, 'economic victory via Renown tiebreak');
+                Assert::same([], $game->gamestate->transitions, 'the game ends instead of continuing');
+                Assert::contains('most Renown', $this->messages($game), 'logged');
+                Assert::same('Player Two', $game->notify->messages[0]['args']['player_name'], 'higher Renown named');
+            },
+
+            'stPlunderCheckEconomicVictory: two players tied at 7+ Renown play another day before day 5' => function () {
                 $game = new StatesTraitGame();
                 $game->setGameStateValue(Game::DAY, 3);
                 $game->setPlayerReknown(1, 8);
-                $game->setPlayerReknown(2, 9);
+                $game->setPlayerReknown(2, 8);
 
                 $game->stPlunderCheckEconomicVictory();
 
@@ -213,11 +227,11 @@ class StatesTrait_PlunderDusk_Test extends TestCase
                 Assert::contains('Another day will be played', $this->messages($game), 'logged');
             },
 
-            'stPlunderCheckEconomicVictory: two players at 7+ on day 5 fall through silently to the fifth-day check' => function () {
+            'stPlunderCheckEconomicVictory: two players tied at 7+ on day 5 fall through silently to the fifth-day check' => function () {
                 $game = new StatesTraitGame();
                 $game->setGameStateValue(Game::DAY, 5);
                 $game->setPlayerReknown(1, 8);
-                $game->setPlayerReknown(2, 9);
+                $game->setPlayerReknown(2, 8);
 
                 $game->stPlunderCheckEconomicVictory();
 

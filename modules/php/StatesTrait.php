@@ -2415,7 +2415,7 @@ trait StatesTrait
     public function stPlunderCheckEconomicVictory(): void
     {
         $players = $this->loadPlayersBasicInfos();
-        $winners = [];        
+        $winners = [];
         foreach ($players as $playerId => $player)
         {
             $reknown = $this->getPlayerReknown($playerId);
@@ -2438,12 +2438,44 @@ trait StatesTrait
             $this->goToEndOfGame(Game::VICTORY_ECONOMIC);
             return;
         }
-        else if (count($winners) > 1)
+        else
         {
+            // WHY: Comprehensive rules — when two+ players hit 7+ Renown at once,
+            // most Renown wins immediately. Only an exact Renown tie extends the day
+            // (max 5). Prior code skipped the Renown tiebreak and always extended.
+            $highestReknown = -1;
+            $topWinners = [];
+            foreach ($winners as $playerId)
+            {
+                $reknown = $this->getPlayerReknown($playerId);
+                if ($reknown > $highestReknown)
+                {
+                    $highestReknown = $reknown;
+                    $topWinners = [$playerId];
+                }
+                else if ($reknown == $highestReknown)
+                {
+                    $topWinners[] = $playerId;
+                }
+            }
+
+            if (count($topWinners) == 1)
+            {
+                $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY. ${player_name} wins by having the most Renown (${reknown}).'), [
+                    "player_name" => $this->getPlayerNameById($topWinners[0]),
+                    "reknown" => $highestReknown,
+                ]);
+
+                $this->goToEndOfGame(Game::VICTORY_ECONOMIC);
+                return;
+            }
+
             $day = $this->getGameStateValue(Game::DAY);
             if ($day < 5)
             {
-                $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY by gaining 7 or more Renown. Another day will be played.'), []);
+                $this->notifyAllPlayers("message", clienttranslate('Multiple players have achieved an ECONOMIC VICTORY with the same Renown (${reknown}). Another day will be played.'), [
+                    "reknown" => $highestReknown,
+                ]);
             }
         }
 
