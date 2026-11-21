@@ -19,8 +19,11 @@ Guarding alone would let setup finish with **no home boards** in High Drama when
 - Setup.js: create homes / seals / discard hooks when `player.leader` is set
 - Setup.js + Notifications.js notif_firstPlayer: null-guard home + score first-player nodes independently
 
+## Follow-up 2026-11-20: hand missing
+After homes fixed, hand still hidden. Same proxy: factionHand-placeholder unhide required `homeCards.length > 0`. Switched to `players[].leader` (pastFactionChoose), keeping early-state / Constanzo hasHandCards exception.
+
 ## Still suspicious
-Empty `homeCards` on day-1 High Drama is abnormal — schemes should sit at Player Home. Leaders can still appear in `players[].leader` via `getCardById` DB fallback even when not loaded into Theah at Player Home. If after this fix homes render but schemes are missing, dig card_location vs Location property desync (moveCardInDeck/parkCard class of bug) on that table.
+Empty `homeCards` on day-1 High Drama is abnormal — schemes should sit at Player Home. Leaders can still appear in `players[].leader` via `getCardById` DB fallback even when not loaded into Theah at Player Home. If after this fix homes render but schemes are missing, dig card_location vs Location property desync (moveCardInDeck/parkCard class of bug) on that table. Do not invent a client fallback that places `player.leader` on home — if the leader is in the city they already render from city card arrays and would duplicate.
 
 ## Prior context
 Recent work was Fine Addition host chooser + in-hand announce badge — unrelated to this load path.

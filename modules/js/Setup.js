@@ -418,8 +418,14 @@ return declare('seventhseacityoffivesails.setup', null, {
         // if the client refreshes mid-setup, those cards must still be shown even
         // though setupTable is otherwise a hidden-hand state.
         const hasHandCards = gamedatas.factionHand && gamedatas.factionHand.length > 0;
-        
-        if (gamedatas.homeCards && gamedatas.homeCards.length > 0 && (!isEarlyState || hasHandCards)) {
+        // WHY: Same as createHome — do not gate on homeCards.length. Empty home
+        // (all characters in city / scheme desync) hid the hand after the
+        // firstPlayer null fix unblocked setup for that table.
+        const pastFactionChoose = Object.keys(gamedatas.players).some(
+            (pid) => gamedatas.players[pid]?.leader
+        );
+
+        if (pastFactionChoose && (!isEarlyState || hasHandCards)) {
             dojo.removeClass('factionHand-placeholder', 'hidden');
         }
 
