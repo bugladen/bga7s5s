@@ -422,6 +422,13 @@
                 }
             },
 
+            // WHY: Hand → top of faction deck (01115 / 03036 single-select shape).
+            'duelResolveManeuver_05Montoya': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('single');
+                }
+            },
+
             // WHY: Attachment name buttons only — no board highlight (01142 / Teens_2 shape).
             'duelResolveManeuver_05Stash': () => {
             },

@@ -201,6 +201,12 @@
                 });
             },
 
+            // WHY: Hand chooser → put on top of deck (01115 confirm + onCardDiscarded).
+            'duelResolveManeuver_05Montoya': () => {
+                this.addActionButton(`actChooseDiscardCard`, 'Confirm Selection', () => this.onCardDiscarded());
+                dojo.addClass('actChooseDiscardCard', 'disabled');
+            },
+
             // WHY: Adversary may discard equipped Attachment; Decline (id 0) → engage stick.
             'duelResolveManeuver_05Stash': () => {
                 (args.args.attachments || []).forEach((attachment) => {

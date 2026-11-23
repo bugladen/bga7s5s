@@ -3118,6 +3118,7 @@ $machinestates = [
                         "05Pocketknife" => States::DUEL_RESOLVE_MANEUVER_05POCKETKNIFE,
                         "05Stash" => States::DUEL_RESOLVE_MANEUVER_05STASH,
                         "05Stash_2" => States::DUEL_RESOLVE_MANEUVER_05STASH_2,
+                        "05Montoya" => States::DUEL_RESOLVE_MANEUVER_05MONTOYA,
                         "reaction" => States::DUEL_RESOLVE_MANEUVER_REACTIONS,
                         "pay" => States::DUEL_RESOLVE_MANEUVER_PAY_FOR_REACTION,
                         "endOfEvents" => States::DUEL_SET_NEXT_COMBAT_CARD,

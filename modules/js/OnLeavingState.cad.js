@@ -282,6 +282,12 @@
                 }
             },
 
+            'duelResolveManeuver_05Montoya': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.factionHand.setSelectionMode('none');
+                }
+            },
+
             'duelResolveManeuver_05Stash': () => {
             },
 

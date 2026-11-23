@@ -165,6 +165,8 @@ Adversary hand-pick discard does **not** need `IRiskThatTargetsCharacters` / `IA
 
 References: `Maneuver_01166` (pure line-count calc), `Maneuver_03036` (Duelist + Riposte scaling + ≥3 discard), `Maneuver_01115` / `Maneuver_01108a` (discard chooser / hand-gated availability when discard is the only effect).
 
+**Trait-filtered line count without "other"** (e.g. **"for each Flourish in your dueling line"** — `_05Montoya`): do **not** `unset($cards[$owner->Id])`. Parse literally — if the print omits "other", include this combat card when it has the trait (Montoya is Flourish and already in the line at calc). Pair with Pattern E first-player cost discount + resolve draw then hand→deck-top chooser (`onTop=true` RedTape/`Reaction_03006` sync path + `cardRemovedFromHand`; skip chooser when hand and deck both empty).
+
 ### Pattern C.5 — Next-round gamble control ("cannot gamble" / "you choose their combat card")
 
 Two related texts that arm a lock on `EventResolveManeuver` for **the adversary's next round**. Split distinct trait-prefixed Maneuvers into `a`/`b` files (mirror `_01108` / `_03046`).
