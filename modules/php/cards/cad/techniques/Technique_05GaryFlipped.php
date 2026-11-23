@@ -29,21 +29,23 @@ class Technique_05GaryFlipped extends Technique
             return false;
         }
 
-        if (! $theah->game->globals->get(Game::IN_DUEL, false))
-        {
-            return false;
-        }
-
         $owner = $this->getOwningCharacter($theah);
         if ($owner === null || $playerId != $owner->ControllerId)
         {
             return false;
         }
 
-        $actor = $theah->getDuelRoundActor();
-        if ($actor === null || $actor->Id !== $owner->Id)
+        // WHY: Challenge activation has no duel round actor — only gate actor==owner
+        // when IN_DUEL. Outside duel (challenge TechniqueAvailable), performer is
+        // already the host via getAvailableCharacterTechniques (04017 / 04001).
+        // Hide only when she has no real attachment to destroy (cost).
+        if ($theah->game->globals->get(Game::IN_DUEL, false))
         {
-            return false;
+            $actor = $theah->getDuelRoundActor();
+            if ($actor === null || $actor->Id !== $owner->Id)
+            {
+                return false;
+            }
         }
 
         return count($this->getDestroyableAttachments($theah, $owner)) > 0;
@@ -99,7 +101,10 @@ class Technique_05GaryFlipped extends Technique
     {
         $args = parent::getArgsFromTechnique($game, $state, $stateName);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED)
+        // WHY: Same picker for challenge Resolve and duel Choose — dual hub routing
+        // (pattern-e) shares args; destroy is the printed cost before the bullet.
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05GARYFLIPPED)
         {
             $owner = $this->getOwningCharacter($game->theah);
             $attachments = $owner !== null ? $this->getDestroyableAttachments($game->theah, $owner) : [];
@@ -116,7 +121,8 @@ class Technique_05GaryFlipped extends Technique
     {
         parent::actFromTechniqueWithId($game, $state, $stateName, $id);
 
-        if ($state == States::DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED)
+        if ($state == States::DUEL_CHOOSE_TECHNIQUE_05GARYFLIPPED
+            || $state == States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05GARYFLIPPED)
         {
             $owner = $this->getOwningCharacter($game->theah);
             if ($owner === null || ! in_array($id, $owner->Attachments))

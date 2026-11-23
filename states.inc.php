@@ -1635,6 +1635,9 @@ $machinestates = [
                     // before GENERATE_THREAT reads it (01067 shape).
                     "04033" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_04033,
                     "05DabneyUS01" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05DABNEYUS01,
+                    // WHY: Rena Wrathful destroy-attachment cost — paid at Resolve before
+                    // Accept (cost left of •). Same transition key as duel hub.
+                    "05GaryFlipped" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_05GARYFLIPPED,
                     "reaction" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_REACTIONS,
                     "pay" => States::HIGH_DRAMA_CHALLENGE_ACTION_RESOLVE_TECHNIQUE_PAY_FOR_REACTION,
                     "endOfEvents" => States::HIGH_DRAMA_CHALLENGE_ACTION_CHECK_CANCELLED,

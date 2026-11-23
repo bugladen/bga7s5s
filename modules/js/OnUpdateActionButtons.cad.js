@@ -313,6 +313,14 @@
                 });
             },
 
+            // WHY: Same destroy-cost buttons as duel — challenge Resolve hub uses a
+            // separate state name that must return to RESOLVE_TECHNIQUE_EVENTS.
+            'highDramaChallengeActionResolveTechnique_05GaryFlipped': () => {
+                args.args.attachments.forEach((attachment) => {
+                    this.addActionButton(`actChooseAttachment-${attachment.id}`, attachment.name, () => this.bgaPerformAction('actFromCardWithId', {id: attachment.id}));
+                });
+            },
+
         };
 
         if (methods[stateName])
