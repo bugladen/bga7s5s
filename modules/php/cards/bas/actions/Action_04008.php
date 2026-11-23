@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04008 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
@@ -78,6 +79,35 @@ class Action_04008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "04008", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Equip only when targeting survives. UL / Terraria / Maryam cancel
+        // EventCharacterTargeted; queuing createRiskAttachment beside the hook would
+        // equip anyway (same trap as Action_04040 / Action_05Teens / Action_05Shakedown).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->targetId);
+            $performerId = (int)$game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $event->theah->getCharacterById($performerId);
+
+            if ($owner === null || $character === null || $performer === null)
+            {
+                return;
+            }
+
+            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
+            $event->theah->queueEvent($sorceryStartEvent);
+
+            // Mirror Action_01025 — RiskAttachment equip is sync then Equipped event.
+            $game->createRiskAttachment($game, "04008_Silence", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id, $this->Id);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+
+            $playedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
+            $event->theah->queueEvent($playedEvent);
         }
     }
 
@@ -153,17 +183,18 @@ class Action_04008 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
             $owner = $this->getOwningCard($game->theah);
 
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
-            $game->theah->queueEvent($sorceryStartEvent);
-
-            // Mirror Action_01025 — RiskAttachment equip is sync then Equipped event.
-            $game->createRiskAttachment($game, "04008_Silence", $owner->Id, $character->Location, $performer->ControllerId, $performer->ControllerId, $character->Id, $this->Id);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
-
-            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
-            $game->theah->queueEvent($event);
+            // WHY: Cancel hook first. Equip + Sorcerer start/played emit from handleEvent
+            // only when EventCharacterTargeted survives (Teens / 04040 / 05Shakedown).
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

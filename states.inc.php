@@ -1335,6 +1335,7 @@ $machinestates = [
                 // WHY: _2/_3 via createTransitionEvent — hand-owner reveal then owning-player
                 // sink; local nextState cannot change active player across controllers.
                 "05RedTape" => States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE,
+                "05Shakedown" => States::HIGH_DRAMA_PLAYER_TURN_05SHAKEDOWN,
                 "05RedTape_2" => States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2,
                 "05RedTape_3" => States::HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3,
                 "pressureLocation" => States::HIGH_DRAMA_PRESSURE_LOCATION,

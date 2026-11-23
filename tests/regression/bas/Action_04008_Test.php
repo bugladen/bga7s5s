@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04008;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04008;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -63,12 +64,26 @@ class Action_04008_Test extends TestCase
                 Assert::same('04008', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'picker');
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04008, '', $foe->Id);
+                Assert::count(1, $world->theah->queuedOfType(EventCharacterTargeted::class), 'hook only');
+                Assert::count(0, $world->game->createdRiskAttachments, 'not equipped yet');
+                Assert::same('characterChosen', $world->game->gamestate->transitions[0], 'next');
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class)[0];
+                Assert::same($foe->Id, $targeted->targetId, 'foe');
+
+                $targeted->canceled = true;
+                $world->theah->takeQueuedEvents();
+                $world->fireOn($risk, $targeted);
+                Assert::count(0, $world->game->createdRiskAttachments, 'cancel stops equip');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'no start on cancel');
+
+                $targeted->canceled = false;
+                $world->fireOn($risk, $targeted);
                 Assert::same('04008_Silence', $world->game->createdRiskAttachments[0]['className'], 'silence shell');
                 Assert::same($foe->Id, $world->game->createdRiskAttachments[0]['targetId'], 'foe');
                 Assert::same($risk->Id, $world->theah->queuedOfType(EventSorcererAbilityStart::class)[0]->sourceId, 'start');
                 Assert::same($strega->Id, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class)[0]->performerId, 'played');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same('characterChosen', $world->game->gamestate->transitions[0], 'next');
 
                 $threw = false;
                 try {

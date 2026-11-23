@@ -543,6 +543,8 @@ class States
         const HIGH_DRAMA_PLAYER_TURN_05REDTAPE = 405026;
             const HIGH_DRAMA_PLAYER_TURN_05REDTAPE_2 = 4050262;
             const HIGH_DRAMA_PLAYER_TURN_05REDTAPE_3 = 4050263;
+        // CAD — Blackmail (_05Shakedown). Exp 5 + card 28. Covert equip RiskAttachment to opposing.
+        const HIGH_DRAMA_PLAYER_TURN_05SHAKEDOWN = 405028;
 
     const HIGH_DRAMA_PLAYER_TURN_EVENTS = 400;
         const HIGH_DRAMA_PLAYER_TURN_REACTIONS = 401;

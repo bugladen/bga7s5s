@@ -450,6 +450,18 @@
                 }
             },
 
+            // WHY: Covert equip RiskAttachment — same character-chooser trio as 04008 / 05Teens.
+            'highDramaPhase05Shakedown': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCardsSelectable = 1;
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.ids = args.args.args.ids;
+                    this.highlightCardsAsSelectable(args.args.args.ids);
+                }
+            },
+
             // WHY: Character → hand-owner reveals four → owning player sinks one.
             'highDramaPhase05RedTape': () => {
                 if (this.isCurrentPlayerActive()) {
