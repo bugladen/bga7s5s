@@ -163,6 +163,8 @@ function (dojo, declare, domClass, gamegui, counter, stock, BgaAnimations, bgaCa
             this.COURAGEOUS_CHALLENGE_TYPE = 33;
             this.ARROGANT_CHALLENGE_TYPE = 34;
             this.RAGE_CHALLENGE_TYPE = 35;
+            this.KEELHAUL_PIRATE_CHALLENGE_TYPE = 36;
+            this.KEELHAUL_CHALLENGE_TYPE = 37;
 
             this.CARD_TOOLTIP_DELAY = 1000;
             this.STOCK_CARD_TOOLTIP_DELAY = 500;

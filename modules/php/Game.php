@@ -344,6 +344,14 @@ class Game extends \Bga\GameFramework\Table
     // auto-engage and off Unsanctioned's stSetupChallenge engage. Refuse is blocked
     // (not Aja/Celerity, which gate Finesse). Must match the JS constant (35).
     final const RAGE_CHALLENGE_TYPE = 35;
+    // WHY: Surprise Boarding (_05Keelhaul) Covert Pirate Combat — no Engage printed;
+    // keep off stIssueChallenge auto-engage. Engaged Pirates remain eligible.
+    // Must match the JS constant (36).
+    final const KEELHAUL_PIRATE_CHALLENGE_TYPE = 36;
+    // WHY: Surprise Boarding (_05Keelhaul) Covert Finesse (not first player) — same
+    // never-engage seat as the Pirate half; separate id so Combat/Finesse correlators
+    // cannot collide. Must match the JS constant (37).
+    final const KEELHAUL_CHALLENGE_TYPE = 37;
 
     //Duel global variables
     //Duel Names

@@ -468,6 +468,12 @@ Composes **A.13** (character Target → attachment name buttons → `EventCharac
 
 References: `_05Teens` / `Action_05Teens` / `State_highDramaPhase05Teens` + `_2`/`_3`/`_4`; target+attachment chooser `Action_04040`; pay `Action_04029`; announce-engage `Action_05Hulk`; Covert gate `Action_05Forsythe`.
 
+### Covert challenge Actions (compose Covert + Sanjay trichotomy c)
+
+Printed (Surprise Boarding `_05Keelhaul`): **`<b>Covert Pirate Action:</b> Your performer issues a [Combat] challenge to target opposing character.`** / **`<b>Covert Action:</b> If you aren't the first player • Your performer issues a [Finesse] challenge to target opposing character.`**
+
+Not a new numbered pattern — compose **Covert gate** (B.13 / Shakedown: `RiskAction` + `cardInCity` + uncontrolled) with **challenge** (Courageous `_03058` / Arrogant `_03008`): no Engage printed → mint own `CHALLENGE_TYPE` **off** auto-engage; engaged performers stay eligible; shared `"NNNN"` → `HIGH_DRAMA_CHALLENGE_ACTION_CHOOSE_TARGET`. Heading **Pirate** = `hasTrait` performer gate. Bullet-If **not first player** = availability + `IAbilityThatDependsOnNotBeingFirstPlayer` (Lorenzo `OVERRIDE`). Gate `DashedCombat` / `DashedFinesse` for the printed challenge stat. Dual headings → split `a`/`b`. Cesca yes. See `_05Keelhaul`.
+
 ### Pattern B.14 — Academic Action: Move performer Home or to a City location you control
 
 Printed (Scholarly Sanctuary `_05Refuge`): **`<b>Academic Action:</b> Move your performer <b>Home</b> or to a <b>City</b> location you control.`** (± card-level **"If your performer is equipped with an Artifact, this card has -1 cost"** → Pattern E.2 equipped-attachment variant).

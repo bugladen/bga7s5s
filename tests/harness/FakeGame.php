@@ -252,6 +252,10 @@ class Game
     final const ARROGANT_CHALLENGE_TYPE = 34;
     // WHY: Action_05Hulk. Engage paid at announce; refuse blocked. Must match Game.php (35).
     final const RAGE_CHALLENGE_TYPE = 35;
+    // WHY: Action_05Keelhaula. Off auto-engage; no Engage printed. Must match Game.php (36).
+    final const KEELHAUL_PIRATE_CHALLENGE_TYPE = 36;
+    // WHY: Action_05Keelhaulb. Off auto-engage; Finesse half. Must match Game.php (37).
+    final const KEELHAUL_CHALLENGE_TYPE = 37;
     // WHY: _03021 Cornered stamps this on refuse/intervene. Must match Game.php (20).
     final const CORNERED_CHALLENGE_TYPE = 20;
 
