@@ -30,13 +30,25 @@ class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsChara
             return false;
         }
 
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        return count($characters) > 0;
+        // WHY: Engage needs a non-engaged target at the performer's location.
+        // Mirror 01152a's Engaged gate; without this the action offers then softlocks on empty ids.
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
-        return $theah->getCharactersInCityByPlayerId($playerId);
+        $characters = $theah->getCharactersInCityByPlayerId($playerId);
+        $availableCharacters = [];
+        foreach ($characters as $character)
+        {
+            $atLocation = $theah->getCharactersAtLocation($character->Location);
+            $targets = array_filter($atLocation, fn($c) => ! $c->Engaged);
+            if (count($targets) > 0)
+            {
+                $availableCharacters[] = $character;
+            }
+        }
+        return $availableCharacters;
     }
 
     public function handleEvent(Event $event)

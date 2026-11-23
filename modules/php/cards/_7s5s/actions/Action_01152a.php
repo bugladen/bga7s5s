@@ -30,6 +30,13 @@ class Action_01152a extends SchemeCityAction implements IAbilityThatTargetsChara
             return false;
         }
 
+        // WHY: En Garde needs an Engaged target at the performer's location.
+        // Same predicate as the picker — avoids offering a performer that yields empty characterIds.
+        return count($this->getPerformersForAction($playerId, $theah)) > 0;
+    }
+
+    public function getPerformersForAction(int $playerId, Theah $theah): array
+    {
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
         $availableCharacters = [];
         foreach ($characters as $character)
@@ -41,12 +48,7 @@ class Action_01152a extends SchemeCityAction implements IAbilityThatTargetsChara
                 $availableCharacters[] = $character;
             }
         }
-        return count($availableCharacters) > 0;
-    }
-
-    public function getPerformersForAction(int $playerId, Theah $theah): array
-    {
-        return $theah->getCharactersInCityByPlayerId($playerId);
+        return $availableCharacters;
     }
 
     public function handleEvent(Event $event)

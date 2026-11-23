@@ -62,6 +62,20 @@ class Action_01152a_Test extends TestCase
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no engaged');
             },
 
+            'performers only include characters at locations with an engaged target' => function () {
+                $world = new TestWorld();
+                [, $action, $performer] = $this->scene($world);
+                // Forum: nobody Engaged → lonely must not be offered.
+                $lonely = $world->placeCharacter(new GenericCharacter('Lonely'), Game::LOCATION_CITY_FORUM, 1);
+                $lonelyFoe = $world->placeCharacter(new GenericCharacter('Ready'), Game::LOCATION_CITY_FORUM, 2);
+                $lonelyFoe->Engaged = false;
+
+                $performers = $action->getPerformersForAction(1, $world->theah);
+                $ids = array_map(fn($c) => $c->Id, $performers);
+                Assert::true(in_array($performer->Id, $ids, true), 'docks has engaged');
+                Assert::false(in_array($lonely->Id, $ids, true), 'forum no engaged');
+            },
+
             'unavailable when scheme is not at Player Home' => function () {
                 $world = new TestWorld();
                 [$scheme, $action] = $this->scene($world);

@@ -49,10 +49,18 @@ class Action_01152b_Test extends TestCase
                 Assert::instanceOf(SchemeCityAction::class, new Action_01152b(), 'SchemeCityAction');
             },
 
-            'available with a city performer' => function () {
+            'available when a non-engaged character shares a city location with a performer' => function () {
                 $world = new TestWorld();
                 [, $action] = $this->scene($world);
                 Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available');
+            },
+
+            'unavailable when all characters at performer locations are engaged' => function () {
+                $world = new TestWorld();
+                [, $action, $performer, $foe] = $this->scene($world);
+                $performer->Engaged = true;
+                $foe->Engaged = true;
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'all engaged');
             },
 
             'unavailable without a city performer' => function () {
@@ -61,6 +69,21 @@ class Action_01152b_Test extends TestCase
                 /** @var Action_01152b $action */
                 $action = $scheme->getActions()[1];
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no performer');
+            },
+
+            'performers only include characters at locations with a non-engaged target' => function () {
+                $world = new TestWorld();
+                [, $action, $performer] = $this->scene($world);
+                // Forum: both engaged → no Engage targets → lonely must not be offered.
+                $lonely = $world->placeCharacter(new GenericCharacter('Lonely'), Game::LOCATION_CITY_FORUM, 1);
+                $lonely->Engaged = true;
+                $lonelyFoe = $world->placeCharacter(new GenericCharacter('Busy'), Game::LOCATION_CITY_FORUM, 2);
+                $lonelyFoe->Engaged = true;
+
+                $performers = $action->getPerformersForAction(1, $world->theah);
+                $ids = array_map(fn($c) => $c->Id, $performers);
+                Assert::true(in_array($performer->Id, $ids, true), 'docks has en garde');
+                Assert::false(in_array($lonely->Id, $ids, true), 'forum all engaged');
             },
 
             'trigger queues transition 01152b' => function () {
