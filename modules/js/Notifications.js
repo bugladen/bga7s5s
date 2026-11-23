@@ -3149,6 +3149,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
 
         // WHY starting chips: ThreatModified also updates starting_* (maneuver/technique
         // rebuild ending from starting). Keep the starting column in sync with the DB.
+        // WHY lethal on starting too: same pool flag as ending; innerHTML wipe above
+        // would otherwise drop the skull from Starting Threat Pool.
         if (args.starting_challenger_threat !== undefined)
         {
             $(`duel_round_${args.round}_starting_challenger_threat`).innerHTML = args.starting_challenger_threat;
@@ -3156,6 +3158,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 dojo.addClass(`duel_round_${args.round}_starting_challenger_threat`, '_7sfs-threat-chip-threatened');
             else
                 dojo.removeClass(`duel_round_${args.round}_starting_challenger_threat`, '_7sfs-threat-chip-threatened');
+            if (args.challengerThreatIsLethal == 1)
+                $(`duel_round_${args.round}_starting_challenger_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
         }
 
         if (args.starting_defender_threat !== undefined)
@@ -3165,6 +3169,8 @@ return declare('seventhseacityoffivesails.notifications', null, {
                 dojo.addClass(`duel_round_${args.round}_starting_defender_threat`, '_7sfs-threat-chip-threatened');
             else
                 dojo.removeClass(`duel_round_${args.round}_starting_defender_threat`, '_7sfs-threat-chip-threatened');
+            if (args.defenderThreatIsLethal == 1)
+                $(`duel_round_${args.round}_starting_defender_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
         }
 
         $(`duel_round_${args.round}_ending_challenger_threat`).innerHTML = args.challenger_threat;

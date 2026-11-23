@@ -2284,10 +2284,19 @@ return declare('seventhseacityoffivesails.utilities', null, {
         if (row.endingDefenderThreat > 0)
             dojo.addClass(`duel_round_${row.round}_ending_defender_threat`, '_7sfs-threat-chip-threatened');
 
+        // WHY starting + ending: lethal is a property of the side's pool for the round
+        // (carried into N+1 starting from N ending). Only painting ending left Round N+1
+        // Starting Threat Pool without the skull even when the flag was set.
         if (row.challengerThreatIsLethal == 1)
+        {
+            $(`duel_round_${row.round}_starting_challenger_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
             $(`duel_round_${row.round}_ending_challenger_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
+        }
         if (row.defenderThreatIsLethal == 1)
+        {
+            $(`duel_round_${row.round}_starting_defender_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
             $(`duel_round_${row.round}_ending_defender_threat`).innerHTML += '<span class="_7sfs-lethal">&#9760;</span>';
+        }
 
         if (row.actorId === row.challengerId)
         {
