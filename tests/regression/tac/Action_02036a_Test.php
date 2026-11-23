@@ -170,6 +170,9 @@ class Action_02036a_Test extends TestCase
                 Assert::same($card->Id, $discards[0]->cardId, 'card');
                 Assert::same(2, $discards[0]->ownerId, 'owner');
                 Assert::same($scheme->Id, $discards[0]->sourceId, 'scheme');
+                // WHY: Sanjay 01097 ("due to your effect") requires asEffect; factory default is false.
+                Assert::true($discards[0]->asEffect, 'asEffect for Sanjay / similar');
+                Assert::false($discards[0]->AsPayment, 'not a payment');
                 Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move');
                 $resolved = $world->theah->queuedOfType(EventActionResolved::class);
                 Assert::same(1, $resolved[0]->playerId, 'scheme owner');

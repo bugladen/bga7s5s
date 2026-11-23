@@ -166,7 +166,17 @@ class Action_02036a extends SchemeCityAction implements IAbilityThatTargetsChara
             $owner = $this->getOwningCard($game->theah);
             $schemeOwnerId = $owner->ControllerId;
 
-            $discard = EventFactory::createCardDiscardedFromHandEvent($activeId, $id, $owner->Id);
+            // WHY asEffect=true: discard is caused by this scheme's effect ("unless
+            // their controller discards"), not a payment. Sanjay (01097) and similar
+            // "due to your effect" reactions key off asEffect; default false missed them.
+            $discard = EventFactory::createCardDiscardedFromHandEvent(
+                $activeId,
+                $id,
+                $owner->Id,
+                $asPayment = false,
+                $asPlayed = false,
+                $asEffect = true
+            );
             $game->theah->eventCheck($discard);
             $game->theah->queueEvent($discard);
 
