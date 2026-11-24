@@ -327,9 +327,9 @@ class Action_04cd01b extends AttachmentAction implements IAbilityThatTargetsCard
                 $game->theah->queueEvent($transition);
             }
 
-            // createActionResolvedEvent for this action is queued by _04cd01_RiskClone::handleEvent
-            // after the cloned risk is discarded from hand — the action is only truly resolved once
-            // the chosen risk has been paid for and played.
+            // WHY: createActionResolvedEvent is emitted by the stolen action (or challenge
+            // cancel / UL). _04cd01_RiskClone defers hide+sink until that EventActionResolved —
+            // discard is pay-time; multi-step Risks (Move Along) still need the shell in buildCity.
 
             $game->gamestate->nextState("actionChosen");
         }

@@ -12,7 +12,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01028;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01056;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01105;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01056;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd01;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd01_RiskClone;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04cd01b;
@@ -21,6 +23,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDeck;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToHand;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
@@ -241,6 +244,51 @@ class Action_04cd01b_Test extends TestCase
                 Assert::same($clone->Id, $pay->cardId, 'clone pays');
                 Assert::same(Game::PAY_STATE_IN_HAND_ACTION, $pay->payStateType, 'in-hand action');
                 Assert::same('inHandActionPay', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'pay');
+            },
+
+            // WHY (live report): Penya → Move Along → Stiletto reaction → defender on
+            // highDramaPhase01056_2. Old shell hide-on-discard dropped Action_01056 from
+            // buildCity; CHECK_CANCELLED could not restore TRANSITION_* after reaction
+            // clobber → buttons no-oped / looped. Shell must stay PendingCleanup.
+            'Penya Move Along stays findable after discard so defender continue can fire' => function () {
+                $world = new TestWorld();
+                $performer = $world->placeCharacter(new GenericCharacter('Challenger'), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                $original = $world->placeCard(new _01056(), Game::LOCATION_PERMANENTLY_HIDDEN, 2);
+                $clone = $world->placeCard(new _04cd01_RiskClone(), Game::LOCATION_HAND, 1);
+                $clone->ClonedCardId = $original->Id;
+                $clone->Name = $original->Name;
+
+                /** @var Action_01056 $stolen */
+                $stolen = $original->getActions()[0];
+                $clonedAction = clone $stolen;
+                $clonedAction->setOwnerId($clone->Id);
+                $clone->addAction($clonedAction, $world->game, false);
+
+                $discarded = new EventCardDiscardedFromHand();
+                $discarded->cardId = $clone->Id;
+                $discarded->ownerId = 1;
+                $world->fireOn($clone, $discarded);
+                $clone->Location = 'Discard-1';
+
+                Assert::true($clone->PendingCleanup, 'awaiting resolve');
+                Assert::count(0, $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class), 'not hidden yet');
+                Assert::same($clonedAction->Id, $world->theah->getInPlayActionById($clonedAction->Id)?->Id, 'still in buildCity');
+
+                $world->theah->queuedEvents = [];
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $world->game->globals->set(Game::CHOSEN_TARGET, $foe->Id);
+                $world->game->globals->set(Game::CHOSEN_ACTION, $clonedAction->Id);
+                $world->game->globals->set(Game::CHALLENGE_TYPE, Game::MOVE_ALONG_CHALLENGE_TYPE);
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                $clonedAction->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_01056_2, 'x', 2);
+
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'continue transition');
+                Assert::same('01056_5', $transitions[0]->transition, 'accept challenge (skip re-offer)');
+                Assert::true($clone->PendingCleanup, 'cleanup waits for ActionResolved');
             },
         ];
     }
