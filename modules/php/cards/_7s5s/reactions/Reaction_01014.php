@@ -751,13 +751,18 @@ class Reaction_01014 extends CardReaction
                 ]);
 
                 $thugWasTargeted = false;
-                // WHY: Challenge redirects skip isValidTargetForAbility. (1) Technique
-                // activation often leaves abilityId as a Technique so loadAbility is null.
-                // (2) Move-then-challenge Actions (Valeri) validate adjacent (pre-move), but
-                // by EventChallengeIssued the challenger is already at the defender's
-                // location — adjacent check would falsely reject the Thug. inPlayThug
-                // buttons already restrict to Thugs at Vittoria's location.
-                if ($this->challengeIssuedEvent)
+                // WHY: Challenge + CardMoving redirects skip isValidTargetForAbility.
+                // (1) Technique activation often leaves abilityId as a Technique so
+                // loadAbility is null.
+                // (2) Move-then-challenge Actions (Valeri) validate adjacent (pre-move),
+                // but by EventChallengeIssued the challenger is already at the defender's
+                // location — adjacent check would falsely reject the Thug.
+                // (3) Move-both Actions (Giacinto 04032) queue performer move before the
+                // target's CardMoving. By the time Vittoria redirects, Giacinto has left —
+                // "same location as Giacinto" fails and the Thug never inherits the move.
+                // inPlayThug buttons already restrict to Thugs at Vittoria's location; the
+                // held CardMoving already carries the committed destination.
+                if ($this->challengeIssuedEvent || $this->cardMovingEvent)
                 {
                     $this->releaseEvent($game, $characterId);
                     $thugWasTargeted = true;

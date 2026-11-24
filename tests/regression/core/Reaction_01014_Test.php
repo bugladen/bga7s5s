@@ -15,7 +15,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01014;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01018;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01014;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04032;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04045;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04032;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04045;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Thomas;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02034;
@@ -293,6 +295,11 @@ class Reaction_01014_Test extends TestCase
                 Assert::contains('deleteEventBatch', $src, 'cancelHeldEvent clears batch');
                 Assert::contains('else if ($this->inPlayThug)', $src, 'phases mutually exclusive');
                 Assert::contains('else if ($this->inHandThug)', $src, 'hand phase after play');
+                Assert::contains(
+                    '$this->challengeIssuedEvent || $this->cardMovingEvent',
+                    $src,
+                    'CardMoving redirect skips stale isValidTarget'
+                );
             },
 
             // WHY: Bruno cannot enter play from hand except during a duel — outside
@@ -640,6 +647,50 @@ class Reaction_01014_Test extends TestCase
 
                 Assert::count(1, $world->theah->queuedOfType(EventCharacterMustered::class), 'mustered');
                 Assert::same(false, (bool) $world->game->globals->get(Game::CHALLENGE_CANCELLED, false), 'challenge not cancelled');
+            },
+
+            // WHY: Giacinto 04032 queues his own CardMoving before the target's. By the
+            // time Vittoria redirects a hand/in-play Thug, he is already at the destination
+            // — isValidTargetForAbility ("same location as Giacinto") would reject the Thug
+            // and drop the held move. CardMoving redirects must skip that re-check.
+            'Giacinto 04032 CardMoving redirect moves Thug after Giacinto already left' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $thug = $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $giacinto = $world->placeCharacter(new _04032(), Game::LOCATION_CITY_FORUM, 2);
+                /** @var Action_04032 $action */
+                $action = $giacinto->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCardMoving();
+                $event->initiatingPlayerId = 2;
+                $event->cardId = $vittoria->Id;
+                $event->fromLocation = Game::LOCATION_CITY_DOCKS;
+                $event->toLocation = Game::LOCATION_CITY_FORUM;
+                $event->engage = false;
+                $event->sourceId = $giacinto->Id;
+                $event->abilityId = $action->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'Vittoria holds the move');
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'putIntoPlay-' . $thug->Id);
+
+                $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::count(1, $moves, 'held move re-queued onto Thug');
+                Assert::same($thug->Id, $moves[0]->cardId, 'Thug inherits destination');
+                Assert::same(Game::LOCATION_CITY_FORUM, $moves[0]->toLocation, 'Forum');
+
+                $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array('moveHome', $ids, true), 'moveHome after successful redirect');
             },
         ];
     }
