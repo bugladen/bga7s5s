@@ -15,7 +15,23 @@
     {
         const methods = {
 
+            // WHY: Location-first (L→R) — move always; challenge target pick is _4 after the move.
             'highDramaPhase05DabneyUS01': () => {
+                if (this.isCurrentPlayerActive()) {
+                    this.numberOfCityLocationsSelectable = 1;
+                    this.selectedCityLocations = [];
+                    this.highlightCharacterChosen(args.args.args.performerId);
+                    this.clientStateArgs.performerId = args.args.args.performerId;
+
+                    this.clientStateArgs.locationIds = args.args.args.locationIds || [];
+                    this.clientStateArgs.locationIds.forEach((locationId) => {
+                        const imageElement = this.getCityLocationElement(locationId);
+                        this.makeCityLocationSelectable(imageElement);
+                    });
+                }
+            },
+
+            'highDramaPhase05DabneyUS01_4': () => {
                 if (this.isCurrentPlayerActive()) {
                     this.numberOfCardsSelectable = 1;
                     this.highlightCharacterChosen(args.args.args.performerId);

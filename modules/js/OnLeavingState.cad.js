@@ -19,6 +19,17 @@
                 if (this.isCurrentPlayerActive())
                 {
                     this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
+                    this.resetCityLocations();
+                    this.selectedCityLocations = [];
+                    this.numberOfCityLocationsSelectable = 0;
+                    this.clientStateArgs = {};
+                }
+            },
+
+            'highDramaPhase05DabneyUS01_4': () => {
+                if (this.isCurrentPlayerActive())
+                {
+                    this.unhighlightCharacterChosen(this.clientStateArgs.performerId);
                     this.unhighlightCards(this.clientStateArgs.ids);
                     this.clientStateArgs = {};
                 }

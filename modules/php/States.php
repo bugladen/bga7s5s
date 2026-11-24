@@ -496,7 +496,10 @@ class States
             const HIGH_DRAMA_PLAYER_TURN_04CD15_3 = 40400153;
         const HIGH_DRAMA_PLAYER_TURN_04CD29 = 4040029;
         // CAD — Valeri Mikhailov (_05DabneyUS01). Exp 5 + card 1.
+        // Location pick → GAME bridge (post-move challenge check) → optional target pick.
         const HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01 = 405001;
+            const HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01_3 = 4050013;
+            const HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01_4 = 4050014;
         // CAD — Syrneth Morosometer (_05Forsythe). Exp 5 + card 5.
         const HIGH_DRAMA_PLAYER_TURN_05FORSYTHE = 405005;
         // CAD — Varvara Kurakina (_05Overcoat). Exp 5 + card 9.

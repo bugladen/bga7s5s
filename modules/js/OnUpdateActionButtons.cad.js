@@ -16,7 +16,13 @@
         const methods = {
 
             // WHY: Prototype CAD — plain button labels, no _() (hide from translators).
+            // Location-first; challenge Confirm lives on _4.
             'highDramaPhase05DabneyUS01': () => {
+                this.addActionButton(`actCityLocationsSelected`, 'Confirm Location', () => this.onCityLocationsSelected());
+                dojo.addClass('actCityLocationsSelected', 'disabled');
+            },
+
+            'highDramaPhase05DabneyUS01_4': () => {
                 this.addActionButton(`actChooseCardSelected`, 'Confirm', () => this.onChooseInPlayCardConfirmed());
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },

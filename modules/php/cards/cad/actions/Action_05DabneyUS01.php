@@ -24,6 +24,22 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         $this->Name = "Move to Adjacent Location; Issue Combat Challenge (Non-Leader)";
     }
 
+    /**
+     * Challengeable opposing non-Leaders at a city location (Combat legality included).
+     *
+     * @return list<Character>
+     */
+    private function getChallengeTargetsAtLocation(Theah $theah, Character $owner, string $location): array
+    {
+        $characters = $theah->getCharactersAtLocation($location);
+        return array_values(array_filter(
+            $characters,
+            fn($c) => $c->isNotControlledByPlayer($owner->ControllerId)
+                && ! $c->hasTrait("Leader")
+                && $theah->challengeCanBeIssued($owner->Id, $c->Id, Game::STAT_COMBAT)
+        ));
+    }
+
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
     {
         if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
@@ -38,32 +54,10 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         }
 
         // WHY: No Engage / En Garde printed — engaged Valeri remains eligible (trichotomy c).
-        if (! $owner->canChallenge($theah))
-        {
-            return false;
-        }
-
+        // WHY no challenge-target gate: printed L→R — move always; challenge only if a
+        // valid opposing non-Leader exists at the destination (Yepikhodov / pattern-c).
         $adjacentLocations = $theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
-        foreach ($adjacentLocations as $adjacentLocation)
-        {
-            $opposingCharacters = $theah->getCharactersAtLocation($adjacentLocation);
-            // WHY: Print targets opposing non-Leader only (PTv0.4 re-print). Same gate in
-            // availability, args ids, and isValidTargetForAbility so UI and server agree.
-            // Also require ChallengeIssued would succeed (Diplomatic Envoy / Patricia / …) —
-            // otherwise Valeri moves, lands on ActivateTechnique with Back locked, and soft-locks.
-            $opposingCharacters = array_filter(
-                $opposingCharacters,
-                fn($c) => $c->isNotControlledByPlayer($playerId)
-                    && ! $c->hasTrait("Leader")
-                    && $theah->challengeCanBeIssued($owner->Id, $c->Id, Game::STAT_COMBAT)
-            );
-            if (count($opposingCharacters) > 0)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return count($adjacentLocations) > 0;
     }
 
     public function handleEvent(Event $event)
@@ -77,12 +71,28 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             $event->theah->queueEvent($transition);
         }
 
-        // WHY: Come Hither (01162) / Amour (01104) pattern — gate move on
-        // EventCharacterTargeted surviving. Challenge transition waits for EventCardMoved
-        // (below) so a re-delivered targeting event cannot stack a second hub-exit
-        // "05DabneyUS01_2" beside an unconsumed first one. Also fires "when targeted"
-        // *before* technique activation overwrites TRANSITION_INTERNAL_ID (Premonition
-        // journal 2026-09-05-07), so Vittoria can react with a Thug still in hand.
+        // WHY: Hub-exit after the move actually lands. Always enter the GAME bridge
+        // (05DabneyUS01_3) so Soline / CardMoved reactions (pri 6) drain before the
+        // challenge-target check (stateFromAction). Checking here with toLocation would
+        // race those reactions and soft-lock an empty picker.
+        if ($event instanceof EventCardMoved && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            if ($owner == null || $event->cardId != $owner->Id)
+            {
+                return;
+            }
+
+            $event->theah->deleteQueuedTransitionsNamed("05DabneyUS01_3");
+            $event->theah->deleteQueuedTransitionsNamed("05DabneyUS01_2");
+
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05DabneyUS01_3", $this->Id);
+            $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Come Hither / Amour / Vittoria — gate challenge on EventCharacterTargeted
+        // surviving. Target pick is AFTER the move, so cancel must not undo/delete the
+        // move batch (move already drained). Only the challenge hub-exit is queued here.
         if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
         {
             $game = $event->theah->game;
@@ -93,7 +103,7 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
                 return;
             }
 
-            // Sync after Vittoria/DI redirect so move destination and challenge defender match.
+            // Sync after Vittoria/DI redirect so challenge defender matches.
             $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
             $game->globals->set(Game::CHALLENGE_STAT, Game::STAT_COMBAT);
@@ -102,38 +112,6 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             // (no-intervene) or STAND_YOUR_GROUND (scheme-owned / unrefusable). Keep OFF
             // stIssueChallenge auto-engage list (no Engage printed).
             $game->globals->set(Game::CHALLENGE_TYPE, Game::VALERI_CHALLENGE_TYPE);
-
-            $batchId = $event->batchId ?? $game->getNextEventBatchId();
-
-            // WHY: Decline/Pass re-delivers targeting — strip prior move/transition emit first.
-            $event->theah->deleteEventBatch($batchId);
-            $event->theah->deleteQueuedTransitionsNamed("05DabneyUS01_2");
-
-            // WHY: Engage not printed — move without engaging (contrast base Valeri 01123 engage=true).
-            $moveEvent = EventFactory::createCardMovingEvent(
-                $owner->ControllerId,
-                $owner->Id,
-                $owner->Location,
-                $target->Location,
-                false,
-                $owner->Id,
-                $this->Id
-            );
-            $moveEvent->batchId = $batchId;
-            $event->theah->eventCheck($moveEvent);
-            $event->theah->queueEvent($moveEvent);
-        }
-
-        // WHY: Hub-exit after the move actually lands — not beside EventCharacterTargeted.
-        // Queuing "05DabneyUS01_2" in the targeting handler left a duplicate in the events
-        // table through ACTIVATE_TECHNIQUE; stIssueChallenge then entered 4530 and GS1'd.
-        if ($event instanceof EventCardMoved && $event->abilityId == $this->Id && ! $event->canceled)
-        {
-            $owner = $this->getOwningCharacter($event->theah);
-            if ($owner == null || $event->cardId != $owner->Id)
-            {
-                return;
-            }
 
             $event->theah->deleteQueuedTransitionsNamed("05DabneyUS01_2");
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05DabneyUS01_2", $this->Id);
@@ -149,29 +127,45 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         {
             $owner = $this->getOwningCharacter($game->theah);
             $args['performerId'] = $owner->Id;
+            $args['locationIds'] = array_values(
+                $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false)
+            );
+        }
 
-            $adjacentLocations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
-            $charactersIds = [];
-            foreach ($adjacentLocations as $adjacentLocation)
-            {
-                $opposingCharacters = $game->theah->getCharactersAtLocation($adjacentLocation);
-                $opposingCharacters = array_filter(
-                    $opposingCharacters,
-                    fn($c) => $c->isNotControlledByPlayer($owner->ControllerId)
-                        && ! $c->hasTrait("Leader")
-                        && $game->theah->challengeCanBeIssued($owner->Id, $c->Id, Game::STAT_COMBAT)
-                );
-                foreach ($opposingCharacters as $opposingCharacter)
-                {
-                    $charactersIds[] = $opposingCharacter->Id;
-                }
-            }
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01_4)
+        {
+            $owner = $this->getOwningCharacter($game->theah);
+            $args['performerId'] = $owner->Id;
 
+            $targets = $this->getChallengeTargetsAtLocation($game->theah, $owner, $owner->Location);
             // WHY: array_values so JSON is a dense array — associative keys become objects and break forEach.
-            $args['ids'] = array_values($charactersIds);
+            $args['ids'] = array_values(array_map(fn($c) => $c->Id, $targets));
         }
 
         return $args;
+    }
+
+    // WHY: GAME bridge after move + CardMoved reactions. Location is committed;
+    // challenge only if a legal opposing non-Leader remains (L→R fail-forward).
+    public function stateFromAction(Game $game, int $state, string $stateName): void
+    {
+        parent::stateFromAction($game, $state, $stateName);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01_3)
+        {
+            $owner = $this->getOwningCharacter($game->theah);
+            $targets = $this->getChallengeTargetsAtLocation($game->theah, $owner, $owner->Location);
+            if (count($targets) > 0)
+            {
+                $game->gamestate->nextState("hasTargets");
+                return;
+            }
+
+            $resolved = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $game->theah->queueEvent($resolved);
+            $game->theah->runEvents(true);
+            $game->gamestate->nextState("noTargets");
+        }
     }
 
     // WHY: Same gate as Andriana Action_02001. "05DabneyUS01_2" is TRANSITION_PRIORITY (9),
@@ -212,10 +206,11 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
             return [false, "Target must be a non-Leader character."];
         }
 
-        $locations = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
-        if (! in_array($character->Location, $locations))
+        // WHY: Post-move challenge pick — target must share Valeri's current location
+        // (pre-move adjacent gate no longer applies; destination already chosen).
+        if ($character->Location !== $owner->Location)
         {
-            return [false, "Target character is not at an adjacent location"];
+            return [false, "Target character is not at Valeri's location"];
         }
 
         if (! $game->theah->challengeCanBeIssued($owner->Id, $character->Id, Game::STAT_COMBAT))
@@ -226,11 +221,45 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
         return [true, ""];
     }
 
+    public function actFromActionWithIds(Game $game, int $state, string $stateName, array $ids): void
+    {
+        parent::actFromActionWithIds($game, $state, $stateName, $ids);
+
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01)
+        {
+            $location = $ids[0] ?? '';
+            $owner = $this->getOwningCharacter($game->theah);
+            $adjacent = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
+            if (! in_array($location, $adjacent, true))
+            {
+                throw new UserException("Must move to an adjacent City location.");
+            }
+
+            $game->globals->set(Game::CHOSEN_PERFORMER, $owner->Id);
+
+            // WHY: Engage not printed — move without engaging (contrast base Valeri 01123 engage=true).
+            // Challenge transition (or ActionResolved) is queued from EventCardMoved.
+            $moveEvent = EventFactory::createCardMovingEvent(
+                $owner->ControllerId,
+                $owner->Id,
+                $owner->Location,
+                $location,
+                false,
+                $owner->Id,
+                $this->Id
+            );
+            $game->theah->eventCheck($moveEvent);
+            $game->theah->queueEvent($moveEvent);
+
+            $game->gamestate->nextState("locationChosen");
+        }
+    }
+
     public function actFromActionWithId(Game $game, int $state, string $stateName, int $id): void
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_05DABNEYUS01_4)
         {
             $owner = $this->getOwningCharacter($game->theah);
             $target = $game->theah->getCharacterById($id);
@@ -247,17 +276,18 @@ class Action_05DabneyUS01 extends CharacterAction implements IAbilityThatTargets
 
             $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
 
-            // WHY: Fire targeting alone here. Move + challenge transition are queued from
-            // handleEvent only when EventCharacterTargeted is not canceled (see above).
-            // batchId: UL / Maryam / Vittoria deleteEventBatch on cancel so Pass/Decline
-            // re-emit is clean (Amour Action_01104 / Giacinto Action_01205).
+            // WHY: Fire targeting alone here. Challenge hub-exit is queued from handleEvent
+            // only when EventCharacterTargeted is not canceled. Move already happened —
+            // cancel must not delete a move batch. batchId still lets UL / Maryam / Vittoria
+            // strip only the targeting follow-up on Pass/Decline.
             $batchId = $game->getNextEventBatchId();
             $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
             $targetedEvent->batchId = $batchId;
             $game->theah->queueEvent($targetedEvent);
 
             // createActionResolvedEvent() is queued by the challenge resolution flow,
-            // or by stTechniqueAvailable → challengeSkipped when shouldIssueChallenge fails.
+            // or by stTechniqueAvailable → challengeSkipped when shouldIssueChallenge fails,
+            // or by stateFromAction (05DabneyUS01_3) when no challenge targets remain.
 
             $game->gamestate->nextState("opponentChosen");
         }
