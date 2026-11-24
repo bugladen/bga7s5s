@@ -13,7 +13,7 @@ class Technique_01047 extends Technique
     public function __construct()
     {
         parent::__construct();
-        $this->Name = clienttranslate("+1 Parry if Melee Weapon Equipped");
+        $this->Name = clienttranslate("+1 Riposte if Melee Weapon Equipped");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah): bool
@@ -42,6 +42,8 @@ class Technique_01047 extends Technique
     { 
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+        
         if ($event instanceof EventDuelCalculateTechniqueValues && $event->techniqueId == $this->Id) 
         {
             $owningCharacter = $this->getOwningCharacter($event->theah);
