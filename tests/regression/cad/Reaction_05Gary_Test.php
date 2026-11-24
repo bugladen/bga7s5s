@@ -168,10 +168,50 @@ class Reaction_05Gary_Test extends TestCase
                     fn($event) => $event->characterId === $rena->Id
                 ));
                 Assert::count(1, $ontoRena, 'Rena takes the held wound');
+                Assert::same(1, $ontoRena[0]->wounds, 'single wound onto Rena');
                 Assert::true($reaction->Used, 'reaction spent');
 
                 $world->fire($secondWound);
                 Assert::false($secondWound->canceled, 'used reaction does not take the later victim');
+            },
+
+            // WHY: Printed "a wound" is singular. Accept used to retarget the whole
+            // EventCharacterBeingWounded (e.g. leftover threat 3), so Rena ate lethal
+            // stacks while the ally walked away clean.
+            'accept on a multi-wound event puts only one on Rena and returns the rest' => function () {
+                $world = new TestWorld();
+                $ally = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 2);
+                $rena = $world->placeCharacter(new _05Gary(), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Reaction_05Gary $reaction */
+                $reaction = $rena->getReactions()[0];
+
+                $wound = EventFactory::createCharacterBeingWoundedEvent(
+                    $ally->Id,
+                    $ally->Id,
+                    3,
+                    $ally->getInjectCode()
+                );
+                $world->fire($wound);
+                Assert::true($wound->canceled, 'multi-wound held');
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'woundRena');
+
+                $queued = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                $ontoRena = array_values(array_filter(
+                    $queued,
+                    fn($event) => $event->characterId === $rena->Id
+                ));
+                $ontoAlly = array_values(array_filter(
+                    $queued,
+                    fn($event) => $event->characterId === $ally->Id
+                ));
+
+                Assert::count(1, $ontoRena, 'one wound event for Rena');
+                Assert::same(1, $ontoRena[0]->wounds, 'Rena takes exactly one');
+                Assert::count(1, $ontoAlly, 'remainder returned to ally');
+                Assert::same(2, $ontoAlly[0]->wounds, 'ally keeps wounds minus one');
+                Assert::true($reaction->Used, 'reaction spent');
             },
         ];
     }

@@ -15,8 +15,10 @@ class Reaction_05Gary extends CardReaction
     // WHY: Cancel-first like Altruistic / Cross of the Martyrs — clone the wound,
     // offer redirect to Rena / Pass. Pass re-stacks the clone; skipNextEvent prevents
     // re-offering. Destination is always Rena (printed "Wound Rena instead"), not a picker.
-    // The offer itself is stacked, not queued: a MEDIUM wound batch (Action_01012
-    // wounds Sibella, then the target) would otherwise resolve before priority-6.
+    // Printed "a wound" is singular: accept moves only 1 onto Rena and re-queues any
+    // remainder on the original victim. The offer itself is stacked, not queued: a
+    // MEDIUM wound batch (Action_01012 wounds Sibella, then the target) would
+    // otherwise resolve before priority-6.
     private ?EventCharacterBeingWounded $savedWoundEvent = null;
     private bool $skipNextEvent = false;
 
@@ -145,8 +147,28 @@ class Reaction_05Gary extends CardReaction
         {
             if ($this->savedWoundEvent !== null)
             {
+                // WHY: "a wound" is one. Multi-wound events (e.g. leftover threat)
+                // must leave wounds-1 on the original victim; redirecting the whole
+                // batch made Rena eat lethal stacks meant for the ally.
+                $originalCharacterId = $this->savedWoundEvent->characterId;
+                $remainder = $this->savedWoundEvent->wounds - 1;
+
                 $this->savedWoundEvent->characterId = $owner->Id;
+                $this->savedWoundEvent->wounds = 1;
                 $game->theah->queueEvent($this->savedWoundEvent);
+
+                if ($remainder > 0)
+                {
+                    $rest = EventFactory::createCharacterBeingWoundedEvent(
+                        $originalCharacterId,
+                        $this->savedWoundEvent->sourceId,
+                        $remainder,
+                        $this->savedWoundEvent->reason,
+                        $this->savedWoundEvent->abilityId
+                    );
+                    $game->theah->queueEvent($rest);
+                }
+
                 $this->savedWoundEvent = null;
             }
 
