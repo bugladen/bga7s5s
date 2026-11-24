@@ -13,6 +13,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04041;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04047;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04058;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04058;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Wardog;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Wardoga;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
@@ -85,6 +87,35 @@ class Reaction_04058_Test extends TestCase
                 Assert::same($foe->Id, end($redirected)->characterId, 'wound moved');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'start');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'played');
+            },
+
+            // WHY: Smuggled Long Rifle Covert Reaction wounds from an equipped attachment
+            // (sourceId = attachment, abilityId = Reaction_05Wardoga). Shield Rite must treat
+            // that as an opponent's ability — same ControllerId branch as hand Risks.
+            'redirects a Smuggled Long Rifle reaction wound' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04058(), Game::LOCATION_HAND, 1);
+                $sorcerer = $world->placeCharacter(new _04041(), Game::LOCATION_CITY_FORUM, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_FORUM, 2);
+                $host = $world->placeCharacter(new GenericCharacter('Sniper'), Game::LOCATION_CITY_DOCKS, 2);
+                $rifle = $world->placeCard(new _05Wardog(), Game::LOCATION_CITY_DOCKS, 2);
+                $rifle->AttachedToId = $host->Id;
+                /** @var Reaction_05Wardoga $wardog */
+                $wardog = $rifle->getReactions()[0];
+                /** @var Reaction_04058 $reaction */
+                $reaction = $risk->getReactions()[0];
+
+                $wardog->EnemyIds = [$sorcerer->Id];
+                $wardog->performReaction($world->game, 0, $wardog->Id, 'wound');
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'rifle wound');
+                Assert::same($rifle->Id, $wounds[0]->sourceId, 'attachment source');
+                Assert::same($wardog->Id, $wounds[0]->abilityId, 'reaction ability');
+
+                $world->fireOn($risk, $wounds[0]);
+                Assert::true($wounds[0]->canceled, 'shield rite intercepts rifle wound');
+                Assert::same($sorcerer->Id, $reaction->performerId, 'performer');
+                Assert::same('reaction', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'offered');
             },
 
             // WHY: A Cesca copy has no intercepted wound. Decline must not wound the performer.
