@@ -22,8 +22,8 @@ class State_highDramaPhase01138 extends GameState
             // optional
             description: clienttranslate('${actplayer} is choosing options to perform an Action.'),
             descriptionMyTurn: clienttranslate('Razrushitel') . clienttranslate(': ${you} must choose a Character to manipulate: '),
-            // WHY: Target pick only queues EventCharacterTargeted then events. Engage
-            // chooser (01138_2) or auto-wound emit from that event surviving — Come Hither.
+            // WHY: Target pick only queues EventCharacterTargeted then events. On survive:
+            // move performer, then engage chooser (01138_2) or auto-wound — Come Hither.
             transitions: [
                 "" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],

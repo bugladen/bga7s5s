@@ -201,7 +201,9 @@ class Action_01138_Test extends TestCase
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
             },
 
-            'surviving CharacterTargeted while en garde transitions to engage chooser' => function () {
+            // WHY: printed order is move first, then engage choice — arrival reactions
+            // (Rosa) need the performer at the foe's location before Home/wound.
+            'surviving CharacterTargeted while en garde moves then transitions to engage chooser' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $foe] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
@@ -215,7 +217,10 @@ class Action_01138_Test extends TestCase
                 $action->handleEvent($event);
 
                 Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
-                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move yet');
+                $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::count(1, $moves, 'performer move before chooser');
+                Assert::same($performer->Id, $moves[0]->cardId, 'performer');
+                Assert::same(Game::LOCATION_CITY_FORUM, $moves[0]->toLocation, 'to foe');
                 Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'chooser');
@@ -242,20 +247,21 @@ class Action_01138_Test extends TestCase
                 Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
             },
 
-            'manipulate engage moves performer, engages, and sends foe Home' => function () {
+            // WHY: performer already moved on CharacterTargeted survive — chooser is
+            // engage→Home vs wound only.
+            'manipulate engage engages and sends foe Home' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $foe] = $this->scene($world);
+                $performer->Location = Game::LOCATION_CITY_FORUM;
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
                 $world->game->globals->set(Game::CHOSEN_TARGET, $foe->Id);
 
                 $this->act($world, $action, States::HIGH_DRAMA_PLAYER_TURN_01138_2, 1);
 
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
-                Assert::count(2, $moves, 'performer + foe');
-                Assert::same($performer->Id, $moves[0]->cardId, 'performer first');
-                Assert::same(Game::LOCATION_CITY_FORUM, $moves[0]->toLocation, 'to foe loc');
-                Assert::same($foe->Id, $moves[1]->cardId, 'foe Home');
-                Assert::same(Game::LOCATION_PLAYER_HOME, $moves[1]->toLocation, 'Home');
+                Assert::count(1, $moves, 'foe Home only');
+                Assert::same($foe->Id, $moves[0]->cardId, 'foe');
+                Assert::same(Game::LOCATION_PLAYER_HOME, $moves[0]->toLocation, 'Home');
 
                 $engages = $world->theah->queuedOfType(EventCardEngaged::class);
                 Assert::count(1, $engages, 'engage');
@@ -267,15 +273,16 @@ class Action_01138_Test extends TestCase
                 Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
             },
 
-            'manipulate do-not-engage moves performer and wounds foe' => function () {
+            'manipulate do-not-engage wounds foe' => function () {
                 $world = new TestWorld();
                 [, $action, $performer, $foe] = $this->scene($world);
+                $performer->Location = Game::LOCATION_CITY_FORUM;
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
                 $world->game->globals->set(Game::CHOSEN_TARGET, $foe->Id);
 
                 $this->act($world, $action, States::HIGH_DRAMA_PLAYER_TURN_01138_2, 0);
 
-                Assert::count(1, $world->theah->queuedOfType(EventCardMoving::class), 'performer move');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move');
                 Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage');
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'wound');

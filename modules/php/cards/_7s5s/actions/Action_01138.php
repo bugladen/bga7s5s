@@ -101,15 +101,18 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
                 return;
             }
 
-            // WHY: already-engaged performer cannot choose engage — auto wound path.
+            // WHY: card order is move first, then (if en garde) engage-or-wound.
+            // Queue the move before the chooser so arrival reactions (e.g. Rosa 02033)
+            // see the performer at the target's location before Home/wound resolves.
+            // Already-engaged performers cannot choose engage — auto wound after the move.
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
+            $event->theah->queueEvent($moveEvent);
+
             if ($performer->Engaged)
             {
-                $batchId = $event->batchId ?? $game->getNextEventBatchId();
-
-                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
-                $moveEvent->batchId = $batchId;
-                $event->theah->queueEvent($moveEvent);
-
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $woundEvent->batchId = $batchId;
                 $event->theah->queueEvent($woundEvent);
@@ -223,11 +226,8 @@ class Action_01138 extends RiskAction implements IAbilityThatTargetsCharacters
 
             $batchId = $game->getNextEventBatchId();
 
-            //Move Performer to Target's Location
-            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $target->Location, $engage = false, $owner->Id, $this->Id);
-            $moveEvent->batchId = $batchId;
-            $game->theah->queueEvent($moveEvent);
-
+            // WHY: Performer already moved on CharacterTargeted survive — chooser is
+            // only engage→Home vs wound (printed "You may engage… If you do… If not…").
             //Choose to Engage
             if ($id == 1)
             {
