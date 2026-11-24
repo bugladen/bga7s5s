@@ -4,6 +4,10 @@
 
 This pattern is **the same as in `create-city-character`'s Pattern C**. The action class extends `CharacterAction` regardless of whether the owning card is a Character, Leader, or CityCharacter. Read the city-character skill's Pattern C for the full template, state class skeleton, and JS wiring. Below are the Character/Leader-specific notes.
 
+### Ability grammar reminder
+
+Cost left of `•`, effects right; effects L→R if possible (skip what cannot resolve). See **Ability grammar** in [SKILL.md](SKILL.md). Do not gate availability on a later effect that might fail when an earlier effect can still happen (Yepikhodov `Action_03051`, CAD Valeri `Action_05DabneyUS01`).
+
 ### Eligibility differences
 
 - **Regular Action** (`<b>Action:</b>`) — usually requires the character to be in play (`cardInPlay`) but not in the city. The base `parent::isAvailableToPlayer()` covers most of this; add specific preconditions.

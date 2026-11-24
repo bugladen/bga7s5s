@@ -2,7 +2,7 @@
 
 ## When You Finish
 
-1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Dashed stat / Hard ban / Passive handleEvent / Action / Reaction / Sorcerer ability / Technique / Maneuver). Stat numbers go on the constructor and are not a "pattern."
+1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Dashed stat / Hard ban / Passive handleEvent / Action / Reaction / Sorcerer ability / Technique / Maneuver). Stat numbers go on the constructor and are not a "pattern." **Ability grammar:** cost left of `•`, effects right; effects resolve L→R if possible (skip what cannot resolve) — do not gate whole-ability availability on a later effect that might fail.
 2. For a Leader, confirm: `"Leader"` is in `Traits`, `CrewCap` and `Panache` are set. Faction spelling is **`Ussura`** (not "Usurra"). Soft guidance historically said omit `initializeFaction` (framework setup), but **FAF Leaders commonly call it** (`_03001` Cesca, `_03037` Sanjay, `_03049` Ekaterina) — either works at runtime; match nearby FAF Leaders when scaffolding.
 3. For a regular Character, confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN. FAF scaffolds sometimes typo **`Usurra`** — fix to **`Ussura`** (`_03050` Daichi, same spelling trap as Leaders).
 4. Every new state class needs all three: the class file in `modules/php/States/<expansion>/`, the constant in `States.php`, and the transition entry in `states.inc.php`. High Drama actions → `HIGH_DRAMA_PLAYER_TURN_EVENTS.transitions`; duel technique pickers → `DUEL_CHOOSE_TECHNIQUE_EVENTS.transitions` (id `521` + cardId).

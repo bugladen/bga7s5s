@@ -2,7 +2,7 @@
 
 ## When You Finish
 
-1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Stat / Equip Restriction / Passive Grant / Forced / Action / Reaction / Technique / Maneuver). Stat numbers and combat-card stats go on the constructor and are not a "pattern."
+1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Stat / Equip Restriction / Passive Grant / Forced / Action / Reaction / Technique / Maneuver). Stat numbers and combat-card stats go on the constructor and are not a "pattern." **Ability grammar:** cost left of `•`, effects right; effects resolve L→R if possible (skip what cannot resolve) — do not gate whole-ability availability on a later effect that might fail.
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's `NNNNN`, `WealthCost` is set, all stat modifiers are set (default 0), all Traits exist in `TraitNames::$TraitsJson`.
 3. For equip restrictions, implement BOTH `eventCheck(EventAttachmentEquipping)` AND `canAttachTo(Character)`. Don't pick one — the UI uses `canAttachTo` to grey out invalid targets, and `eventCheck` is the server-side enforcement when the equip event fires.
 3a. **"After a \<Trait\> equips this card"** is a **Reaction trigger gate**, not an equip restriction. Do **not** add Pattern A unless text also says "May only equip…". Reference: `_04016`.

@@ -10,7 +10,7 @@ Faction attachments are *player-deck cards* that equip onto one of the controlle
 
 ## How to use this skill (progressive disclosure)
 
-1. Confirm `extends FactionAttachment`. Classify each printed Text clause with the **Pick the Right Ability Shape** table below.
+1. Confirm `extends FactionAttachment`. Parse cost vs effects with **Ability grammar (`•` / left-to-right)**, then classify each printed Text clause with the **Pick the Right Ability Shape** table below.
 2. **Read only the companion files that match** - do not load every pattern file.
 3. Mirror a code exemplar from [references.md](references.md) rather than inventing.
 4. Before finishing, run the deep checklist in [checklist.md](checklist.md).
@@ -108,6 +108,17 @@ Helpers from `Attachment`:
 - `$this->isAttached(): bool` — true when `AttachedToId > 0`. Always gate "equipped character" effects on this.
 - `$this->attachedTo(Theah $theah): ?Card` — returns the character, or null when not equipped.
 - `$this->canAttachTo(Character $c): bool` — override if the card text restricts targets ("equip to your Strega"). Default `true`.
+
+
+## Ability grammar (`•` / left-to-right)
+
+Parse every printed ability with these rules **before** picking a pattern:
+
+1. **Cost is left of the `•` (dot).** Costs/conditions gate availability and must succeed for the ability to be used. No `•` → no cost (every clause is an effect).
+2. **Effects are right of the `•`.** When there is no `•`, the whole line after the keyword is effects.
+3. **Effects resolve left to right if possible.** If an effect cannot resolve (no legal target, condition false, etc.), skip it and continue with the next effect. Do **not** gate the whole ability's availability on a later effect that might fail — earlier effects still happen.
+
+Examples: Yepikhodov `Action_03051` (move always; En Garde only if applicable); CAD Valeri `Action_05DabneyUS01` (move to adjacent always; challenge only if a legal opposing non-Leader remains).
 
 
 ## Pick the Right Ability Shape

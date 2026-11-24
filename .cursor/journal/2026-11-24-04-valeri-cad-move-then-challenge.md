@@ -45,3 +45,9 @@ Move no longer queued from targeting. Cancel must not deleteEventBatch the move
 ## Done
 Action + states `_3`/`_4` + JS location/character wiring + tests 15/15.
 pattern-f / references updated for location-first L→R.
+
+## Skill note (user ask)
+Added **Ability grammar (`•` / left-to-right)** to all seven card SKILL.md files
+(character, risk, scheme, city-character, city-attachment, city-event-card,
+faction-attachment) + create-character pattern-c reminder + checklist item 1.
+WHY: same parse rule applies to every card type, not just Characters.

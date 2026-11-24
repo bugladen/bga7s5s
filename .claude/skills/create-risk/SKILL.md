@@ -10,7 +10,7 @@ This skill covers cards that extend `Risk` — the faction-deck cards a player d
 
 ## How to use this skill (progressive disclosure)
 
-1. Classify each printed Text clause with the **Pick the Right Ability Shape** table below.
+1. Parse cost vs effects with **Ability grammar (`•` / left-to-right)**, then classify each printed Text clause with the **Pick the Right Ability Shape** table below.
 2. **Read only the companion files that match** — do not load every pattern file.
 3. Mirror a code exemplar from [references.md](references.md) rather than inventing.
 4. Before finishing, run the deep checklist in [checklist.md](checklist.md).
@@ -103,6 +103,16 @@ Field notes:
 - **Combat stats:** set whichever the card shows. Default 0 is fine if the stat is absent. Use `Dashed{Riposte,Parry,Thrust}` for printed-dashed values (the card shows a dashed line meaning "this stat cannot be modified above 0" — handled by the framework when `addParry` etc. is called).
 - **Traits must exist in `TraitNames::$TraitsJson`** (`modules/php/TraitNames.php`). Add missing ones in alphabetical order. (Memory feedback.)
 - **`IRiskThatTargetsCharacters` / `IAbilityThatTargetsCharacters`:** mark when the printed text uses **"Target"** / **"target"** (or similar Rules-Team wording) and the ability hands the player a **character** chooser — **including friendly choosers**. Compare `_01083`, `_01115`, `_03008`, `_03011`, `_03034`, `_03056`, `_03057`, `_03058`. The Action/Maneuver/Reaction implements `IAbilityThatTargetsCharacters` (`isValidTargetForAbility`); the Risk gets `IRiskThatTargetsCharacters`. **Attachment choosers** ("take control of target attachment") → `IAbilityThatTargetsCards` on the Action only — **not** Cesca (`_04029`, `Action_01113`). **Do not** mark either for: location-chooser Actions (`_03009`, `_03032`, `_03045`); hand-discard choosers; fixed-target Reactions (`_03046`, `_03012`); choosers whose text never says "target" (e.g. `_03060` "Heal … from another character", `_03068` "They must move an en garde character", `_03069` "swap … with your other character", `_03071` "Engage an opposing character" — still a UI chooser, but Cesca `Reaction_01008` must not copy); or **"Target opponent"** player choosers (`_04009` — opponent then picks a character; Cesca is character-target only). Performer selection via `RequiresPerformerSelected` alone is also not a "targets characters" chooser. Contrast `_01078` **"Target enemy character"** (you pick the character → Cesca yes).
+
+## Ability grammar (`•` / left-to-right)
+
+Parse every printed ability with these rules **before** picking a pattern:
+
+1. **Cost is left of the `•` (dot).** Costs/conditions gate availability and must succeed for the ability to be used. No `•` → no cost (every clause is an effect).
+2. **Effects are right of the `•`.** When there is no `•`, the whole line after the keyword is effects.
+3. **Effects resolve left to right if possible.** If an effect cannot resolve (no legal target, condition false, etc.), skip it and continue with the next effect. Do **not** gate the whole ability's availability on a later effect that might fail — earlier effects still happen.
+
+Examples: Yepikhodov `Action_03051` (move always; En Garde only if applicable); CAD Valeri `Action_05DabneyUS01` (move to adjacent always; challenge only if a legal opposing non-Leader remains).
 
 ## Pick the Right Ability Shape
 

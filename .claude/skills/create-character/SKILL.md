@@ -11,7 +11,7 @@ This skill covers cards that directly extend `Character` (regular faction-deck c
 ## How to use this skill (progressive disclosure)
 
 1. Confirm the stub `extends Character` or `extends Leader` (not `CityCharacter` — use `create-city-character` for those).
-2. Classify each printed Text clause with the **Pick the Right Ability Shape** table below.
+2. Parse cost vs effects with **Ability grammar (`•` / left-to-right)** below, then classify each clause with the **Pick the Right Ability Shape** table.
 3. **Read only the companion files that match** — do not load every pattern file.
 4. Mirror a code exemplar from [references.md](references.md) rather than inventing.
 5. Before finishing, run the deep checklist in [checklist.md](checklist.md).
@@ -173,6 +173,17 @@ Key runtime state inherited from `Character` / `Card`:
 - `$this->Location` — current location string. While in deck/hand, this is a deck/hand location; once mustered into play, a city location or Home.
 - `$this->Engaged` — engagement state.
 - `$this->Wounds`, `$this->ModifiedResolve` — wound tracking.
+
+
+## Ability grammar (`•` / left-to-right)
+
+Parse every printed ability with these rules **before** picking a pattern:
+
+1. **Cost is left of the `•` (dot).** Costs/conditions gate availability and must succeed for the ability to be used. No `•` → no cost (every clause is an effect).
+2. **Effects are right of the `•`.** When there is no `•`, the whole line after the keyword is effects.
+3. **Effects resolve left to right if possible.** If an effect cannot resolve (no legal target, condition false, etc.), skip it and continue with the next effect. Do **not** gate the whole ability's availability on a later effect that might fail — earlier effects still happen.
+
+Examples: Yepikhodov `Action_03051` (move always; En Garde only if applicable); CAD Valeri `Action_05DabneyUS01` (move to adjacent always; challenge only if a legal opposing non-Leader remains).
 
 
 ## Pick the Right Ability Shape

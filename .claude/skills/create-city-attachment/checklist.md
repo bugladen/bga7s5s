@@ -2,7 +2,7 @@
 
 ## When You Finish
 
-1. Re-read the card text and walk through each clause. Each clause should map to exactly one pattern (Forced / Passive / Action / Reaction / Steady-state / Custom-state). Stat modifiers go on the constructor and are not a "pattern." Multiple Action clauses → multiple Action classes.
+1. Re-read the card text and walk through each clause. Each clause should map to exactly one pattern (Forced / Passive / Action / Reaction / Steady-state / Custom-state). Stat modifiers go on the constructor and are not a "pattern." Multiple Action clauses → multiple Action classes. **Ability grammar:** cost left of `•`, effects right; effects resolve L→R if possible (skip what cannot resolve) — do not gate whole-ability availability on a later effect that might fail.
 2. If you added a custom state, verify all three are present: the class file in `modules/php/States/<expansion>/`, the constant in `States.php`, and the transition entry in `states.inc.php`. Confirm any rerouted transitions still match the new entry point. (No `states.7s5s.php` for new GameState subclasses.)
 3. If this is the **first** card for an expansion, also create and wire `OnEnteringState.<exp>.js` / `OnUpdateActionButtons.<exp>.js` / `OnLeavingState.<exp>.js` (see [wiring.md](wiring.md)).
 4. If you minted a new event class, register it in `Events.php` (constant), `EventHub.php` (handler — usually no-op), and `EventFactory.php` (factory method).

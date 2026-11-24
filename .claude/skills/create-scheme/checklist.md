@@ -2,7 +2,7 @@
 
 ## When You Finish
 
-1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Resolve / When-Revealed / Forced / City Action / Reaction). The Renown/Initiative numbers go on the constructor and are not a "pattern."
+1. Walk each clause of the printed Text — confirm each maps to exactly one pattern (Resolve / When-Revealed / Forced / City Action / Reaction). The Renown/Initiative numbers go on the constructor and are not a "pattern." **Ability grammar:** cost left of `•`, effects right; effects resolve L→R if possible (skip what cannot resolve) — do not gate whole-ability availability on a later effect that might fail.
 2. Confirm: `initializeFaction(<faction>)` is called, `CardNumber` matches the filename's NNNNN, **`Name` / `Initiative` / `PanacheModifier` match card art** (scaffolds invent wrong titles — `_04044` "Shallow Harbor" → Adrift in the Wind; Initiative is often wrong too), all Traits exist in `TraitNames::$TraitsJson` (add missing ones alphabetically — e.g. `Assassination`).
 3. For every player-choice **Planning resolve** sub-state, ensure all three of: the GameState class in `modules/php/States/<expansion>/`, the constant in `States.php` (`26<NNNNN>`), and the transition entry in `states.inc.php` under `PLANNING_PHASE_RESOLVE_SCHEMES_EVENTS.transitions`.
 4. For every player-choice **Planning End Forced or Reaction follow-on** sub-state, same three pieces but constant `28<NNNNN>`, state name `planningPhaseEnd_<NNNNN>`, and transitions under **`PLANNING_PHASE_END_EVENTS.transitions`**. Forced triggers via scheme `EventPhasePlanningEnd` + `Location == LOCATION_PLAYER_HOME`. Reaction follow-ons queue `createTransitionEvent(..., "NNNNN", $reaction->Id)` after Look/Pass — see checklist 38–39 / `_04025`.
