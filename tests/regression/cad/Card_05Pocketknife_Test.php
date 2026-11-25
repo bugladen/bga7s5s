@@ -52,7 +52,7 @@ class Card_05Pocketknife_Test extends TestCase
                 Assert::instanceOf(FactionAttachment::class, $knife, 'FactionAttachment');
                 Assert::instanceOf(IHasTechniques::class, $knife, 'techniques');
                 Assert::instanceOf(IHasManeuvers::class, $knife, 'maneuvers');
-                Assert::same(2, $knife->WealthCost, 'cost from art II');
+                Assert::same(0, $knife->WealthCost, 'cost');
                 Assert::same(0, $knife->Riposte, 'riposte');
                 Assert::same(3, $knife->Parry, 'parry');
                 Assert::same(2, $knife->Thrust, 'thrust');

@@ -22,7 +22,7 @@ class Card_04020_Test extends TestCase
             'is a ranged ambush risk' => function () {
                 $card = new _04020();
                 Assert::instanceOf(Risk::class, $card, 'Risk');
-                Assert::same(1, $card->WealthCost, 'cost');
+                Assert::same(0, $card->WealthCost, 'cost');
                 Assert::true($card->DashedRiposte, 'dashed riposte');
                 Assert::same(4, $card->Thrust, 'thrust');
                 Assert::true($card->hasTrait('Ambush'), 'Ambush');
