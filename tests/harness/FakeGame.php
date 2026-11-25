@@ -429,6 +429,7 @@ class Game
         $this->globals = new FakeGlobals();
         $this->notify = new FakeNotify();
         $this->gamestate = new FakeGamestate();
+        $this->gamestate->game = $this;
         $this->globals->set(self::PRESSURE_TYPE, self::NORMAL_PRESSURE_TYPE);
         // WHY: getAdjacentCityLocations branches on player count; default 2-player map.
         $this->globals->set(self::PLAYER_COUNT, $this->playerCount);

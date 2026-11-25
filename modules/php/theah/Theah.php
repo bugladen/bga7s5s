@@ -2,7 +2,6 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\theah;
 
-use Bga\GameFramework\StateType;
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01040;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01126;
@@ -600,32 +599,41 @@ class Theah
             }
         }
 
-        //After all the events are run, we need to change back to the current player
-        $inDuel = $this->game->globals->get(Game::IN_DUEL);
-        if ($inDuel) 
-        {
-            $currentPlayerId = $this->game->globals->get(Game::DUEL_CURRENT_PLAYER);
-            if ($currentPlayerId && ! $skipTransitions) 
-            {
-                $this->game->gamestate->changeActivePlayer($currentPlayerId);
-            }
-        }
-        else 
-        {
-            $state = $this->game->gamestate->getCurrentMainState();
-            if ($state->type == StateType::ACTIVE_PLAYER)
-            {
-                $currentPlayerId = $this->game->globals->get(Game::CURRENT_PLAYER);
-                if ($currentPlayerId && ! $skipTransitions) 
-                {
-                    $this->game->gamestate->changeActivePlayer($currentPlayerId);
-                }
-            }
-        }
+        $this->restoreCanonicalActivePlayer($skipTransitions);
 
         if ($skipTransitions) return;
 
         $this->game->gamestate->nextState('endOfEvents');
+    }
+
+    // WHY public: regression suites assert Pass→endOfEvents re-seats without
+    // draining the real events DB (TestTheah stubs runEvents).
+    // WHY unconditional (not gated on state.type == ACTIVE_PLAYER):
+    // stRunEvents always runs from a type=game *EVENTS hub. A reaction
+    // transition changeActivePlayer'd the reactor; Pass → done returns with
+    // the queue empty. The old ACTIVE_PLAYER gate skipped the restore, so
+    // endOfEvents handed the next activeplayer state (e.g. in-hand pay) to
+    // the reactor — getInHandActionById searched the wrong hand and
+    // argsHighDramaInHandActionPay fatal'd on null (Reaction_02030a Pass).
+    // Mid-flight EventTransition / EventChangeActivePlayer already returned
+    // from runEvents; reaching the drain-complete path means the hub is done
+    // and the turn player owns the destination. Duel path already restored
+    // unconditionally — match it for non-duel.
+    public function restoreCanonicalActivePlayer(bool $skipTransitions = false): void
+    {
+        if ($skipTransitions)
+        {
+            return;
+        }
+
+        $inDuel = $this->game->globals->get(Game::IN_DUEL);
+        $currentPlayerId = $inDuel
+            ? $this->game->globals->get(Game::DUEL_CURRENT_PLAYER)
+            : $this->game->globals->get(Game::CURRENT_PLAYER);
+        if ($currentPlayerId)
+        {
+            $this->game->gamestate->changeActivePlayer($currentPlayerId);
+        }
     }
 
     // WHY: See runEvents EventDuskEndOfDay call site. Pin each deck card into the world
@@ -1295,9 +1303,14 @@ class Theah
         return null;
     }
 
-    function getInHandActionById($id): ?CardAction
+    // WHY optional $playerId: after a reaction Pass the active player can still be
+    // the reactor while CURRENT_PLAYER owns the in-hand Risk. Callers that know the
+    // turn player (pay args) pass it explicitly so a stale active id cannot miss
+    // the card. Default stays getActivePlayerId() for choose/pay act methods.
+    function getInHandActionById($id, ?int $playerId = null): ?CardAction
     {
-        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $this->game->getActivePlayerId());
+        $playerId = $playerId ?? (int)$this->game->getActivePlayerId();
+        $cards = $this->getCardObjectsAtLocation(Game::LOCATION_HAND, $playerId);
         foreach ($cards as $card) {
             if ($card instanceof IHasActions) {
                 $action = $card->getActionById($id);

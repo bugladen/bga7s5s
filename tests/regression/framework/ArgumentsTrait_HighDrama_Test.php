@@ -366,6 +366,30 @@ class ArgumentsTrait_HighDrama_Test extends TestCase
                 Assert::true($pay['requiresPerformerSelected'], 'requires performer');
             },
 
+            // WHY: Reaction_02030a Pass during IN_HAND_ACTION_EVENTS left reactor
+            // active; getInHandActionById searched player 2's hand → null → fatal
+            // on getOwningCard. Pay args must re-seat CURRENT_PLAYER first.
+            'argsHighDramaInHandActionPay re-seats CURRENT_PLAYER when reactor is still active' => function () {
+                $game = new FrameworkActionsGame();
+                $performer = $game->place(new GenericCharacter('Performer'), Game::LOCATION_CITY_DOCKS, 1);
+                $risk = new GenericRisk('Hand Risk', 2);
+                $action = new GenericRiskAction(true);
+                $risk->addAction($action, $game, false);
+                $game->place($risk, Game::LOCATION_HAND, 1);
+
+                $game->globals->set(Game::CHOSEN_ACTION, $action->Id);
+                $game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $game->globals->set(Game::DISCOUNT, 0);
+                $game->globals->set(Game::ABNORMAL_FLOW, false);
+                $game->globals->set(Game::CURRENT_PLAYER, 1);
+                $game->activePlayerId = 2;
+
+                $pay = $game->argsHighDramaInHandActionPay()['_private']['active'];
+                Assert::same([1], $game->gamestate->activePlayerChanges, 're-seated');
+                Assert::same(2, $pay['cost'], 'wealth cost');
+                Assert::same($risk->Id, $pay['choseActionCardId'], 'risk card');
+            },
+
             'argsHighDramaBruteActionChooseBrute / PayForBrute expose hand Brutes' => function () {
                 $game = new FrameworkActionsGame();
                 $brute = new GenericBrute('Thug');

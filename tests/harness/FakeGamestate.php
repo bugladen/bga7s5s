@@ -11,6 +11,11 @@ class FakeGamestate
     // digits are 30–69 (High Drama). Tests set this; 0 is outside that band.
     public ?int $currentMainStateId = 0;
 
+    // WHY: changeActivePlayer must update Game::activePlayerId the way BGA does —
+    // otherwise Pass→pay regressions that re-seat CURRENT_PLAYER still see the
+    // reactor via getActivePlayerId().
+    public ?\Bga\Games\SeventhSeaCityOfFiveSails\Game $game = null;
+
     public function getCurrentMainStateId(): ?int
     {
         return $this->currentMainStateId;
@@ -27,6 +32,10 @@ class FakeGamestate
     public function changeActivePlayer(int $playerId): void
     {
         $this->activePlayerChanges[] = $playerId;
+        if ($this->game !== null)
+        {
+            $this->game->activePlayerId = $playerId;
+        }
     }
 
     /** @var list<array{playerId:int,transition:string}> */

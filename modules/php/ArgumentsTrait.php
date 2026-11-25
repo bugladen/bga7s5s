@@ -593,12 +593,18 @@ trait ArgumentsTrait
 
     public function argsHighDramaInHandActionPay(): array
     {
-        $playerId = (int)$this->getActivePlayerId();
+        // WHY: Same stale-active failure mode as stHighDramaInPlayActionDispatch.
+        // Reaction Pass during IN_HAND_ACTION_EVENTS can leave the reactor active;
+        // getInHandActionById would search the wrong hand. Re-seat + look up by
+        // CURRENT_PLAYER so the Risk (and pay UI) belong to the turn player.
+        // runEvents now restores too — this is belt-and-suspenders for args.
+        $playerId = (int)$this->globals->get(Game::CURRENT_PLAYER, $this->getActivePlayerId());
+        $this->gamestate->changeActivePlayer($playerId);
         $this->theah->buildCity();
 
         $performerId = $this->globals->get(GAME::CHOSEN_PERFORMER);        
         $actionId = $this->globals->get(Game::CHOSEN_ACTION);
-        $action = $this->theah->getInHandActionById($actionId);
+        $action = $this->theah->getInHandActionById($actionId, $playerId);
         $owningCard = $action->getOwningCard($this->theah);
         $cardCost = $owningCard->WealthCost;
 

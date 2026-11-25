@@ -307,6 +307,41 @@ class Theah_Capabilities_Test extends TestCase
                 );
                 Assert::same(Game::STAT_FINESSE, $world->game->globals->get(Game::CHALLENGE_STAT), 'stat restored again');
             },
+
+            // ---- restoreCanonicalActivePlayer (Pass → endOfEvents) ---------------------------------
+
+            // WHY: Reaction_02030a Pass left reactor active; endOfEvents → in-hand pay
+            // fatal'd. Restore must not require state.type == ACTIVE_PLAYER.
+            'restoreCanonicalActivePlayer re-seats CURRENT_PLAYER after a reaction' => function () {
+                $world = $this->world();
+                $world->game->globals->set(Game::IN_DUEL, false);
+                $world->game->globals->set(Game::CURRENT_PLAYER, 1);
+                $world->game->gamestate->changeActivePlayer(2);
+
+                $world->theah->restoreCanonicalActivePlayer();
+
+                Assert::same([2, 1], $world->game->gamestate->activePlayerChanges, 'reactor then turn player');
+            },
+
+            'restoreCanonicalActivePlayer uses DUEL_CURRENT_PLAYER while in a duel' => function () {
+                $world = $this->world();
+                $world->game->globals->set(Game::IN_DUEL, true);
+                $world->game->globals->set(Game::CURRENT_PLAYER, 1);
+                $world->game->globals->set(Game::DUEL_CURRENT_PLAYER, 2);
+
+                $world->theah->restoreCanonicalActivePlayer();
+
+                Assert::same([2], $world->game->gamestate->activePlayerChanges, 'duel player');
+            },
+
+            'restoreCanonicalActivePlayer skips when skipTransitions' => function () {
+                $world = $this->world();
+                $world->game->globals->set(Game::CURRENT_PLAYER, 1);
+
+                $world->theah->restoreCanonicalActivePlayer(true);
+
+                Assert::same([], $world->game->gamestate->activePlayerChanges, 'no re-seat');
+            },
         ];
     }
 }
