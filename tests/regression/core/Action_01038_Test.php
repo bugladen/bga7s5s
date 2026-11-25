@@ -46,11 +46,20 @@ class Action_01038_Test extends TestCase
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'home');
             },
 
-            'trigger queues transition 01038' => function () {
+            // WHY: No multi-ack — trigger logs all revealed cards (with cards[] for hover)
+            // and queues straight to the choose-Attachment state.
+            'trigger logs revealed cards and queues transition 01038' => function () {
                 $world = new TestWorld();
                 $otto = $world->placeCharacter(new _01038(), Game::LOCATION_CITY_DOCKS, 1);
                 $att = $world->placeCard(new _01048(), 'Deck-1', 1);
-                $world->game->topFactionCards = [['id' => $att->Id]];
+                $risk = $world->placeCard(new _01026(), 'Deck-1', 1);
+                $other = $world->placeCard(new _01026(), 'Deck-1', 1);
+                $world->game->topFactionCards = [
+                    ['id' => $att->Id],
+                    ['id' => $risk->Id],
+                    ['id' => $other->Id],
+                ];
+                $world->game->notify->messages = [];
                 /** @var Action_01038 $action */
                 $action = $otto->getActions()[0];
 
@@ -60,6 +69,10 @@ class Action_01038_Test extends TestCase
                 $event->theah = $world->theah;
                 $action->handleEvent($event);
 
+                $note = $world->game->notify->messages[0];
+                Assert::same(1, $note['args']['found'], 'one Attachment');
+                Assert::count(3, $note['args']['cards'], 'all revealed');
+                Assert::same($att->Id, $note['args']['cards'][0]['id'], 'att first');
                 Assert::same('01038', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'transition');
             },
 
@@ -79,8 +92,8 @@ class Action_01038_Test extends TestCase
                 $action = $otto->getActions()[0];
                 $action->actFromActionWithId(
                     $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01038_3,
-                    'highDramaPhase01038_3',
+                    States::HIGH_DRAMA_PLAYER_TURN_01038,
+                    'highDramaPhase01038',
                     $att->Id
                 );
 
@@ -105,7 +118,7 @@ class Action_01038_Test extends TestCase
 
                 /** @var Action_01038 $action */
                 $action = $otto->getActions()[0];
-                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_01038_3);
+                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_01038);
 
                 Assert::count(3, $world->theah->queuedOfType(EventCardAddedToFactionDeck::class), 'sink all');
                 Assert::same(['pass'], $world->game->gamestate->transitions, 'pass');

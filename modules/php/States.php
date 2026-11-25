@@ -234,8 +234,6 @@ class States
             const HIGH_DRAMA_PLAYER_TURN_01035V2_3 = 40103523;
             const HIGH_DRAMA_PLAYER_TURN_01035V2_4 = 40103524;
         const HIGH_DRAMA_PLAYER_TURN_01038 = 401038;
-            const HIGH_DRAMA_PLAYER_TURN_01038_2 = 4010382;
-            const HIGH_DRAMA_PLAYER_TURN_01038_3 = 4010383;
         const HIGH_DRAMA_PLAYER_TURN_01041 = 401041;
         // Clone of Rosine (_01041v2). 40104120 sits past the original id so a later _2 substate can use 4010412.
         const HIGH_DRAMA_PLAYER_TURN_01041V2 = 40104120;

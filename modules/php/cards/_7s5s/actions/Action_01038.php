@@ -36,30 +36,33 @@ class Action_01038 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $deck = $event->theah->game->getGameDeckObject();
             $otto = $this->getOwningCharacter($event->theah);
             $count = 3;
 
-            //Announce the cards revealed
+            // WHY: No multi-player acknowledge state — revealed cards live in the log.
+            // cards[] seeds logCardCache so opponents get hydrated tooltips (Monet 04023).
             $deckCards = $event->theah->game->getCardsOnTopOfPlayerFactionDeck($otto->ControllerId, $count);
             $names = [];
+            $cards = [];
             $found = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
-                if ($card instanceof Attachment)
-                    $found++;
                 $names[] = $card->getInjectCode();
+                $cards[] = $card->getPropertyArray($event->theah->game);
+                if ($card instanceof Attachment)
+                {
+                    $found++;
+                }
             }
 
-            $otto = $this->getOwningCharacter($event->theah);
-            $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal Attachments from their deck. ${found} Attachment(s) have been revealed. 
-            <p>Cards Revealed: ${names}'), [
+            $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Otto Streit\'s Action to reveal cards from their deck. ${found} Attachment(s) have been revealed. (${names})'), [
                 'i18n' => ['card_name'],
                 'player_name' => $event->theah->game->getPlayerNameById($otto->ControllerId),
                 'card_name' => $otto->Name,
                 'count' => $count,
                 'found' => $found,
-                'names' => implode(', ', $names)
+                'names' => implode(', ', $names),
+                'cards' => $cards,
             ]);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01038", $this->Id);
@@ -71,7 +74,7 @@ class Action_01038 extends CharacterAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038 || $state == States::HIGH_DRAMA_PLAYER_TURN_01038_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038)
         {
             $otto = $this->getOwningCharacter($game->theah);
             $count = 3;
@@ -93,7 +96,7 @@ class Action_01038 extends CharacterAction
     {
         parent::actFromActionPass($game, $state);
      
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038)
         {
             $count = 3;
             $otto = $this->getOwningCharacter($game->theah);
@@ -126,7 +129,7 @@ class Action_01038 extends CharacterAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01038)
         {
             $otto = $this->getOwningCharacter($game->theah);
 

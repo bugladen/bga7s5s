@@ -815,25 +815,6 @@
             },
 
             'highDramaPhase01038' : () => {
-                dojo.removeClass('choose_container', 'hidden');
-                dojo.removeClass('chooseList', 'hidden');
-                
-                let count = 0;
-                args.args.args.cards.forEach((card) => {
-                    this.addCardToDeck(this.chooseList, card);
-                    if (card.type === 'Attachment') 
-                        count++;
-                });
-                var translated = dojo.string.substitute(
-                    _("Otto Streit's Revealed Cards: ( ${count} Attachment(s) Found )"),
-                    {
-                        count: count
-                    }
-                );
-                $('choose_container_name').innerHTML = translated;
-                this.chooseList.setSelectionMode(0);
-            },
-            'highDramaPhase01038_3' : () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     dojo.removeClass('choose_container', 'hidden');

@@ -323,9 +323,6 @@
             },
 
             'highDramaPhase01038': () => {
-                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
-            },
-            'highDramaPhase01038_3': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 const hasAttachment = args.args.cards.some(card => card.type === 'Attachment');
                 if (!hasAttachment)

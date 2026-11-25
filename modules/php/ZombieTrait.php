@@ -135,7 +135,7 @@ trait ZombieTrait
                 // highDramaPhase01024–01030 / 01034 / 01049_2 / 01056 / _2 / 01058 / 01059 / 01060 / 01072 / 01081 / 01085 live in their State class zombie()
                 // highDramaPhase01148_3 / _4 / 01156_2 / _3 / 01160 / 01161 live in their State class zombie()
 
-                // highDramaPhase01035_3 / 01035v2_3 / 01038_3 live in their State class zombie()
+                // highDramaPhase01035_3 / 01035v2_3 / 01038 live in their State class zombie()
                 // highDramaPhase01180 / _2 / _4 / _5 / 01192 / 01194 / _2 / 01197 / _2 / _3 live in their State class zombie()
                 // highDramaPhase01200 / _2 / 01205 / _2 live in their State class zombie()
                 // planningPhaseResolveSchemes_01200 / _2 / planningPhaseApproach01200 / _2 live in their State class zombie()

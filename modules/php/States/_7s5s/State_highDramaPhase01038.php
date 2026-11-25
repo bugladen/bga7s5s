@@ -16,23 +16,18 @@ class State_highDramaPhase01038 extends GameState
     {
         parent::__construct($game,
             id: States::HIGH_DRAMA_PLAYER_TURN_01038,
-            type: StateType::MULTIPLE_ACTIVE_PLAYER,
+            type: StateType::ACTIVE_PLAYER,
             name: "highDramaPhase01038",
 
-            description: clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
-            descriptionMyTurn: clienttranslate('Otto Streit') . clienttranslate(': ${you} must acknowledge revealed cards:'),
+            description: clienttranslate('${actplayer} may choose an Attachment to put into their Faction Hand.'),
+            descriptionMyTurn: clienttranslate('${you} may choose an Attachment to put into your Faction Hand:'),
             transitions: [
-                "multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01038_2,
+                "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
         );
-    }
-
-    function onEnteringState(int $activePlayerId): void
-    {
-        // WHY: Kaspar/Otto reveal to everyone including initiator — full acknowledge.
-        $this->game->stMultiPlayerInitCardRevealAcknowledge();
     }
 
     public function getArgs(): array
@@ -41,13 +36,36 @@ class State_highDramaPhase01038 extends GameState
     }
 
     #[PossibleAction]
-    public function actMultipleOk(): void
+    public function actFromCardWithId(string $id): void
     {
-        $this->game->actMultipleOk();
+        $this->game->actFromCardWithId($id);
+    }
+
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+        // WHY: Named cardChosen/pass. actFromCardPass throws if Attachments remain among
+        // the top cards — pick first Attachment from args when present, else pass.
+        // No multi-ack before this state anymore; revealed cards live in the game log only.
+        $args = $this->game->argsForState();
+        $cards = $args['args']['cards'] ?? [];
+        foreach ($cards as $card) {
+            $type = $card['type'] ?? $card['Type'] ?? '';
+            $id = $card['id'] ?? $card['Id'] ?? null;
+            if ($id === null) {
+                continue;
+            }
+            // Attachment property arrays expose Type / type; prefer Type from getPropertyArray.
+            if ($type === 'Attachment' || !empty($card['IsAttachment'])) {
+                $this->game->actFromCardWithId((string)$id);
+                return;
+            }
+        }
+        $this->game->actFromCardPass();
     }
 }

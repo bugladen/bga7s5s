@@ -22,5 +22,5 @@ Merged former `_3` enter/leave/buttons/EventHandlers onto `highDramaPhase01192`;
 ## Tests
 `Action_01192_Test` + `Card_01192_Test` green (13). Trigger test now asserts no MULTI global + cards[] ids.
 
-## Not doing
-Otto `01038` / Kaj `01180` still have multi-ack twins — user only asked for Gustavo. Same cleanup is available if they want it.
+## Follow-up
+Otto `01038` cleaned the same way (2026-11-25-04). Kaj `01180` still has multi-ack if wanted.
