@@ -24,8 +24,9 @@ class _04020 extends Risk implements IHasReactions, IRiskThatTargetsCharacters
 
         $this->initializeFaction("Eisen");
 
-        $this->WealthCost = 1;
+        $this->WealthCost = 0;
 
+        $this->Riposte = 0;
         $this->DashedRiposte = true;
         $this->Parry = 2;
         $this->Thrust = 4;
