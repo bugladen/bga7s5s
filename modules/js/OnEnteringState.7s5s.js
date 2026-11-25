@@ -2147,28 +2147,6 @@
             },
     
             'highDramaPhase01180' : () => {
-                dojo.removeClass('choose_container', 'hidden');
-                dojo.removeClass('chooseList', 'hidden');
-                
-                let count = 0;
-                args.args.args.cards.forEach((card) => {
-                    this.addCardToDeck(this.chooseList, card);
-                    if (card.traits.includes('Artifact')) 
-                        count++;
-    
-                    this.cardProperties[card.id] = card;                
-                });
-                var translated = dojo.string.substitute(
-                    _("Kaj Kousei Artifacts ( ${count} Found )"),
-                    {
-                        count: count
-                    }
-                );
-                $('choose_container_name').innerHTML = translated;
-                this.chooseList.setSelectionMode(0);
-            },
-    
-            'highDramaPhase01180_3' : () => {
                 if (this.isCurrentPlayerActive()) {
                     dojo.removeClass('choose_container', 'hidden');
                     dojo.removeClass('chooseList', 'hidden');

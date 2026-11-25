@@ -54,9 +54,7 @@ class Card_01180_Test extends TestCase
             },
 
             'state constants registered' => function () {
-                Assert::same(401180, States::HIGH_DRAMA_PLAYER_TURN_01180, 'ack');
-                Assert::same(4011802, States::HIGH_DRAMA_PLAYER_TURN_01180_2, 'set player');
-                Assert::same(4011803, States::HIGH_DRAMA_PLAYER_TURN_01180_3, 'choose');
+                Assert::same(401180, States::HIGH_DRAMA_PLAYER_TURN_01180, 'choose');
                 Assert::same(4011804, States::HIGH_DRAMA_PLAYER_TURN_01180_4, 'performer');
                 Assert::same(4011805, States::HIGH_DRAMA_PLAYER_TURN_01180_5, 'pay');
             },

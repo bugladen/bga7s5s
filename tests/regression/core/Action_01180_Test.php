@@ -78,11 +78,18 @@ class Action_01180_Test extends TestCase
                 Assert::false($action->isAvailableToPlayer(2, $world->theah), 'opponent');
             },
 
-            'trigger queues transition 01180' => function () {
+            // WHY: No multi-ack — trigger logs all revealed cards (with cards[] for hover)
+            // and queues straight to the choose-Artifact state.
+            'trigger logs revealed cards and queues transition 01180' => function () {
                 $world = new TestWorld();
                 [$kaj, $action] = $this->scene($world);
+                $artifact = $world->placeCard(new _01187(), Game::LOCATION_CITY_DECK, 0);
                 $filler = $world->placeCard(new _01176(), Game::LOCATION_CITY_DECK, 0);
-                $world->game->topCityCards = [['id' => $filler->Id]];
+                $world->game->topCityCards = [
+                    ['id' => $artifact->Id],
+                    ['id' => $filler->Id],
+                ];
+                $world->game->notify->messages = [];
 
                 $event = new EventActionTriggered();
                 $event->actionId = $action->Id;
@@ -90,6 +97,12 @@ class Action_01180_Test extends TestCase
                 $event->theah = $world->theah;
                 $action->handleEvent($event);
 
+                $notes = $world->game->notify->messages;
+                Assert::true(count($notes) >= 2, 'action + reveal');
+                $reveal = $notes[count($notes) - 1];
+                Assert::same(1, $reveal['args']['count'], 'one Artifact');
+                Assert::count(2, $reveal['args']['cards'], 'all revealed');
+                Assert::same($artifact->Id, $reveal['args']['cards'][0]['id'], 'artifact first');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'one');
                 Assert::same('01180', $transitions[0]->transition, 'name');
@@ -108,8 +121,8 @@ class Action_01180_Test extends TestCase
 
                 $args = $action->getArgsFromAction(
                     $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01180_3,
-                    'highDramaPlayerTurn_01180_3'
+                    States::HIGH_DRAMA_PLAYER_TURN_01180,
+                    'highDramaPlayerTurn_01180'
                 );
 
                 Assert::count(4, $args['cards'], 'four');
@@ -126,7 +139,7 @@ class Action_01180_Test extends TestCase
                     $world->game->topCityCards[] = ['id' => $card->Id];
                 }
 
-                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_01180_3);
+                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_01180);
 
                 $sinks = $world->theah->queuedOfType(EventCardAddedToCityDeck::class);
                 Assert::count(4, $sinks, 'four sinks');
@@ -150,7 +163,7 @@ class Action_01180_Test extends TestCase
                 try {
                     $action->actFromActionWithId(
                         $world->game,
-                        States::HIGH_DRAMA_PLAYER_TURN_01180_3,
+                        States::HIGH_DRAMA_PLAYER_TURN_01180,
                         'x',
                         $gun->Id
                     );
@@ -172,7 +185,7 @@ class Action_01180_Test extends TestCase
                 try {
                     $action->actFromActionWithId(
                         $world->game,
-                        States::HIGH_DRAMA_PLAYER_TURN_01180_3,
+                        States::HIGH_DRAMA_PLAYER_TURN_01180,
                         'x',
                         $out->Id
                     );
@@ -190,8 +203,8 @@ class Action_01180_Test extends TestCase
 
                 $action->actFromActionWithId(
                     $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01180_3,
-                    'highDramaPlayerTurn_01180_3',
+                    States::HIGH_DRAMA_PLAYER_TURN_01180,
+                    'highDramaPlayerTurn_01180',
                     $artifact->Id
                 );
 

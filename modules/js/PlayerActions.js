@@ -551,7 +551,7 @@ return declare('seventhseacityoffivesails.actions', null, {
             'setupTable_01006'                          : 'actFromCardPass',
             'setupTable_05Gary'                         : 'actFromCardPass',
             'highDramaPlayerTurn'                       : 'actHighDramaPass',
-            'highDramaPhase01180_3'                     : 'actPassWithPass',
+            'highDramaPhase01180'                       : 'actPassWithPass',
             'planningPhaseResolveSchemes_01016_2'       : 'actPassWithPass',
             'planningPhaseResolveSchemes_01125'         : 'actFromCardPass',
             'planningPhaseResolveSchemes_01125_2'       : 'actFromCardPass',

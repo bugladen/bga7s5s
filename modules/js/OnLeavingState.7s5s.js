@@ -1333,14 +1333,6 @@
             },
 
             'highDramaPhase01180' : () => {
-                //Exposed to all players
-                dojo.addClass('choose_container', 'hidden');
-                dojo.addClass('chooseList', 'hidden');
-                this.chooseList.removeAll();
-                this.chooseList.setSelectionMode(0);
-            },
-    
-            'highDramaPhase01180_3' : () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     dojo.addClass('choose_container', 'hidden');

@@ -210,7 +210,7 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                 }                
             },
 
-            'highDramaPhase01180_3': () => {
+            'highDramaPhase01180': () => {
                 if (item_id === undefined) return;
                 var items = this.chooseList.getSelectedItems();
                 items.forEach((item) => {

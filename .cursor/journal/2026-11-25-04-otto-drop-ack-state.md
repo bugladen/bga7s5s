@@ -22,5 +22,5 @@ Same pick-first-Attachment-or-pass logic moved onto `State_highDramaPhase01038` 
 ## Tests
 `Action_01038_Test` + `Card_01038_Test` — trigger now asserts found + cards[].
 
-## Not doing
-Kaj `01180` still multi-acks.
+## Follow-up
+Kaj `01180` cleaned the same way (2026-11-25-05).

@@ -45,12 +45,16 @@ class Action_01180 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
+            // WHY: No multi-player acknowledge state — revealed cards live in the log.
+            // cards[] seeds logCardCache so opponents get hydrated tooltips (Monet 04023).
             $deckCards = $event->theah->game->getCardsOnTopOfCityDeck(4);
             $names = [];
+            $cards = [];
             $count = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
                 $names[] = $card->getInjectCode();
+                $cards[] = $card->getPropertyArray($event->theah->game);
                 if ($card->hasTrait('Artifact'))
                     $count++;
             }
@@ -67,7 +71,8 @@ class Action_01180 extends CharacterAction
             $event->theah->game->notify->all('message', clienttranslate('${action_inject_code}: ${count} Artifacts found in the top 4 cards of the City Deck. (${names})'), [
                 'action_inject_code' => $kaj->getInjectCode(),
                 'count' => $count,
-                'names' => implode(', ', $names)
+                'names' => implode(', ', $names),
+                'cards' => $cards,
             ]);
 
             $owner = $this->getOwningCard($event->theah);
@@ -80,7 +85,7 @@ class Action_01180 extends CharacterAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180 || $state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
             $deckCards = $game->getCardsOnTopOfCityDeck(4);
             $cards = [];
@@ -131,7 +136,7 @@ class Action_01180 extends CharacterAction
     {
         parent::actFromActionPass($game, $state);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
             $deckCards = $game->getCardsOnTopOfCityDeck(4);
 
@@ -160,7 +165,7 @@ class Action_01180 extends CharacterAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01180)
         {
             $deckCards = $game->getCardsOnTopOfCityDeck(4);
 

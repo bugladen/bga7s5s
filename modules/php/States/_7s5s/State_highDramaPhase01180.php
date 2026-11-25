@@ -12,41 +12,45 @@ class State_highDramaPhase01180 extends GameState
 {
     function __construct(
         protected Game $game,
-    )
+    ) 
     {
         parent::__construct($game,
             id: States::HIGH_DRAMA_PLAYER_TURN_01180,
-            type: StateType::MULTIPLE_ACTIVE_PLAYER,
+            type: StateType::ACTIVE_PLAYER,
             name: "highDramaPhase01180",
 
-            description: clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
-            descriptionMyTurn: clienttranslate('Kaj Kousei') . clienttranslate(': ${you} must acknowledge revealed cards:'),
+            description: clienttranslate('${actplayer} may choose to Equip an Artifact from the top 4 cards of the City Deck.'),
+            descriptionMyTurn: clienttranslate('${you} may choose to Equip an Artifact from the top 4 cards of the City Deck:'),
             transitions: [
-                "multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01180_2,
+                "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_01180_4,
+                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS
             ],
             updateGameProgression: false,
             initialPrivate: null,
         );
     }
-
-    function onEnteringState(int $activePlayerId): void
-    {
-        $this->game->stMultiPlayerInitCardRevealAcknowledge();
-    }
-
+    
     public function getArgs(): array
     {
         return $this->game->argsForState();
+    } 
+
+    #[PossibleAction]
+    public function actFromCardWithId(string $id): void
+    {
+        $this->game->actFromCardWithId($id);
     }
 
     #[PossibleAction]
-    public function actMultipleOk(): void
+    public function actFromCardPass(): void
     {
-        $this->game->actMultipleOk();
+        $this->game->actFromCardPass();
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+        // WHY: No multi-ack before this state anymore; revealed cards live in the log.
+        // Decline via pass (sinks the four city cards).
+        $this->game->actFromCardPass();
     }
 }

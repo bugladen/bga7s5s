@@ -833,9 +833,6 @@
             },
 
             'highDramaPhase01180': () => {
-                this.addActionButton(`actOk`, _('Ok'), () => this.onMultipleOk());
-            },
-            'highDramaPhase01180_3': () => {
                 this.addActionButton(`actChooseCardSelected`, _('Confirm Selection'), () => this.onChooseListCardConfirmed());
                 this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
                 dojo.addClass('actChooseCardSelected', 'disabled');
