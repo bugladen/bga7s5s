@@ -19,7 +19,7 @@ class Action_01069 extends CharacterAction implements ISorcererAbility, IAbility
     {
         parent::__construct();
 
-        $this->Name = clienttranslate("Recover Attachment from Discard Pile");
+        $this->Name = clienttranslate("Recover non-unique Attachment from Discard Pile");
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
