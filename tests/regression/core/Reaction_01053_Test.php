@@ -317,6 +317,74 @@ class Reaction_01053_Test extends TestCase
                 Assert::false($reaction->Used, 'not used');
                 Assert::same(['done'], $world->game->gamestate->transitions, 'done');
             },
+
+            // WHY: starter decks run two Hexenjagd; cancel must drop the sibling offer so
+            // Decline cannot overwrite REACTION_ID / re-prompt during hold+pay (Mireli 01135).
+            'cancel clears sibling Hexenjagd reaction transitions in hand' => function () {
+                $world = new TestWorld();
+                [, $reaction, $mine, $sorcery, $ability] = $this->scene($world);
+                $sibling = $world->placeCard(new _01053(), Game::LOCATION_HAND, 1);
+                /** @var Reaction_01053 $siblingReaction */
+                $siblingReaction = $sibling->getReactions()[0];
+
+                $start = $this->sorcererStart($world, $sorcery, $ability, $mine->Id);
+                $reaction->handleEvent($start);
+                $siblingReaction->handleEvent($start);
+                Assert::count(2, $world->theah->queuedOfType(EventTransition::class), 'two offers');
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, "cancel-{$mine->Id}");
+
+                $siblingOffers = array_filter(
+                    $world->theah->queuedOfType(EventTransition::class),
+                    fn($t) => $t->internalId === $siblingReaction->Id || $t->sourceId === $sibling->Id
+                );
+                Assert::count(0, $siblingOffers, 'sibling cleared');
+            },
+
+            // WHY: sibling Decline can set REACTION_ID=decline before pay; sticky cancel-*
+            // must still complete wound + sweep so Pull stays canceled.
+            'RiskReactionTriggered with polluted decline id still cancels using sticky choice' => function () {
+                $world = new TestWorld();
+                [$hex, $reaction, $mine, $sorcery, $ability] = $this->scene($world);
+                $reaction->handleEvent($this->sorcererStart($world, $sorcery, $ability, $mine->Id));
+                $reaction->performReaction($world->game, 0, $reaction->Id, "cancel-{$mine->Id}");
+
+                $move = new EventCardMoving();
+                $move->cardId = $mine->Id;
+                $move->batchId = 9;
+                $move->theah = $world->theah;
+                $reaction->handleEvent($move);
+                Assert::true($move->canceled, 'move held');
+                $world->theah->takeQueuedEvents();
+
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                // Simulate actPayForReaction reading a sibling-overwritten REACTION_ID.
+                $triggered->reactionId = 'decline';
+                $triggered->theah = $world->theah;
+                $reaction->handleEvent($triggered);
+
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'cost wound');
+                Assert::same($mine->Id, $wounds[0]->characterId, 'performer');
+                Assert::same($hex->Id, $wounds[0]->sourceId, 'Hexenjagd');
+                Assert::true($reaction->Used, 'used');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'held move not released');
+            },
+
+            'decline on a never-engaged copy does not release or arm skipNext' => function () {
+                $world = new TestWorld();
+                [, $reaction, $mine, $sorcery, $ability] = $this->scene($world);
+                $reaction->handleEvent($this->sorcererStart($world, $sorcery, $ability, $mine->Id));
+                $world->theah->takeQueuedEvents();
+                $world->game->gamestate->transitions = [];
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'decline');
+
+                Assert::count(0, $world->theah->queuedEvents, 'nothing released');
+                Assert::false($reaction->Used, 'not used');
+                Assert::same(['done'], $world->game->gamestate->transitions, 'done');
+            },
         ];
     }
 }

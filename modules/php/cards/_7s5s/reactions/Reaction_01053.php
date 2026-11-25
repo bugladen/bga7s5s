@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\ISorcererAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
@@ -39,6 +40,11 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
 
     private bool $holdingEffects = false;
     private bool $skipNextEvent = false;
+    // WHY: actPayForReaction reads Game::REACTION_ID. A leftover sibling Hexenjagd prompt
+    // (starter decks run two) can Decline and overwrite that global to "decline" before
+    // this copy's pay fires EventRiskReactionTriggered — which would then skip cancel
+    // cleanup. Remember the cancel-* choice on the reaction itself.
+    private string $chosenCancelReactionId = '';
 
     public function __construct()
     {
@@ -262,10 +268,19 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
-            if ($event->reactionId != 'decline')
+            // Prefer the sticky cancel choice when a sibling Decline overwrote REACTION_ID.
+            $reactionId = $event->reactionId;
+            if ($this->holdingEffects
+                && $this->chosenCancelReactionId !== ''
+                && ($reactionId === 'decline' || $reactionId === 'pass'))
+            {
+                $reactionId = $this->chosenCancelReactionId;
+            }
+
+            if ($reactionId != 'decline' && $reactionId != 'pass')
             {
                 $game = $event->theah->game;
-                $performerId = str_replace("cancel-", "", $event->reactionId);
+                $performerId = str_replace("cancel-", "", $reactionId);
                 $performer = $game->theah->getCharacterById($performerId);
     
                 $target = $game->theah->getCardById($this->TargetId);
@@ -280,6 +295,10 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
                 $game->theah->deleteTransitionEventsBySourceId($this->SourceId);
                 $this->clearEvents($game);
                 $this->holdingEffects = false;
+                $this->chosenCancelReactionId = '';
+                // Belt-and-suspenders: performReaction already cleared siblings when cancel
+                // was chosen; clear again in case a late offer stacked during pay.
+                $this->clearSiblingHexenjagdReactionTransitions($game, $owner->Id, $owner->ControllerId);
 
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $game->theah->queueEvent($woundEvent);
@@ -305,7 +324,17 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
         {
             $this->holdingEffects = true;
             $this->skipNextEvent = false;
+            $this->chosenCancelReactionId = $reactionId;
             $owner->IsUpdated = true;
+
+            // WHY: Starter decks run two Hexenjagd. SorcererAbilityStart stacks a reaction
+            // transition per copy; releaseHandReactionsFromOnePlayer then drains them in
+            // queue order. Without clearing siblings here, the second copy prompts while
+            // this copy is holding/paying — Decline overwrites REACTION_ID to "decline"
+            // before pay, so EventRiskReactionTriggered skips cancel cleanup; Back-then-
+            // Decline on the holding copy re-queues Pull. Same discipline as Mireli
+            // (Reaction_01135::clearSiblingMireliReactionTransitions).
+            $this->clearSiblingHexenjagdReactionTransitions($game, $owner->Id, $owner->ControllerId);
 
             $event = EventFactory::createEnteringPayStateEvent($owner->ControllerId, $owner->Id, Game::PAY_STATE_IN_HAND_REACTION, $this->Id);
             $game->theah->queueEvent($event);
@@ -316,12 +345,40 @@ class Reaction_01053 extends RiskReaction implements ICancelReaction
 
         if ($reactionId == 'decline')
         {
-            $this->releaseEvents($game);
-            $this->holdingEffects = false;
-            $this->skipNextEvent = true;
+            // WHY: Only the copy that chose cancel holds clones. Decline on a never-engaged
+            // sibling must not set skipNextEvent (stale skip would let the next held effect
+            // through uncanceled) or call releaseEvents (no-op today, keep the gate explicit).
+            if ($this->holdingEffects)
+            {
+                $this->releaseEvents($game);
+                $this->holdingEffects = false;
+                $this->skipNextEvent = true;
+                $this->chosenCancelReactionId = '';
+            }
             $owner->IsUpdated = true;
         }
 
         $game->gamestate->nextState("done");
+    }
+
+    private function clearSiblingHexenjagdReactionTransitions(Game $game, int $ownerCardId, int $controllerId): void
+    {
+        $handCards = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $controllerId);
+        foreach ($handCards as $handCard)
+        {
+            if ($handCard->Id == $ownerCardId || ! ($handCard instanceof IHasReactions))
+            {
+                continue;
+            }
+
+            foreach ($handCard->getReactions() as $otherReaction)
+            {
+                if ($otherReaction instanceof Reaction_01053)
+                {
+                    $game->theah->deleteTransitionEvents($otherReaction->Id);
+                    $game->theah->deleteTransitionEventsBySourceId($handCard->Id);
+                }
+            }
+        }
     }
 }
