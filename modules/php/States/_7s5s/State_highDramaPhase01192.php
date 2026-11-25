@@ -16,22 +16,18 @@ class State_highDramaPhase01192 extends GameState
     {
         parent::__construct($game,
             id: States::HIGH_DRAMA_PLAYER_TURN_01192,
-            type: StateType::MULTIPLE_ACTIVE_PLAYER,
+            type: StateType::ACTIVE_PLAYER,
             name: "highDramaPhase01192",
 
-            description: clienttranslate('Your opponent(s) must acknowledge revealed cards.'),
-            descriptionMyTurn: clienttranslate('Gustavo') . clienttranslate(': ${you} must acknowledge revealed cards:'),
+            description: clienttranslate('${actplayer} may choose a Risk to put into their Faction Hand.'),
+            descriptionMyTurn: clienttranslate('${you} may choose a Risk to put into your Faction Hand:'),
             transitions: [
-                "multipleOk" => States::HIGH_DRAMA_PLAYER_TURN_01192_2,
+                "cardChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
+                "pass" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,
         );
-    }
-
-    function onEnteringState(int $activePlayerId): void
-    {
-        $this->game->stMultiPlayerInitCardRevealAcknowledgeSansInitiatingPlayer();
     }
 
     public function getArgs(): array
@@ -40,13 +36,21 @@ class State_highDramaPhase01192 extends GameState
     }
 
     #[PossibleAction]
-    public function actMultipleOk(): void
+    public function actFromCardWithId(string $id): void
     {
-        $this->game->actMultipleOk();
+        $this->game->actFromCardWithId($id);
+    }
+
+    #[PossibleAction]
+    public function actFromCardPass(): void
+    {
+        $this->game->actFromCardPass();
     }
 
     public function zombie(int $playerId): void
     {
-        $this->game->gamestate->setPlayerNonMultiactive($playerId, 'multipleOk');
+        // WHY: Named cardChosen/pass — decline via pass. No multi-ack before this
+        // state anymore; revealed cards live in the game log only.
+        $this->game->actFromCardPass();
     }
 }

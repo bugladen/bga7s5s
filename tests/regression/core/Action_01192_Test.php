@@ -69,11 +69,18 @@ class Action_01192_Test extends TestCase
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'uncontrolled');
             },
 
-            'trigger sets MULTI_STATE_INITIATING_PLAYER and queues transition 01192' => function () {
+            // WHY: No multi-ack — trigger logs all revealed cards (with cards[] for hover)
+            // and queues straight to the choose-Risk state.
+            'trigger logs revealed cards and queues transition 01192' => function () {
                 $world = new TestWorld();
                 [$gustavo, $action] = $this->inCity($world);
                 $risk = $world->placeCard(new _01026(), 'Deck-1', 1);
-                $world->game->topFactionCards = [['id' => $risk->Id]];
+                $att = $world->placeCard(new _01049(), 'Deck-1', 1);
+                $world->game->topFactionCards = [
+                    ['id' => $risk->Id],
+                    ['id' => $att->Id],
+                ];
+                $world->game->notify->messages = [];
 
                 $event = new EventActionTriggered();
                 $event->actionId = $action->Id;
@@ -81,7 +88,12 @@ class Action_01192_Test extends TestCase
                 $event->theah = $world->theah;
                 $action->handleEvent($event);
 
-                Assert::same(1, $world->game->globals->get(Game::MULTI_STATE_INITIATING_PLAYER), 'initiating');
+                Assert::same(null, $world->game->globals->get(Game::MULTI_STATE_INITIATING_PLAYER), 'no multi');
+                $note = $world->game->notify->messages[0];
+                Assert::same(1, $note['args']['found'], 'one Risk');
+                Assert::count(2, $note['args']['cards'], 'all revealed');
+                Assert::same($risk->Id, $note['args']['cards'][0]['id'], 'risk first');
+                Assert::same($att->Id, $note['args']['cards'][1]['id'], 'att second');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'one');
                 Assert::same('01192', $transitions[0]->transition, 'name');
@@ -104,8 +116,8 @@ class Action_01192_Test extends TestCase
 
                 $args = $action->getArgsFromAction(
                     $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01192_3,
-                    'highDramaPlayerTurn_01192_3'
+                    States::HIGH_DRAMA_PLAYER_TURN_01192,
+                    'highDramaPlayerTurn_01192'
                 );
 
                 Assert::count(2, $args['cards'], 'top 2');
@@ -130,8 +142,8 @@ class Action_01192_Test extends TestCase
 
                 $action->actFromActionWithId(
                     $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01192_3,
-                    'highDramaPlayerTurn_01192_3',
+                    States::HIGH_DRAMA_PLAYER_TURN_01192,
+                    'highDramaPlayerTurn_01192',
                     $risk->Id
                 );
 
@@ -157,7 +169,7 @@ class Action_01192_Test extends TestCase
                     ['id' => $b->Id],
                 ];
 
-                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_01192_3);
+                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_01192);
 
                 $sinks = $world->theah->queuedOfType(EventCardAddedToFactionDeck::class);
                 Assert::count(2, $sinks, 'sink all');
@@ -179,7 +191,7 @@ class Action_01192_Test extends TestCase
                 try {
                     $action->actFromActionWithId(
                         $world->game,
-                        States::HIGH_DRAMA_PLAYER_TURN_01192_3,
+                        States::HIGH_DRAMA_PLAYER_TURN_01192,
                         'x',
                         $other->Id
                     );
@@ -200,7 +212,7 @@ class Action_01192_Test extends TestCase
                 try {
                     $action->actFromActionWithId(
                         $world->game,
-                        States::HIGH_DRAMA_PLAYER_TURN_01192_3,
+                        States::HIGH_DRAMA_PLAYER_TURN_01192,
                         'x',
                         $att->Id
                     );

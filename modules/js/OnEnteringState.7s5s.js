@@ -2336,26 +2336,6 @@
             },
     
             'highDramaPhase01192' : () => {
-                dojo.removeClass('choose_container', 'hidden');
-                dojo.removeClass('chooseList', 'hidden');
-                
-                let count = 0;
-                args.args.args.cards.forEach((card) => {
-                    this.addCardToDeck(this.chooseList, card);
-                    if (card.type === 'Risk') 
-                        count++;
-                });
-                var translated = dojo.string.substitute(
-                    _("Gustavo's Revealed Cards: ( ${count} Risk(s) Found )"),
-                    {
-                        count: count
-                    }
-                );
-                $('choose_container_name').innerHTML = translated;
-                this.chooseList.setSelectionMode(0);
-            },
-    
-            'highDramaPhase01192_3' : () => {
                 if (this.isCurrentPlayerActive()) 
                 {
                     dojo.removeClass('choose_container', 'hidden');

@@ -43,33 +43,34 @@ class Action_01192 extends CharacterAction
 
         if ($event instanceof EventActionTriggered && $event->actionId == $this->Id)
         {
-            $deck = $event->theah->game->getGameDeckObject();
             $gustavo = $this->getOwningCharacter($event->theah);
             $count = $gustavo->ModifiedInfluence;
 
-            //Announce the Risks that are revealed
+            // WHY: No multi-player acknowledge state — revealed cards live in the log.
+            // cards[] seeds logCardCache so opponents get hydrated tooltips (Monet 04023).
             $deckCards = $event->theah->game->getCardsOnTopOfPlayerFactionDeck($gustavo->ControllerId, $count);
             $names = [];
+            $cards = [];
             $found = 0;
             foreach ($deckCards as $deckCard) {
                 $card = $event->theah->game->getCardObjectFromDb($deckCard['id']);
+                $names[] = $card->getInjectCode();
+                $cards[] = $card->getPropertyArray($event->theah->game);
                 if ($card instanceof Risk)
                 {
-                    $names[] = $card->getInjectCode();
                     $found++;
                 }
             }
 
-            $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Gustavo\'s Action to reveal Risks from their deck.  ${found} Risks have been revealed. (${names})'), [
+            $event->theah->game->notify->all('message', clienttranslate('${player_name} uses Gustavo\'s Action to reveal cards from their deck. ${found} Risk(s) have been revealed. (${names})'), [
                 'i18n' => ['card_name'],
                 'player_name' => $event->theah->game->getPlayerNameById($gustavo->ControllerId),
                 'card_name' => $gustavo->Name,
                 'count' => $count,
                 'found' => $found,
-                'names' => implode(', ', $names)
+                'names' => implode(', ', $names),
+                'cards' => $cards,
             ]);
-
-            $event->theah->game->globals->set(Game::MULTI_STATE_INITIATING_PLAYER, $gustavo->ControllerId);
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01192", $this->Id);
             $event->theah->queueEvent($transition);
@@ -80,7 +81,7 @@ class Action_01192 extends CharacterAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192 || $state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
         {
             $gustavo = $this->getOwningCharacter($game->theah);
             $count = $gustavo->ModifiedInfluence;
@@ -102,7 +103,7 @@ class Action_01192 extends CharacterAction
     {
         parent::actFromActionPass($game, $state);
      
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
         {
             $gustavo = $this->getOwningCharacter($game->theah);
 
@@ -130,7 +131,7 @@ class Action_01192 extends CharacterAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
         {
             $gustavo = $this->getOwningCard($game->theah);
             if ($gustavo instanceof Character)
