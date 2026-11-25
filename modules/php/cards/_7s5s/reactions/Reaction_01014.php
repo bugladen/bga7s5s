@@ -814,13 +814,14 @@ class Reaction_01014 extends CardReaction
 
             if ($reactionId == 'decline')
             {
+                // WHY: Decline is not a use — Maryam Reaction_02016 / UL Pass / Gary Pass.
+                // Flintlock engage-or-wound → CardEngaged offer → Decline used to setUsed
+                // and lock the reaction for the rest of the day.
                 $owner = $this->getOwningCharacter($game->theah);
                 $this->releaseEvent($game, $owner->Id);
                 $this->clearPhaseFlags();
                 $this->skipNextEvent = true;
                 $owner->IsUpdated = true;
-
-                $this->setUsed($game->theah, true);
             }
         }
         else if ($this->inHandThug)
@@ -865,10 +866,10 @@ class Reaction_01014 extends CardReaction
                     // WHY: Do not set inPlayThug before this check — that leaked true when
                     // there were no location Thugs, survived dusk Used-reset, and poisoned
                     // the next day's hand-muster UI (inPlayThug path + hand buttons).
+                    // Decline is not a use (Maryam 02016) — keep Available for later targets.
                     $this->clearPhaseFlags();
                     $this->releaseEvent($game, $owner->Id);
                     $this->skipNextEvent = true;
-                    $this->setUsed($game->theah, true);
                 }
             }
         }

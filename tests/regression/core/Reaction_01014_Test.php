@@ -14,6 +14,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01014;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01018;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01020;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01049;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01049;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions\Reaction_01014;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04032;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04045;
@@ -23,6 +25,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Thomas;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02034;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\actions\BasicChallengeAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
@@ -560,6 +563,7 @@ class Reaction_01014_Test extends TestCase
             // Dusk only cleared Used — next challenge set inHandThug too → UI said "new
             // target" while offering hand Thugs; click ran inPlayThug path → no muster →
             // isValidTarget fails → Challenge cancelled (Joern vs Vittoria + Angelo report).
+            // Decline is not a use (Maryam 02016) — Used stays false.
             'decline hand with no location Thug clears inPlayThug' => function () {
                 $world = new TestWorld();
                 $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
@@ -591,8 +595,46 @@ class Reaction_01014_Test extends TestCase
                 $inHand->setAccessible(true);
                 Assert::false($inPlay->getValue($reaction), 'inPlayThug cleared');
                 Assert::false($inHand->getValue($reaction), 'inHandThug cleared');
-                Assert::true($reaction->Used, 'spent');
+                Assert::false($reaction->Used, 'decline is not a use');
                 Assert::same($angelo->Location, Game::LOCATION_HAND, 'Angelo stays in hand');
+            },
+
+            // WHY: Polished Flintlock 01049_2 engage queues CardEngaged on Vittoria →
+            // reaction offer. Declining used to setUsed and lock her for the day.
+            'decline after flintlock engage does not spend the reaction' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $host = $world->placeCharacter(new GenericCharacter('Host'), Game::LOCATION_CITY_DOCKS, 2);
+                $flint = $world->placeCard(new _01049(), Game::LOCATION_CITY_DOCKS, 2);
+                $flint->AttachedToId = $host->Id;
+                $host->Attachments[] = $flint->Id;
+                /** @var Action_01049 $flintAction */
+                $flintAction = $flint->getActions()[0];
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCardEngaged();
+                $event->playerId = 2;
+                $event->cardId = $vittoria->Id;
+                $event->sourceId = $flint->Id;
+                $event->abilityId = $flintAction->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+                $world->theah->takeQueuedEvents();
+
+                Assert::true($event->canceled, 'held');
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'decline');
+
+                Assert::false($reaction->Used, 'decline is not a use');
+                $released = $world->theah->queuedOfType(EventCardEngaged::class);
+                Assert::count(1, $released, 'engage re-released onto Vittoria');
+                Assert::same($vittoria->Id, $released[0]->cardId, 'original target');
             },
 
             'stale inPlayThug plus hand Thug still musters on challenge target' => function () {
