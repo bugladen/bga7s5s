@@ -257,6 +257,47 @@ class Reaction_01088_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'nothing');
                 Assert::same(['done'], $world->game->gamestate->transitions, 'done');
             },
+
+            // WHY: starter decks run two; cancel must drop the sibling offer so Pass cannot
+            // overwrite REACTION_ID during pay (Hexenjagd 01053 / Mireli 01135).
+            'cancelChallenge clears sibling Embarrassing reaction transitions in hand' => function () {
+                $world = new TestWorld();
+                [, $reaction, $challenger, $defender] = $this->scene($world);
+                $sibling = $world->placeCard(new _01088(), Game::LOCATION_HAND, 1);
+                /** @var Reaction_01088 $siblingReaction */
+                $siblingReaction = $sibling->getReactions()[0];
+
+                $issued = $this->issued($world, $challenger->Id, $defender->Id);
+                $reaction->handleEvent($issued);
+                $siblingReaction->handleEvent($issued);
+                Assert::count(2, $world->theah->queuedOfType(EventTransition::class), 'two offers');
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'cancelChallenge');
+
+                $siblingOffers = array_filter(
+                    $world->theah->queuedOfType(EventTransition::class),
+                    fn($t) => $t->internalId === $siblingReaction->Id || $t->sourceId === $sibling->Id
+                );
+                Assert::count(0, $siblingOffers, 'sibling cleared');
+            },
+
+            // WHY: sibling Pass can set REACTION_ID=pass before pay; sticky cancelChallenge
+            // must still set CHALLENGE_CANCELLED.
+            'RiskReactionTriggered with polluted pass id still cancels using sticky choice' => function () {
+                $world = new TestWorld();
+                [$risk, $reaction, $challenger, $defender] = $this->scene($world);
+                $world->game->globals->set(Game::CHALLENGE_CANCELLED, false);
+
+                $reaction->handleEvent($this->issued($world, $challenger->Id, $defender->Id));
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'cancelChallenge');
+                $world->theah->takeQueuedEvents();
+
+                $triggered = $this->triggered($world, $risk, $reaction, 'pass');
+                $reaction->handleEvent($triggered);
+
+                Assert::same(true, $world->game->globals->get(Game::CHALLENGE_CANCELLED), 'cancelled via sticky');
+                Assert::true($reaction->Used, 'used');
+            },
         ];
     }
 }

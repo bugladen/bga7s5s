@@ -143,6 +143,78 @@ class Reaction_01027_Test extends TestCase
                 Assert::false($results[0]->success, 'failed');
                 Assert::same(2, $results[0]->playerId, 'same pressurer');
             },
+
+            // WHY: starter decks run two Objection; fail must drop the sibling offer so
+            // Pass cannot overwrite REACTION_ID during pay (Hexenjagd 01053 / Mireli 01135).
+            'failPressure clears sibling Objection reaction transitions in hand' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01027(), Game::LOCATION_HAND, 1);
+                $sibling = $world->placeCard(new _01027(), Game::LOCATION_HAND, 1);
+                /** @var Reaction_01027 $reaction */
+                $reaction = $risk->getReactions()[0];
+                /** @var Reaction_01027 $siblingReaction */
+                $siblingReaction = $sibling->getReactions()[0];
+
+                $pressured = new EventLocationPressured();
+                $pressured->playerId = 2;
+                $pressured->success = true;
+                $pressured->difference = 1;
+                $pressured->location = Game::LOCATION_CITY_DOCKS;
+                $pressured->theah = $world->theah;
+                $reaction->handleEvent($pressured);
+                $siblingReaction->handleEvent($pressured);
+                Assert::count(2, $world->theah->queuedOfType(EventTransition::class), 'two offers');
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'failPressure');
+
+                $siblingOffers = array_filter(
+                    $world->theah->queuedOfType(EventTransition::class),
+                    fn($t) => $t->internalId === $siblingReaction->Id || $t->sourceId === $sibling->Id
+                );
+                Assert::count(0, $siblingOffers, 'sibling cleared');
+            },
+
+            // WHY: sibling Pass can set REACTION_ID=pass before pay; sticky failPressure
+            // must still replace the success result.
+            'RiskReactionTriggered with polluted pass id still fails using sticky choice' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01027(), Game::LOCATION_HAND, 1);
+                /** @var Reaction_01027 $reaction */
+                $reaction = $risk->getReactions()[0];
+
+                $pressured = new EventLocationPressured();
+                $pressured->playerId = 2;
+                $pressured->performerId = 99;
+                $pressured->success = true;
+                $pressured->difference = 1;
+                $pressured->location = Game::LOCATION_CITY_DOCKS;
+                $pressured->pressureType = 'Influence';
+                $pressured->totalsExplanation = 'x';
+                $pressured->highDramaBasicAction = false;
+                $pressured->abilityId = 'abil';
+                $pressured->theah = $world->theah;
+                $reaction->handleEvent($pressured);
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'failPressure');
+                $world->theah->takeQueuedEvents();
+
+                $successResult = new EventLocationPressureResult();
+                $successResult->playerId = 2;
+                $successResult->success = true;
+                $successResult->location = Game::LOCATION_CITY_DOCKS;
+                $world->theah->queueEvent($successResult);
+
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                // Simulate actPayForReaction reading a sibling-overwritten REACTION_ID.
+                $triggered->reactionId = 'pass';
+                $triggered->theah = $world->theah;
+                $reaction->handleEvent($triggered);
+
+                $results = $world->theah->queuedOfType(EventLocationPressureResult::class);
+                Assert::count(1, $results, 'one result');
+                Assert::false($results[0]->success, 'failed via sticky');
+                Assert::same(2, $results[0]->playerId, 'same pressurer');
+            },
         ];
     }
 }

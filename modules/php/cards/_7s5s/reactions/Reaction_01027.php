@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -14,6 +15,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 class Reaction_01027 extends RiskReaction implements ICancelReaction
 {
     private ?EventLocationPressured $event = null;
+
+    // WHY: actPayForReaction reads Game::REACTION_ID. A leftover sibling Objection prompt
+    // (starter decks run two) can Pass and overwrite that global to "pass" before this
+    // copy's pay fires EventRiskReactionTriggered — which would then skip fail cleanup.
+    // Same discipline as Hexenjagd (Reaction_01053).
+    private string $chosenCancelReactionId = '';
 
     public function __construct()
     {
@@ -58,7 +65,14 @@ class Reaction_01027 extends RiskReaction implements ICancelReaction
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
-            if ($event->reactionId == "failPressure")
+            $reactionId = $event->reactionId;
+            if ($this->chosenCancelReactionId !== ''
+                && ($reactionId === 'pass' || $reactionId === 'decline'))
+            {
+                $reactionId = $this->chosenCancelReactionId;
+            }
+
+            if ($reactionId == "failPressure")
             {
                 $game = $event->theah->game;
                 $owner = $this->getOwningCard($game->theah);
@@ -69,7 +83,7 @@ class Reaction_01027 extends RiskReaction implements ICancelReaction
     
                 // Delete the existing pressure result event and replace with a failed pressure result event
                 $game->theah->deletePressureResultEvents();
-                $event = EventFactory::createLocationPressureResultEvent(
+                $resultEvent = EventFactory::createLocationPressureResultEvent(
                     $this->event->playerId, 
                     $this->event->performerId, 
                     $this->event->location, 
@@ -78,7 +92,13 @@ class Reaction_01027 extends RiskReaction implements ICancelReaction
                     $this->event->totalsExplanation, 
                     $this->event->highDramaBasicAction, 
                     $this->event->abilityId);
-                $game->theah->queueEvent($event);
+                $game->theah->queueEvent($resultEvent);
+
+                $this->chosenCancelReactionId = '';
+                // Belt-and-suspenders: performReaction already cleared siblings when fail
+                // was chosen; clear again in case a late offer stacked during pay.
+                $this->clearSiblingObjectionReactionTransitions($game, $owner->Id, $owner->ControllerId);
+                $owner->IsUpdated = true;
             }
         }
     }
@@ -90,6 +110,15 @@ class Reaction_01027 extends RiskReaction implements ICancelReaction
         if ($reactionId == "failPressure")
         {
             $owner = $this->getOwningCard($game->theah);
+            $this->chosenCancelReactionId = $reactionId;
+            $owner->IsUpdated = true;
+
+            // WHY: Starter decks run two Objection. LocationPressured stacks a reaction
+            // transition per copy; without clearing siblings here, the second copy prompts
+            // while this copy is paying — Pass overwrites REACTION_ID so Triggered skips
+            // fail cleanup (Hexenjagd Reaction_01053 / Mireli Reaction_01135).
+            $this->clearSiblingObjectionReactionTransitions($game, $owner->Id, $owner->ControllerId);
+
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
             $game->theah->stackEvent($event);
 
@@ -98,5 +127,26 @@ class Reaction_01027 extends RiskReaction implements ICancelReaction
        }
 
         $game->gamestate->nextState("done");
+    }
+
+    private function clearSiblingObjectionReactionTransitions(Game $game, int $ownerCardId, int $controllerId): void
+    {
+        $handCards = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $controllerId);
+        foreach ($handCards as $handCard)
+        {
+            if ($handCard->Id == $ownerCardId || ! ($handCard instanceof IHasReactions))
+            {
+                continue;
+            }
+
+            foreach ($handCard->getReactions() as $otherReaction)
+            {
+                if ($otherReaction instanceof Reaction_01027)
+                {
+                    $game->theah->deleteTransitionEvents($otherReaction->Id);
+                    $game->theah->deleteTransitionEventsBySourceId($handCard->Id);
+                }
+            }
+        }
     }
 }

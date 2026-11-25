@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\ICancelReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -13,6 +14,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_01088 extends RiskReaction implements ICancelReaction
 {
+    // WHY: actPayForReaction reads Game::REACTION_ID. A leftover sibling You're Embarrassing
+    // Yourself prompt (starter decks run two) can Pass and overwrite that global to "pass"
+    // before this copy's pay fires EventRiskReactionTriggered — which would then skip
+    // challenge cancel. Same discipline as Hexenjagd (Reaction_01053).
+    private string $chosenCancelReactionId = '';
+
     public function __construct()
     {
         parent::__construct();
@@ -59,7 +66,14 @@ class Reaction_01088 extends RiskReaction implements ICancelReaction
 
         if ($event instanceof EventRiskReactionTriggered && $event->internalId == $this->Id)
         {
-            if ($event->reactionId == 'cancelChallenge')
+            $reactionId = $event->reactionId;
+            if ($this->chosenCancelReactionId !== ''
+                && ($reactionId === 'pass' || $reactionId === 'decline'))
+            {
+                $reactionId = $this->chosenCancelReactionId;
+            }
+
+            if ($reactionId == 'cancelChallenge')
             {
                 $game = $event->theah->game;
                 $owner = $this->getOwningCard($game->theah);
@@ -69,6 +83,10 @@ class Reaction_01088 extends RiskReaction implements ICancelReaction
                 ]);
     
                 $game->globals->set(Game::CHALLENGE_CANCELLED, true);
+                $this->chosenCancelReactionId = '';
+                // Belt-and-suspenders: performReaction already cleared siblings when cancel
+                // was chosen; clear again in case a late offer stacked during pay.
+                $this->clearSiblingEmbarrassingReactionTransitions($game, $owner->Id, $owner->ControllerId);
                 $this->setUsed($game->theah, true);
             }
         }
@@ -81,6 +99,15 @@ class Reaction_01088 extends RiskReaction implements ICancelReaction
         if ($reactionId == 'cancelChallenge')
         {
             $owner = $this->getOwningCard($game->theah);
+            $this->chosenCancelReactionId = $reactionId;
+            $owner->IsUpdated = true;
+
+            // WHY: Starter decks run two. ChallengeIssued stacks a reaction transition per
+            // copy; without clearing siblings here, the second copy prompts while this copy
+            // is paying — Pass overwrites REACTION_ID so Triggered skips cancel cleanup
+            // (Hexenjagd Reaction_01053 / Mireli Reaction_01135).
+            $this->clearSiblingEmbarrassingReactionTransitions($game, $owner->Id, $owner->ControllerId);
+
             // WHY: stack (EnteringPay on top) — same order as Stubborn / Mireli / Night
             // of Drinking. queue left pay behind other SETUP events and delayed cancel.
             $event = EventFactory::createReactionPayTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
@@ -91,5 +118,26 @@ class Reaction_01088 extends RiskReaction implements ICancelReaction
         }
 
         $game->gamestate->nextState('done');
+    }
+
+    private function clearSiblingEmbarrassingReactionTransitions(Game $game, int $ownerCardId, int $controllerId): void
+    {
+        $handCards = $game->theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $controllerId);
+        foreach ($handCards as $handCard)
+        {
+            if ($handCard->Id == $ownerCardId || ! ($handCard instanceof IHasReactions))
+            {
+                continue;
+            }
+
+            foreach ($handCard->getReactions() as $otherReaction)
+            {
+                if ($otherReaction instanceof Reaction_01088)
+                {
+                    $game->theah->deleteTransitionEvents($otherReaction->Id);
+                    $game->theah->deleteTransitionEventsBySourceId($handCard->Id);
+                }
+            }
+        }
     }
 }
