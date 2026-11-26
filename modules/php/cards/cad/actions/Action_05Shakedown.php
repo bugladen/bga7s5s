@@ -88,10 +88,12 @@ class Action_05Shakedown extends RiskAction implements IAbilityThatTargetsCharac
                 return $discount;
             }
 
-            if ($performer->hasTrait("Scoundrel") || $performer->hasTrait("Villain"))
+            // WHY pass $owner as queryCard: Patricia (_05Serenissima) / Uwe fiction only
+            // fires when the paying ability identifies itself. Null query = printed traits.
+            $owner = $this->getOwningCard($theah);
+            if ($performer->hasTrait("Scoundrel", $owner) || $performer->hasTrait("Villain", $owner))
             {
                 $discount += 1;
-                $owner = $this->getOwningCard($theah);
                 $explanations[] = sprintf(
                     "%s: -1 because your performer is a Scoundrel or Villain.",
                     $owner->getInjectCode()

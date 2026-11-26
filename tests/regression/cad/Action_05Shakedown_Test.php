@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\GenericCharacter;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestCase;
 use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Serenissima;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Shakedown;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Shakedown;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Risk;
@@ -96,6 +97,21 @@ class Action_05Shakedown_Test extends TestCase
                 Assert::same(1, $action->getActionFromHandDiscount($world->theah, $performer, $action, $explanations), 'villain');
 
                 Assert::same(0, $action->getActionFromHandDiscount($world->theah, null, $action, $explanations), 'null performer');
+            },
+
+            // WHY: Patricia may invent Scoundrel/Villain when paying costs; discount must
+            // pass the Risk as queryCard or hasTrait fiction never fires.
+            'discounts -1 when Patricia performs (any-trait fiction)' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _05Shakedown(), Game::LOCATION_HAND, 1);
+                $patricia = $world->placeCharacter(new _05Serenissima(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_05Shakedown $action */
+                $action = $risk->getActions()[0];
+                $explanations = [];
+
+                Assert::same(1, $action->getActionFromHandDiscount($world->theah, $patricia, $action, $explanations), 'patricia discount');
+                Assert::true(count($explanations) > 0, 'explanation');
             },
 
             'trigger queues transition 05Shakedown' => function () {
