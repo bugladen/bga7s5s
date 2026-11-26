@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01193;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01193;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
@@ -193,6 +194,29 @@ class Technique_01193_Test extends TestCase
                 Assert::same(0, $technique->AdversaryId, 'adversary cleared');
                 $event = $this->combatStats($world, $technique, $foe->Id, 3);
                 Assert::same(3, $event->thrust, 'no effect');
+            },
+
+            // WHY: Same intervene retarget as Technique_01204 — challenge Resolve locks
+            // the original target; intervener must become AdversaryId for -1 Thrust.
+            'intervene retargets AdversaryId and applies -1 Thrust to intervener card' => function () {
+                $world = new TestWorld();
+                [, , $foe, $technique] = $this->duel($world);
+                $intervener = $world->placeCharacter(new GenericCharacter('Intervener'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::IN_DUEL, false);
+                $this->resolve($world, $technique, $foe->Id);
+
+                $steppedIn = new EventCharacterIntervened();
+                $steppedIn->oldTargetId = $foe->Id;
+                $steppedIn->newTargetId = $intervener->Id;
+                $steppedIn->theah = $world->theah;
+                $technique->handleEvent($steppedIn);
+
+                Assert::true($technique->ReduceAdversaryThrust, 'still armed');
+                Assert::same($intervener->Id, $technique->AdversaryId, 'intervener');
+
+                $event = $this->combatStats($world, $technique, $intervener->Id, 2);
+                Assert::same(1, $event->thrust, '2 - 1');
+                Assert::false($technique->ReduceAdversaryThrust, 'cleared after intervener card');
             },
 
             // WHY (journal 2026-09-18): Resolve before Accept/Reject — refuse must not leak into later duel.

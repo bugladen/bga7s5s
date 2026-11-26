@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
@@ -101,6 +102,18 @@ class Technique_01204 extends Technique
             {
                 $this->clearDeferredState($event->theah);
             }
+        }
+
+        // WHY: Intervene accepts and replaces the defender without EventChallengeAccepted
+        // (Action_05Hulk shape). Challenge Resolve stored the original target; retarget
+        // so the intervener's first combat card still takes -2 Parry.
+        if ($event instanceof EventCharacterIntervened
+            && $this->ReduceAdversaryParry
+            && $this->AdversaryId != 0
+            && $this->AdversaryId == $event->oldTargetId)
+        {
+            $this->AdversaryId = $event->newTargetId;
+            $this->markOwnerUpdated($event->theah);
         }
 
         // Apply -2 Parry when the captured adversary's combat card is calculated.

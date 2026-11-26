@@ -8,6 +8,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\techniques\Technique;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
@@ -95,6 +96,18 @@ class Technique_01193 extends Technique
             {
                 $this->clearDeferredState($event->theah);
             }
+        }
+
+        // WHY: Intervene accepts and replaces the defender without EventChallengeAccepted
+        // (Action_05Hulk / Technique_01204 shape). Challenge Resolve stored the original
+        // target; retarget so the intervener's first combat card still takes -1 Thrust.
+        if ($event instanceof EventCharacterIntervened
+            && $this->ReduceAdversaryThrust
+            && $this->AdversaryId != 0
+            && $this->AdversaryId == $event->oldTargetId)
+        {
+            $this->AdversaryId = $event->newTargetId;
+            $this->markOwnerUpdated($event->theah);
         }
 
         // Apply -1 Thrust when the captured adversary's combat card is calculated.

@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01204;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\techniques\Technique_01204;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateCombatCardStats;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
@@ -209,6 +210,52 @@ class Technique_01204_Test extends TestCase
                 Assert::same(0, $technique->AdversaryId, 'adversary cleared');
                 $event = $this->combatStats($world, $technique, $foe->Id, 3);
                 Assert::same(3, $event->parry, 'no effect');
+            },
+
+            // WHY: Challenge Resolve stores the original target. Intervene replaces the
+            // defender without EventChallengeAccepted — AdversaryId must follow the intervener
+            // so their first combat card (e.g. Hidden Corridors Parry 1) still takes -2 → 0.
+            'intervene retargets AdversaryId and applies -2 Parry to intervener card' => function () {
+                $world = new TestWorld();
+                [, , $foe, $technique] = $this->duel($world);
+                $intervener = $world->placeCharacter(new GenericCharacter('Intervener'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::IN_DUEL, false);
+                $this->resolve($world, $technique, $foe->Id);
+                $world->theah->takeQueuedEvents();
+
+                $steppedIn = new EventCharacterIntervened();
+                $steppedIn->oldTargetId = $foe->Id;
+                $steppedIn->newTargetId = $intervener->Id;
+                $steppedIn->theah = $world->theah;
+                $technique->handleEvent($steppedIn);
+
+                Assert::true($technique->ReduceAdversaryParry, 'still armed');
+                Assert::same($intervener->Id, $technique->AdversaryId, 'intervener');
+
+                $original = $this->combatStats($world, $technique, $foe->Id, 1);
+                Assert::same(1, $original->parry, 'original target not penalized');
+                Assert::true($technique->ReduceAdversaryParry, 'arm survives original');
+
+                $event = $this->combatStats($world, $technique, $intervener->Id, 1);
+                Assert::same(-1, $event->parry, '1 - 2 before floor');
+                Assert::false($technique->ReduceAdversaryParry, 'cleared after intervener card');
+            },
+
+            'intervene for a different target does not retarget' => function () {
+                $world = new TestWorld();
+                [, , $foe, $technique] = $this->duel($world);
+                $bystander = $world->placeCharacter(new GenericCharacter('Bystander'), Game::LOCATION_CITY_DOCKS, 2);
+                $intervener = $world->placeCharacter(new GenericCharacter('Intervener'), Game::LOCATION_CITY_DOCKS, 2);
+                $this->resolve($world, $technique, $foe->Id);
+                $world->theah->takeQueuedEvents();
+
+                $steppedIn = new EventCharacterIntervened();
+                $steppedIn->oldTargetId = $bystander->Id;
+                $steppedIn->newTargetId = $intervener->Id;
+                $steppedIn->theah = $world->theah;
+                $technique->handleEvent($steppedIn);
+
+                Assert::same($foe->Id, $technique->AdversaryId, 'unchanged');
             },
 
             // WHY (journal 2026-09-19-04): Resolve before Accept/Reject — refuse must not leak.
