@@ -60,11 +60,13 @@ class Reaction_05BoyBand extends RiskReaction
     private function getEligibleSwapCharacters(Theah $theah, Character $participant): array
     {
         $characters = $theah->getCharactersAtLocationByPlayerId($participant->Location, $participant->ControllerId);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
 
         return array_values(array_filter(
             $characters,
             fn(Character $character) => $character->Id != $participant->Id
-                && ($character->hasTrait('Thug') || $character->hasTrait('Duelist'))
+                && ($character->hasTrait('Thug', $owner) || $character->hasTrait('Duelist', $owner))
         ));
     }
 

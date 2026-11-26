@@ -26,9 +26,11 @@ class Action_02018 extends RiskAction
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersInPlayByPlayerId($playerId);
         $characters = array_filter($characters, fn($character) => 
-            $theah->cardInCity($character) && $character->hasTrait("Zealot"));
+            $theah->cardInCity($character) && $character->hasTrait("Zealot", $owner));
         return count($characters) > 0;
     }
 
@@ -36,8 +38,9 @@ class Action_02018 extends RiskAction
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        $owner = $this->getOwningCard($theah);
         $performers = array_values(array_filter($performers, fn($performer) => 
-            $theah->cardInCity($performer) && $performer->hasTrait("Zealot")));
+            $theah->cardInCity($performer) && $performer->hasTrait("Zealot", $owner)));
         return $performers;
     }
 

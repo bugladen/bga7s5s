@@ -27,7 +27,9 @@ class Maneuver_04038 extends Maneuver
         $actor = $theah->getDuelRoundActor();
         // WHY Academic only: printed text has no cost before the effect (no •).
         // En garde / heal may noop if already en garde and unwounded — still playable.
-        return $actor !== null && $actor->hasTrait("Academic");
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
+        return $actor !== null && $actor->hasTrait("Academic", $owner);
     }
 
     public function handleEvent(Event $event)

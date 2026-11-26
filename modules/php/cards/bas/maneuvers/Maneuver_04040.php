@@ -25,7 +25,9 @@ class Maneuver_04040 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        if ($actor === null || ! $actor->hasTrait("Academic"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
+        if ($actor === null || ! $actor->hasTrait("Academic", $owner))
         {
             return false;
         }

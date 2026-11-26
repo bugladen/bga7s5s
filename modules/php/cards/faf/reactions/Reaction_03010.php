@@ -100,7 +100,7 @@ class Reaction_03010 extends RiskReaction
                 return;
             }
 
-            $performer = $this->findStregaCharacter($event->theah, $owner->ControllerId);
+            $performer = $this->findStregaCharacter($event->theah, $owner);
             if ($performer === null)
             {
                 return;
@@ -121,11 +121,12 @@ class Reaction_03010 extends RiskReaction
         }
     }
 
-    private function findStregaCharacter(Theah $theah, int $controllerId): ?Character
+    private function findStregaCharacter(Theah $theah, Card $owner): ?Character
     {
-        foreach ($theah->getCharactersInPlayByPlayerId($controllerId) as $character)
+        foreach ($theah->getCharactersInPlayByPlayerId($owner->ControllerId) as $character)
         {
-            if ($character->hasTrait('Strega'))
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) qualify as your Strega.
+            if ($character->hasTrait('Strega', $owner))
             {
                 return $character;
             }
@@ -133,12 +134,12 @@ class Reaction_03010 extends RiskReaction
         return null;
     }
 
-    private function countStrega(Theah $theah, int $controllerId): int
+    private function countStrega(Theah $theah, Card $owner): int
     {
         $count = 0;
-        foreach ($theah->getCharactersInPlayByPlayerId($controllerId) as $character)
+        foreach ($theah->getCharactersInPlayByPlayerId($owner->ControllerId) as $character)
         {
-            if ($character->hasTrait('Strega'))
+            if ($character->hasTrait('Strega', $owner))
             {
                 $count++;
             }
@@ -217,7 +218,7 @@ class Reaction_03010 extends RiskReaction
             return;
         }
 
-        $wounds = $this->countStrega($theah, $owner->ControllerId) >= 3 ? 2 : 1;
+        $wounds = $this->countStrega($theah, $owner) >= 3 ? 2 : 1;
 
         $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, $wounds, $owner->getInjectCode(), $this->Id);
         $theah->eventCheck($woundEvent);

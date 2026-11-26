@@ -59,7 +59,8 @@ class Reaction_03018 extends CardReaction
                 return;
             }
 
-            if (! $challenger->hasTrait("Zealot") && ! $challenger->hasTrait("Hunter"))
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) count as your Zealot/Hunter.
+            if (! $challenger->hasTrait("Zealot", $owner) && ! $challenger->hasTrait("Hunter", $owner))
             {
                 return;
             }

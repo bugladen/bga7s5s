@@ -43,13 +43,15 @@ class Action_04038 extends RiskCityAction implements IAbilityThatTargetsCharacte
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         return array_values(array_filter(
             $performers,
-            function (Character $performer) use ($theah)
+            function (Character $performer) use ($theah, $owner)
             {
                 // WHY Academic City Action: Academic = mechanical trait gate (not Sorcerer).
                 // Not En Garde Action — performer does not need to be en garde.
-                if (! $performer->hasTrait("Academic"))
+                if (! $performer->hasTrait("Academic", $owner))
                 {
                     return false;
                 }

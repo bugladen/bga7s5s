@@ -29,8 +29,10 @@ class Action_02061 extends RiskCityAction implements IAbilityThatTargetsCharacte
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $duelists = array_filter($characters, fn($c) => $c->hasTrait("Duelist") && !$c->Engaged && $c->canChallenge($theah));
+        $duelists = array_filter($characters, fn($c) => $c->hasTrait("Duelist", $owner) && !$c->Engaged && $c->canChallenge($theah));
 
         foreach ($duelists as $duelist)
         {
@@ -48,7 +50,8 @@ class Action_02061 extends RiskCityAction implements IAbilityThatTargetsCharacte
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $duelists = array_values(array_filter($performers, fn($c) => $c->hasTrait("Duelist") && !$c->Engaged && $c->canChallenge($theah)));
+        $owner = $this->getOwningCard($theah);
+        $duelists = array_values(array_filter($performers, fn($c) => $c->hasTrait("Duelist", $owner) && !$c->Engaged && $c->canChallenge($theah)));
 
         $eligible = [];
         foreach ($duelists as $duelist)

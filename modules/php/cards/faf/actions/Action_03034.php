@@ -36,10 +36,12 @@ class Action_03034 extends RiskCityAction implements IAbilityThatTargetsCharacte
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
 
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Diplomat")
+            fn(Character $performer) => $performer->hasTrait("Diplomat", $owner)
                 && ! $performer->Engaged
                 && count($this->getValidTargets($theah, $performer)) > 0
         ));
@@ -104,7 +106,7 @@ class Action_03034 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER, 0);
             $performer = $event->theah->getCharacterById($performerId);
 
-            if ($performer === null || ! $performer->hasTrait("Diplomat"))
+            if ($performer === null || ! $performer->hasTrait("Diplomat", $owner))
             {
                 throw new UserException($game->translate("Performer must be a Diplomat."));
             }

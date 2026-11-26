@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateTechnique
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventGenerateChallengeThreat;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveTechnique;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTechniqueCanceled;
 
 class Technique_01067 extends Technique
 {
@@ -31,10 +32,11 @@ class Technique_01067 extends Technique
         {
             $jeanUrbain = $this->getOwningCharacter($event->theah);
             $characters = $event->theah->getCharactersAtLocation($jeanUrbain->Location);
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
             $characters = array_filter($characters, fn($character) => 
                 $character->Id != $jeanUrbain->Id && 
                 $character->ControllerId == $jeanUrbain->ControllerId && 
-                $character->hasTrait("Musketeer"));
+                $character->hasTrait("Musketeer", $jeanUrbain));
             
             if (count($characters) > 0)
             {
@@ -61,6 +63,13 @@ class Technique_01067 extends Technique
                 $event->explanations[] = sprintf($event->theah->game->translate("Technique [%s] adds +1 Thrust."), $this->Name);
                 $event->thrust += 1;
             }
+        }
+
+        if ($event instanceof EventTechniqueCanceled && $event->techniqueId == $this->Id)
+        {
+            $this->UseRiposteInstead = false;
+            $card = $this->getOwningCard($event->theah);
+            $card->IsUpdated = true;
         }
 
         if ($event instanceof EventDuelEnd)

@@ -30,7 +30,9 @@ class Action_01076 extends RiskAction implements ISorcererAbility
         }
 
         $characters = $theah->getCharactersInPlayByPlayerId($playerId);
-        $sorcerers = array_filter($characters, fn($character) => $character->hasTrait("Sorcerer"));
+        $owner = $this->getOwningCard($theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $sorcerers = array_filter($characters, fn($character) => $character->hasTrait("Sorcerer", $owner));
 
         if (count($sorcerers) == 0)
         {
@@ -44,7 +46,8 @@ class Action_01076 extends RiskAction implements ISorcererAbility
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
 
-        $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Sorcerer")));
+        $owner = $this->getOwningCard($theah);
+        $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Sorcerer", $owner)));
 
         return $performers;
     }

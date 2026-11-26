@@ -729,7 +729,9 @@ public function isAvailableToPlayer(int $playerId, Theah $theah): bool
     if (! $theah->game->globals->get(Game::IN_DUEL, false)) return false;
 
     $actor = $theah->getDuelRoundActor();
-    if ($actor === null || ! $actor->hasTrait("Duelist")) return false;
+    $owner = $this->getOwningCard($theah);
+    // WHY queryCard: Patricia/Uwe fiction only when the ability identifies itself.
+    if ($actor === null || ! $actor->hasTrait("Duelist", $owner)) return false;
 
     $owner = $this->getOwningCard($theah);
     return $owner !== null && $owner->Location == Game::LOCATION_DUELING_LINE;

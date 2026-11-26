@@ -76,7 +76,7 @@ class Reaction_03017 extends CardReaction
             }
 
             $this->location = $destroyed->Location;
-            $this->destroyedWasZealot = $destroyed->hasTrait("Zealot");
+            $this->destroyedWasZealot = $destroyed->hasTrait("Zealot", $owner); // WHY: queryCard so "counts as a ..." characters (Patricia) count as your Zealot.
             $this->destroyedName = $destroyed->Name;
             $owner->IsUpdated = true;
 

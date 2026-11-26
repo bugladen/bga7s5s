@@ -1,0 +1,30 @@
+---
+description: Pass queryCard when checking your character's traits for abilities/costs (Patricia/Uwe fiction)
+globs: ["**/cards/**/*.php", "**/FrameworkActionsTrait.php"]
+alwaysApply: false
+---
+# hasTrait queryCard for own-character checks
+
+When an ability gates, validates, discounts, counts, or equips based on **your** character's traits, call:
+
+```php
+$owner = $this->getOwningCard($theah); // card class: $this; Character owner already in scope OK
+$character->hasTrait("TraitName", $owner);
+```
+
+Closures must capture `$owner` (`use ($owner)`).
+
+## WHY
+Patricia (`_05Serenissima`) and Uwe (`_01043`) only invent traits when `$queryCard !== null` and same `ControllerId` (and not blanked). Omitting `$queryCard` = printed traits only — silent miss.
+
+## Pass queryCard for
+- Performer / actor / leader availability and confirm validation
+- Cost discounts (`getActionFromHandDiscount`, `getManeuverFromCombatCardDiscount`, …)
+- Equip host restrictions (`canAttachTo` / equip gates)
+- "Characters you control with trait X" counts while resolving **your** ability
+
+## Do NOT pass queryCard for
+- Opponent / adversary trait checks
+- Uncontrolled Mercenary (or similar) city filters
+- Traits on attachments/Risks as payment or card type (Wealth, Unique, Artifact, Weapon, Sorcery, …)
+- **Negative** gates where inventing the trait hurts (`!hasTrait("Mercenary")`, Mercenary blocks Parley, etc.)

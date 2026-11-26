@@ -58,7 +58,8 @@ class _01073 extends FactionAttachment implements IHasActions
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $performer = $event->theah->getCardById($event->characterId);
-            if (! $performer->hasTrait("Duelist"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $performer->hasTrait("Duelist", $this))
             {
                 throw new \BgaUserException($event->theah->game->translate(("Cavalier Hat can only be equipped to Duelists.")));
             }
@@ -72,6 +73,6 @@ class _01073 extends FactionAttachment implements IHasActions
             return false;
         }
 
-        return $character->hasTrait("Duelist");
+        return $character->hasTrait("Duelist", $this);
     }
 }

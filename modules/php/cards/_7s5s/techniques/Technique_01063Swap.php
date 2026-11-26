@@ -30,10 +30,11 @@ class Technique_01063Swap extends Technique
     {
         $owner = $this->getOwningCharacter($theah);
         $characters = $theah->getCharactersAtLocation($owner->Location);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
         $characters = array_filter($characters, fn($character) => 
             $character->Id != $owner->Id && 
             $character->ControllerId == $owner->ControllerId && 
-            $character->hasTrait("Musketeer"));
+            $character->hasTrait("Musketeer", $owner));
 
         return count($characters) > 0;
     }
@@ -152,7 +153,7 @@ class Technique_01063Swap extends Technique
             $characters = array_values(array_filter($characters, fn($character) => 
                 $character->Id != $owner->Id && 
                 $character->ControllerId == $owner->ControllerId && 
-                $character->hasTrait("Musketeer")));
+                $character->hasTrait("Musketeer", $owner)));
             $args["characterIds"] = array_map(fn($character) => $character->Id, $characters);
         }
 
@@ -177,7 +178,7 @@ class Technique_01063Swap extends Technique
                 throw new \Exception($game->translate("Character is not controlled by you."));
             }
 
-            if (! $musketeer->hasTrait("Musketeer"))
+            if (! $musketeer->hasTrait("Musketeer", $owner))
             {
                 throw new \Exception($game->translate("Character is not a Musketeer."));
             }

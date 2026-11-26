@@ -57,7 +57,8 @@ class _02027 extends FactionAttachment
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if (! $character->hasTrait("Diplomat"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $character->hasTrait("Diplomat", $this))
             {
                 throw new UserException($event->theah->game->translate("Éventail can only be equipped to a Diplomat."));
             }
@@ -71,7 +72,7 @@ class _02027 extends FactionAttachment
             return false;
         }
 
-        return $character->hasTrait("Diplomat");
+        return $character->hasTrait("Diplomat", $this);
     }
 
     private function modifyInfluence(Theah $theah, Character $character, int $amount): void

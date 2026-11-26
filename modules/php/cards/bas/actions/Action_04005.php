@@ -51,13 +51,15 @@ class Action_04005 extends SchemeCityAction implements IAbilityThatTargetsCharac
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: "Red Hand City Action" is a mechanical trait gate, not ISorcererAbility.
         // Full legality: another controlled character at location + location claimable
         // (Claim is a printed payoff — don't offer a dead character-destroy spend).
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Red Hand")
+            fn(Character $performer) => $performer->hasTrait("Red Hand", $owner)
                 && count($this->getDestroyTargets($theah, $performer)) > 0
                 && $theah->canLocationBeClaimedBy($playerId, $performer->Location)
         ));
@@ -79,7 +81,7 @@ class Action_04005 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 throw new UserException($game->translate("Invalid performer"));
             }
 
-            if (! $performer->hasTrait("Red Hand"))
+            if (! $performer->hasTrait("Red Hand", $owner))
             {
                 throw new UserException($game->translate("Performer must be a Red Hand."));
             }

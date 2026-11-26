@@ -21,6 +21,8 @@ class Technique_01010 extends Technique
     {
         parent::handleEvent($event);
 
+        // EventTechniqueCanceled handler not needed
+
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {
             $owner = $this->getOwningCharacter($event->theah);
@@ -40,7 +42,8 @@ class Technique_01010 extends Technique
             $adversary = $game->theah->getDuelRoundOpponent();
 
             $characters = $game->theah->getCharactersAtLocationByPlayerId($owner->Location, $owner->ControllerId);
-            $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega"));
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega", $owner));
             $count = count($characters) > 0 ? 2 : 1;
 
             $cardInfos = $game->getCardsOnTopOfPlayerFactionDeck($adversary->ControllerId, $count);
@@ -65,7 +68,7 @@ class Technique_01010 extends Technique
         {
             $owner = $this->getOwningCharacter($game->theah);
             $characters = $game->theah->getCharactersAtLocationByPlayerId($owner->Location, $owner->ControllerId);
-            $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega"));
+            $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega", $owner));
             $count = count($characters) > 0 ? 2 : 1;
 
             $adversary = $game->theah->getDuelRoundOpponent();

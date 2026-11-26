@@ -59,7 +59,8 @@ class _02006 extends FactionAttachment implements IHasTechniques
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if (!$character->hasTrait("Red Hand"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (!$character->hasTrait("Red Hand", $this))
             {
                 throw new \BgaUserException($event->theah->game->translate("The Red Scepter can only be equipped to a Red Hand character."));
             }

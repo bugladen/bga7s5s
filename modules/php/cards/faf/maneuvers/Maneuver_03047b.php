@@ -36,7 +36,8 @@ class Maneuver_03047b extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        return $actor->hasTrait("Duelist");
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) satisfy the trait gate.
+        return $actor->hasTrait("Duelist", $this->getOwningCard($theah));
     }
 
     private function clearGambleLock(Theah $theah): void

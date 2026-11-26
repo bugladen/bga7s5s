@@ -26,7 +26,8 @@ class Maneuver_03048 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        return $actor !== null && $actor->hasTrait("Scoundrel");
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) satisfy the trait gate.
+        return $actor !== null && $actor->hasTrait("Scoundrel", $this->getOwningCard($theah));
     }
 
     public function getManeuverFromCombatCardDiscount(Theah $theah, Card $combatCard, Array &$explanations): int

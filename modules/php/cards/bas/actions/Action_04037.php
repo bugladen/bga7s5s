@@ -53,14 +53,16 @@ class Action_04037 extends RiskAction
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         return array_values(array_filter(
             $performers,
-            function (Character $performer) use ($theah)
+            function (Character $performer) use ($theah, $owner)
             {
                 // WHY En Garde Academic Action: En Garde = precondition (not Engage cost);
                 // Academic = mechanical trait gate (not Sorcerer). Home is eligible in
                 // principle; no City Card at Home greys those performers.
-                if ($performer->Engaged || ! $performer->hasTrait("Academic"))
+                if ($performer->Engaged || ! $performer->hasTrait("Academic", $owner))
                 {
                     return false;
                 }

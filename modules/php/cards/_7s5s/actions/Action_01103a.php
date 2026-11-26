@@ -43,9 +43,11 @@ class Action_01103a extends RiskCityAction
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $characters = parent::getPerformersForAction($playerId, $theah);
+        $owner = $this->getOwningCard($theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
         return array_values(array_filter(
             $characters,
-            fn($character) => $character->hasTrait("Pirate")
+            fn($character) => $character->hasTrait("Pirate", $owner)
                 && $theah->canLocationBeClaimedBy($playerId, $character->Location)
         ));
     }

@@ -24,7 +24,8 @@ class Action_01011 extends CharacterAction
         $adjacentLocations = $theah->getAdjacentCityLocations($servo->Location, $includeHome = false);
 
         $thugs = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $thugs = array_values(array_filter($thugs, fn($character) => $character->hasTrait("Red Hand") && in_array($character->Location, $adjacentLocations)));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $thugs = array_values(array_filter($thugs, fn($character) => $character->hasTrait("Red Hand", $servo) && in_array($character->Location, $adjacentLocations)));
         $targetCharacters = [];
         foreach ($thugs as $thug)
         {

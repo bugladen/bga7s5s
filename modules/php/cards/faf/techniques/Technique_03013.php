@@ -32,7 +32,8 @@ class Technique_03013 extends Technique
         $characters = array_filter($characters, fn($character) =>
             $character->Id != $owner->Id &&
             $character->ControllerId == $owner->ControllerId &&
-            ($character->hasTrait("Hunter") || $character->hasTrait("Zealot")));
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) qualify as your Hunter/Zealot.
+            ($character->hasTrait("Hunter", $owner) || $character->hasTrait("Zealot", $owner)));
 
         return count($characters) > 0;
     }
@@ -107,7 +108,7 @@ class Technique_03013 extends Technique
             $characters = array_values(array_filter($characters, fn($character) =>
                 $character->Id != $owner->Id &&
                 $character->ControllerId == $owner->ControllerId &&
-                ($character->hasTrait("Hunter") || $character->hasTrait("Zealot"))));
+                ($character->hasTrait("Hunter", $owner) || $character->hasTrait("Zealot", $owner))));
             $args["characterIds"] = array_map(fn($character) => $character->Id, $characters);
         }
 
@@ -132,7 +133,7 @@ class Technique_03013 extends Technique
                 throw new UserException($game->translate("Character is not controlled by you."));
             }
 
-            if (! $target->hasTrait("Hunter") && ! $target->hasTrait("Zealot"))
+            if (! $target->hasTrait("Hunter", $owner) && ! $target->hasTrait("Zealot", $owner))
             {
                 throw new UserException($game->translate("Character is not a Hunter or Zealot."));
             }

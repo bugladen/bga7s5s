@@ -1691,7 +1691,8 @@ trait FrameworkActionsTrait
 
         $engageRequired = true;
         //If Odette was the target, and intervening character is a Musketeer, they are not required to engage
-        if ($target instanceof _01062 && $character->hasTrait("Musketeer"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if ($target instanceof _01062 && $character->hasTrait("Musketeer", $target))
         {
             $this->notifyAllPlayers("message", clienttranslate('${character_name} does not need to engage because they are a Musketeer intervening for Odette.'), [
                 "i18n" => ["character_name"],

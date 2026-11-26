@@ -2,6 +2,7 @@
 
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions;
 
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -45,11 +46,12 @@ class Reaction_04004 extends CardReaction
     /**
      * Duelist Reaction performer at the destroy location (opposing = same location).
      */
-    private function findDuelistAtLocation(Theah $theah, int $controllerId, string $location): ?Character
+    private function findDuelistAtLocation(Theah $theah, int $controllerId, string $location, ?Card $owner): ?Character
     {
         foreach ($theah->getCharactersAtLocation($location) as $character)
         {
-            if ($character->ControllerId == $controllerId && $character->hasTrait("Duelist"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if ($character->ControllerId == $controllerId && $character->hasTrait("Duelist", $owner))
             {
                 return $character;
             }
@@ -84,7 +86,7 @@ class Reaction_04004 extends CardReaction
             // WHY: "opposing" = enemy at the same location as your Duelist performer
             // (not merely opponent-controlled anywhere). Destroy-time Location is still
             // readable here (EventCharacterDestroyed.runEventHubAfterCards = true).
-            if ($this->findDuelistAtLocation($event->theah, $owner->ControllerId, $destroyed->Location) === null)
+            if ($this->findDuelistAtLocation($event->theah, $owner->ControllerId, $destroyed->Location, $owner) === null)
             {
                 return;
             }

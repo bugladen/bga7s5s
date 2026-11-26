@@ -35,7 +35,8 @@ class Action_02045 extends SchemeCityAction implements ISorcererAbility
         }
 
         $characters = $theah->getCharactersAtLocationByPlayerId($owner->ChosenLocation, $playerId);
-        $sorcerers = array_filter($characters, fn($c) => $c->hasTrait("Sorcerer") && $c->canPressure(Game::STAT_INFLUENCE));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $sorcerers = array_filter($characters, fn($c) => $c->hasTrait("Sorcerer", $owner) && $c->canPressure(Game::STAT_INFLUENCE));
 
         return array_values($sorcerers);
     }

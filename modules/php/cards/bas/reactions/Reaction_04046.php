@@ -70,7 +70,8 @@ class Reaction_04046 extends RiskReaction
             }
 
             // Duelist Reaction + "your Duelist participant" — same trait gate.
-            if (! $participant->hasTrait('Duelist'))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $participant->hasTrait('Duelist', $owner))
             {
                 return;
             }

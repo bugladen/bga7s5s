@@ -27,7 +27,8 @@ class Maneuver_01108a extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        if (! $actor->hasTrait("Scoundrel"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if (! $actor->hasTrait("Scoundrel", $this->getOwningCard($theah)))
         {
             return false;
         }
@@ -41,6 +42,8 @@ class Maneuver_01108a extends Maneuver
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // EventManeuverCanceled handler not needed
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

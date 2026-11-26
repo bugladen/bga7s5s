@@ -54,10 +54,12 @@ class Action_03029 extends SchemeCityAction implements ISorcererAbility
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
 
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Sorcerer")
+            fn(Character $performer) => $performer->hasTrait("Sorcerer", $owner)
         ));
     }
 

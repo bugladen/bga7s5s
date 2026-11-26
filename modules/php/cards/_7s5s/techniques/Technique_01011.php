@@ -26,11 +26,13 @@ class Technique_01011 extends Technique
     private function getOtherControlledRedHandsAtLocation(Theah $theah, string $location, int $controllerId, int $excludeId): array
     {
         $characters = $theah->getCharactersAtLocation($location);
+        $owner = $this->getOwningCard($theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
         return array_values(array_filter(
             $characters,
             fn($character) => $character->Id != $excludeId
                 && $character->ControllerId == $controllerId
-                && $character->hasTrait("Red Hand")
+                && $character->hasTrait("Red Hand", $owner)
         ));
     }
 

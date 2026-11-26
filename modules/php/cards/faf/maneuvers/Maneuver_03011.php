@@ -38,11 +38,13 @@ class Maneuver_03011 extends Maneuver
         }
 
         // Player must control a Thug or Bodyguard at the duel's location (the actor's location).
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as your Thug/Bodyguard.
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersAtLocation($actor->Location);
         foreach ($characters as $character)
         {
             if ($character->ControllerId != $playerId) continue;
-            if ($character->hasTrait("Thug") || $character->hasTrait("Bodyguard"))
+            if ($character->hasTrait("Thug", $owner) || $character->hasTrait("Bodyguard", $owner))
             {
                 return true;
             }

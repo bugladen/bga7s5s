@@ -31,11 +31,13 @@ class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityT
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $locations = $theah->getCityLocations();
         foreach ($locations as $location)
         {
             $characters = $theah->getCharactersAtLocationByPlayerId($location->Name, $playerId);
-            $stregas = array_values(array_filter($characters, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega")));
+            $stregas = array_values(array_filter($characters, fn($character) => $character->hasTrait("Sorcerer", $owner) && $character->hasTrait("Strega", $owner)));
             $woundedCharacters = array_values(array_filter($characters, fn($character) => $character->Wounds > 0));
             if (count($stregas) > 0 && count($characters) >= 2 && count($woundedCharacters) > 0)
             {
@@ -48,8 +50,9 @@ class Action_02010 extends RiskCityAction implements ISorcererAbility, IAbilityT
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $stregas = array_values(array_filter($characters, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega")));
+        $stregas = array_values(array_filter($characters, fn($character) => $character->hasTrait("Sorcerer", $owner) && $character->hasTrait("Strega", $owner)));
         $performers = [];
         foreach ($stregas as $strega)
         {

@@ -32,7 +32,8 @@ class Action_04011 extends CharacterAction implements IAbilityThatTargetsCharact
         // No "opposing" printed — own Mercenaries are legal.
         return array_values(array_filter(
             $characters,
-            fn(Character $character) => $character->hasTrait("Mercenary") && $character->isControlled()
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            fn(Character $character) => $character->hasTrait("Mercenary", $hans) && $character->isControlled()
         ));
     }
 
@@ -90,7 +91,7 @@ class Action_04011 extends CharacterAction implements IAbilityThatTargetsCharact
             return [false, $game->translate("Character is not at the same location as Hans Offenheim")];
         }
 
-        if (! $character->hasTrait("Mercenary"))
+        if (! $character->hasTrait("Mercenary", $hans))
         {
             return [false, $game->translate("Character is not a Mercenary")];
         }

@@ -34,9 +34,11 @@ class Maneuver_02028 extends Maneuver
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $owner = $this->getOwningCard($event->theah);
             $actor = $event->theah->getDuelRoundActor();
 
-            if ($actor->hasTrait("Diplomat"))
+            if ($actor->hasTrait("Diplomat", $owner))
             {
                 $lethalEvent = EventFactory::createGainLethalEvent($actor->Id, $event->theah);
                 $event->theah->queueEvent($lethalEvent);

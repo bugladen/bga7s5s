@@ -53,12 +53,13 @@ class Reaction_02058 extends RiskReaction
         $challengeType = $theah->game->globals->get(Game::CHALLENGE_TYPE);
         if ($challengeType == Game::LEGENDARY_REPUTATION_CHALLENGE_TYPE)
         {
-            $validPerformers = array_filter($validPerformers, fn($c) => $c->hasTrait("Leader"));
+            $validPerformers = array_filter($validPerformers, fn($c) => $c->hasTrait("Leader", $owner));
             $validPerformers = array_values($validPerformers);
         }
         else if ($challengeType == Game::SWORN_SWORDS_CHALLENGE_TYPE)
         {
-            $validPerformers = array_filter($validPerformers, fn($c) => $c->hasTrait("Duelist"));
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $validPerformers = array_filter($validPerformers, fn($c) => $c->hasTrait("Duelist", $owner));
             $validPerformers = array_values($validPerformers);
         }
         // WHY: Aja / Celerity — only Finesse ≥ 3 may intervene (same gate as ArgumentsTrait / interventionCheck).
@@ -197,7 +198,7 @@ class Reaction_02058 extends RiskReaction
         if ($owner->Location == Game::LOCATION_HAND && $reaction->Id == $this->Id && $this->PerformerId != 0)
         {
             $performer = $theah->getCharacterById($this->PerformerId);
-            if ($performer && ($performer->hasTrait("Hero") || $performer->hasTrait("Knight")))
+            if ($performer && ($performer->hasTrait("Hero", $owner) || $performer->hasTrait("Knight", $owner)))
             {
                 $discount += 1;
                 $explanations[] = sprintf($theah->game->translate("%s: -1 because Performer is a Hero or Knight."), $owner->getInjectCode());

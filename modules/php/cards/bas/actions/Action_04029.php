@@ -158,15 +158,17 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $wealthAdjustment = $this->getWealthAdjustment($theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
 
         $performers = parent::getPerformersForAction($playerId, $theah);
         return array_values(array_filter(
             $performers,
-            function (Character $performer) use ($theah, $wealthAdjustment)
+            function (Character $performer) use ($theah, $wealthAdjustment, $owner)
             {
                 // WHY En Garde Merchant Action: En Garde = precondition (not Engage cost);
                 // Merchant = mechanical trait gate (not Sorcerer).
-                if ($performer->Engaged || ! $performer->hasTrait("Merchant"))
+                if ($performer->Engaged || ! $performer->hasTrait("Merchant", $owner))
                 {
                     return false;
                 }
@@ -287,7 +289,7 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
                 throw new UserException($game->translate("Performer not found"));
             }
 
-            if ($performer->Engaged || ! $performer->hasTrait("Merchant"))
+            if ($performer->Engaged || ! $performer->hasTrait("Merchant", $this->getOwningCard($game->theah)))
             {
                 throw new UserException($game->translate("Performer must be an en garde Merchant"));
             }
@@ -531,7 +533,7 @@ class Action_04029 extends RiskAction implements IAbilityThatTargetsCards
             $game->theah->queueEvent($musterEvent);
 
             $leader = $game->theah->getLeaderByPlayerId($owner->ControllerId);
-            if ($leader === null || ! $leader->hasTrait("Villain"))
+            if ($leader === null || ! $leader->hasTrait("Villain", $owner))
             {
                 $lastControllerId = (int)$game->globals->get(Game::CHOSEN_OPPONENT);
                 $drawEvent = EventFactory::createCardDrawnEvent(

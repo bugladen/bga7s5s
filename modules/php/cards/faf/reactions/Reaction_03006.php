@@ -197,7 +197,7 @@ class Reaction_03006 extends CardReaction
             return;
         }
 
-        $performer = $this->findStregaPerformerAtLocation($theah, $owner->ControllerId, $target->Location);
+        $performer = $this->findStregaPerformerAtLocation($theah, $owner, $target->Location);
         if ($performer == null)
         {
             return;
@@ -240,12 +240,14 @@ class Reaction_03006 extends CardReaction
         return $action instanceof IAbilityThatTargetsCharacters;
     }
 
-    private function findStregaPerformerAtLocation(Theah $theah, int $controllerId, string $location): ?Character
+    private function findStregaPerformerAtLocation(Theah $theah, Card $owner, string $location): ?Character
     {
+        $controllerId = $owner->ControllerId;
         $characters = $theah->getCharactersAtLocation($location);
         foreach ($characters as $character)
         {
-            if ($character->ControllerId == $controllerId && $character->hasTrait("Strega"))
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) qualify as your Strega.
+            if ($character->ControllerId == $controllerId && $character->hasTrait("Strega", $owner))
             {
                 return $character;
             }

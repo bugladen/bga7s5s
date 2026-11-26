@@ -46,12 +46,14 @@ class Action_03063 extends SchemeCityAction implements IAbilityThatTargetsCards
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: "Scoundrel City Action" is a mechanical trait gate, not ISorcererAbility.
         // Full legality: location must have something to move (Renown or available attachment).
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Scoundrel")
+            fn(Character $performer) => $performer->hasTrait("Scoundrel", $owner)
                 && $this->locationHasMovableThing($theah, $performer->Location)
         ));
     }
@@ -72,7 +74,7 @@ class Action_03063 extends SchemeCityAction implements IAbilityThatTargetsCards
                 throw new UserException($game->translate("Invalid performer"));
             }
 
-            if (! $performer->hasTrait("Scoundrel"))
+            if (! $performer->hasTrait("Scoundrel", $owner))
             {
                 throw new UserException($game->translate("Performer must be a Scoundrel."));
             }

@@ -29,9 +29,11 @@ class Action_03058 extends RiskCityAction implements IAbilityThatTargetsCharacte
         }
 
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
         $performers = array_filter(
             $performers,
-            fn(Character $c) => $c->hasTrait("Duelist") && $c->canChallenge($theah)
+            fn(Character $c) => $c->hasTrait("Duelist", $owner) && $c->canChallenge($theah)
         );
 
         foreach ($performers as $performer)
@@ -48,8 +50,9 @@ class Action_03058 extends RiskCityAction implements IAbilityThatTargetsCharacte
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        return array_values(array_filter($performers, function (Character $performer) use ($theah) {
-            if (! $performer->hasTrait("Duelist") || ! $performer->canChallenge($theah))
+        $owner = $this->getOwningCard($theah);
+        return array_values(array_filter($performers, function (Character $performer) use ($theah, $owner) {
+            if (! $performer->hasTrait("Duelist", $owner) || ! $performer->canChallenge($theah))
             {
                 return false;
             }

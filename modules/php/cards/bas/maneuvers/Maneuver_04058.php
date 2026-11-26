@@ -27,7 +27,9 @@ class Maneuver_04058 extends Maneuver implements ISorcererAbility
         }
 
         $actor = $theah->getDuelRoundActor();
-        if ($actor === null || ! $actor->hasTrait('Sorcerer'))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
+        if ($actor === null || ! $actor->hasTrait('Sorcerer', $owner))
         {
             return false;
         }

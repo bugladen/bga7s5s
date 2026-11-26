@@ -160,7 +160,8 @@ class Reaction_04003a extends CardReaction
 
     private function isYourThugAtLocation(Character $character, Character $owner): bool
     {
-        if (! $character->hasTrait("Thug"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if (! $character->hasTrait("Thug", $owner))
         {
             return false;
         }

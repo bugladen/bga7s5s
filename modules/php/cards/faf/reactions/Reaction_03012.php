@@ -49,7 +49,8 @@ class Reaction_03012 extends RiskReaction implements ISorcererAbility
 
             $intervener = $event->theah->getCharacterById($event->newTargetId);
             if ($intervener === null) return;
-            if (! $intervener->hasTrait("Strega")) return;
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) count as your Strega.
+            if (! $intervener->hasTrait("Strega", $owner)) return;
 
             $this->intervenerId = $intervener->Id;
             $owner->IsUpdated = true;

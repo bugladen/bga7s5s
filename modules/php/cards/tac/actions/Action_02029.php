@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions;
 
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
@@ -19,10 +20,11 @@ class Action_02029 extends RiskAction
         $this->RequiresPerformerSelected = true;
     }
 
-    private function getDiplomatsAtLocation(string $location, int $playerId, Theah $theah): array
+    private function getDiplomatsAtLocation(string $location, int $playerId, Theah $theah, ?Card $owner): array
     {
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
         $characters = $theah->getCharactersAtLocationByPlayerId($location, $playerId);
-        return array_values(array_filter($characters, fn($c) => $c->hasTrait("Diplomat")));
+        return array_values(array_filter($characters, fn($c) => $c->hasTrait("Diplomat", $owner)));
     }
 
     public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
@@ -42,13 +44,14 @@ class Action_02029 extends RiskAction
 
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
+        $owner = $this->getOwningCard($theah);
         $diplomats = $theah->getCharactersInCityByPlayerId($playerId);
-        $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat"));
+        $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat", $owner));
 
         $performers = [];
         foreach ($diplomats as $diplomat)
         {
-            $diplomatsAtLocation = $this->getDiplomatsAtLocation($diplomat->Location, $playerId, $theah);
+            $diplomatsAtLocation = $this->getDiplomatsAtLocation($diplomat->Location, $playerId, $theah, $owner);
             $location = $theah->getCityLocation($diplomat->Location);
             if (count($diplomatsAtLocation) > $location->Renown
                 && $theah->canLocationBeClaimedBy($playerId, $diplomat->Location))

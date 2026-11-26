@@ -88,7 +88,8 @@ class Reaction_01014 extends CardReaction
         else if ($this->inPlayThug)
         {
             $characters = $theah->getCharactersAtLocation($owner->Location);
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug", $owner));
             foreach ($characters as $character)
             {
                 $array[] = $this->createButtonProperty($theah->game, $character->Name, "putIntoPlay-$character->Id");
@@ -202,8 +203,8 @@ class Reaction_01014 extends CardReaction
     {
         $owner = $this->getOwningCharacter($theah);
         $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-        $thugs = array_filter($hand, function ($card) use ($theah) {
-            if (! $card->hasTrait("Thug") || ! ($card instanceof Character))
+        $thugs = array_filter($hand, function ($card) use ($theah, $owner) {
+            if (! $card->hasTrait("Thug", $owner) || ! ($card instanceof Character))
             {
                 return false;
             }
@@ -223,7 +224,7 @@ class Reaction_01014 extends CardReaction
     {
         $owner = $this->getOwningCharacter($theah);
         $characters = $theah->getCharactersAtLocation($owner->Location);
-        $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
+        $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug", $owner));
         return count($characters) > 0;
     }
 
@@ -854,7 +855,7 @@ class Reaction_01014 extends CardReaction
                 $owner->IsUpdated = true;
 
                 $characters = $game->theah->getCharactersAtLocation($owner->Location);
-                $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug"));
+                $characters = array_filter($characters, fn($character) => $character->ControllerId == $owner->ControllerId && $character->hasTrait("Thug", $owner));
                 if (count($characters) > 0)
                 {
                     $this->beginInPlayThugPhase();

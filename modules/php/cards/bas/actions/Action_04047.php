@@ -51,8 +51,10 @@ class Action_04047 extends RiskCityAction implements IAbilityThatTargetsCharacte
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        return array_values(array_filter($performers, function (Character $p) use ($theah) {
-            if (! $p->hasTrait("Duelist") || ! $p->canChallenge($theah) || $p->Engaged || $p->DashedFinesse)
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
+        return array_values(array_filter($performers, function (Character $p) use ($theah, $owner) {
+            if (! $p->hasTrait("Duelist", $owner) || ! $p->canChallenge($theah) || $p->Engaged || $p->DashedFinesse)
             {
                 return false;
             }

@@ -198,7 +198,8 @@ class Action_03003 extends CharacterAction implements IAbilityThatTargetsCharact
     private function getAvailableThugs(Theah $theah, Character $don): array
     {
         $atLocation = $theah->getCharactersAtLocationByPlayerId($don->Location, $don->ControllerId);
-        $thugs = array_filter($atLocation, fn($c) => $c->hasTrait("Thug") && $c->canChallenge($theah));
+        // WHY: pass $don as queryCard so "counts as a ..." characters (Patricia) qualify as your Thug.
+        $thugs = array_filter($atLocation, fn($c) => $c->hasTrait("Thug", $don) && $c->canChallenge($theah));
         return array_values($thugs);
     }
 }

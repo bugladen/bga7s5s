@@ -53,7 +53,8 @@ class _01045 extends Scheme implements IHasReactions
         if ($this->Location == Game::LOCATION_PLAYER_HOME
             && $parleying 
             && $performer->ControllerId == $this->ControllerId 
-            && $performer->hasTrait("Leader"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            && $performer->hasTrait("Leader", $this))
         {
             $discount += 1;
             $explanations[] = sprintf($theah->game->translate("%s: -1 because performer is a Leader Parleying with a Mercenary."), $this->getInjectCode());

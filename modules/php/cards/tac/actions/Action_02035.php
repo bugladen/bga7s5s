@@ -28,8 +28,10 @@ class Action_02035 extends SchemeCityAction
      */
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_filter($performers, fn($c) => $c->hasTrait("Scoundrel") && $c->canPressure(Game::STAT_FINESSE));
+        $performers = array_filter($performers, fn($c) => $c->hasTrait("Scoundrel", $owner) && $c->canPressure(Game::STAT_FINESSE));
         $performers = array_filter($performers, function ($c) use ($theah) {
             $loc = $theah->getCityLocation($c->Location);
             return $loc !== null && $loc->Renown > 0;

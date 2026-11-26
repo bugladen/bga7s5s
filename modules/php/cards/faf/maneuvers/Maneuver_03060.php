@@ -40,6 +40,8 @@ class Maneuver_03060 extends Maneuver
         // WHY: Participant wounds are not a cost — only Gambling + Sorcerer-at-location.
         // Resolve skips heal when actor has no wounds (heal of 0 is a no-op).
         // Player must control a Sorcerer at the duel's location (the actor's location).
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as your Sorcerer.
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersAtLocation($actor->Location);
         foreach ($characters as $character)
         {
@@ -47,7 +49,7 @@ class Maneuver_03060 extends Maneuver
             {
                 continue;
             }
-            if ($character->hasTrait("Sorcerer"))
+            if ($character->hasTrait("Sorcerer", $owner))
             {
                 return true;
             }

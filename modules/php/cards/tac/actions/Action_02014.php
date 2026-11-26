@@ -31,7 +31,8 @@ class Action_02014 extends CardAction
 
         $owner = $this->getOwningCard($theah);
         $leaders = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
-        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader") && $leader->canPressure(Game::STAT_COMBAT));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader", $owner) && $leader->canPressure(Game::STAT_COMBAT));
 
         return count($leaders) > 0;
     }
@@ -40,7 +41,7 @@ class Action_02014 extends CardAction
     {
         $owner = $this->getOwningCard($theah);
         $leaders = $theah->getCharactersInCityByPlayerId($owner->ControllerId);
-        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader") && $leader->canPressure(Game::STAT_COMBAT));
+        $leaders = array_filter($leaders, fn($leader) => $leader->hasTrait("Leader", $owner) && $leader->canPressure(Game::STAT_COMBAT));
         return array_values($leaders);
     }
 

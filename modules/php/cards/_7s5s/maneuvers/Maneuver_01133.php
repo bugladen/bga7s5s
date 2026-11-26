@@ -24,6 +24,8 @@ class Maneuver_01133 extends Maneuver implements ISorcererAbility
     {
         parent::handleEvent($event);
 
+        // EventManeuverCanceled handler not needed
+
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
@@ -53,7 +55,8 @@ class Maneuver_01133 extends Maneuver implements ISorcererAbility
         }
 
         $actor = $theah->getDuelRoundActor();
-        return $actor->hasTrait("Sorcerer");
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        return $actor->hasTrait("Sorcerer", $this->getOwningCard($theah));
     }
 
     public function actFromManeuverWithIds(Game $game, int $state, string $stateName, array $ids): void

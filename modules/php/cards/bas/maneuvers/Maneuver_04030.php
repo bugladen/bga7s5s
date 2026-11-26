@@ -34,7 +34,8 @@ class Maneuver_04030 extends Maneuver
         {
             $actor = $theah->getDuelRoundActor();
             if ($actor !== null
-                && ($actor->hasTrait("Merchant") || $actor->hasTrait("Scoundrel")))
+                // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+                && ($actor->hasTrait("Merchant", $owner) || $actor->hasTrait("Scoundrel", $owner)))
             {
                 $discount += 1;
                 $explanations[] = sprintf(

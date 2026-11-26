@@ -3,6 +3,7 @@
 namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions;
 
 use Bga\GameFramework\UserException;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
@@ -45,12 +46,13 @@ class Reaction_04025 extends CardReaction
      *
      * @return int
      */
-    private function countControlledMerchants(Theah $theah, int $controllerId): int
+    private function countControlledMerchants(Theah $theah, int $controllerId, ?Card $owner): int
     {
         $count = 0;
         foreach ($theah->getCharactersInPlayByPlayerId($controllerId) as $character)
         {
-            if ($character->hasTrait("Merchant"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if ($character->hasTrait("Merchant", $owner))
             {
                 $count++;
             }
@@ -78,7 +80,7 @@ class Reaction_04025 extends CardReaction
             }
 
             // WHY: Merchant Reaction — trait gate when no pickable performer in the trigger.
-            $merchantCount = $this->countControlledMerchants($event->theah, $owner->ControllerId);
+            $merchantCount = $this->countControlledMerchants($event->theah, $owner->ControllerId, $owner);
             if ($merchantCount < 1)
             {
                 return;
@@ -111,7 +113,7 @@ class Reaction_04025 extends CardReaction
 
         if ($reactionId == 'look')
         {
-            $merchantCount = $this->countControlledMerchants($game->theah, $owner->ControllerId);
+            $merchantCount = $this->countControlledMerchants($game->theah, $owner->ControllerId, $owner);
             $cards = $this->peekFactionDeck($game, $owner->ControllerId);
 
             $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} looks at the top ${count} cards of their deck (${merchant_count} Merchant(s)).'), [
@@ -246,7 +248,7 @@ class Reaction_04025 extends CardReaction
      */
     private function peekFactionDeck(Game $game, int $controllerId): array
     {
-        $merchantCount = $this->countControlledMerchants($game->theah, $controllerId);
+        $merchantCount = $this->countControlledMerchants($game->theah, $controllerId, $this->getOwningCard($game->theah));
         $lookCount = 3 + $merchantCount;
         $deckCards = $game->getCardsOnTopOfPlayerFactionDeck($controllerId, $lookCount);
         $cards = [];

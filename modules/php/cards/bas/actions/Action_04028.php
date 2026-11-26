@@ -70,13 +70,15 @@ class Action_04028 extends RiskAction implements IAbilityThatTargetsCharacters
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         return array_values(array_filter(
             $performers,
-            function (Character $performer) use ($theah)
+            function (Character $performer) use ($theah, $owner)
             {
                 // WHY En Garde Musketeer Action: En Garde = precondition (not Engage cost);
                 // Musketeer = mechanical trait gate (not Sorcerer).
-                if ($performer->Engaged || ! $performer->hasTrait("Musketeer"))
+                if ($performer->Engaged || ! $performer->hasTrait("Musketeer", $owner))
                 {
                     return false;
                 }

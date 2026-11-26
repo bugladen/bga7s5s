@@ -49,10 +49,11 @@ class Action_01159 extends RiskAction
             if ($performer == null) return $discount;
 
             $leader = $theah->getLeaderByPlayerId($performer->ControllerId);
-            if ($leader->hasTrait('Diplomat') || $leader->hasTrait('Hero'))
+            $owner = $this->getOwningCard($theah);
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if ($leader->hasTrait('Diplomat', $owner) || $leader->hasTrait('Hero', $owner))
             {
                 $discount += 1;            
-                $owner = $this->getOwningCard($theah);
                 $explanations[] = sprintf($theah->game->translate("%s: -1 because Leader is a Diplomat or Hero."), $owner->getInjectCode());
             }
         }

@@ -60,12 +60,14 @@ class Action_04045 extends SchemeCityAction implements IAbilityThatTargetsCharac
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: En Garde = unengaged precondition (not an Engage cost). Duelist is a
         // mechanical trait gate, not ISorcererAbility. Full legality needs a target.
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Duelist")
+            fn(Character $performer) => $performer->hasTrait("Duelist", $owner)
                 && ! $performer->Engaged
                 && $performer->canChallenge($theah)
                 && count($theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)) > 0
@@ -106,7 +108,7 @@ class Action_04045 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $performer = $event->theah->getCharacterById($performerId);
 
             if ($performer === null
-                || ! $performer->hasTrait("Duelist")
+                || ! $performer->hasTrait("Duelist", $this->getOwningCard($event->theah))
                 || $performer->Engaged
                 || ! $performer->canChallenge($event->theah))
             {

@@ -76,7 +76,8 @@ class _04026 extends FactionAttachment implements IHasReactions, IHasTechniques
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if (! $character->hasTrait("Diplomat"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $character->hasTrait("Diplomat", $this))
             {
                 throw new UserException($event->theah->game->translate("Pompon can only be equipped to a Diplomat."));
             }
@@ -90,6 +91,6 @@ class _04026 extends FactionAttachment implements IHasReactions, IHasTechniques
             return false;
         }
 
-        return $character->hasTrait("Diplomat");
+        return $character->hasTrait("Diplomat", $this);
     }
 }

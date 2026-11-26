@@ -61,7 +61,8 @@ class _02056 extends FactionAttachment implements IHasTechniques
 
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id) {
             $performer = $event->theah->getCardById($event->characterId);
-            if (!$performer->hasTrait("Duelist"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (!$performer->hasTrait("Duelist", $this))
             {
                 throw new UserException($event->theah->game->translate("Main Gauche can only be equipped to Duelists."));
             }
@@ -74,6 +75,6 @@ class _02056 extends FactionAttachment implements IHasTechniques
             return false;
         }
 
-        return $character->hasTrait("Duelist");
+        return $character->hasTrait("Duelist", $this);
     }
 }

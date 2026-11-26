@@ -59,9 +59,11 @@ class Reaction_05SnowWhite extends CardReaction implements ISorcererAbility
      */
     private function getControlledSorcerers(Theah $theah, int $controllerId): array
     {
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         return array_values(array_filter(
             $theah->getCharactersInPlayByPlayerId($controllerId),
-            fn(Character $character) => $character->hasTrait("Sorcerer")
+            fn(Character $character) => $character->hasTrait("Sorcerer", $owner)
         ));
     }
 

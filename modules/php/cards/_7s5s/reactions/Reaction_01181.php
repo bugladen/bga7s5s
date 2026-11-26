@@ -41,7 +41,8 @@ class Reaction_01181 extends AttachmentReaction
         $id = $this->HealTargetIds[0];
         $character = $theah->getCharacterById($id);
         $effectiveWounds = $character->Wounds + ($this->characterWoundedEvent !== null ? $this->characterWoundedEvent->wounds : 0);
-        if ($owner->hasTrait("Strega") && $effectiveWounds > 1)
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if ($owner->hasTrait("Strega", $this->getOwningCard($theah)) && $effectiveWounds > 1)
             $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Heal 2 Wounds'), 'heal2Wounds');    
 
         $array[] = $this->createButtonProperty($theah->game, $theah->game->translate('Pass'), 'pass');

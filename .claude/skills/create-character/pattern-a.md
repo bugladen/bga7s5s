@@ -1171,9 +1171,16 @@ public function hasTrait(string $trait, ?Card $queryCard = null): bool
 
 **Uwe contrast:** Uwe returns true only for `"Mercenary"` and only when `$queryCard` is one of a whitelist of ability owners. Patricia returns true for **any** `$trait` when the same-controller gate holds.
 
-**Systemic limit (load-bearing):** `Card::hasTrait` ignores `$queryCard` by default. Almost all call sites omit it. Fiction only lights for callers that pass `$queryCard` (today: Uwe's Mercenary consumers `Action_01036` / `Technique_01039` / `Maneuver_01051`). Do **not** invent a global `hasTrait` monkey-patch.
+**Caller contract (load-bearing):** Fiction only lights when the ability passes itself as `$queryCard`. Every new ability/cost check on YOUR character **must** use:
 
-Reference: `_05Serenissima`; single-trait sibling `_01043` Uwe; **wrong** direction Daniella `Action_03013`.
+```php
+$owner = $this->getOwningCard($theah); // or $this on card class / Character owner in scope
+$char->hasTrait("Trait", $owner);
+```
+
+Omit `$queryCard` only for opponent/adversary checks, uncontrolled Mercenary filters, non-character card traits, and **negative** gates where inventing the trait would hurt (`!hasTrait("Mercenary")`, etc.). Do **not** invent a global `hasTrait` monkey-patch — same-controller + blanked gates live on the receiver.
+
+Reference: `_05Serenissima`; single-trait sibling `_01043` Uwe; consumers e.g. `Action_05Shakedown` / `Action_04030` / `Maneuver_05Montoya`; **wrong** direction Daniella `Action_03013`.
 
 ### "Opposing characters are considered <Trait>" — tag opposing characters, don't override hasTrait
 

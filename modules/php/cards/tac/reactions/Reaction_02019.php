@@ -95,7 +95,8 @@ class Reaction_02019 extends RiskReaction
         {
             $owner = $this->getOwningCard($event->theah);
             $performer = $event->theah->getCharacterById($this->PerformerId);
-            if ($performer->hasTrait("Zealot") && $performer->Wounds > 0)
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if ($performer->hasTrait("Zealot", $owner) && $performer->Wounds > 0)
             {
                 $healEvent = EventFactory::createCharacterBeingHealedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $event->theah->queueEvent($healEvent);

@@ -58,7 +58,8 @@ class _01154 extends FactionAttachment implements IHasActions
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if (! $character->hasTrait("Sorcerer"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $character->hasTrait("Sorcerer", $this))
             {
                 throw new \BgaUserException($event->theah->game->translate("Corpse Speak can only be equipped to a Sorcerer."));
             }

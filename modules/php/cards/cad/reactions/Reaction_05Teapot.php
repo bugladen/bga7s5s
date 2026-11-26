@@ -94,7 +94,8 @@ class Reaction_05Teapot extends RiskReaction implements ISorcererAbility, IAbili
             }
 
             // Sorcerer heading gate (mechanical performer trait + ISorcererAbility).
-            if (! $performer->hasTrait('Sorcerer'))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $performer->hasTrait('Sorcerer', $owner))
             {
                 return;
             }

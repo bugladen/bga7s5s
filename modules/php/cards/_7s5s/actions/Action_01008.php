@@ -27,7 +27,8 @@ class Action_01008 extends CharacterAction implements ISorcererAbility
         }
 
         $owner = $this->getOwningCharacter($theah);
-        if ( ! $owner->hasTrait("Sorcerer"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if ( ! $owner->hasTrait("Sorcerer", $owner))
         {
             return false;
         }

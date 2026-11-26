@@ -39,13 +39,15 @@ class Action_03060 extends RiskCityAction implements ISorcererAbility
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: Wounds are not a cost to play. Sorcerer trait only — players may play
         // for the Sorcerer ability itself (Elina / Path reactions, etc.) with nobody
         // wounded. Heal targets are filtered at the chooser / empty-resolve path.
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Sorcerer")
+            fn(Character $performer) => $performer->hasTrait("Sorcerer", $owner)
         ));
     }
 

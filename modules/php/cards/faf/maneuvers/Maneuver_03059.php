@@ -256,7 +256,8 @@ class Maneuver_03059 extends Maneuver
         {
             $owner = $this->getOwningCard($game->theah);
             $actor = $game->theah->getDuelRoundActor();
-            if ($actor === null || ! $actor->hasTrait('Academic'))
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) satisfy the trait gate.
+            if ($actor === null || ! $actor->hasTrait('Academic', $owner))
             {
                 throw new UserException($game->translate("Only an Academic participant may sink cards."));
             }
@@ -359,7 +360,7 @@ class Maneuver_03059 extends Maneuver
         $actor = $game->theah->getDuelRoundActor();
         $unchosen = $this->getUnchosenLookedAtCards($game);
 
-        if ($actor !== null && $actor->hasTrait('Academic') && count($unchosen) > 0)
+        if ($actor !== null && $actor->hasTrait('Academic', $owner) && count($unchosen) > 0)
         {
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "03059_3", $this->Id);
             $game->theah->stackEvent($transition);

@@ -76,12 +76,14 @@ class Action_03062 extends SchemeCityAction
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: "Villain City Action" is a mechanical trait gate, not ISorcererAbility
         // (same discipline as Hero / Strega / Diplomat prefixes on scheme actions).
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Villain")
+            fn(Character $performer) => $performer->hasTrait("Villain", $owner)
         ));
     }
 
@@ -100,7 +102,7 @@ class Action_03062 extends SchemeCityAction
                 throw new UserException($event->theah->game->translate("Invalid performer"));
             }
 
-            if (! $performer->hasTrait("Villain"))
+            if (! $performer->hasTrait("Villain", $owner))
             {
                 throw new UserException($event->theah->game->translate("Performer must be a Villain."));
             }
@@ -176,7 +178,7 @@ class Action_03062 extends SchemeCityAction
                 throw new UserException($game->translate("Performer not found"));
             }
 
-            if (! $performer->hasTrait("Villain"))
+            if (! $performer->hasTrait("Villain", $owner))
             {
                 throw new UserException($game->translate("Performer must be a Villain."));
             }

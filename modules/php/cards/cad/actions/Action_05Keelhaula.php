@@ -40,11 +40,13 @@ class Action_05Keelhaula extends RiskAction implements IAbilityThatTargetsCharac
         // WHY not RiskCityAction: the heading says "Covert Pirate Action", not "City Action".
         // City comes from Covert (uncontrolled City location), checked explicitly below.
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         return array_values(array_filter(
             $performers,
-            function (Character $performer) use ($theah)
+            function (Character $performer) use ($theah, $owner)
             {
-                if (! $performer->hasTrait("Pirate")
+                if (! $performer->hasTrait("Pirate", $owner)
                     || ! $theah->cardInCity($performer)
                     || ! $performer->canChallenge($theah)
                     || $performer->DashedCombat)

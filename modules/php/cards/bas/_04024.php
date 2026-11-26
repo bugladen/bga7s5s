@@ -52,7 +52,8 @@ class _04024 extends Scheme
     {
         return array_values(array_filter(
             $theah->getCharactersInPlayByPlayerId($playerId),
-            fn(Character $character) => $character->hasTrait("Diplomat")
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            fn(Character $character) => $character->hasTrait("Diplomat", $this)
                 && $character->Location != Game::LOCATION_CITY_FORUM
         ));
     }
@@ -160,7 +161,7 @@ class _04024 extends Scheme
                 throw new UserException($game->translate("You do not control that character."));
             }
 
-            if (! $character->hasTrait("Diplomat"))
+            if (! $character->hasTrait("Diplomat", $this))
             {
                 throw new UserException($game->translate("Character must be a Diplomat."));
             }

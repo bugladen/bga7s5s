@@ -36,7 +36,8 @@ class Technique_05Cooper extends Technique
         $characters = $theah->getCharactersAtLocationByPlayerId($owner->Location, $owner->ControllerId);
         $characters = array_filter(
             $characters,
-            fn($character) => $character->hasTrait("Red Hand")
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            fn($character) => $character->hasTrait("Red Hand", $owner)
         );
 
         return array_values($characters);
@@ -140,7 +141,7 @@ class Technique_05Cooper extends Technique
                 ));
             }
 
-            if (! $character->hasTrait("Red Hand"))
+            if (! $character->hasTrait("Red Hand", $owner))
             {
                 throw new UserException("Character must be a Red Hand.");
             }

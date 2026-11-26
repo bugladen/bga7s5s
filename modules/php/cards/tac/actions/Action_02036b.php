@@ -25,8 +25,10 @@ class Action_02036b extends SchemeCityAction
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $pirates = $theah->getCharactersInCityByPlayerId($playerId);
-        $pirates = array_filter($pirates, fn ($c) => $c->hasTrait("Pirate"));
+        $pirates = array_filter($pirates, fn ($c) => $c->hasTrait("Pirate", $owner));
         foreach ($pirates as $pirate) {
             if ($pirate->Location == Game::LOCATION_CITY_DOCKS) {
                 continue;
@@ -43,7 +45,8 @@ class Action_02036b extends SchemeCityAction
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_filter($performers, fn ($c) => $c->hasTrait("Pirate"));
+        $owner = $this->getOwningCard($theah);
+        $performers = array_filter($performers, fn ($c) => $c->hasTrait("Pirate", $owner));
         $performers = array_filter($performers, function ($c) use ($theah) {
             if ($c->Location == Game::LOCATION_CITY_DOCKS) {
                 return false;

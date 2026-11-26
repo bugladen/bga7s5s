@@ -43,8 +43,9 @@ class Action_05Rum extends SchemeCityAction
         $characters = $theah->getCharactersAtLocationByPlayerId($owner->ChosenLocation, $playerId);
         $pirates = array_filter(
             $characters,
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
             fn($c) => $c instanceof Character
-                && $c->hasTrait("Pirate")
+                && $c->hasTrait("Pirate", $owner)
                 && $c->canPressure(Game::STAT_FINESSE)
         );
 
@@ -154,7 +155,7 @@ class Action_05Rum extends SchemeCityAction
                 throw new UserException("Performer must be at the chosen location.");
             }
 
-            if (! $performer->hasTrait("Pirate"))
+            if (! $performer->hasTrait("Pirate", $owner))
             {
                 throw new UserException("Performer must be a Pirate.");
             }

@@ -30,7 +30,8 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
         }
         
         $actor = $theah->getDuelRoundActor();
-        if (! $actor->hasTrait("Pirate"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if (! $actor->hasTrait("Pirate", $this->getOwningCard($theah)))
         {
             return false;
         }
@@ -147,7 +148,7 @@ class Maneuver_01113 extends Maneuver implements IAbilityThatTargetsCards
 
             $actor = $game->theah->getDuelRoundActor();
 
-            if (! $actor->hasTrait("Pirate"))
+            if (! $actor->hasTrait("Pirate", $this->getOwningCard($game->theah)))
             {
                 throw new UserException($game->translate("Actor is not a Pirate"));
             }

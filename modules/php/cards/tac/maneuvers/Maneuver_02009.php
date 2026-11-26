@@ -27,13 +27,17 @@ class Maneuver_02009 extends Maneuver
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $actor = $theah->getDuelRoundActor();
-        return $actor->hasTrait($this->RequiredTrait);
+        return $actor->hasTrait($this->RequiredTrait, $owner);
     }
 
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // EventManeuverCanceled handler not needed
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

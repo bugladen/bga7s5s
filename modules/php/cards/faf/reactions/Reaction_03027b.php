@@ -53,7 +53,8 @@ class Reaction_03027b extends CardReaction
             $characters = $theah->getCharactersAtLocation($locationName);
             foreach ($characters as $character)
             {
-                if ($character->ControllerId == $owner->ControllerId && $character->hasTrait("Duelist"))
+                // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) count as your Duelist.
+                if ($character->ControllerId == $owner->ControllerId && $character->hasTrait("Duelist", $owner))
                 {
                     $duelists[] = $character;
                 }
@@ -99,7 +100,7 @@ class Reaction_03027b extends CardReaction
             $adjacent = $game->theah->getAdjacentCityLocations($owner->Location, $includeHome = false);
             if ($character !== null
                 && $character->ControllerId == $owner->ControllerId
-                && $character->hasTrait("Duelist")
+                && $character->hasTrait("Duelist", $owner)
                 && in_array($character->Location, $adjacent))
             {
                 $moveEvent = EventFactory::createCardMovingEvent(

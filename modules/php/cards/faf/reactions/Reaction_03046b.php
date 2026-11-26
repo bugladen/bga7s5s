@@ -50,7 +50,8 @@ class Reaction_03046b extends RiskReaction
             $challenger = $event->theah->getCharacterById($challengerId);
             if ($challenger === null) return;
             if ($challenger->ControllerId != $owner->ControllerId) return;
-            if (! $challenger->hasTrait("Pirate")) return;
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) count as your Pirate.
+            if (! $challenger->hasTrait("Pirate", $owner)) return;
             // WHY: Challenger engages at issue/setup — if somehow still en garde, Engarde is a no-op; don't offer.
             if (! $challenger->Engaged) return;
 

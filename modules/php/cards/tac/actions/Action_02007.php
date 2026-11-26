@@ -29,8 +29,10 @@ class Action_02007 extends RiskCityAction
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $characters = array_values(array_filter($characters, fn($character) => $character->hasTrait("Red Hand")));
+        $characters = array_values(array_filter($characters, fn($character) => $character->hasTrait("Red Hand", $owner)));
 
         foreach ($characters as $character)
         {
@@ -54,7 +56,8 @@ class Action_02007 extends RiskCityAction
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Red Hand")));
+        $owner = $this->getOwningCard($theah);
+        $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Red Hand", $owner)));
         $performers = array_values(array_filter($performers, function($character) use ($theah) {
             $location = $theah->getCityLocation($character->Location);
             if ($location->Renown > 0)

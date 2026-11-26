@@ -64,12 +64,14 @@ class Action_05RedTape extends RiskAction implements IAbilityThatTargetsCharacte
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: Academic Action — Academic is a mechanical performer-trait gate (not Sorcerer).
         // RiskAction (not City) — home performers stay eligible; filter from parent, not city-only.
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Academic")
+            fn(Character $performer) => $performer->hasTrait("Academic", $owner)
                 && count($this->getValidTargets($theah, $performer)) > 0
         ));
     }

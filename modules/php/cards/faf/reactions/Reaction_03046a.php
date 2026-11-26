@@ -49,7 +49,8 @@ class Reaction_03046a extends RiskReaction
 
             $intervener = $event->theah->getCharacterById($event->newTargetId);
             if ($intervener === null) return;
-            if (! $intervener->hasTrait("Duelist")) return;
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) count as your Duelist.
+            if (! $intervener->hasTrait("Duelist", $owner)) return;
 
             $this->performerId = $intervener->Id;
             $owner->IsUpdated = true;

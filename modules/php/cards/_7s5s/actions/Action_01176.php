@@ -47,10 +47,11 @@ class Action_01176 extends RiskAction implements IAbilityThatTargetsCharacters
 
         if ($action->Id == $this->Id)
         {
-            if ($performer && ($performer->hasTrait("Hero") || $performer->hasTrait("Scoundrel")))
+            $owner = $this->getOwningCard($theah);
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if ($performer && ($performer->hasTrait("Hero", $owner) || $performer->hasTrait("Scoundrel", $owner)))
             {
                 $discount += 1;
-                $owner = $this->getOwningCard($theah);
                 $explanations[] = sprintf($theah->game->translate("%s: -1 because Target is a Hero or Scoundrel."), $owner->getInjectCode());
             }
         }

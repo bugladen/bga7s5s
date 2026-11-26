@@ -37,7 +37,9 @@ class Technique_02003 extends Technique
         }
 
         $characters = $theah->getCharactersAtLocation($actor->Location);
-        $characters = array_filter($characters, fn($c) => $c->ControllerId == $playerId && $c->hasTrait("Strega"));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
+        $characters = array_filter($characters, fn($c) => $c->ControllerId == $playerId && $c->hasTrait("Strega", $owner));
         if (count($characters) == 0)
         {
             return false;
@@ -60,6 +62,8 @@ class Technique_02003 extends Technique
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // EventTechniqueCanceled handler not needed
 
         if ($event instanceof EventResolveTechnique && $event->techniqueId == $this->Id)
         {

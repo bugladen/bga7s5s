@@ -53,8 +53,10 @@ class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharac
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $diplomats = $theah->getCharactersInCityByPlayerId($playerId);
-        $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat"));
+        $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat", $owner));
 
         foreach ($diplomats as $diplomat)
         {
@@ -76,7 +78,8 @@ class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharac
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_filter($performers, fn($c) => $c->hasTrait("Diplomat"));
+        $owner = $this->getOwningCard($theah);
+        $performers = array_filter($performers, fn($c) => $c->hasTrait("Diplomat", $owner));
         return array_values($performers);
     }
 

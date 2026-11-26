@@ -93,7 +93,7 @@ class Action_05Hulk extends RiskCityAction implements IAbilityThatTargetsCharact
             $game->theah->queueEvent($engageEvent);
         }
 
-        if ($performer !== null && $owner !== null && ! $performer->hasTrait("Berserker"))
+        if ($performer !== null && $owner !== null && ! $performer->hasTrait("Berserker", $owner))
         {
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
                 $performer->Id,

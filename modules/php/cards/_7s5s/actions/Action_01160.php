@@ -87,7 +87,8 @@ class Action_01160 extends RiskAction implements IAbilityThatTargetsCharacters
         {
             $owner = $this->getOwningCard($theah);
             $leader = $theah->getLeaderByPlayerId($owner->ControllerId);
-            if ($leader->hasTrait('Villain'))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if ($leader->hasTrait('Villain', $owner))
             {
                 $discount += 1;
                 $explanations[] = sprintf($theah->game->translate("%s: -1 because Leader is a Villain."), $owner->getInjectCode());

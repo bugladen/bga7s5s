@@ -63,7 +63,8 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
             }
 
             // Sorcerer Reaction — trigger-named performer is the gambler.
-            if (! $actor->hasTrait("Sorcerer"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $actor->hasTrait("Sorcerer", $owner))
             {
                 return;
             }
@@ -151,7 +152,7 @@ class Reaction_04010 extends CardReaction implements ISorcererAbility
         }
 
         $actor = $game->theah->getDuelRoundActor();
-        if ($actor === null || ! $actor->hasTrait("Sorcerer"))
+        if ($actor === null || ! $actor->hasTrait("Sorcerer", $owner))
         {
             return;
         }

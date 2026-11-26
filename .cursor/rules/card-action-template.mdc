@@ -120,6 +120,19 @@ Always include these standard imports:
 4. **getArgsFromAction**: Must call parent method first, then add state-specific logic
 5. **actFromActionWithId**: Must call parent method first, then add state-specific logic
 
+## hasTrait + queryCard (REQUIRED)
+
+When checking **your** character's traits for ability use or costs (performer gates, Leader discounts, host equip restrictions, "your X" counts), pass the ability owner as `$queryCard`:
+
+```php
+$owner = $this->getOwningCard($theah);
+$performer->hasTrait("Scoundrel", $owner);
+```
+
+WHY: Patricia (`_05Serenissima`) / Uwe (`_01043`) invent traits only when `$queryCard !== null` + same controller. Bare `hasTrait("X")` silently skips them.
+
+Do **not** pass `$queryCard` for opponent/adversary checks, uncontrolled Mercenary filters, or negative gates (`!hasTrait("Mercenary")`) where inventing the trait would hurt.
+
 ## Code Style
 
 - Use proper indentation (4 spaces)

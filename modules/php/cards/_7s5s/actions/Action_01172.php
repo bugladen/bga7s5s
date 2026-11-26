@@ -30,8 +30,10 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
             return false;
         }
 
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait('Sorcerer')));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait('Sorcerer', $owner)));
         foreach ($performers as $performer)
         {
             $characters = $theah->getCharactersInPlay();
@@ -46,8 +48,9 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInCityByPlayerId($playerId);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait('Sorcerer')));
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait('Sorcerer', $owner)));
         return $performers;
     }
 
@@ -143,7 +146,7 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $sorcererAbilityStartedEvent->batchId = $batchId;
             $game->theah->queueEvent($sorcererAbilityStartedEvent);
 
-            if (! $performer->hasTrait('Strega'))
+            if (! $performer->hasTrait('Strega', $owner))
             {
                 $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
                 $woundEvent->batchId = $batchId;

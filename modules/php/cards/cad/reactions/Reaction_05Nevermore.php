@@ -82,9 +82,11 @@ class Reaction_05Nevermore extends CardReaction
      */
     private function getControlledVillains(Theah $theah, int $controllerId): array
     {
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         return array_values(array_filter(
             $theah->getCharactersInPlayByPlayerId($controllerId),
-            fn(Character $character) => $character->hasTrait("Villain")
+            fn(Character $character) => $character->hasTrait("Villain", $owner)
         ));
     }
 

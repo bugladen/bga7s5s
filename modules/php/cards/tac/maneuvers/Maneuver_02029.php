@@ -26,7 +26,7 @@ class Maneuver_02029 extends Maneuver
             $owner = $this->getOwningCard($event->theah);
             $actor = $event->theah->getDuelRoundActor();
             $diplomats = $event->theah->getCharactersAtLocationByPlayerId($actor->Location, $owner->ControllerId);
-            $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat"));
+            $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat", $owner)); // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
             $riposteBonus = count($diplomats);
 
             if ($riposteBonus > 0)

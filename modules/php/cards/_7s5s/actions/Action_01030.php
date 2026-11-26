@@ -32,18 +32,21 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
             return false;
         }
 
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersInCityWithOpposingCharacters($playerId);
         $characters = array_filter($characters, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE));
-        $characters = array_filter($characters, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega"));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $characters = array_filter($characters, fn($character) => $character->hasTrait("Sorcerer", $owner) && $character->hasTrait("Strega", $owner));
 
         return count($characters) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
         $performers = array_filter($performers, fn($character) => ! $character->Engaged && $character->canPressure(Game::STAT_INFLUENCE));
-        $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega")));
+        $performers = array_values(array_filter($performers, fn($character) => $character->hasTrait("Sorcerer", $owner) && $character->hasTrait("Strega", $owner)));
         return $performers;
     }
 

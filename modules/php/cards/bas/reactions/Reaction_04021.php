@@ -98,7 +98,8 @@ class Reaction_04021 extends CardReaction
         if ($musketeer->Id == $owner->Id) return;
         if ($musketeer->ControllerId != $owner->ControllerId) return;
         if ($musketeer->Location != $owner->Location) return;
-        if (! $musketeer->hasTrait("Musketeer")) return;
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if (! $musketeer->hasTrait("Musketeer", $owner)) return;
 
         $this->engagedMusketeerId = $musketeer->Id;
         $owner->IsUpdated = true;
@@ -120,7 +121,7 @@ class Reaction_04021 extends CardReaction
                 && $musketeer instanceof Character
                 && $musketeer->ControllerId == $owner->ControllerId
                 && $musketeer->Location == $owner->Location
-                && $musketeer->hasTrait("Musketeer")
+                && $musketeer->hasTrait("Musketeer", $owner)
                 && $musketeer->Id != $owner->Id
                 && $musketeer->Engaged)
             {

@@ -29,7 +29,8 @@ class Maneuver_01114 extends Maneuver
             if ($owner !== null && $game->globals->get(Game::ROLL_THE_BONES_CARD_ID, 0) == $owner->Id)
             {
                 $duelActor = $theah->getDuelRoundActor();
-                if ($duelActor->hasTrait("Scoundrel"))
+                // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+                if ($duelActor->hasTrait("Scoundrel", $owner))
                 {
                     $count += 1;
                     $explanations[] = sprintf($game->translate("%s: +1 because Actor is a Scoundrel."), $owner->getInjectCode());

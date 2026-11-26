@@ -33,8 +33,10 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer") && $performer->hasTrait("Strega"));
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer", $owner) && $performer->hasTrait("Strega", $owner));
         if (count($performers) == 0)
         {
             return false;
@@ -59,7 +61,8 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer") && $performer->hasTrait("Strega")));
+        $owner = $this->getOwningCard($theah);
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer", $owner) && $performer->hasTrait("Strega", $owner)));
         return $performers;
     }
 

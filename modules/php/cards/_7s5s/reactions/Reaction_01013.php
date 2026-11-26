@@ -43,7 +43,8 @@ class Reaction_01013 extends CardReaction
             if ($event->theah->cardInCity($owner))
             {
                 $character = $event->theah->getCharacterById($event->characterId);
-                if ($character->hasTrait("Red Hand") && $character->ControllerId == $owner->ControllerId && $character->Location == $owner->Location)
+                // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+                if ($character->hasTrait("Red Hand", $owner) && $character->ControllerId == $owner->ControllerId && $character->Location == $owner->Location)
                 {
                     $reactionEvent = EventFactory::createReactionTransitionEvent($owner->ControllerId, $owner->Id, $this->Id);
                     $event->theah->queueEvent($reactionEvent);

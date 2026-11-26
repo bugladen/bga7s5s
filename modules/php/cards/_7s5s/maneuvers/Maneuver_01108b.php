@@ -25,12 +25,15 @@ class Maneuver_01108b extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
-        return $actor->hasTrait("Pirate");
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        return $actor->hasTrait("Pirate", $this->getOwningCard($theah));
     }
 
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // EventManeuverCanceled handler not needed
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {

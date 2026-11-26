@@ -84,7 +84,8 @@ class Technique_02026b extends Technique
         // WHY: Card text is "Duelist Technique" — usable only when the equipped character has Duelist
         // (equip itself is not restricted; see journal 2026-03-30-02).
         $equipped = $this->getOwningCharacter($theah);
-        if ($equipped == null || ! $equipped->hasTrait("Duelist"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if ($equipped == null || ! $equipped->hasTrait("Duelist", $this->getOwningCard($theah)))
         {
             return false;
         }

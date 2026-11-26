@@ -36,7 +36,9 @@ class Action_03009 extends RiskAction implements ISorcererAbility
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_filter($performers, fn(Character $character) => $character->hasTrait("Sorcerer") && $character->hasTrait("Strega"));
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
+        $performers = array_filter($performers, fn(Character $character) => $character->hasTrait("Sorcerer", $owner) && $character->hasTrait("Strega", $owner));
         $performers = array_values(array_filter($performers, fn(Character $performer) => count($this->getValidDestinations($theah, $performer)) > 0));
 
         return $performers;

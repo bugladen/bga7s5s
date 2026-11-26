@@ -67,7 +67,8 @@ class Action_01028 extends RiskAction
             foreach ($locations as $location)
             {
                 $characters = $game->theah->getCharactersAtLocation($location);
-                $characters = array_values(array_filter($characters, fn($c) => $c->ControllerId == $owner->ControllerId && $c->hasTrait('Thug')));
+                // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+                $characters = array_values(array_filter($characters, fn($c) => $c->ControllerId == $owner->ControllerId && $c->hasTrait('Thug', $owner)));
                 $thugs = array_merge($thugs, $characters);
             }
             $args["ids"] = array_map(fn($thug) => $thug->Id, $thugs);

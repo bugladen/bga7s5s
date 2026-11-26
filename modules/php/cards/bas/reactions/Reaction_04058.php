@@ -94,7 +94,8 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
         }
 
         // En Garde Sorcerer — performer must be en garde and a Sorcerer.
-        if ($performer->Engaged || ! $performer->hasTrait('Sorcerer'))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if ($performer->Engaged || ! $performer->hasTrait('Sorcerer', $owner))
         {
             return false;
         }

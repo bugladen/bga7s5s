@@ -142,7 +142,8 @@ class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($game->translate("Strega must be at Cesca's location."));
             }
 
-            if (! $strega->hasTrait("Strega"))
+            // WHY: pass $cesca as queryCard so "counts as a ..." characters (Patricia) qualify as your Strega.
+            if (! $strega->hasTrait("Strega", $cesca))
             {
                 throw new UserException($game->translate("Character must have the Strega trait."));
             }
@@ -205,7 +206,7 @@ class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharact
     private function getStregaSources(Theah $theah, Character $cesca): array
     {
         $characters = $theah->getCharactersAtLocationByPlayerId($cesca->Location, $cesca->ControllerId);
-        return array_values(array_filter($characters, fn($character) => $character->hasTrait("Strega") && $character->Wounds > 0));
+        return array_values(array_filter($characters, fn($character) => $character->hasTrait("Strega", $cesca) && $character->Wounds > 0));
     }
 
     private function getOpposingNonLeaderTargets(Theah $theah, Character $cesca): array

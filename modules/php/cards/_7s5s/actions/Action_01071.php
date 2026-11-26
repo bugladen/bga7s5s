@@ -41,10 +41,12 @@ class Action_01071 extends SchemeCityAction implements IAbilityThatTargetsCharac
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        $owner = $this->getOwningCard($theah);
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
         return array_values(array_filter(
             $performers,
-            fn($performer) => $performer->hasTrait("Musketeer")
+            fn($performer) => $performer->hasTrait("Musketeer", $owner)
                 && $performer->canChallenge($theah)
                 && count($theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)) > 0
         ));

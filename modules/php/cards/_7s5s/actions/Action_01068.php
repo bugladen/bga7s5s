@@ -31,7 +31,8 @@ class Action_01068 extends CharacterAction implements ISorcererAbility, IAbility
         }
 
         $leontine = $this->getOwningCharacter($theah);
-        if ( ! $leontine->hasTrait("Sorcerer"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if ( ! $leontine->hasTrait("Sorcerer", $leontine))
         {
             return false;
         }

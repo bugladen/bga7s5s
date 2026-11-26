@@ -30,16 +30,19 @@ class Action_01026 extends RiskAction implements IAbilityThatTargetsCharacters
             return false;
         }
 
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Red Hand"));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Red Hand", $owner));
 
         return count($performers) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Red Hand")));
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Red Hand", $owner)));
         return $performers;
     }
 

@@ -56,7 +56,8 @@ class Reaction_03005 extends CardReaction
                 return;
             }
 
-            if (! $challenger->hasTrait("Red Hand"))
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) count as your Red Hand.
+            if (! $challenger->hasTrait("Red Hand", $owner))
             {
                 return;
             }

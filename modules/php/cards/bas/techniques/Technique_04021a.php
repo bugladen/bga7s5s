@@ -70,7 +70,8 @@ class Technique_04021a extends Technique
             {
                 continue;
             }
-            if (! $character->hasTrait("Musketeer"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (! $character->hasTrait("Musketeer", $owner))
             {
                 continue;
             }
@@ -147,7 +148,7 @@ class Technique_04021a extends Technique
 
             $sourceCharacter = $technique->getOwningCharacter($game->theah);
             if ($sourceCharacter === null
-                || ! $sourceCharacter->hasTrait("Musketeer")
+                || ! $sourceCharacter->hasTrait("Musketeer", $this->getOwningCharacter($game->theah))
                 || $sourceCharacter->Id == $this->getOwningCharacter($game->theah)->Id)
             {
                 throw new UserException($game->translate("Technique must be on your other Musketeer"));

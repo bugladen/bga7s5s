@@ -64,12 +64,14 @@ class Action_04004 extends SchemeCityAction
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: "Duelist City Action" is a mechanical trait gate, not ISorcererAbility.
         // Full legality: at least one other City location has a wounded enemy.
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Duelist")
+            fn(Character $performer) => $performer->hasTrait("Duelist", $owner)
                 && count($this->getDestinationsWithWoundedEnemy($theah, $performer)) > 0
         ));
     }
@@ -90,7 +92,7 @@ class Action_04004 extends SchemeCityAction
                 throw new UserException($game->translate("Invalid performer"));
             }
 
-            if (! $performer->hasTrait("Duelist"))
+            if (! $performer->hasTrait("Duelist", $owner))
             {
                 throw new UserException($game->translate("Performer must be a Duelist."));
             }

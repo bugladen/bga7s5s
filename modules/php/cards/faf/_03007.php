@@ -63,7 +63,8 @@ class _03007 extends FactionAttachment implements IHasReactions
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $character = $event->theah->getCharacterById($event->characterId);
-            if (! $character->hasTrait("Strega"))
+            // WHY: pass $this as queryCard so "pretend you are a ..." characters (Patricia) satisfy the equip restriction.
+            if (! $character->hasTrait("Strega", $this))
             {
                 throw new UserException($event->theah->game->translate("Matushka's Shears can only be equipped to a Strega."));
             }
@@ -77,6 +78,6 @@ class _03007 extends FactionAttachment implements IHasReactions
             return false;
         }
 
-        return $character->hasTrait("Strega");
+        return $character->hasTrait("Strega", $this);
     }
 }

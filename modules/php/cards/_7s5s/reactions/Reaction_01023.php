@@ -163,7 +163,8 @@ class Reaction_01023 extends RiskReaction
             }
 
             $characters = $theah->getCharactersAtLocationByPlayerId($challengeLocation, $owner->ControllerId);
-            $characters = array_filter($characters, fn($character) => $character->hasTrait('Brute'));
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $characters = array_filter($characters, fn($character) => $character->hasTrait('Brute', $owner));
             if (count($characters) > 0)
             {
                 $discount += 1;

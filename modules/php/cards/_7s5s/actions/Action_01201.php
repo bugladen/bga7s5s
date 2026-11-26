@@ -32,7 +32,8 @@ class Action_01201 extends CharacterAction implements ISorcererAbility
             return false;
         }
 
-        if (! $ravenna->hasTrait("Sorcerer"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if (! $ravenna->hasTrait("Sorcerer", $ravenna))
         {
             return false;
         }

@@ -188,7 +188,8 @@ class Technique_04017 extends Technique implements IRangedAbility
     ): void
     {
         if ($participant === null
-            || (! $participant->hasTrait("Academic") && ! $participant->hasTrait("Hunter")))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            || (! $participant->hasTrait("Academic", $attachment) && ! $participant->hasTrait("Hunter", $attachment)))
         {
             return;
         }

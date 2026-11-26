@@ -143,9 +143,10 @@ class _04006 extends FactionAttachment
 
     private function characterHasEquipTrait(Character $character): bool
     {
-        return $character->hasTrait("Duelist")
-            || $character->hasTrait("Spy")
-            || $character->hasTrait("Assassin");
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        return $character->hasTrait("Duelist", $this)
+            || $character->hasTrait("Spy", $this)
+            || $character->hasTrait("Assassin", $this);
     }
 
     private function recomputeAdversaryWoundedFinesseBonus(Theah $theah, ?Event $woundOrHealEvent = null): void

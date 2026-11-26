@@ -61,7 +61,8 @@ class _01074 extends FactionAttachment implements IHasTechniques
         if ($event instanceof EventAttachmentEquipping && $event->attachmentId == $this->Id)
         {
             $performer = $event->theah->getCardById($event->characterId);
-            if (!$performer->hasTrait("Duelist"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            if (!$performer->hasTrait("Duelist", $this))
                 throw new \BgaUserException($event->theah->game->translate(("Mastercrafted Rapier can only be equipped to Duelists.")));
         }
     }
@@ -73,6 +74,6 @@ class _01074 extends FactionAttachment implements IHasTechniques
             return false;
         }
 
-        return $character->hasTrait("Duelist");
+        return $character->hasTrait("Duelist", $this);
     }
 }

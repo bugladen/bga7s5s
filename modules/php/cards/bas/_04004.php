@@ -68,7 +68,8 @@ class _04004 extends Scheme implements IHasActions, IHasReactions
     {
         return array_values(array_filter(
             $theah->getCharactersInPlayByPlayerId($playerId),
-            fn(Character $character) => $character->hasTrait("Duelist")
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            fn(Character $character) => $character->hasTrait("Duelist", $this)
                 && count($this->getValidCityDestinations($theah, $character)) > 0
         ));
     }
@@ -172,7 +173,7 @@ class _04004 extends Scheme implements IHasActions, IHasReactions
                 throw new UserException($game->translate("You do not control that character."));
             }
 
-            if (! $character->hasTrait("Duelist"))
+            if (! $character->hasTrait("Duelist", $this))
             {
                 throw new UserException($game->translate("Character must be a Duelist."));
             }

@@ -70,12 +70,13 @@ class Action_04039 extends RiskCityAction
                 return $discount;
             }
 
-            if ($performer->hasTrait("Zealot")
-                || $performer->hasTrait("Academic")
-                || $performer->hasTrait("Bard"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $owner = $this->getOwningCard($theah);
+            if ($performer->hasTrait("Zealot", $owner)
+                || $performer->hasTrait("Academic", $owner)
+                || $performer->hasTrait("Bard", $owner))
             {
                 $discount += 1;
-                $owner = $this->getOwningCard($theah);
                 $explanations[] = sprintf(
                     $theah->game->translate("%s: -1 because your performer is a Zealot, Academic, or Bard."),
                     $owner->getInjectCode()

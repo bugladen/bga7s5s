@@ -143,7 +143,8 @@ class Reaction_03003 extends CardReaction
                 return;
             }
 
-            if (! $destroyed->hasTrait("Thug"))
+            // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) count as your Thug.
+            if (! $destroyed->hasTrait("Thug", $owner))
             {
                 return;
             }
@@ -220,7 +221,7 @@ class Reaction_03003 extends CardReaction
         $thugId = (int)substr($reactionId, strlen($prefix));
 
         $thug = $game->theah->getCardById($thugId);
-        if ($thug === null || ! $thug->hasTrait("Thug") || $thug->Id == $this->destroyedThugId)
+        if ($thug === null || ! $thug->hasTrait("Thug", $owner) || $thug->Id == $this->destroyedThugId)
         {
             $this->resetState($owner);
             $this->setUsed($game->theah, true);
@@ -438,8 +439,8 @@ class Reaction_03003 extends CardReaction
             $cards = $theah->getCardObjectsAtLocation($discardName);
         }
 
-        $thugs = array_filter($cards, function ($card) use ($theah, $source) {
-            if (! $card->hasTrait("Thug") || $card->Id == $this->destroyedThugId)
+        $thugs = array_filter($cards, function ($card) use ($theah, $source, $owner) {
+            if (! $card->hasTrait("Thug", $owner) || $card->Id == $this->destroyedThugId)
             {
                 return false;
             }

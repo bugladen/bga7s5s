@@ -36,7 +36,9 @@ class Action_01024 extends RiskAction implements IAbilityThatTargetsCards
         }
 
         $characters = $theah->getCharactersInPlayByPlayerId($playerId);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait('Leader'));
+        $owner = $this->getOwningCard($theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $characters = array_filter($characters, fn($character) => $character->hasTrait('Leader', $owner));
         return count($characters) > 0;
     }
     

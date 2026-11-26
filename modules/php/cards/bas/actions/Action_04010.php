@@ -31,9 +31,11 @@ class Action_04010 extends RiskAction implements ISorcererAbility
     private function getEligiblePerformers(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         return array_values(array_filter(
             $performers,
-            fn(Character $character) => $character->hasTrait("Sorcerer")
+            fn(Character $character) => $character->hasTrait("Sorcerer", $owner)
         ));
     }
 

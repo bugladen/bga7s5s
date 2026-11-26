@@ -36,7 +36,8 @@ class Action_01062 extends CharacterAction
         {
             $characters = $theah->getCharactersAtLocation($location);
             //Filter duelists owned by controller of Odette
-            $characters = array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && $character->hasTrait("Duelist"));
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $characters = array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && $character->hasTrait("Duelist", $odette));
             $count += count($characters);
         }
 
@@ -52,7 +53,7 @@ class Action_01062 extends CharacterAction
         {
             $characters = $theah->getCharactersAtLocation($location);
             //Filter duelists owned by controller of Odette
-            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && $character->hasTrait("Duelist")));
+            $characters = array_values(array_filter($characters, fn($character) => $character->ControllerId == $odette->ControllerId && $character->hasTrait("Duelist", $odette)));
             $performers = array_merge($performers, $characters);
         }
 

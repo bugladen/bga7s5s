@@ -65,7 +65,9 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
                 $owner = $this->getOwningCard($game->theah);
                 $playerId = $character->ControllerId;
 
-                if ($character->hasTrait('Zealot') || $character->hasTrait('Hunter'))
+                // WHY: pass $owner as queryCard so "counts as a ..." characters (Patricia) trigger Final Strike.
+                $isZealot = $character->hasTrait('Zealot', $owner);
+                if ($isZealot || $character->hasTrait('Hunter', $owner))
                 {
                     $cardDrawEvent = EventFactory::createCardDrawnEvent($playerId, clienttranslate("Overzealous"));
                     $event->theah->queueEvent($cardDrawEvent);
@@ -73,7 +75,7 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
                     $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${character_inject_code} was a ${trait} and triggered Final Strike. ${performer} draws a card.'), [
                         "maneuver_inject_code" => $owner->getInjectCode(),
                         "character_inject_code" => $character->getInjectCode(),
-                        "trait" => ($character->hasTrait('Zealot') ? clienttranslate('Zealot') : clienttranslate('Hunter')),
+                        "trait" => ($isZealot ? clienttranslate('Zealot') : clienttranslate('Hunter')),
                         "performer" => $game->getPlayerNameById($playerId),
                     ]);
                 }

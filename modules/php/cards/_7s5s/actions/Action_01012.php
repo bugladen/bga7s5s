@@ -31,7 +31,8 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
         if (! $theah->cardInCity($sibella))
             return false;
 
-        if (! $sibella->hasTrait("Sorcerer"))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if (! $sibella->hasTrait("Sorcerer", $sibella))
             return false;
 
         $characters = $theah->getOpposingCharactersAtLocation($sibella->Location, $sibella->ControllerId);

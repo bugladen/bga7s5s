@@ -52,7 +52,8 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
 
             foreach ($performers as $performer)
             {
-                if (! $performer->hasTrait("Pirate"))
+                // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+                if (! $performer->hasTrait("Pirate", $owner))
                 {
                     continue;
                 }
@@ -71,7 +72,8 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
-        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Pirate")));
+        $owner = $this->getOwningCard($theah);
+        $performers = array_values(array_filter($performers, fn($performer) => $performer->hasTrait("Pirate", $owner)));
         return $performers;
     }
 
@@ -174,7 +176,7 @@ class Action_01113 extends RiskCityAction implements IAbilityThatTargetsCards
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            if (! $performer->hasTrait("Pirate"))
+            if (! $performer->hasTrait("Pirate", $this->getOwningCard($game->theah)))
             {
                 throw new UserException($game->translate("Performer is not a Pirate"));
             }

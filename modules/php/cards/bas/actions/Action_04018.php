@@ -131,10 +131,11 @@ class Action_04018 extends RiskAction implements IAbilityThatTargetsCharacters
                 return $discount;
             }
 
-            if ($performer->hasTrait("Academic") || $performer->hasTrait("Hunter"))
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $owner = $this->getOwningCard($theah);
+            if ($performer->hasTrait("Academic", $owner) || $performer->hasTrait("Hunter", $owner))
             {
                 $discount += 1;
-                $owner = $this->getOwningCard($theah);
                 $explanations[] = sprintf(
                     $theah->game->translate("%s: -1 because your performer is an Academic or Hunter."),
                     $owner->getInjectCode()

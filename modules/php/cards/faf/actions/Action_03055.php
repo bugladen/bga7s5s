@@ -149,10 +149,13 @@ class Action_03055 extends AttachmentAction
 
     private function locationHasScionOrArtifact(Theah $theah, string $location): bool
     {
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) count as Scions.
+        // Safe for opponents/uncontrolled characters: Patricia's same-controller gate ignores them.
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersAtLocation($location, $includeUncontrolled = true);
         foreach ($characters as $character)
         {
-            if ($character->hasTrait("Scion"))
+            if ($character->hasTrait("Scion", $owner))
             {
                 return true;
             }

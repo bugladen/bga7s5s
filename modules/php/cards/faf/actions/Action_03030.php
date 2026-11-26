@@ -40,10 +40,12 @@ class Action_03030 extends SchemeCityAction implements IAbilityThatTargetsCharac
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
 
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Diplomat")
+            fn(Character $performer) => $performer->hasTrait("Diplomat", $owner)
                 && ! $performer->Engaged
                 && count($this->getAvailableDuelists($theah, $performer)) > 0
                 && count($theah->getOpposingCharactersAtLocation($performer->Location, $performer->ControllerId)) > 0
@@ -61,7 +63,7 @@ class Action_03030 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $diplomatId = $game->globals->get(Game::CHOSEN_PERFORMER, 0);
             $diplomat = $event->theah->getCharacterById($diplomatId);
 
-            if ($diplomat === null || ! $diplomat->hasTrait("Diplomat"))
+            if ($diplomat === null || ! $diplomat->hasTrait("Diplomat", $owner))
             {
                 throw new UserException($game->translate("Performer must be a Diplomat."));
             }
@@ -253,7 +255,7 @@ class Action_03030 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
         return array_values(array_filter(
             $atLocation,
-            fn(Character $character) => $character->hasTrait("Duelist") && $character->canChallenge($theah)
+            fn(Character $character) => $character->hasTrait("Duelist", $diplomat) && $character->canChallenge($theah)
         ));
     }
 }

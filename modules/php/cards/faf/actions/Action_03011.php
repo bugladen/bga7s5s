@@ -48,7 +48,8 @@ class Action_03011 extends RiskCityAction implements IAbilityThatTargetsCharacte
             return [false, $game->translate("You may only move one of your own characters.")];
         }
 
-        if (! ($character->hasTrait("Thug") || $character->hasTrait("Bodyguard")))
+        // WHY: pass $performer as queryCard (same controller) so "counts as a ..." characters (Patricia) qualify as your Thug/Bodyguard.
+        if (! ($character->hasTrait("Thug", $performer) || $character->hasTrait("Bodyguard", $performer)))
         {
             return [false, $game->translate("Character must be a Thug or Bodyguard.")];
         }
@@ -145,7 +146,7 @@ class Action_03011 extends RiskCityAction implements IAbilityThatTargetsCharacte
             foreach ($characters as $character)
             {
                 if ($character->ControllerId != $performer->ControllerId) continue;
-                if (! ($character->hasTrait("Thug") || $character->hasTrait("Bodyguard"))) continue;
+                if (! ($character->hasTrait("Thug", $performer) || $character->hasTrait("Bodyguard", $performer))) continue;
                 $targets[$character->Id] = $character;
             }
         }

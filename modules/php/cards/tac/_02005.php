@@ -118,7 +118,8 @@ class _02005 extends Scheme
             $game->globals->set(Game::CHOSEN_OPPONENT, $id);
 
             $characters = $game->theah->getCharactersInPlayByPlayerId($this->ControllerId);
-            $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega"));
+            // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+            $characters = array_filter($characters, fn($character) => $character->hasTrait("Strega", $this));
             $count = 3 + count($characters);
 
             $game->notify->all("message", clienttranslate('${player_name} will manipulate the top cards of ${opponent_name}\'s deck. 

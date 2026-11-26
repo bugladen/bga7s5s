@@ -54,7 +54,8 @@ class Action_03071 extends RiskCityAction
         {
             $owner = $this->getOwningCard($theah);
             $leader = $theah->getLeaderByPlayerId($owner->ControllerId);
-            if ($leader !== null && ($leader->hasTrait('Villain') || $leader->hasTrait('Pirate')))
+            // WHY: pass $owner as queryCard so "counts as a ..." Leaders (Patricia) get the discount.
+            if ($leader !== null && ($leader->hasTrait('Villain', $owner) || $leader->hasTrait('Pirate', $owner)))
             {
                 $discount += 1;
                 $explanations[] = sprintf(

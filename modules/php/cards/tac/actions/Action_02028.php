@@ -28,8 +28,10 @@ class Action_02028 extends RiskAction implements IAbilityThatTargetsCharacters
             return false;
         }
 
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $owner = $this->getOwningCard($theah);
         $diplomats = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat"));
+        $diplomats = array_filter($diplomats, fn($c) => $c->hasTrait("Diplomat", $owner));
         $diplomats = array_filter($diplomats, fn($c) => $c->canChallenge($theah) && ! $c->DashedInfluence);
 
         foreach ($diplomats as $diplomat)
@@ -48,7 +50,8 @@ class Action_02028 extends RiskAction implements IAbilityThatTargetsCharacters
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = $theah->getCharactersInCityWithOpposingCharacters($playerId);
-        $performers = array_filter($performers, fn($c) => $c->hasTrait("Diplomat"));
+        $owner = $this->getOwningCard($theah);
+        $performers = array_filter($performers, fn($c) => $c->hasTrait("Diplomat", $owner));
         $performers = array_filter($performers, fn($c) => $c->canChallenge($theah) && ! $c->DashedInfluence);
         return array_values($performers);
     }

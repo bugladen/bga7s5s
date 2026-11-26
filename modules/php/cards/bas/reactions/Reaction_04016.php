@@ -66,7 +66,8 @@ class Reaction_04016 extends AttachmentReaction
         }
 
         // WHY: Not an equip restriction — printed text only gates the Reaction on Hunter/Berserker.
-        if (! $character->hasTrait('Hunter') && ! $character->hasTrait('Berserker'))
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        if (! $character->hasTrait('Hunter', $owner) && ! $character->hasTrait('Berserker', $owner))
         {
             return;
         }
@@ -92,7 +93,7 @@ class Reaction_04016 extends AttachmentReaction
             if ($owner !== null
                 && $character instanceof Character
                 && $character->Wounds > 0
-                && ($character->hasTrait('Hunter') || $character->hasTrait('Berserker')))
+                && ($character->hasTrait('Hunter', $owner) || $character->hasTrait('Berserker', $owner)))
             {
                 $healEvent = EventFactory::createCharacterBeingHealedEvent(
                     $character->Id,

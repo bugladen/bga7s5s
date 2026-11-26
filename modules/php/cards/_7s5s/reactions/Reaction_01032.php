@@ -86,7 +86,8 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
             if ($this->inPlayRedHand)
             {
                 $cards = $theah->getCharactersInPlayByPlayerId($owner->ControllerId);
-                $cards = array_filter($cards, fn($card) => $card->hasTrait("Red Hand"));
+                // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+                $cards = array_filter($cards, fn($card) => $card->hasTrait("Red Hand", $owner));
                 foreach ($cards as $card)
                 {
                     $array[] = $this->createButtonProperty($theah->game, $card->Name, "destroy-$card->Id");
@@ -96,7 +97,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
             if ($this->inHandThug)
             {
                 $cards = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-                $cards = array_filter($cards, fn($card) => $card->hasTrait("Thug"));
+                $cards = array_filter($cards, fn($card) => $card->hasTrait("Thug", $owner));
                 foreach ($cards as $card)
                 {
                     $array[] = $this->createButtonProperty($theah->game, $card->Name, "discard-$card->Id");
@@ -169,7 +170,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
     {
         $owner = $this->getOwningCard($theah);
         $hand = $theah->getCardObjectsAtLocation(Game::LOCATION_HAND, $owner->ControllerId);
-        $hand = array_filter($hand, fn($card) => $card->hasTrait("Thug"));
+        $hand = array_filter($hand, fn($card) => $card->hasTrait("Thug", $owner));
         return count($hand) > 0;
     }
 
@@ -177,7 +178,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
     {
         $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersInPlayByPlayerId($owner->ControllerId);
-        $characters = array_filter($characters, fn($character) => $character->hasTrait("Red Hand"));
+        $characters = array_filter($characters, fn($character) => $character->hasTrait("Red Hand", $owner));
         return count($characters) > 0;
     }
 
@@ -414,7 +415,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         {
             $characterId = (int) str_replace('discard-', '', $reactionId);
             $character = $game->theah->getCardById($characterId);
-            if ($character === null || $character->Location != Game::LOCATION_HAND || $character->ControllerId != $owner->ControllerId || ! $character->hasTrait('Thug'))
+            if ($character === null || $character->Location != Game::LOCATION_HAND || $character->ControllerId != $owner->ControllerId || ! $character->hasTrait('Thug', $owner))
             {
                 throw new UserException($game->translate('Invalid Thug selection.'));
             }
@@ -434,7 +435,7 @@ class Reaction_01032 extends RiskReaction implements ICancelReaction
         {
             $characterId = (int) str_replace('destroy-', '', $reactionId);
             $character = $game->theah->getCardById($characterId);
-            if ($character === null || $character->ControllerId != $owner->ControllerId || ! $character->hasTrait('Red Hand'))
+            if ($character === null || $character->ControllerId != $owner->ControllerId || ! $character->hasTrait('Red Hand', $owner))
             {
                 throw new UserException($game->translate('Invalid Red Hand selection.'));
             }

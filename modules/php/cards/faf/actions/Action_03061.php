@@ -52,12 +52,14 @@ class Action_03061 extends SchemeCityAction implements IAbilityThatTargetsCharac
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
         $performers = parent::getPerformersForAction($playerId, $theah);
+        // WHY: pass the owning card as queryCard so "counts as a ..." characters (Patricia) qualify as performer.
+        $owner = $this->getOwningCard($theah);
 
         // WHY: "Hero City Action" is a mechanical trait gate, not ISorcererAbility
         // (same discipline as Strega / Diplomat prefixes on scheme actions).
         return array_values(array_filter(
             $performers,
-            fn(Character $performer) => $performer->hasTrait("Hero")
+            fn(Character $performer) => $performer->hasTrait("Hero", $owner)
         ));
     }
 
@@ -76,7 +78,7 @@ class Action_03061 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 throw new UserException($event->theah->game->translate("Invalid performer"));
             }
 
-            if (! $performer->hasTrait("Hero"))
+            if (! $performer->hasTrait("Hero", $owner))
             {
                 throw new UserException($event->theah->game->translate("Performer must be a Hero."));
             }

@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelCalculateManeuverValues;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEndOfRound;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -32,8 +33,10 @@ class Maneuver_01031 extends Maneuver
         }
 
         $actor = $theah->getDuelRoundActor();
+        $owner = $this->getOwningCard($theah);
         $characters = $theah->getCharactersAtLocation($actor->Location);
-        $characters = array_filter($characters, fn($character) => $actor->ControllerId == $character->ControllerId && $character->hasTrait('Red Hand'));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $characters = array_filter($characters, fn($character) => $actor->ControllerId == $character->ControllerId && $character->hasTrait('Red Hand', $owner));
 
         return count($characters) > 0;
     }
@@ -52,11 +55,20 @@ class Maneuver_01031 extends Maneuver
             $owner->IsUpdated = true;
         }
 
+        if ($event instanceof EventManeuverCanceled && $event->maneuverId == $this->Id)
+        {
+            $this->IsActive = false;
+            $this->DuelLocation = "";
+            $owner = $this->getOwningCard($event->theah);
+            $owner->IsUpdated = true;
+        }
+
         if ($event instanceof EventDuelCalculateManeuverValues && $event->maneuverId == $this->Id)
         {
             $actor = $event->theah->getDuelRoundActor();
+            $owner = $this->getOwningCard($event->theah);
             $characters = $event->theah->getCharactersAtLocation($actor->Location);
-            $characters = array_filter($characters, fn($character) => $actor->ControllerId == $character->ControllerId && $character->hasTrait('Red Hand'));
+            $characters = array_filter($characters, fn($character) => $actor->ControllerId == $character->ControllerId && $character->hasTrait('Red Hand', $owner));
 
             $event->thrust += count($characters);
             $event->explanations[] = $event->theah->game->translate("+1 Thrust for each Red Hand at same location");
@@ -69,7 +81,7 @@ class Maneuver_01031 extends Maneuver
             $owner->IsUpdated = true;
 
             $characters = $event->theah->getCharactersAtLocation($this->DuelLocation);
-            $characters = array_filter($characters, fn($character) => $owner->ControllerId == $character->ControllerId && $character->hasTrait('Thug'));
+            $characters = array_filter($characters, fn($character) => $owner->ControllerId == $character->ControllerId && $character->hasTrait('Thug', $owner));
 
             if (count($characters) > 0)
             {
@@ -87,7 +99,7 @@ class Maneuver_01031 extends Maneuver
         {
             $owner = $this->getOwningCard($game->theah);
             $characters = $game->theah->getCharactersAtLocation($this->DuelLocation);
-            $characters = array_values(array_filter($characters, fn($character) => $owner->ControllerId == $character->ControllerId && $character->hasTrait('Thug')));
+            $characters = array_values(array_filter($characters, fn($character) => $owner->ControllerId == $character->ControllerId && $character->hasTrait('Thug', $owner)));
 
             $args["ids"] = array_map(fn($character) => $character->Id, $characters);
         }

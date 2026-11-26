@@ -46,7 +46,8 @@ class Reaction_02042 extends CardReaction
 
             $sorcerers = array_filter(
                 $event->theah->getCharactersAtLocationByPlayerId($actor->Location, $ivy->ControllerId),
-                fn($c) => $c->hasTrait('Sorcerer')
+                // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+                fn($c) => $c->hasTrait('Sorcerer', $ivy)
             );
             if (empty($sorcerers)) {
                 return;

@@ -184,7 +184,7 @@ class _03041 extends Scheme implements IHasReactions
     {
         foreach ($theah->getCharactersInPlayByPlayerId($this->ControllerId) as $character)
         {
-            if ($character instanceof Character && $character->hasTrait("Academic"))
+            if ($character instanceof Character && $character->hasTrait("Academic", $this))
             {
                 return true;
             }

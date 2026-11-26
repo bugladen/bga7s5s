@@ -33,15 +33,18 @@ class Action_01133 extends RiskAction implements ISorcererAbility, IAbilityThatT
             return false;
         }
 
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer"));
+        // WHY queryCard: Patricia/Uwe trait fiction only fires when the ability identifies itself.
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer", $owner));
         return count($performers) > 0;
     }
 
     public function getPerformersForAction(int $playerId, Theah $theah): array
     {
+        $owner = $this->getOwningCard($theah);
         $performers = $theah->getCharactersInPlayByPlayerId($playerId);
-        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer"));
+        $performers = array_filter($performers, fn($performer) => $performer->hasTrait("Sorcerer", $owner));
         return array_values($performers);
     }
 
