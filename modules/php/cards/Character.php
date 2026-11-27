@@ -161,8 +161,12 @@ abstract class Character extends Card implements IHasTechniques
     // the printed duel exception so UI eligibility matches eventCheck, not offer a
     // button that throws outside a duel / hide a legal duel muster.
     //
-    // Duel = after accept (IN_DUEL). Challenge targeting / ChallengeIssued is earlier —
-    // Recruit Brutes are illegal there even if Vittoria is targeted for a duel.
+    // Duel window for this gate:
+    // - IN_DUEL after stDuelStart (combat rounds)
+    // - CHALLENGE_ACCEPTED after Accept/Intervene (GENERATE_THREAT drain) — Intervene
+    //   onto Vittoria is already accepted; Recruit Brutes must be muster-legal there.
+    // ChallengeIssued / CharacterTargeted before Accept keep the flag false — Recruit
+    // Brutes stay illegal on that earlier Vittoria challenge window.
     public function canEnterPlayFromHand(Game $game): bool
     {
         if ($this->canBePlayedAsBruteFromHand())
@@ -170,7 +174,15 @@ abstract class Character extends Card implements IHasTechniques
             return true;
         }
 
-        return (bool) $game->globals->get(Game::IN_DUEL, false);
+        if ($game->globals->get(Game::IN_DUEL, false))
+        {
+            return true;
+        }
+
+        // WHY: Intervene sets CHALLENGE_ACCEPTED before EventCharacterIntervened drains;
+        // IN_DUEL is still false until duel start. Without this, Bruno-only hand +
+        // intervene onto Vittoria never opened her Reaction.
+        return (bool) $game->globals->get(Game::CHALLENGE_ACCEPTED, false);
     }
 
     public function eventCheck(Event $event)

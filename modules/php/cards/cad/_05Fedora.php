@@ -89,8 +89,9 @@ class _05Fedora extends Brute implements IHasManeuvers
         // WHY: At check time fromLocation is still empty; Location is still the pre-muster
         // zone (HAND / DUELING_LINE / …). Gate hand→play outside duels; Maneuver musters
         // from the dueling line so Location != HAND and passes. During-duel hand musters
-        // (IN_DUEL — after accept) remain legal per printed text. Challenge targeting is
-        // not a duel yet — Vittoria's challenge window cannot muster Recruit Brutes.
+        // (IN_DUEL / CHALLENGE_ACCEPTED — after accept or intervene) remain legal per
+        // printed text. ChallengeIssued targeting is not accepted yet — Vittoria's
+        // pre-accept challenge window cannot muster Recruit Brutes.
         if ($event instanceof EventCharacterMustered
             && $event->characterId == $this->Id
             && $this->Location == Game::LOCATION_HAND

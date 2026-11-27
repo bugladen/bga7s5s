@@ -29,6 +29,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeIssued;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterMustered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuskEndOfDay;
@@ -733,6 +734,83 @@ class Reaction_01014_Test extends TestCase
 
                 $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
                 Assert::true(in_array('moveHome', $ids, true), 'moveHome after successful redirect');
+            },
+
+            // WHY: Intervene replaces the defender after Accept — EventCharacterIntervened
+            // (no ChallengeIssued onto Vittoria). Must offer + redirect without re-validating
+            // a stale wound abilityId from earlier the same day.
+            'intervene onto Vittoria offers reaction and redirects to in-play Thug' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $thug = $world->placeCharacter(
+                    new GenericCharacter('Thug', ['Thug']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
+                $vittoria->addCondition(Game::DUEL_DEFENDER);
+                $world->game->globals->set(Game::CHOSEN_TARGET, $vittoria->Id);
+                $world->game->globals->set(Game::CHALLENGE_ACCEPTED, true);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                // Stale stamp from an earlier opposing wound the same Day.
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 2);
+                $savedAbility = new ReflectionProperty(Reaction_01014::class, 'savedAbilityId');
+                $savedAbility->setAccessible(true);
+                $savedAbility->setValue($reaction, $sibella->getActions()[0]->Id);
+                $savedSource = new ReflectionProperty(Reaction_01014::class, 'savedSourceId');
+                $savedSource->setAccessible(true);
+                $savedSource->setValue($reaction, $sibella->Id);
+
+                $event = new EventCharacterIntervened();
+                $event->playerId = 1;
+                $event->oldTargetId = $ally->Id;
+                $event->newTargetId = $vittoria->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'held intervene');
+                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'reaction offered');
+                Assert::same(null, $savedAbility->getValue($reaction), 'stale ability cleared');
+                $world->theah->takeQueuedEvents();
+
+                $reaction->performReaction($world->game, 0, $reaction->Id, 'putIntoPlay-' . $thug->Id);
+
+                $intervened = $world->theah->queuedOfType(EventCharacterIntervened::class);
+                Assert::count(1, $intervened, 'intervene re-queued onto Thug');
+                Assert::same($thug->Id, $intervened[0]->newTargetId, 'Thug is new target');
+                Assert::same($vittoria->Id, $intervened[0]->oldTargetId, 'Vittoria was old');
+                Assert::same($thug->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'CHOSEN_TARGET');
+                Assert::true($thug->hasCondition(Game::DUEL_DEFENDER), 'Thug defends');
+                Assert::false($vittoria->hasCondition(Game::DUEL_DEFENDER), 'Vittoria no longer defends');
+            },
+
+            // WHY: actIntervene sets CHALLENGE_ACCEPTED before Intervened drains; IN_DUEL
+            // is still false. Recruit Brutes must be muster-legal on that window or
+            // Bruno-only hand never opens the reaction when intervening onto Vittoria.
+            'intervene with hand Bruno offers when challenge already accepted' => function () {
+                $world = new TestWorld();
+                $vittoria = $world->placeCharacter(new _01014(), Game::LOCATION_CITY_DOCKS, 1);
+                $bruno = $world->placeCard(new _05Thomas(), Game::LOCATION_HAND, 1);
+                $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
+                $world->game->globals->set(Game::CHALLENGE_ACCEPTED, true);
+
+                /** @var Reaction_01014 $reaction */
+                $reaction = $vittoria->getReactions()[0];
+
+                $event = new EventCharacterIntervened();
+                $event->playerId = 1;
+                $event->oldTargetId = $ally->Id;
+                $event->newTargetId = $vittoria->Id;
+                $event->theah = $world->theah;
+                $reaction->handleEvent($event);
+
+                Assert::true($event->canceled, 'Bruno legal after accept');
+                Assert::count(1, $world->theah->queuedOfType(EventTransition::class), 'reaction offered');
+                $ids = array_column($reaction->getReactionButtonProperties($world->theah), 'reaction');
+                Assert::true(in_array('putIntoPlay-' . $bruno->Id, $ids, true), 'Bruno button');
             },
         ];
     }

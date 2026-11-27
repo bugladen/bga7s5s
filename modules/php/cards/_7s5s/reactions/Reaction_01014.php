@@ -105,11 +105,22 @@ class Reaction_01014 extends CardReaction
     // inHandThug without clearing inPlayThug. UI then said "new target" while offering
     // hand Thugs; performReaction prefers inPlayThug → no muster → isValidTarget fails
     // (still in HAND) → Challenge cancelled. Same shape as UL Reaction_01032 flag leak.
+    // Do NOT clear savedAbility* here — beginHand/InPlay call this after shouldReactToEvent
+    // already stamped the in-flight ability id for wound/target redirects.
     private function clearPhaseFlags(): void
     {
         $this->inHandThug = false;
         $this->inPlayThug = false;
         $this->moveHome = false;
+    }
+
+    // WHY: ChallengeIssued / Intervened never call shouldReactToEvent. A leftover
+    // savedAbilityId from an earlier wound made inPlayThug prefer loadAbility →
+    // isValidTargetForAbility and cancelEvents-drop the held Intervened.
+    private function clearSavedAbility(): void
+    {
+        $this->savedAbilityId = null;
+        $this->savedSourceId = null;
     }
 
     private function beginHandThugPhase(): void
@@ -194,8 +205,9 @@ class Reaction_01014 extends CardReaction
 
     /**
      * Hand Thugs that can legally muster here. Recruit Brutes (Bruno etc.) need
-     * IN_DUEL (after accept) — challenge targeting / ChallengeIssued is too early
-     * for their printed "except during a duel" text.
+     * IN_DUEL or CHALLENGE_ACCEPTED (after Accept/Intervene) — ChallengeIssued /
+     * CharacterTargeted before accept is too early for their printed
+     * "except during a duel" text.
      *
      * @return list<Character>
      */
@@ -232,11 +244,13 @@ class Reaction_01014 extends CardReaction
     {
         parent::handleEvent($event);
 
-        // WHY: CardReaction dusk only clears Used. Phase flags persist on the serialized
-        // reaction — clear them here so a prior day's decline leak cannot poison today.
+        // WHY: CardReaction dusk only clears Used. Phase flags + savedAbility persist on
+        // the serialized reaction — clear them here so a prior day's decline / wound
+        // stamp cannot poison today's Intervene / ChallengeIssued redirect.
         if ($event instanceof EventDuskEndOfDay)
         {
             $this->clearPhaseFlags();
+            $this->clearSavedAbility();
         }
 
         if ($event instanceof EventCardEngaged && $this->isAvailable() && !$event->canceled)
@@ -503,6 +517,7 @@ class Reaction_01014 extends CardReaction
 
                 if ($this->thugsInHand($event->theah))
                 {
+                    $this->clearSavedAbility();
                     $this->challengeIssuedEvent = clone $event;
                     unset($this->challengeIssuedEvent->theah);
                     $this->beginHandThugPhase();                    
@@ -519,6 +534,7 @@ class Reaction_01014 extends CardReaction
                 }
                 else if ($this->thugsInPlay($event->theah))
                 {
+                    $this->clearSavedAbility();
                     $this->challengeIssuedEvent = clone $event;
                     unset($this->challengeIssuedEvent->theah);
                     $this->beginInPlayThugPhase();
@@ -550,6 +566,7 @@ class Reaction_01014 extends CardReaction
 
                 if ($this->thugsInHand($event->theah))
                 {
+                    $this->clearSavedAbility();
                     $this->characterIntervenedEvent = clone $event;
                     unset($this->characterIntervenedEvent->theah);
                     $this->beginHandThugPhase();                    
@@ -562,6 +579,7 @@ class Reaction_01014 extends CardReaction
                 }
                 else if ($this->thugsInPlay($event->theah))
                 {
+                    $this->clearSavedAbility();
                     $this->characterIntervenedEvent = clone $event;
                     unset($this->characterIntervenedEvent->theah);
                     $this->beginInPlayThugPhase();
@@ -690,6 +708,7 @@ class Reaction_01014 extends CardReaction
         $this->isChallenger = false;
         $this->challengeIssuedEvent = null;
         $this->characterIntervenedEvent = null;
+        $this->clearSavedAbility();
 
         if ($cancelsInFlightChallenge)
         {
@@ -752,7 +771,7 @@ class Reaction_01014 extends CardReaction
                 ]);
 
                 $thugWasTargeted = false;
-                // WHY: Challenge + CardMoving redirects skip isValidTargetForAbility.
+                // WHY: Challenge + Intervene + CardMoving redirects skip isValidTargetForAbility.
                 // (1) Technique activation often leaves abilityId as a Technique so
                 // loadAbility is null.
                 // (2) Move-then-challenge Actions (Valeri) validate adjacent (pre-move),
@@ -761,9 +780,12 @@ class Reaction_01014 extends CardReaction
                 // (3) Move-both Actions (Giacinto 04032) queue performer move before the
                 // target's CardMoving. By the time Vittoria redirects, Giacinto has left —
                 // "same location as Giacinto" fails and the Thug never inherits the move.
+                // (4) Intervened must sit with ChallengeIssued — it never calls
+                // shouldReactToEvent; a leftover savedAbilityId from an earlier wound
+                // would otherwise re-validate and cancelEvents-drop the intervene.
                 // inPlayThug buttons already restrict to Thugs at Vittoria's location; the
                 // held CardMoving already carries the committed destination.
-                if ($this->challengeIssuedEvent || $this->cardMovingEvent)
+                if ($this->challengeIssuedEvent || $this->cardMovingEvent || $this->characterIntervenedEvent)
                 {
                     $this->releaseEvent($game, $characterId);
                     $thugWasTargeted = true;
@@ -786,11 +808,6 @@ class Reaction_01014 extends CardReaction
                             ]);
                             $this->cancelEvents($game, $state);
                         }
-                    }
-                    else if ($this->characterIntervenedEvent)
-                    {
-                        $this->releaseEvent($game, $characterId);
-                        $thugWasTargeted = true;
                     }
                     else
                     {
