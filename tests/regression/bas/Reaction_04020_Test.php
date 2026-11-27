@@ -12,6 +12,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04017;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04020;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
@@ -72,6 +74,93 @@ class Reaction_04020_Test extends TestCase
                 $performer->Engaged = false;
                 $reaction->handleEvent($pressure);
                 Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'not in hand');
+            },
+
+            // WHY: Character pick used to call resolveTargetCharacter inline — Cloud Bottle
+            // never saw a targeting hook. Act queues ONLY CharacterTargeted; survive continues.
+            'character pick queues CharacterTargeted only; survive opens engage-or-wound' => function () {
+                $world = new TestWorld();
+                $world->game->globals->set(Game::PLAYER_COUNT, 2);
+                $risk = $world->placeCard(new _04020(), Game::LOCATION_HAND, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_FORUM, 2);
+                /** @var Reaction_04020 $reaction */
+                $reaction = $risk->getReactions()[0];
+                $reaction->stage = 'chooseCharacter';
+                $reaction->pressureLocation = Game::LOCATION_CITY_FORUM;
+                $reaction->performerId = 1;
+
+                $reaction->performReaction($world->game, 0, '', "character-{$foe->Id}");
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($reaction->Id, $targeted[0]->abilityId, 'ability');
+                Assert::same('chooseCharacter', $reaction->stage, 'not yet engageOrWound');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound beside pick');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $reaction->handleEvent($hook);
+
+                Assert::same('engageOrWound', $reaction->stage, 'survived');
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'opponent choice');
+                Assert::same($foe->ControllerId, $transitions[0]->playerId, 'target controller');
+                Assert::same($hook->batchId, $transitions[0]->batchId, 'shared batch');
+            },
+
+            'canceled CharacterTargeted does not open engage-or-wound' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04020(), Game::LOCATION_HAND, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_FORUM, 2);
+                /** @var Reaction_04020 $reaction */
+                $reaction = $risk->getReactions()[0];
+                $reaction->stage = 'chooseCharacter';
+                $reaction->pressureLocation = Game::LOCATION_CITY_FORUM;
+                $reaction->targetCharacterId = $foe->Id;
+
+                $hook = new EventCharacterTargeted();
+                $hook->playerId = 1;
+                $hook->targetId = $foe->Id;
+                $hook->sourceId = $risk->Id;
+                $hook->abilityId = $reaction->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $reaction->handleEvent($hook);
+
+                Assert::same('chooseCharacter', $reaction->stage, 'stays');
+                Assert::count(0, $world->theah->queuedEvents, 'no continue');
+            },
+
+            'surviving CharacterTargeted auto-wounds an already-engaged target' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04020(), Game::LOCATION_HAND, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_FORUM, 2);
+                $foe->Engaged = true;
+                /** @var Reaction_04020 $reaction */
+                $reaction = $risk->getReactions()[0];
+                $reaction->stage = 'chooseCharacter';
+                $reaction->pressureLocation = Game::LOCATION_CITY_FORUM;
+                $reaction->performerId = 1;
+                $reaction->targetCharacterId = $foe->Id;
+
+                $hook = new EventCharacterTargeted();
+                $hook->playerId = 1;
+                $hook->targetId = $foe->Id;
+                $hook->sourceId = $risk->Id;
+                $hook->abilityId = $reaction->Id;
+                $hook->batchId = 11;
+                $hook->theah = $world->theah;
+                $reaction->handleEvent($hook);
+
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'auto wound');
+                Assert::same($foe->Id, $wounds[0]->characterId, 'foe');
+                Assert::same(11, $wounds[0]->batchId, 'shared batch');
+                Assert::true($reaction->Used, 'finalized');
             },
         ];
     }

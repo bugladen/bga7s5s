@@ -13,6 +13,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\FactionAttachment;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IHasReactions;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Terraria;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Terraria;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04020;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02034;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01160;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01160;
@@ -136,6 +138,24 @@ class Card_05Terraria_Test extends TestCase
                 $action = $risk->getActions()[0];
 
                 $event = $this->targeted($world, 2, $host->Id, $risk->Id, $action->Id);
+                $reaction->handleEvent($event);
+
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'offered');
+                Assert::same($bottle->Id, $transitions[0]->sourceId, 'source');
+                Assert::true($event->canceled, 'canceled first');
+            },
+
+            // WHY: Vantage Point used to engage/wound without EventCharacterTargeted —
+            // Cloud Bottle never offered. Reaction_04020 now emits the hook on pick.
+            'reaction offers when Vantage Point targets the equipped host' => function () {
+                $world = new TestWorld();
+                [$host, $bottle, $reaction] = $this->attach($world);
+                $risk = $world->placeCard(new _04020(), Game::LOCATION_HAND, 2);
+                /** @var Reaction_04020 $vantage */
+                $vantage = $risk->getReactions()[0];
+
+                $event = $this->targeted($world, 2, $host->Id, $risk->Id, $vantage->Id);
                 $reaction->handleEvent($event);
 
                 $transitions = $world->theah->queuedOfType(EventTransition::class);

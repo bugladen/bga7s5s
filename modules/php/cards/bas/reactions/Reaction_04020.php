@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -136,6 +137,14 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         {
             $this->beginPostPayFlow($event->theah);
         }
+
+        // WHY: Engage/wound only when EventCharacterTargeted survives. Cloud Bottle /
+        // UL / Maryam cancel that hook — resolving beside the pick meant "when targeted"
+        // reactions never saw Vantage Point (same seat as Bleed Out 01160).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargetCharacter($event->theah, $event->batchId);
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -215,7 +224,27 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
             }
 
             $this->targetCharacterId = $target->Id;
-            $this->resolveTargetCharacter($game->theah);
+            $owner->IsUpdated = true;
+
+            $game->notify->all('message', clienttranslate('${reaction_inject_code}: ${player_name} targets ${target_inject_code}.'), [
+                'reaction_inject_code' => $owner->getInjectCode(),
+                'player_name' => $game->getPlayerNameById($owner->ControllerId),
+                'target_inject_code' => $target->getInjectCode(),
+            ]);
+
+            // WHY: Fire targeting alone here. Engage/wound emit from handleEvent only when
+            // EventCharacterTargeted is not canceled (01160 / Red Tape / Torvo).
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
+
             $game->gamestate->nextState('done');
             return;
         }
@@ -345,7 +374,7 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         $theah->queueEvent($transition);
     }
 
-    private function resolveTargetCharacter(Theah $theah): void
+    private function resolveTargetCharacter(Theah $theah, ?int $batchId = null): void
     {
         $owner = $this->getOwningCard($theah);
         $target = $theah->getCharacterById($this->targetCharacterId);
@@ -355,18 +384,14 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         }
 
         $game = $theah->game;
-        $game->notify->all('message', clienttranslate('${reaction_inject_code}: ${player_name} targets ${target_inject_code}.'), [
-            'reaction_inject_code' => $owner->getInjectCode(),
-            'player_name' => $game->getPlayerNameById($owner->ControllerId),
-            'target_inject_code' => $target->getInjectCode(),
-        ]);
+        $sharedBatchId = $batchId ?? $game->getNextEventBatchId();
 
         if ($target->Engaged)
         {
             $game->notify->all('message', clienttranslate('${target_inject_code} was already Engaged and must take the wound.'), [
                 'target_inject_code' => $target->getInjectCode(),
             ]);
-            $this->applyWound($theah, $target);
+            $this->applyWound($theah, $target, $sharedBatchId);
             $this->finalize($theah);
             return;
         }
@@ -374,7 +399,10 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         $this->stage = 'engageOrWound';
         $owner->IsUpdated = true;
 
+        // WHY same batchId: if this Reaction queues before Cloud Bottle's HAND cancel
+        // during CharacterTargeted dispatch, deleteEventBatch strips the sibling.
         $transition = EventFactory::createReactionTransitionEvent($target->ControllerId, $owner->Id, $this->Id);
+        $transition->batchId = $sharedBatchId;
         $theah->queueEvent($transition);
     }
 
@@ -396,7 +424,7 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
         ]);
     }
 
-    private function applyWound(Theah $theah, Character $target): void
+    private function applyWound(Theah $theah, Character $target, ?int $batchId = null): void
     {
         $owner = $this->getOwningCard($theah);
         if ($owner === null)
@@ -417,6 +445,10 @@ class Reaction_04020 extends RiskReaction implements IAbilityThatTargetsCharacte
             $owner->getInjectCode(),
             $this->Id
         );
+        if ($batchId !== null)
+        {
+            $woundEvent->batchId = $batchId;
+        }
         $theah->eventCheck($woundEvent);
         $theah->queueEvent($woundEvent);
     }

@@ -73,10 +73,10 @@ Key gotchas:
 When the printed text says **Then, wound target character … unless they engage** (or **They may engage. If they do not, wound them**) on a **RiskReaction**, wire the engage-or-wound branch with **reaction buttons only** — mirror `Action_01049` / `Action_01156`, not a GameState.
 
 1. **Owner stage** — after any preceding effects (e.g. pressure penalty), `$stage = 'chooseCharacter'`; buttons `character-{id}` for valid targets at the printed location (usually opposing controlled characters). **`IAbilityThatTargetsCharacters`** on the Reaction + **`IRiskThatTargetsCharacters`** on the Risk (printed **"target character"**).
-2. **On character pick** — notify; if `$target->Engaged`, auto-wound + `finalize()` (no choice — already committed).
-3. **Else** — `$stage = 'engageOrWound'`; `createReactionTransitionEvent($target->ControllerId, …)` with **Engage** / **Take the Wound** buttons (no Pass — the alternate is the wound).
+2. **On character pick** — notify + queue **`EventCharacterTargeted` only** (`batchId`, `eventCheck`). Do **not** engage/wound beside the pick — Cloud Bottle / UL / Maryam cancel that hook (Bleed Out 01160 seat). Gate the rest on `handleEvent` when `!$event->canceled`.
+3. **On surviving CharacterTargeted** — if `$target->Engaged`, auto-wound + `finalize()` (no choice — already committed); share `batchId` on the wound. **Else** — `$stage = 'engageOrWound'`; `createReactionTransitionEvent($target->ControllerId, …)` with shared `batchId` and **Engage** / **Take the Wound** buttons (no Pass — the alternate is the wound).
 4. **Engage** → `createCardEngagedEvent` on the target character (the **engage** verb, not engarde). **Wound** → `createCharacterBeingWoundedEvent` + `eventCheck`.
-5. **`finalize()`** → `setUsed` + reset stage / saved ids. Do not `setUsed` until the full chain completes (D.1 discipline).
+5. **`finalize()`** → `setUsed` + reset stage / saved ids. Do not `setUsed` until the full chain completes (D.1 discipline). Preceding effects already applied (e.g. Vantage Point −1 pressure) stay if targeting is canceled — cancel only strips the character effects.
 
 **Optional:** when the Reaction gate was **equipped with a Ranged Weapon**, queue `createRangedAbilityPlayedEvent` on wound resolution (performer id captured at trigger time). Not required for every ranged-gated Reaction — only when the wound is the ranged shot.
 
