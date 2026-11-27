@@ -87,10 +87,8 @@ class UtilitiesTrait_SafeUnserialize_Test extends TestCase
 
             'foreign class outside game namespace is refused' => function () {
                 $host = $this->host();
-                // WHY: allowlist is payload-sourced but prefix-filtered; gadgets outside
-                // Bga\Games\SeventhSeaCityOfFiveSails\ must never reach unserialize.
-                // Call sites use variable-function dispatch so BGA's php-unsafe-unserialize
-                // AST scan does not match; the gate below is the real control.
+                // WHY: allowed_classes is payload-sourced but prefix-filtered; gadgets outside
+                // Bga\Games\SeventhSeaCityOfFiveSails\ must never reach unserialize().
                 $payload = 'O:8:"stdClass":0:{}';
                 Assert::throws(
                     fn () => $host->safeUnserialize($payload),
