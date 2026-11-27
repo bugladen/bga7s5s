@@ -49,31 +49,11 @@ class Action_01152a_Test extends TestCase
                 Assert::instanceOf(SchemeCityAction::class, new Action_01152a(), 'SchemeCityAction');
             },
 
-            'available when an engaged character shares a city location with a performer' => function () {
-                $world = new TestWorld();
-                [, $action] = $this->scene($world);
-                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available');
-            },
-
-            'unavailable when no engaged characters are at performer locations' => function () {
+            'available with a city performer even when nobody is engaged' => function () {
                 $world = new TestWorld();
                 [, $action, , $foe] = $this->scene($world);
                 $foe->Engaged = false;
-                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no engaged');
-            },
-
-            'performers only include characters at locations with an engaged target' => function () {
-                $world = new TestWorld();
-                [, $action, $performer] = $this->scene($world);
-                // Forum: nobody Engaged → lonely must not be offered.
-                $lonely = $world->placeCharacter(new GenericCharacter('Lonely'), Game::LOCATION_CITY_FORUM, 1);
-                $lonelyFoe = $world->placeCharacter(new GenericCharacter('Ready'), Game::LOCATION_CITY_FORUM, 2);
-                $lonelyFoe->Engaged = false;
-
-                $performers = $action->getPerformersForAction(1, $world->theah);
-                $ids = array_map(fn($c) => $c->Id, $performers);
-                Assert::true(in_array($performer->Id, $ids, true), 'docks has engaged');
-                Assert::false(in_array($lonely->Id, $ids, true), 'forum no engaged');
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available');
             },
 
             'unavailable when scheme is not at Player Home' => function () {
@@ -81,6 +61,14 @@ class Action_01152a_Test extends TestCase
                 [$scheme, $action] = $this->scene($world);
                 $scheme->Location = Game::LOCATION_CITY_FORUM;
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'not home');
+            },
+
+            'unavailable without a city performer' => function () {
+                $world = new TestWorld();
+                $scheme = $world->placeCard(new _01152(), Game::LOCATION_PLAYER_HOME, 1);
+                /** @var Action_01152a $action */
+                $action = $scheme->getActions()[0];
+                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no performer');
             },
 
             'trigger queues transition 01152a' => function () {
@@ -99,7 +87,7 @@ class Action_01152a_Test extends TestCase
                 Assert::same($scheme->Id, $transitions[0]->sourceId, 'source');
             },
 
-            'args list engaged characters at the performer location' => function () {
+            'args list all characters at the performer location' => function () {
                 $world = new TestWorld();
                 [, $action, $performer, $foe] = $this->scene($world);
                 $enGarde = $world->placeCharacter(new GenericCharacter('Ready'), Game::LOCATION_CITY_DOCKS, 2);
@@ -114,13 +102,15 @@ class Action_01152a_Test extends TestCase
                 );
 
                 Assert::same($performer->Id, $args['performerId'], 'performer');
-                Assert::same([$foe->Id], $args['characterIds'], 'engaged only');
-                Assert::false(in_array($enGarde->Id, $args['characterIds'], true), 'en garde excluded');
-                Assert::false(in_array($elsewhere->Id, $args['characterIds'], true), 'other loc excluded');
+                $ids = $args['characterIds'];
+                Assert::true(in_array($foe->Id, $ids, true), 'engaged foe');
+                Assert::true(in_array($enGarde->Id, $ids, true), 'en garde included');
+                Assert::true(in_array($performer->Id, $ids, true), 'performer included');
+                Assert::false(in_array($elsewhere->Id, $ids, true), 'other loc excluded');
             },
 
             // WHY: En Garde = EventCardEngarded (not EventCardEngaged / Engage).
-            'act wounds performer, En Gardes target, and resolves' => function () {
+            'act wounds performer, En Gardes engaged target, and resolves' => function () {
                 $world = new TestWorld();
                 [$scheme, $action, $performer, $foe] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
@@ -143,6 +133,27 @@ class Action_01152a_Test extends TestCase
                 Assert::same($foe->Id, $engardes[0]->cardId, 'target');
                 Assert::same($action->Id, $engardes[0]->abilityId, 'ability');
 
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            'act wounds performer and skips En Garde when target is already en garde' => function () {
+                $world = new TestWorld();
+                [, $action, $performer, $foe] = $this->scene($world);
+                $foe->Engaged = false;
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+
+                $action->actFromActionWithId(
+                    $world->game,
+                    States::HIGH_DRAMA_PLAYER_TURN_01152a,
+                    'highDramaPlayerTurn_01152a',
+                    $foe->Id
+                );
+
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'wound');
+                Assert::same($performer->Id, $wounds[0]->characterId, 'performer');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngarded::class), 'no engarde');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
                 Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
             },

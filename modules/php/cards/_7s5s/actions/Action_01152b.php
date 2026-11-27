@@ -11,7 +11,6 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
-use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
@@ -21,34 +20,6 @@ class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsChara
 
         $this->Name = clienttranslate("Wound Performer, Engage Character");
         $this->RequiresPerformerSelected = true;
-    }
-
-    public function isAvailableToPlayer(int $playerId, Theah $theah, bool $overrideInHandCheck = false): bool
-    {
-        if (! parent::isAvailableToPlayer($playerId, $theah, $overrideInHandCheck))
-        {
-            return false;
-        }
-
-        // WHY: Engage needs a non-engaged target at the performer's location.
-        // Mirror 01152a's Engaged gate; without this the action offers then softlocks on empty ids.
-        return count($this->getPerformersForAction($playerId, $theah)) > 0;
-    }
-
-    public function getPerformersForAction(int $playerId, Theah $theah): array
-    {
-        $characters = $theah->getCharactersInCityByPlayerId($playerId);
-        $availableCharacters = [];
-        foreach ($characters as $character)
-        {
-            $atLocation = $theah->getCharactersAtLocation($character->Location);
-            $targets = array_filter($atLocation, fn($c) => ! $c->Engaged);
-            if (count($targets) > 0)
-            {
-                $availableCharacters[] = $character;
-            }
-        }
-        return $availableCharacters;
     }
 
     public function handleEvent(Event $event)
@@ -71,11 +42,11 @@ class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsChara
         {
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $args['performerId'] = $performerId;
-    
+
             $performer = $game->theah->getCharacterById($performerId);
             $characters = $game->theah->getCharactersAtLocation($performer->Location);
-            $characters = array_filter($characters, fn($character) => ! $character->Engaged);
-
+            // WHY: Effects may fail. Any character at the location is choosable; Engage
+            // is skipped below when the target is already engaged (wound still applies).
             $args['characterIds'] = array_map(fn($character) => $character->Id, array_values($characters));
         }
 
@@ -84,11 +55,6 @@ class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsChara
 
     public function isValidTargetForAbility(Game $game, Character $character): array
     {
-        if ($character->Engaged)
-        {
-            return [false, $game->translate("Character is already engaged")];
-        }
-
         $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
         $performer = $game->theah->getCharacterById($performerId);
 
@@ -127,9 +93,14 @@ class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsChara
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
-            $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $target->Id, $scheme->Id, $this->Id);
-            $game->theah->eventCheck($event);
-            $game->theah->queueEvent($event);
+            // WHY: Wound is the cost and always applies. Engage may fail — already engaged
+            // is a legal target so players can take the wound for beneficial wound effects.
+            if (! $target->Engaged)
+            {
+                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $target->Id, $scheme->Id, $this->Id);
+                $game->theah->eventCheck($event);
+                $game->theah->queueEvent($event);
+            }
 
             $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
             $game->theah->queueEvent($actionResolvedEvent);

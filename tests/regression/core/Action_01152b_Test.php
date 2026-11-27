@@ -49,18 +49,12 @@ class Action_01152b_Test extends TestCase
                 Assert::instanceOf(SchemeCityAction::class, new Action_01152b(), 'SchemeCityAction');
             },
 
-            'available when a non-engaged character shares a city location with a performer' => function () {
-                $world = new TestWorld();
-                [, $action] = $this->scene($world);
-                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available');
-            },
-
-            'unavailable when all characters at performer locations are engaged' => function () {
+            'available with a city performer even when all characters are engaged' => function () {
                 $world = new TestWorld();
                 [, $action, $performer, $foe] = $this->scene($world);
                 $performer->Engaged = true;
                 $foe->Engaged = true;
-                Assert::false($action->isAvailableToPlayer(1, $world->theah), 'all engaged');
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'available');
             },
 
             'unavailable without a city performer' => function () {
@@ -69,21 +63,6 @@ class Action_01152b_Test extends TestCase
                 /** @var Action_01152b $action */
                 $action = $scheme->getActions()[1];
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'no performer');
-            },
-
-            'performers only include characters at locations with a non-engaged target' => function () {
-                $world = new TestWorld();
-                [, $action, $performer] = $this->scene($world);
-                // Forum: both engaged → no Engage targets → lonely must not be offered.
-                $lonely = $world->placeCharacter(new GenericCharacter('Lonely'), Game::LOCATION_CITY_FORUM, 1);
-                $lonely->Engaged = true;
-                $lonelyFoe = $world->placeCharacter(new GenericCharacter('Busy'), Game::LOCATION_CITY_FORUM, 2);
-                $lonelyFoe->Engaged = true;
-
-                $performers = $action->getPerformersForAction(1, $world->theah);
-                $ids = array_map(fn($c) => $c->Id, $performers);
-                Assert::true(in_array($performer->Id, $ids, true), 'docks has en garde');
-                Assert::false(in_array($lonely->Id, $ids, true), 'forum all engaged');
             },
 
             'trigger queues transition 01152b' => function () {
@@ -102,7 +81,7 @@ class Action_01152b_Test extends TestCase
                 Assert::same($scheme->Id, $transitions[0]->sourceId, 'source');
             },
 
-            'args list non-engaged characters at the performer location' => function () {
+            'args list all characters at the performer location' => function () {
                 $world = new TestWorld();
                 [, $action, $performer, $foe] = $this->scene($world);
                 $engaged = $world->placeCharacter(new GenericCharacter('Busy'), Game::LOCATION_CITY_DOCKS, 2);
@@ -117,8 +96,8 @@ class Action_01152b_Test extends TestCase
 
                 $ids = $args['characterIds'];
                 Assert::true(in_array($foe->Id, $ids, true), 'foe');
-                Assert::true(in_array($performer->Id, $ids, true), 'performer also en garde');
-                Assert::false(in_array($engaged->Id, $ids, true), 'engaged excluded');
+                Assert::true(in_array($performer->Id, $ids, true), 'performer');
+                Assert::true(in_array($engaged->Id, $ids, true), 'engaged included');
             },
 
             'act wounds performer, Engages target, and resolves' => function () {
@@ -143,6 +122,27 @@ class Action_01152b_Test extends TestCase
                 Assert::same($action->Id, $engages[0]->abilityId, 'ability');
                 Assert::same($scheme->Id, $engages[0]->sourceId, 'scheme');
 
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            'act wounds performer and skips Engage when target is already engaged' => function () {
+                $world = new TestWorld();
+                [, $action, $performer, $foe] = $this->scene($world);
+                $foe->Engaged = true;
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+
+                $action->actFromActionWithId(
+                    $world->game,
+                    States::HIGH_DRAMA_PLAYER_TURN_01152b,
+                    'highDramaPlayerTurn_01152b',
+                    $foe->Id
+                );
+
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'wound');
+                Assert::same($performer->Id, $wounds[0]->characterId, 'performer');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
                 Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
             },
