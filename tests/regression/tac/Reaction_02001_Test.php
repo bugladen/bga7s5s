@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\reactions\Reaction_02001;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -165,22 +166,66 @@ class Reaction_02001_Test extends TestCase
                 Assert::false($okHome, 'Home');
             },
 
-            'woundNonSorcerer queues wound inside Sorcerer bracketing and marks Used' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before the Sorcerer bracketing and wound are emitted.
+            'woundNonSorcerer queues only CharacterTargeted and marks Used' => function () {
                 $world = new TestWorld();
-                [, $reaction, $foe] = $this->scene($world);
+                [$andriana, $reaction, $foe] = $this->scene($world);
                 $reaction->CharacterId = $foe->Id;
 
                 $reaction->performReaction($world->game, 0, $reaction->Id, 'woundNonSorcerer');
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($andriana->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($reaction->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'no start yet');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'no played yet');
+                Assert::true($reaction->Used, 'used');
+                Assert::same(0, $reaction->CharacterId, 'cleared');
+                Assert::same(['done'], $world->game->gamestate->transitions, 'done');
+            },
+
+            'surviving CharacterTargeted wounds inside Sorcerer bracketing with shared batch' => function () {
+                $world = new TestWorld();
+                [$andriana, $reaction, $foe] = $this->scene($world);
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $reaction->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $andriana->Id;
+                $targeted->batchId = 77;
+                $targeted->theah = $world->theah;
+                $reaction->handleEvent($targeted);
 
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'start');
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'wound');
                 Assert::same($foe->Id, $wounds[0]->characterId, 'foe');
                 Assert::same(1, $wounds[0]->wounds, '1');
+                Assert::same(77, $wounds[0]->batchId, 'shares batch');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'played');
-                Assert::true($reaction->Used, 'used');
-                Assert::same(0, $reaction->CharacterId, 'cleared');
-                Assert::same(['done'], $world->game->gamestate->transitions, 'done');
+            },
+
+            'canceled or foreign CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                [, $reaction, $foe] = $this->scene($world);
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $reaction->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $reaction->handleEvent($targeted);
+                Assert::count(0, $world->theah->queuedEvents, 'canceled');
+
+                $other = new EventCharacterTargeted();
+                $other->abilityId = 'other';
+                $other->targetId = $foe->Id;
+                $other->theah = $world->theah;
+                $reaction->handleEvent($other);
+                Assert::count(0, $world->theah->queuedEvents, 'other ability');
             },
 
             'decline does not wound' => function () {

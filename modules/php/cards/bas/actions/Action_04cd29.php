@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04cd29 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -99,6 +100,33 @@ class Action_04cd29 extends CharacterAction implements IAbilityThatTargetsCharac
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "04cd29", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            // WHY: Finesse re-check at resolve — board can change between picker and confirm.
+            if ($target->ModifiedFinesse < $owner->ModifiedFinesse)
+            {
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                    $target->Id,
+                    $owner->Id,
+                    1,
+                    $owner->getInjectCode(),
+                    $this->Id
+                );
+                $woundEvent->batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+                $event->theah->queueEvent($woundEvent);
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($event->playerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -160,22 +188,29 @@ class Action_04cd29 extends CharacterAction implements IAbilityThatTargetsCharac
                 throw new UserException($message);
             }
 
-            // WHY: Finesse re-check at resolve — board can change between picker and confirm.
-            if ($target->ModifiedFinesse < $owner->ModifiedFinesse)
-            {
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
-                    $target->Id,
-                    $owner->Id,
-                    1,
-                    $owner->getInjectCode(),
-                    $this->Id
-                );
-                $game->theah->queueEvent($woundEvent);
-            }
-
             $playerId = $owner->ControllerId ?: (int) $game->getActivePlayerId();
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($playerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+
+            $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($playerId),
+                "card_inject_code" => $owner->getInjectCode(),
+                "character_inject_code" => $target->getInjectCode(),
+            ]);
+
+            // WHY: Fire targeting alone here. Wound + ActionResolved emit from handleEvent
+            // only when EventCharacterTargeted is not canceled — Cloud Bottle / UL / Maryam
+            // cancel on that hook, so queuing the wound beside the pick bypassed them
+            // (same fix as Bleed Out / Action_01160). playerId carries the resolved
+            // controller-or-active-player so handleEvent can reuse it for ActionResolved.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $playerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
         }

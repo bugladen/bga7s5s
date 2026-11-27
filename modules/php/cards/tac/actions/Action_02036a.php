@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_02036a extends SchemeCityAction implements IAbilityThatTargetsCharacters
@@ -100,6 +101,23 @@ class Action_02036a extends SchemeCityAction implements IAbilityThatTargetsChara
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "02036", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $theah->game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+
+            $promptEvent = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, "02036_2", $this->Id);
+            $promptEvent->batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $theah->queueEvent($promptEvent);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -140,10 +158,15 @@ class Action_02036a extends SchemeCityAction implements IAbilityThatTargetsChara
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $game->globals->set(Game::CHOSEN_TARGET, $id);
 
-            $transition = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "02036_2", $this->Id);
-            $game->theah->queueEvent($transition);
+            // WHY: Fire targeting alone here. CHOSEN_TARGET + the discard-or-Home prompt
+            // (Transition 02036_2 to the target's controller) are set/queued from handleEvent only
+            // when EventCharacterTargeted survives — a canceled hook must not leave a stale target
+            // or hand the opponent a prompt (Action_01049 seat).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
         }

@@ -15,7 +15,10 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Terraria;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Terraria;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04020;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04020;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Vulture;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\actions\Action_05Vulture;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02034;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04cd29;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01160;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01160;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
@@ -146,6 +149,23 @@ class Card_05Terraria_Test extends TestCase
                 Assert::true($event->canceled, 'canceled first');
             },
 
+            // WHY: Tijani's City Action used to wound beside the pick without
+            // EventCharacterTargeted — Cloud Bottle never offered.
+            'reaction offers when Tijani targets the equipped host' => function () {
+                $world = new TestWorld();
+                [$host, $bottle, $reaction] = $this->attach($world);
+                $tijani = $world->placeCharacter(new _04cd29(), Game::LOCATION_CITY_FORUM, 2);
+                $action = $tijani->getActions()[0];
+
+                $event = $this->targeted($world, 2, $host->Id, $tijani->Id, $action->Id);
+                $reaction->handleEvent($event);
+
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'offered');
+                Assert::same($bottle->Id, $transitions[0]->sourceId, 'source');
+                Assert::true($event->canceled, 'canceled first');
+            },
+
             // WHY: Vantage Point used to engage/wound without EventCharacterTargeted —
             // Cloud Bottle never offered. Reaction_04020 now emits the hook on pick.
             'reaction offers when Vantage Point targets the equipped host' => function () {
@@ -156,6 +176,23 @@ class Card_05Terraria_Test extends TestCase
                 $vantage = $risk->getReactions()[0];
 
                 $event = $this->targeted($world, 2, $host->Id, $risk->Id, $vantage->Id);
+                $reaction->handleEvent($event);
+
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'offered');
+                Assert::same($bottle->Id, $transitions[0]->sourceId, 'source');
+                Assert::true($event->canceled, 'canceled first');
+            },
+
+            // WHY: Gusev used to wound without EventCharacterTargeted — Cloud Bottle miss.
+            'reaction offers when Vulture targets the equipped host' => function () {
+                $world = new TestWorld();
+                [$host, $bottle, $reaction] = $this->attach($world);
+                $vulture = $world->placeCharacter(new _05Vulture(), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_05Vulture $action */
+                $action = $vulture->getActions()[0];
+
+                $event = $this->targeted($world, 2, $host->Id, $vulture->Id, $action->Id);
                 $reaction->handleEvent($event);
 
                 $transitions = $world->theah->queuedOfType(EventTransition::class);

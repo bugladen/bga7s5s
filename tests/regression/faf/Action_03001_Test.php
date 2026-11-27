@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_03001_Test extends TestCase
@@ -167,11 +168,37 @@ class Action_03001_Test extends TestCase
                 Assert::false($friendOk, 'friend');
             },
 
-            'confirm heals the Strega, wounds the target, and resolves the action' => function () {
+            // WHY: the opposing pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can
+            // cancel before the Strega is healed (heal first would delete the wound for nothing).
+            'opposing pick queues only CharacterTargeted' => function () {
                 $world = new TestWorld();
                 [$cesca, $action, $strega, $foe] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_CARD, $strega->Id);
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03001_2, 'highDramaPhase03001_2', $foe->Id);
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($cesca->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingHealed::class), 'no heal yet');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
+                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            'surviving CharacterTargeted heals the Strega, wounds the target, and resolves the action' => function () {
+                $world = new TestWorld();
+                [$cesca, $action, $strega, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_CARD, $strega->Id);
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $cesca->Id;
+                $targeted->batchId = 77;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
 
                 $heal = $world->theah->queuedOfType(EventCharacterBeingHealed::class);
                 $wound = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
@@ -179,10 +206,57 @@ class Action_03001_Test extends TestCase
                 Assert::same($strega->Id, $heal[0]->characterId, 'heal source');
                 Assert::same(1, $heal[0]->wounds, 'one wound');
                 Assert::same($action->Id, $heal[0]->abilityId, 'heal ability');
+                Assert::same(77, $heal[0]->batchId, 'heal shares batch');
                 Assert::same($foe->Id, $wound[0]->characterId, 'wound target');
                 Assert::same($cesca->Id, $wound[0]->sourceId, 'wound source');
+                Assert::same(77, $wound[0]->batchId, 'wound shares batch');
                 Assert::same(1, $resolved[0]->playerId, 'resolved');
-                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            'canceled CharacterTargeted queues nothing and the Strega keeps the wound' => function () {
+                $world = new TestWorld();
+                [, $action, $strega, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_CARD, $strega->Id);
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'no heal / wound / resolve');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, $strega, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_CARD, $strega->Id);
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = 'other';
+                $targeted->targetId = $foe->Id;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
+            },
+
+            // WHY: if the Strega healed between the pick and the survive hook there is no wound
+            // to move; the target must not be wounded for free. The action still resolves.
+            'survive with a Strega that lost the wound skips heal + wound but resolves' => function () {
+                $world = new TestWorld();
+                [$cesca, $action, $strega, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_CARD, $strega->Id);
+                $strega->Wounds = 0;
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $cesca->Id;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingHealed::class), 'no heal');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
             },
 
             'confirm rejects a Strega who lost the wound or left the location' => function () {

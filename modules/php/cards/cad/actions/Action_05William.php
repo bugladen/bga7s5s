@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_05William extends SchemeCityAction implements IAbilityThatTargetsCharacters
@@ -116,6 +117,55 @@ class Action_05William extends SchemeCityAction implements IAbilityThatTargetsCh
 
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "05William", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $game = $theah->game;
+            $owner = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            $attachment = $theah->getAttachmentById((int)$game->globals->get(Game::CHOSEN_CARD));
+            if ($owner === null || $target === null || $attachment === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            $game->notify->all("message", '${scheme_inject_code}: ${player_name} engages ${attachment_inject_code} and moves ${target_inject_code} Home.', [
+                "scheme_inject_code" => $owner->getInjectCode(),
+                "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                "attachment_inject_code" => $attachment->getInjectCode(),
+                "target_inject_code" => $target->getInjectCode(),
+            ]);
+
+            $engageEvent = EventFactory::createCardEngagedEvent(
+                $owner->ControllerId,
+                $attachment->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $engageEvent->batchId = $batchId;
+            $theah->eventCheck($engageEvent);
+            $theah->queueEvent($engageEvent);
+
+            // WHY: engage=false — printed effect is Move Home only (Artifact already paid Engage).
+            $moveEvent = EventFactory::createCardMovingEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $target->Location,
+                Game::LOCATION_PLAYER_HOME,
+                false,
+                $owner->Id,
+                $this->Id
+            );
+            $moveEvent->batchId = $batchId;
+            $theah->eventCheck($moveEvent);
+            $theah->queueEvent($moveEvent);
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
         }
     }
 
@@ -244,37 +294,21 @@ class Action_05William extends SchemeCityAction implements IAbilityThatTargetsCh
                 throw new UserException("Attachment must be an unengaged Artifact equipped to the performer.");
             }
 
-            $game->notify->all("message", '${scheme_inject_code}: ${player_name} engages ${attachment_inject_code} and moves ${target_inject_code} Home.', [
+            $game->notify->all("message", '${scheme_inject_code}: ${player_name} targets ${target_inject_code} with ${attachment_inject_code}.', [
                 "scheme_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "attachment_inject_code" => $attachment->getInjectCode(),
                 "target_inject_code" => $target->getInjectCode(),
             ]);
 
-            $engageEvent = EventFactory::createCardEngagedEvent(
-                $owner->ControllerId,
-                $attachment->Id,
-                $owner->Id,
-                $this->Id
-            );
-            $game->theah->eventCheck($engageEvent);
-            $game->theah->queueEvent($engageEvent);
-
-            // WHY: engage=false — printed effect is Move Home only (Artifact already paid Engage).
-            $moveEvent = EventFactory::createCardMovingEvent(
-                $owner->ControllerId,
-                $target->Id,
-                $target->Location,
-                Game::LOCATION_PLAYER_HOME,
-                false,
-                $owner->Id,
-                $this->Id
-            );
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. The Artifact Engage (the "•" cost), the Home move
+            // and ActionResolved all emit from handleEvent only when EventCharacterTargeted
+            // survives — a canceled hook must not leave the Artifact engaged for nothing
+            // (Action_01015 / 01019 seat). CHOSEN_CARD (the Artifact) is read back at survive time.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($performer->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
         }

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharacters
@@ -92,6 +93,53 @@ class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "02025", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $game = $theah->game;
+            $owner = $this->getOwningCard($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            $performer = $theah->getCharacterById((int)$game->globals->get(Game::CHOSEN_PERFORMER));
+            $location = (string)$game->globals->get(Game::CHOSEN_LOCATION);
+            if ($owner === null || $character === null || $performer === null || $location === '')
+            {
+                return;
+            }
+
+            $sourceLocation = $performer->Location;
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            $moveTarget = EventFactory::createCardMovingEvent($performer->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id, $this->Id);
+            $moveTarget->batchId = $batchId;
+            $theah->queueEvent($moveTarget);
+
+            $movePerformer = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id, $this->Id);
+            $movePerformer->batchId = $batchId;
+            $theah->queueEvent($movePerformer);
+
+            $sourceLocationObj = $theah->getCityLocation($sourceLocation);
+            if ($sourceLocationObj !== null && $sourceLocationObj->Renown > 0)
+            {
+                $moveRenown = EventFactory::createRenownMovingBetweenLocationsEvent($performer->ControllerId, $sourceLocation, $location, 1, $owner->getInjectCode());
+                $moveRenown->batchId = $batchId;
+                $theah->eventCheck($moveRenown);
+                $theah->queueEvent($moveRenown);
+
+                $removeRenown = EventFactory::createRenownRemovedFromLocationEvent($performer->ControllerId, $sourceLocation, 1, $owner->getInjectCode());
+                $removeRenown->batchId = $batchId;
+                $theah->eventCheck($removeRenown);
+                $theah->queueEvent($removeRenown);
+
+                $addRenown = EventFactory::createRenownAddedToLocationEvent($performer->ControllerId, $location, 1, $owner->getInjectCode(), $isMove = true);
+                $addRenown->batchId = $batchId;
+                $theah->eventCheck($addRenown);
+                $theah->queueEvent($addRenown);
+            }
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($performer->ControllerId));
         }
     }
 
@@ -175,40 +223,20 @@ class Action_02025 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
             $characterId = $game->globals->get(Game::CHOSEN_TARGET);
             $character = $game->theah->getCharacterById($characterId);
-            $sourceLocation = $performer->Location;
             $owner = $this->getOwningCard($game->theah);
 
-            $batchId = $game->getNextEventBatchId();
+            // WHY: Targeting fires at the FINAL confirm (destination), not at the character pick:
+            // the character pick routes straight into the `_2` destination GameState (with Back),
+            // so firing earlier would leave a stale targeting event if the player backs out.
+            // The destination rides CHOSEN_LOCATION so handleEvent can emit the moves + Renown
+            // shift only when EventCharacterTargeted survives (Cloud Bottle / UL cancel it).
+            // Nothing here is a cost, so every effect is gated. Same seat as 04028.
+            $game->globals->set(Game::CHOSEN_LOCATION, $location);
 
-            $moveTarget = EventFactory::createCardMovingEvent($performer->ControllerId, $character->Id, $character->Location, $location, $engage = false, $owner->Id, $this->Id);
-            $moveTarget->batchId = $batchId;
-            $game->theah->queueEvent($moveTarget);
-
-            $movePerformer = EventFactory::createCardMovingEvent($performer->ControllerId, $performer->Id, $performer->Location, $location, $engage = false, $owner->Id, $this->Id);
-            $movePerformer->batchId = $batchId;
-            $game->theah->queueEvent($movePerformer);
-
-            $sourceLocationObj = $game->theah->getCityLocation($sourceLocation);
-            if ($sourceLocationObj->Renown > 0)
-            {
-                $moveRenown = EventFactory::createRenownMovingBetweenLocationsEvent($performer->ControllerId, $sourceLocation, $location, 1, $owner->getInjectCode());
-                $moveRenown->batchId = $batchId;
-                $game->theah->eventCheck($moveRenown);
-                $game->theah->queueEvent($moveRenown);
-
-                $removeRenown = EventFactory::createRenownRemovedFromLocationEvent($performer->ControllerId, $sourceLocation, 1, $owner->getInjectCode());
-                $removeRenown->batchId = $batchId;
-                $game->theah->eventCheck($removeRenown);
-                $game->theah->queueEvent($removeRenown);
-
-                $addRenown = EventFactory::createRenownAddedToLocationEvent($performer->ControllerId, $location, 1, $owner->getInjectCode(), $isMove = true);
-                $addRenown->batchId = $batchId;
-                $game->theah->eventCheck($addRenown);
-                $game->theah->queueEvent($addRenown);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($performer->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("locationChosen");
         }

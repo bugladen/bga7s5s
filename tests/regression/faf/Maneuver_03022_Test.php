@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\maneuvers\Maneuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDrawn;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -123,11 +124,45 @@ class Maneuver_03022_Test extends TestCase
 
                 $participant->Engaged = true;
                 $maneuver->actFromManeuverWithId($world->game, States::DUEL_END_OF_ROUND_03022, 'x', $participant->Id);
-                Assert::same($participant->Id, $world->theah->queuedOfType(EventCardEngarded::class)[0]->cardId, 'engaged character is En Garded');
 
+                // Pick queues ONLY CharacterTargeted.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($participant->Id, $targeted[0]->targetId, 'target');
+                Assert::same($maneuver->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngarded::class), 'no en garde at pick');
+                Assert::count(1, $world->theah->queuedEvents, 'nothing else at pick');
+
+                // Canceled hook: nothing. Foreign ability: ignored.
+                $world->theah->takeQueuedEvents();
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $maneuver->Id;
+                $hook->targetId = $participant->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $maneuver->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'cancel queues nothing');
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $maneuver->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ignored');
+
+                // Survive: engaged character is En Garded with the shared batch.
+                $hook->abilityId = $maneuver->Id;
+                $hook->batchId = 77;
+                $maneuver->handleEvent($hook);
+                $engarde = $world->theah->queuedOfType(EventCardEngarded::class);
+                Assert::same($participant->Id, $engarde[0]->cardId, 'engaged character is En Garded');
+                Assert::same(77, $engarde[0]->batchId, 'shared batch');
+
+                // Already-En-Garded target: still targetable; survive queues no En Garde.
                 $world->theah->takeQueuedEvents();
                 $bystander->Engaged = false;
                 $maneuver->actFromManeuverWithId($world->game, States::DUEL_END_OF_ROUND_03022, 'x', $bystander->Id);
+                Assert::count(1, $world->theah->queuedOfType(EventCharacterTargeted::class), 'unengaged is still targeted');
+                $hook->targetId = $bystander->Id;
+                $maneuver->handleEvent($hook);
                 Assert::count(0, $world->theah->queuedOfType(EventCardEngarded::class), 'unengaged is treated as already En Garded');
             },
 

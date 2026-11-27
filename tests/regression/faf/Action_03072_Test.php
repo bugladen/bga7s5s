@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_03072_Test extends TestCase
@@ -68,13 +69,67 @@ class Action_03072_Test extends TestCase
                 $action->handleEvent($triggered);
                 Assert::same('03072', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'picker');
 
+                $world->theah->takeQueuedEvents();
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03072, 'x', $foe->Id);
+
+                // Pick queues ONLY the targeting hook; attachment effects wait for it to survive.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventAttachmentUnequipped::class), 'no unequip beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::same($hook->batchId, $world->theah->queuedOfType(EventAttachmentUnequipped::class)[0]->batchId, 'unequip shares batch');
                 Assert::same($engaged->Id, $world->theah->queuedOfType(EventAttachmentUnequipped::class)[0]->attachmentId, 'unequip');
                 $discard = $world->theah->queuedOfType(EventCardDiscardedFromPlay::class)[0];
                 Assert::same($engaged->Id, $discard->cardId, 'destroyed');
                 Assert::true($discard->asEffect, 'effect');
                 Assert::same([$ready->Id], array_map(fn ($e) => $e->cardId, $world->theah->queuedOfType(EventCardEngaged::class)), 'engage the ready one');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — nothing is destroyed or engaged.
+            'canceled CharacterTargeted does nothing' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _03072(), Game::LOCATION_HAND, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_03072 $action */
+                $action = $risk->getActions()[0];
+                $engaged = $world->placeCard(new _03064(), Game::LOCATION_CITY_DOCKS, 2);
+                $engaged->AttachedToId = $foe->Id;
+                $engaged->Engaged = true;
+                $foe->Attachments = [$engaged->Id];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _03072(), Game::LOCATION_HAND, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_03072 $action */
+                $action = $risk->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
         ];
     }

@@ -23,7 +23,9 @@ class State_highDramaPhase01148 extends GameState
             descriptionMyTurn: clienttranslate('${you} must choose a Character to Engage or Wound: '),
             transitions: [
                 "back" => States::HIGH_DRAMA_IN_PLAY_ACTION_CHOOSE_PERFORMER,
-                "mercenaryChosen" => States::HIGH_DRAMA_PLAYER_TURN_01148_2,
+                // WHY: EVENTS hub so EventCharacterTargeted can be canceled before 01148_2 runs;
+                // Action_01148::handleEvent queues the "01148_4" hop into _2 on survive.
+                "mercenaryChosen" => States::HIGH_DRAMA_PLAYER_TURN_EVENTS,
             ],
             updateGameProgression: false,
             initialPrivate: null,

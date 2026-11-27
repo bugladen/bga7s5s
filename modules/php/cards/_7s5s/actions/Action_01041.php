@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01041 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -52,6 +53,38 @@ class Action_01041 extends CharacterAction implements IAbilityThatTargetsCharact
             $owner = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01041", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Engage / send-home only when EventCharacterTargeted survives. Cloud Bottle /
+        // UL / Maryam cancel that hook — resolving beside the pick meant "when targeted"
+        // reactions never saw this Action (same seat as Bleed Out 01160).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $character = $theah->getCharacterById($event->targetId);
+            $owner = $this->getOwningCard($theah);
+            if ($character === null || $owner === null)
+            {
+                return;
+            }
+
+            // WHY shared batchId: a HAND cancel racing dispatch must strip engage + move together.
+            // ActionResolved stays unbatched (01160) so the action still resolves.
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $theah->queueEvent($engageEvent);
+
+            if ($character->hasTrait("Sorcerer"))
+            {
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+                $moveEvent->batchId = $batchId;
+                $theah->queueEvent($moveEvent);
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -121,21 +154,18 @@ class Action_01041 extends CharacterAction implements IAbilityThatTargetsCharact
 
             $owner = $this->getOwningCard($game->theah);
 
+            // WHY: Fire targeting alone here. Engage / send-home / ActionResolved emit from
+            // handleEvent only when EventCharacterTargeted is not canceled.
             $batchId = $game->getNextEventBatchId();
-
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
-            $engageEvent->batchId = $batchId;
-            $game->theah->queueEvent($engageEvent);
-
-            if ($character->hasTrait("Sorcerer"))
-            {
-                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
-                $moveEvent->batchId = $batchId;
-                $game->theah->queueEvent($moveEvent);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

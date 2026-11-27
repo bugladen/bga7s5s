@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelEnd;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelStarted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -90,6 +91,32 @@ class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCharacte
     {
         parent::handleEvent($event);
 
+        // WHY: Survive branch is BEFORE (and independent of) the isAvailable() gates below —
+        // setUsed happens at pick, so isAvailable() is already false when the hook is delivered
+        // (Reaction_05Quack seat). Matched on abilityId so another card's targeting is ignored.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCharacter($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $owner->Location, $engage = false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $theah->queueEvent($moveEvent);
+
+            $theah->game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} moved ${character_inject_code} to ${location_name}.'), [
+                "i18n" => ["location_name"],
+                "reaction_inject_code" => $owner->getInjectCode(),
+                "player_name" => $theah->game->getPlayerNameById($owner->ControllerId),
+                "character_inject_code" => $character->getInjectCode(),
+                "location_name" => $theah->game->translate($owner->Location),
+            ]);
+        }
+
         if ($event instanceof EventDuelStarted && $this->isAvailable())
         {
             $owner = $this->getOwningCharacter($event->theah);
@@ -137,15 +164,20 @@ class Reaction_01037 extends CardReaction implements IAbilityThatTargetsCharacte
             }
 
             $owner = $this->getOwningCharacter($game->theah);
-            $event = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, $owner->Location, $engage=false, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
 
-            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used Reaction and moved ${character_inject_code} to ${location_name}.'), [
-                "i18n" => ["location_name"],
+            // WHY: Fire targeting alone here. The move emits from handleEvent only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL cancel it). setUsed below still
+            // happens at pick — choosing the target is what pays the Reaction — so the survive
+            // branch in handleEvent must NOT sit behind isAvailable() (Reaction_05Quack seat).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
+
+            $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} uses Reaction targeting ${character_inject_code}.'), [
                 "reaction_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "character_inject_code" => $character->getInjectCode(),
-                "location_name" => $game->translate($owner->Location),
             ]);
 
             $this->setUsed($game->theah, true);

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_05Vulture extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -104,6 +105,35 @@ class Action_05Vulture extends CharacterAction implements IAbilityThatTargetsCha
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05Vulture", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        // WHY: Wound only when EventCharacterTargeted survives. Cloud Bottle / UL /
+        // Maryam set canceled=true on that hook — queuing the wound beside the pick
+        // meant "when targeted" reactions never saw Gusev (Bleed Out 01160 seat).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                $target->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $woundEvent->batchId = $batchId;
+            $event->theah->eventCheck($woundEvent);
+            $event->theah->queueEvent($woundEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -153,24 +183,24 @@ class Action_05Vulture extends CharacterAction implements IAbilityThatTargetsCha
             throw new UserException($errorMessage);
         }
 
-        // WHY: Quick Reflexes cancels the wound before it is logged. Name the target here.
+        // WHY: Quick Reflexes / Cloud Bottle cancel before the wound is logged. Name the target here.
         $game->notify->all("message", '${owner_inject_code} targets ${target_inject_code} to be wounded.', [
             "owner_inject_code" => $owner->getInjectCode(),
             "target_inject_code" => $target->getInjectCode(),
         ]);
 
-        $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+        // WHY: Fire targeting alone here. Wound + ActionResolved emit from handleEvent
+        // only when EventCharacterTargeted is not canceled (01160 / Red Tape / Torvo).
+        $batchId = $game->getNextEventBatchId();
+        $targetedEvent = EventFactory::createCharacterTargetedEvent(
+            $owner->ControllerId,
             $target->Id,
             $owner->Id,
-            1,
-            $owner->getInjectCode(),
             $this->Id
         );
-        $game->theah->eventCheck($woundEvent);
-        $game->theah->queueEvent($woundEvent);
-
-        $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-        $game->theah->queueEvent($actionResolvedEvent);
+        $targetedEvent->batchId = $batchId;
+        $game->theah->eventCheck($targetedEvent);
+        $game->theah->queueEvent($targetedEvent);
 
         $game->gamestate->nextState("characterChosen");
     }

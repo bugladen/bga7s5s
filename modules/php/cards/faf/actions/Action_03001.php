@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -58,6 +59,36 @@ class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharact
             $cesca = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $cesca->Id, "03001", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $cesca = $this->getOwningCharacter($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($cesca === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            // WHY: The Strega source was validated at pick time, but the wound may have moved
+            // between the pick and the survive hook. Only "move" a wound that still exists;
+            // otherwise skip heal + wound together so the target is not wounded for free.
+            $strega = $theah->getCharacterById($theah->game->globals->get(Game::CHOSEN_CARD));
+            if ($strega !== null && $strega->Wounds > 0 && $strega->Location == $cesca->Location)
+            {
+                $healEvent = EventFactory::createCharacterBeingHealedEvent($strega->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
+                $healEvent->batchId = $batchId;
+                $theah->queueEvent($healEvent);
+
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
+                $woundEvent->batchId = $batchId;
+                $theah->queueEvent($woundEvent);
+            }
+
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($cesca->ControllerId));
         }
     }
 
@@ -182,12 +213,6 @@ class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($game->translate("Strega is no longer valid as a source."));
             }
 
-            $healEvent = EventFactory::createCharacterBeingHealedEvent($strega->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($healEvent);
-
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($woundEvent);
-
             $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} moves a wound from ${strega_inject_code} to ${target_inject_code}.'), [
                 "owner_inject_code" => $cesca->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($cesca->ControllerId),
@@ -195,8 +220,18 @@ class Action_03001 extends CharacterAction implements IAbilityThatTargetsCharact
                 "target_inject_code" => $target->getInjectCode(),
             ]);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($cesca->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Heal + wound + ActionResolved emit from handleEvent
+            // only when EventCharacterTargeted survives (Cloud Bottle / UL / Maryam). Healing the
+            // Strega before a canceled targeting would delete her wound with nowhere for it to go.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $cesca->ControllerId,
+                $target->Id,
+                $cesca->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
             return;

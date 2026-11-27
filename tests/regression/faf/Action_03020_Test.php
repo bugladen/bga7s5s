@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03020;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_03020_Test extends TestCase
@@ -76,14 +77,55 @@ class Action_03020_Test extends TestCase
                 $action->handleEvent($triggered);
                 Assert::same('03020', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'picker');
 
+                $world->theah->takeQueuedEvents(); // drop the picker transition from the trigger above
+                $world->game->gamestate->transitions = [];
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03020, 'x', $foe->Id);
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
                 $move = $world->theah->queuedOfType(EventCardMoving::class)[0];
                 Assert::same($foe->Id, $move->cardId, 'foe');
                 Assert::same(Game::LOCATION_PLAYER_HOME, $move->toLocation, 'home');
                 Assert::false($move->engage, 'does not engage');
                 Assert::same($risk->Id, $move->sourceId, 'risk');
+                Assert::same($hook->batchId, $move->batchId, 'move shares batch');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — nothing may continue.
+            'canceled CharacterTargeted does not move or resolve' => function () {
+                $world = new TestWorld();
+                [, $action, , $foe] = $this->scene($world);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, , $foe] = $this->scene($world);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'a missing target throws before the move' => function () {

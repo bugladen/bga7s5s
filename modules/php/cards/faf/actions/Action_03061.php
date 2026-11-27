@@ -4,6 +4,7 @@ namespace Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions;
 
 use Bga\GameFramework\UserException;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\SchemeCityAction;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\Card;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\Character;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
@@ -11,6 +12,8 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03061 extends SchemeCityAction implements IAbilityThatTargetsCharacters
@@ -96,6 +99,26 @@ class Action_03061 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "03061", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            $performer = $theah->getCharacterById((int)$theah->game->globals->get(Game::CHOSEN_PERFORMER));
+            if ($owner === null || $target === null || $performer === null)
+            {
+                return;
+            }
+
+            // WHY: destination = performer's location at survive time (it may have moved).
+            $moveEvent = $this->buildMoveEvent($owner, $target, $performer);
+            $moveEvent->batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $theah->queueEvent($moveEvent);
+
+            // ActionResolved stays unbatched (01160 convention).
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -161,31 +184,40 @@ class Action_03061 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 throw new UserException($game->translate("Performer not found"));
             }
 
-            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} moves ${character_inject_code} to ${performer_inject_code}\'s location.'), [
+            // WHY: Permission pre-check stays at the pick so a veto surfaces to the player here
+            // (a throw inside the survive hook would crash event dispatch). The move actually
+            // queued is rebuilt in handleEvent.
+            $game->theah->eventCheck($this->buildMoveEvent($owner, $target, $performer));
+
+            $game->notify->all("message", clienttranslate('${scheme_inject_code}: ${player_name} targets ${character_inject_code}.'), [
                 "scheme_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
                 "character_inject_code" => $target->getInjectCode(),
-                "performer_inject_code" => $performer->getInjectCode(),
             ]);
 
-            // WHY: engage=false — text says Move only (no Engage printed).
-            $moveEvent = EventFactory::createCardMovingEvent(
-                $owner->ControllerId,
-                $target->Id,
-                $target->Location,
-                $performer->Location,
-                false,
-                $owner->Id,
-                $this->Id
-            );
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here; the move + ActionResolved emit from handleEvent
+            // only when EventCharacterTargeted survives (Cloud Bottle / UL cancel it).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("");
         }
+    }
+
+    private function buildMoveEvent(Card $owner, Character $target, Character $performer): EventCardMoving
+    {
+        // WHY: engage=false — text says Move only (no Engage printed).
+        return EventFactory::createCardMovingEvent(
+            $owner->ControllerId,
+            $target->Id,
+            $target->Location,
+            $performer->Location,
+            false,
+            $owner->Id,
+            $this->Id
+        );
     }
 }
 

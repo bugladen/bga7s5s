@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01012;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -84,7 +85,9 @@ class Action_01012_Test extends TestCase
                 Assert::same('01012', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'transition');
             },
 
-            'act wounds Sibella then target and fires sorcerer + resolved events' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before the wounds and Sorcerer events are emitted (same seat as Action_01160).
+            'pick queues only CharacterTargeted' => function () {
                 $world = new TestWorld();
                 $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 1);
                 $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
@@ -98,14 +101,77 @@ class Action_01012_Test extends TestCase
                     $foe->Id
                 );
 
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($sibella->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wounds yet');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'no sorcerer start yet');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'no sorcerer played yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
+                Assert::same(['opposingCharacterChosen'], $world->game->gamestate->transitions, 'nextState');
+            },
+
+            'surviving CharacterTargeted wounds Sibella then target and fires sorcerer + resolved events' => function () {
+                $world = new TestWorld();
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01012 $action */
+                $action = $sibella->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $sibella->Id;
+                $targeted->batchId = 77;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(2, $wounds, 'two wound events');
                 Assert::same($sibella->Id, $wounds[0]->characterId, 'Sibella wounded first (cost)');
                 Assert::same($foe->Id, $wounds[1]->characterId, 'target wounded second');
+                Assert::same($action->Id, $wounds[1]->abilityId, 'ability on target wound');
+                Assert::same(77, $wounds[0]->batchId, 'self wound shares batch');
+                Assert::same(77, $wounds[1]->batchId, 'target wound shares batch');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'sorcerer start');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'sorcerer played');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'action resolved');
-                Assert::same(['opposingCharacterChosen'], $world->game->gamestate->transitions, 'nextState');
+            },
+
+            'canceled CharacterTargeted queues nothing (Sibella not wounded)' => function () {
+                $world = new TestWorld();
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01012 $action */
+                $action = $sibella->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'no wound / sorcerer / resolve');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $sibella = $world->placeCharacter(new _01012(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01012 $action */
+                $action = $sibella->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = 'other';
+                $targeted->targetId = $foe->Id;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
         ];
     }

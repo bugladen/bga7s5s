@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharacters, IRangedAbility
@@ -54,6 +55,65 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
             $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01049", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+
+        // WHY: Engage-or-wound only when EventCharacterTargeted survives. Cloud Bottle /
+        // UL / Maryam cancel that hook — resolving beside the pick meant "when targeted"
+        // reactions never saw this Action (same seat as Bleed Out 01160 / Vantage Point 04020).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargetedCharacter($event);
+        }
+    }
+
+    private function resolveTargetedCharacter(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $game = $theah->game;
+        $character = $theah->getCharacterById($event->targetId);
+        $owner = $this->getOwningCard($theah);
+        if ($character === null || $owner === null)
+        {
+            return;
+        }
+
+        // WHY shared batchId: if this Action queues before Cloud Bottle's HAND cancel during
+        // CharacterTargeted dispatch, deleteEventBatch strips the wound/engage/transition
+        // siblings. RangedAbilityPlayed / ActionResolved stay unbatched like 01160 so the
+        // action still resolves.
+        $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+        if ($character->Engaged)
+        {
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $batchId;
+            $theah->queueEvent($woundEvent);
+
+            $engageId = $this->originalAttachmentId ?? $owner->Id;
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $engageId, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $theah->queueEvent($engageEvent);
+
+            // WHY: Matchlock Action_01156 already-engaged path. RangedAbilityPlayed
+            // must fire even when the target skips engage-or-wound — Katain
+            // (Reaction_02011) listens here. Without it, a cancel-first ignore-wound
+            // reaction (Vissenta Reaction_05Cooper) looks like it "ate" Katain's window
+            // because only the BeingWounded reaction UI opened. ActionResolved too —
+            // same as 01049_2 finalize / Matchlock.
+            $performer = $this->getOwningCharacter($theah);
+            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
+            $theah->queueEvent($rangedAbilityPlayedEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
+        }
+        else
+        {
+            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+
+            $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01049_2", $this->Id);
+            $transitionEvent->batchId = $batchId;
+            $theah->queueEvent($transitionEvent);
         }
     }
 
@@ -117,48 +177,25 @@ class Action_01049 extends AttachmentAction implements IAbilityThatTargetsCharac
             // WHY: same as isValidTargetForAbility — owner may be Character when Katain-copied
             $owner = $this->getOwningCard($game->theah);
 
-            if ($character->Engaged)
-            {
-                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target, who was already Engaged.'), [
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                    "character_inject_code" => $character->getInjectCode(),
-                    "card_inject_code" => $owner->getInjectCode(),
-                ]);
+            $game->notify->all("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target.'), [
+                'player_name' => $game->getPlayerNameById($owner->ControllerId),
+                'card_inject_code' => $owner->getInjectCode(),
+                'character_inject_code' => $character->getInjectCode(),
+            ]);
 
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-                $game->theah->queueEvent($woundEvent);
-
-                $engageId = $this->originalAttachmentId ?? $owner->Id;
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $engageId, $owner->Id, $this->Id);
-                $game->theah->queueEvent($engageEvent);
-
-                // WHY: Matchlock Action_01156 already-engaged path. RangedAbilityPlayed
-                // must fire even when the target skips engage-or-wound — Katain
-                // (Reaction_02011) listens here. Without it, a cancel-first ignore-wound
-                // reaction (Vissenta Reaction_05Cooper) looks like it "ate" Katain's window
-                // because only the BeingWounded reaction UI opened. ActionResolved too —
-                // same as 01049_2 finalize / Matchlock.
-                $performer = $this->getOwningCharacter($game->theah);
-                $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
-                $game->theah->queueEvent($rangedAbilityPlayedEvent);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
-            }
-            else
-            {
-                $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-
-                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${card_inject_code} and selected ${character_inject_code} as the target.'), [
-                    'player_name' => $game->getPlayerNameById($owner->ControllerId),
-                    'card_inject_code' => $owner->getInjectCode(),
-                    'character_inject_code' => $character->getInjectCode(),
-                ]);
-    
-                $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01049_2", $this->Id);
-                $game->theah->queueEvent($transitionEvent);
-   
-            }
+            // WHY: Fire targeting alone here. Engage-or-wound (or the already-engaged
+            // auto-wound) emits from handleEvent only when EventCharacterTargeted is not
+            // canceled, so Cloud Bottle and other "when targeted" reactions see the pick.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

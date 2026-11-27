@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01041_Test extends TestCase
@@ -82,9 +83,50 @@ class Action_01041_Test extends TestCase
                     $foe->Id
                 );
 
-                Assert::count(1, $world->theah->queuedOfType(EventCardEngaged::class), 'engage');
+                $this->assertPickQueuesTargetingOnly($world, $action, $foe->Id);
+
+                $hook = $this->survive($world, $action);
+                $engages = $world->theah->queuedOfType(EventCardEngaged::class);
+                Assert::count(1, $engages, 'engage');
+                Assert::same($hook->batchId, $engages[0]->batchId, 'engage shares batch');
                 Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no home');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — engage + resolve must not run.
+            'canceled CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                $rosine = $world->placeCharacter(new _01041(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01041 $action */
+                $action = $rosine->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->playerId = 1;
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $rosine = $world->placeCharacter(new _01041(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01041 $action */
+                $action = $rosine->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'act engages Sorcerer and moves Home' => function () {
@@ -105,11 +147,37 @@ class Action_01041_Test extends TestCase
                     $foe->Id
                 );
 
+                $this->assertPickQueuesTargetingOnly($world, $action, $foe->Id);
+
+                $hook = $this->survive($world, $action);
                 Assert::count(1, $world->theah->queuedOfType(EventCardEngaged::class), 'engage');
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
                 Assert::count(1, $moves, 'home');
                 Assert::same(Game::LOCATION_PLAYER_HOME, $moves[0]->toLocation, 'to home');
+                Assert::same($hook->batchId, $moves[0]->batchId, 'move shares batch');
             },
         ];
+    }
+
+    private function assertPickQueuesTargetingOnly(TestWorld $world, Action_01041 $action, int $targetId): void
+    {
+        $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+        Assert::count(1, $targeted, 'targeting hook');
+        Assert::same($targetId, $targeted[0]->targetId, 'target');
+        Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+        Assert::true($targeted[0]->batchId !== null, 'batch');
+        Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage beside pick');
+        Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no home beside pick');
+        Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+    }
+
+    private function survive(TestWorld $world, Action_01041 $action): EventCharacterTargeted
+    {
+        $hook = $world->theah->queuedOfType(EventCharacterTargeted::class)[0];
+        $world->theah->takeQueuedEvents();
+        $hook->canceled = false;
+        $hook->theah = $world->theah;
+        $action->handleEvent($hook);
+        return $hook;
     }
 }

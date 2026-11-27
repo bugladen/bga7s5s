@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_05Serenissima_Test extends TestCase
@@ -89,7 +90,7 @@ class Action_05Serenissima_Test extends TestCase
             },
 
             'discard pick then Engaged target sends to Locker and Engardes; ready not highlighted' => function () {
-                ['world' => $world, 'action' => $action, 'discovery' => $discovery, 'engaged' => $engaged, 'ready' => $ready] = $this->scene();
+                ['world' => $world, 'patricia' => $patricia, 'action' => $action, 'discovery' => $discovery, 'engaged' => $engaged, 'ready' => $ready] = $this->scene();
 
                 $cards = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_05SERENISSIMA, '')['cards'];
                 Assert::same([$discovery->Id], array_map(fn($c) => $c['id'], $cards), 'discovery listed');
@@ -106,6 +107,36 @@ class Action_05Serenissima_Test extends TestCase
                 Assert::false($ok, 'ready rejected');
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_05SERENISSIMA_2, '', $engaged->Id);
+
+                // Pick queues ONLY CharacterTargeted; locker / engarde wait for the survive hook.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($engaged->Id, $targeted[0]->targetId, 'target');
+                Assert::same($patricia->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(1, $world->theah->queuedEvents, 'nothing else at pick');
+
+                // Canceled hook: nothing (discard card stays put). Foreign ability: ignored.
+                $world->theah->queuedEvents = [];
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $engaged->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'cancel queues nothing');
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ignored');
+
+                // Survive: locker + engarde share the batch.
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 77;
+                $action->handleEvent($hook);
+                Assert::same(77, $world->theah->queuedOfType(EventCardSentToLocker::class)[0]->batchId, 'locker batch');
+                Assert::same(77, $world->theah->queuedOfType(EventCardEngarded::class)[0]->batchId, 'engarde batch');
                 Assert::count(1, $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class), 'remove');
                 Assert::count(1, $world->theah->queuedOfType(EventCardSentToLocker::class), 'locker');
                 Assert::same($engaged->Id, $world->theah->queuedOfType(EventCardEngarded::class)[0]->cardId, 'engarde');

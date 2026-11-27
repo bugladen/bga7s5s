@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
@@ -20,6 +21,8 @@ class Reaction_05Stash extends RiskReaction implements IAbilityThatTargetsCharac
     // WHY public: multi-stage reaction survives serialize/DB round-trips (04020 / 03068).
     public string $stage = '';
     public string $pressureLocation = '';
+    // WHY public: set at the target pick, consumed by the EventCharacterTargeted hook.
+    public int $chosenTargetId = 0;
 
     public function __construct()
     {
@@ -158,6 +161,36 @@ class Reaction_05Stash extends RiskReaction implements IAbilityThatTargetsCharac
         {
             $this->beginCharacterChoice($event->theah);
         }
+
+        // WHY: Deliberately NOT behind isAvailable() — setUsed already ran at the pick, so
+        // isAvailable() is false by the time the hook arrives (Reaction_05Quack seat). Matched on
+        // abilityId + the stored target so another card's targeting cannot trigger it.
+        if ($event instanceof EventCharacterTargeted
+            && $event->abilityId == $this->Id
+            && $this->chosenTargetId != 0
+            && $this->chosenTargetId == $event->targetId)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+
+            if (! $event->canceled && $owner !== null && $target !== null)
+            {
+                // WHY createCardEngardedEvent (not Engaged): Engarde sets Engaged=false (02051).
+                // Action_01152a incorrectly uses Engaged for an En Garde effect — do not copy it.
+                $engardeEvent = EventFactory::createCardEngardedEvent(
+                    $owner->ControllerId,
+                    $target->Id,
+                    $owner->Id,
+                    $this->Id
+                );
+                $engardeEvent->batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+                $event->theah->queueEvent($engardeEvent);
+            }
+
+            // Reset on survive AND cancel so no sticky target survives a canceled hook.
+            $this->chosenTargetId = 0;
+            $this->resetWithoutUse($owner);
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -220,19 +253,35 @@ class Reaction_05Stash extends RiskReaction implements IAbilityThatTargetsCharac
                 'character_inject_code' => $target->getInjectCode(),
             ]);
 
-            // WHY createCardEngardedEvent (not Engaged): Engarde sets Engaged=false (02051).
-            // Action_01152a incorrectly uses Engaged for an En Garde effect — do not copy it.
-            $engardeEvent = EventFactory::createCardEngardedEvent(
+            // WHY: Permission pre-check stays at the pick so a veto surfaces to the player here
+            // (a throw inside the survive hook would crash event dispatch). The En Garde that is
+            // actually queued is rebuilt in the EventCharacterTargeted branch of handleEvent.
+            $game->theah->eventCheck(EventFactory::createCardEngardedEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            ));
+
+            // WHY: Fire targeting alone here. En Garde emits from handleEvent only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL cancel it). chosenTargetId /
+            // pressureLocation stay alive until that hook runs; it resets them on BOTH survive and
+            // cancel (Reaction_05Teapot / 04058 seat). setUsed stays here: the Risk is already paid.
+            $this->chosenTargetId = $target->Id;
+            $this->stage = '';
+
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
                 $owner->ControllerId,
                 $target->Id,
                 $owner->Id,
                 $this->Id
             );
-            $game->theah->eventCheck($engardeEvent);
-            $game->theah->queueEvent($engardeEvent);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $this->setUsed($game->theah, true);
-            $this->resetWithoutUse($owner);
+            $owner->IsUpdated = true;
             $game->gamestate->nextState('done');
             return;
         }

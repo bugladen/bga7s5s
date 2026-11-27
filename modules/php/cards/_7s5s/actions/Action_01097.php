@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01097 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -76,6 +77,23 @@ class Action_01097 extends CharacterAction implements IAbilityThatTargetsCharact
             $owner = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01097", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+            $event->theah->queueEvent($engageEvent);
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $event->theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
         }
     }
 
@@ -143,11 +161,12 @@ class Action_01097 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($errorMessage);
             }
 
-            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($engageEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. The engage + ActionResolved emit from handleEvent
+            // only when EventCharacterTargeted survives (Cloud Bottle / UL cancel it).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

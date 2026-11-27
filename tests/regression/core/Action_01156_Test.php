@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRangedAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -156,7 +157,9 @@ class Action_01156_Test extends TestCase
                 Assert::false(in_array($ally->Id, $args['charactersIds'], true), 'ally');
             },
 
-            'selecting an already-engaged target discards, wounds, fires ranged, and resolves' => function () {
+            // WHY: Pick used to wound/queue the choice inline — Cloud Bottle never saw a
+            // targeting hook. Act queues the discard cost + CharacterTargeted only; survive continues.
+            'selecting an already-engaged target discards, queues CharacterTargeted only; survive wounds, fires ranged, resolves' => function () {
                 $world = new TestWorld();
                 [$musket, $action, , $foe, $hand] = $this->scene($world);
                 $foe->Engaged = true;
@@ -170,19 +173,36 @@ class Action_01156_Test extends TestCase
                 );
 
                 $discards = $world->theah->queuedOfType(EventCardDiscardedFromHand::class);
-                Assert::count(1, $discards, 'discard');
+                Assert::count(1, $discards, 'discard cost');
                 Assert::same($hand->Id, $discards[0]->cardId, 'hand card');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::same($musket->Id, $targeted[0]->sourceId, 'source');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventRangedAbilityPlayed::class), 'no ranged beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'wound');
                 Assert::same($foe->Id, $wounds[0]->characterId, 'foe');
                 Assert::same($musket->Id, $wounds[0]->sourceId, 'source');
+                Assert::same($hook->batchId, $wounds[0]->batchId, 'shared batch');
                 Assert::count(1, $world->theah->queuedOfType(EventRangedAbilityPlayed::class), 'ranged');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+                Assert::count(0, $world->theah->queuedOfType(EventCardDiscardedFromHand::class), 'discard not repeated');
             },
 
             // WHY: effects-only must not invent a discard from CHOSEN_CARD.
-            'effects-only engaged path skips discard but still wounds' => function () {
+            'effects-only engaged path skips discard but still wounds on survive' => function () {
                 $world = new TestWorld();
                 [, $action, , $foe] = $this->scene($world);
                 $foe->Engaged = true;
@@ -196,11 +216,20 @@ class Action_01156_Test extends TestCase
                 );
 
                 Assert::count(0, $world->theah->queuedOfType(EventCardDiscardedFromHand::class), 'no discard');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
                 Assert::count(1, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'wound');
                 Assert::count(1, $world->theah->queuedOfType(EventRangedAbilityPlayed::class), 'ranged');
             },
 
-            'selecting an en garde target queues discard and opponent 01156_3 choice' => function () {
+            'selecting an en garde target queues discard + CharacterTargeted; survive queues opponent 01156_3 choice' => function () {
                 $world = new TestWorld();
                 [$musket, $action, , $foe, $hand] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_CARD, $hand->Id);
@@ -212,16 +241,59 @@ class Action_01156_Test extends TestCase
                     $foe->Id
                 );
 
-                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
                 Assert::count(1, $world->theah->queuedOfType(EventCardDiscardedFromHand::class), 'discard');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no choice beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'choice');
                 Assert::same('01156_3', $transitions[0]->transition, 'name');
                 Assert::same(2, $transitions[0]->playerId, 'foe controller');
                 Assert::same($musket->Id, $transitions[0]->sourceId, 'source');
+                Assert::same($hook->batchId, $transitions[0]->batchId, 'shared batch');
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
             },
 
+            // WHY: Cloud Bottle / UL cancel the hook — nothing may continue.
+            'canceled CharacterTargeted does not wound or open the choice' => function () {
+                $world = new TestWorld();
+                [$musket, $action, , $foe] = $this->scene($world);
+                $foe->Engaged = true;
+
+                $hook = new EventCharacterTargeted();
+                $hook->playerId = 1;
+                $hook->targetId = $foe->Id;
+                $hook->sourceId = $musket->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'no continue');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, , $foe] = $this->scene($world);
+
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
+            },
             'opponent chooses Engage' => function () {
                 $world = new TestWorld();
                 [, $action, , $foe] = $this->scene($world);

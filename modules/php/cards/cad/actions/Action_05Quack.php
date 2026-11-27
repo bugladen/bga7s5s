@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 // Action: Target character at this location heals a wound • Their controller discards a card.
@@ -126,6 +127,42 @@ class Action_05Quack extends CharacterAction implements IAbilityThatTargetsChara
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05Quack", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $game = $event->theah->game;
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+            $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+
+            // WHY: Heal before discard (printed L→R). Route discard via EVENTS so heal
+            // flushes first and createTransitionEvent can set active = target's controller
+            // (Giacinto 04032 opponent-hand shape — local nextState cannot change active).
+            $healEvent = EventFactory::createCharacterBeingHealedEvent(
+                $target->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $healEvent->batchId = $batchId;
+            $event->theah->queueEvent($healEvent);
+
+            $transition = EventFactory::createTransitionEvent(
+                $target->ControllerId,
+                $owner->Id,
+                "05Quack_2",
+                $this->Id
+            );
+            $transition->batchId = $batchId;
+            $event->theah->queueEvent($transition);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -172,7 +209,6 @@ class Action_05Quack extends CharacterAction implements IAbilityThatTargetsChara
             }
 
             $owner = $this->getOwningCharacter($game->theah);
-            $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
 
             $game->notify->all("message", '${owner_inject_code}: ${player_name} targets ${character_inject_code} to heal a wound.', [
                 "owner_inject_code" => $owner->getInjectCode(),
@@ -180,25 +216,18 @@ class Action_05Quack extends CharacterAction implements IAbilityThatTargetsChara
                 "character_inject_code" => $target->getInjectCode(),
             ]);
 
-            // WHY: Heal before discard (printed L→R). Route discard via EVENTS so heal
-            // flushes first and createTransitionEvent can set active = target's controller
-            // (Giacinto 04032 opponent-hand shape — local nextState cannot change active).
-            $healEvent = EventFactory::createCharacterBeingHealedEvent(
+            // WHY: Fire targeting alone here; heal + discard stage emit from handleEvent only
+            // when EventCharacterTargeted survives (Cloud Bottle / UL cancel it). CHOSEN_TARGET is
+            // set on survive so a canceled hook leaves no stale target for the discard stage.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
                 $target->Id,
                 $owner->Id,
-                1,
-                $owner->getInjectCode(),
                 $this->Id
             );
-            $game->theah->queueEvent($healEvent);
-
-            $transition = EventFactory::createTransitionEvent(
-                $target->ControllerId,
-                $owner->Id,
-                "05Quack_2",
-                $this->Id
-            );
-            $game->theah->queueEvent($transition);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
             return;

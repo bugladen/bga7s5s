@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -28,6 +29,15 @@ class Action_03054_Test extends TestCase
     public function name(): string
     {
         return 'Action_03054';
+    }
+
+    /** Deliver the queued targeting hook as a surviving (not canceled) event. */
+    private function survive(TestWorld $world, Action_03054 $action, EventCharacterTargeted $hook): void
+    {
+        $world->theah->takeQueuedEvents();
+        $hook->canceled = false;
+        $hook->theah = $world->theah;
+        $action->handleEvent($hook);
     }
 
     public function tests(): array
@@ -91,11 +101,59 @@ class Action_03054_Test extends TestCase
                 Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not yet');
 
                 $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_DOCKS);
+                $world->theah->queuedEvents = [];
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03054, 'x', $foe->Id);
-                Assert::same($foe->Id, $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0]->characterId, 'foe wounded');
+
+                // Pick queues ONLY the targeting hook; wound/move/resolve wait for it to survive.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+
+                $this->survive($world, $action, $targeted[0]);
+                $wound = $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0];
+                Assert::same($foe->Id, $wound->characterId, 'foe wounded');
+                Assert::same($targeted[0]->batchId, $wound->batchId, 'wound shares batch');
                 $move = $world->theah->queuedOfType(EventCardMoving::class)[0];
                 Assert::same(Game::LOCATION_PLAYER_HOME, $move->toLocation, 'home');
                 Assert::false($move->engage, 'no engage');
+                Assert::same($targeted[0]->batchId, $move->batchId, 'move shares batch');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no wound, no move, no resolve.
+            'canceled CharacterTargeted does nothing' => function () {
+                $world = new TestWorld();
+                $scheme = $world->placeCard(new _03054(), Game::LOCATION_PLAYER_HOME, 1);
+                $world->placeCharacter(new GenericCharacter('Performer'), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $action = $scheme->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $scheme = $world->placeCard(new _03054(), Game::LOCATION_PLAYER_HOME, 1);
+                $world->placeCharacter(new GenericCharacter('Performer'), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $action = $scheme->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'a killing wound does not also move them home' => function () {
@@ -108,6 +166,8 @@ class Action_03054_Test extends TestCase
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
                 $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_DOCKS);
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03054, 'x', $foe->Id);
+                $this->survive($world, $action, $world->theah->queuedOfType(EventCharacterTargeted::class)[0]);
+                Assert::count(1, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'wound');
                 Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no home move');
 
                 $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);

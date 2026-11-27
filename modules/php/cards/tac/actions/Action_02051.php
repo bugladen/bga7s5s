@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_02051 extends RiskCityAction implements ISorcererAbility, IAbilityThatTargetsCharacters
@@ -79,6 +80,37 @@ class Action_02051 extends RiskCityAction implements ISorcererAbility, IAbilityT
             $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "02051", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $game = $theah->game;
+            $owner = $this->getOwningCard($theah);
+            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $theah->getCharacterById($performerId);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $performer === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            $theah->queueEvent(EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId));
+
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $theah->queueEvent($engageEvent);
+
+            $engardeEvent = EventFactory::createCardEngardedEvent($target->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $engardeEvent->batchId = $batchId;
+            $theah->queueEvent($engardeEvent);
+
+            $theah->queueEvent(EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $target->Id, $target->Location));
+
+            // ActionResolved stays unbatched (01160 convention).
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -140,27 +172,23 @@ class Action_02051 extends RiskCityAction implements ISorcererAbility, IAbilityT
                 throw new UserException($errorMessage);
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
             $owner = $this->getOwningCard($game->theah);
 
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId);
-            $game->theah->queueEvent($sorceryStartEvent);
-
-            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($engageEvent);
-
-            $engardeEvent = EventFactory::createCardEngardedEvent($target->ControllerId, $target->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($engardeEvent);
-
+            // WHY: Sending the Risk to The Locker stays here, unbatched, and is NOT gated on
+            // targeting. The Risk is already parked in Purgatory; the Locker move is what takes it
+            // out, so a canceled hook must not strand it (Matchlock 01156 discard seat).
             $lockerEvent = EventFactory::createCardSentToLockerEvent($owner->ControllerId, $owner->Id);
             $game->theah->queueEvent($lockerEvent);
 
-            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $target->Id, $target->Location);
-            $game->theah->queueEvent($sorceryPlayedEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Sorcerer start, Engage performer, En Garde, Sorcerer
+            // played and ActionResolved emit from handleEvent only when EventCharacterTargeted
+            // survives (Cloud Bottle / UL cancel it). Engage performer is gated with the effect so a
+            // canceled hook does not leave a pure cost; Start/Played gated so a cancel never emits a
+            // dangling Start (Reaction_02001 seat).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01152a_Test extends TestCase
@@ -40,6 +41,18 @@ class Action_01152a_Test extends TestCase
         /** @var Action_01152a $action */
         $action = $scheme->getActions()[0];
         return [$scheme, $action, $performer, $foe];
+    }
+
+    private function targeted(TestWorld $world, Action_01152a $action, _01152 $scheme, GenericCharacter $target, bool $canceled): EventCharacterTargeted
+    {
+        $targeted = new EventCharacterTargeted();
+        $targeted->abilityId = $action->Id;
+        $targeted->targetId = $target->Id;
+        $targeted->sourceId = $scheme->Id;
+        $targeted->batchId = 77;
+        $targeted->canceled = $canceled;
+        $targeted->theah = $world->theah;
+        return $targeted;
     }
 
     public function tests(): array
@@ -109,8 +122,9 @@ class Action_01152a_Test extends TestCase
                 Assert::false(in_array($elsewhere->Id, $ids, true), 'other loc excluded');
             },
 
-            // WHY: En Garde = EventCardEngarded (not EventCardEngaged / Engage).
-            'act wounds performer, En Gardes engaged target, and resolves' => function () {
+            // WHY: wound is the COST (always applies, unbatched); the En Garde effect and
+            // ActionResolved wait for EventCharacterTargeted so Cloud Bottle / UL can cancel.
+            'act wounds performer (cost) and queues only CharacterTargeted for the effect' => function () {
                 $world = new TestWorld();
                 [$scheme, $action, $performer, $foe] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
@@ -128,34 +142,62 @@ class Action_01152a_Test extends TestCase
                 Assert::same(1, $wounds[0]->wounds, '1');
                 Assert::same($scheme->Id, $wounds[0]->sourceId, 'scheme source');
 
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($scheme->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngarded::class), 'no en garde yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
+                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            // WHY: En Garde = EventCardEngarded (not EventCardEngaged / Engage).
+            'surviving CharacterTargeted En Gardes engaged target and resolves' => function () {
+                $world = new TestWorld();
+                [$scheme, $action, , $foe] = $this->scene($world);
+
+                $action->handleEvent($this->targeted($world, $action, $scheme, $foe, false));
+
                 $engardes = $world->theah->queuedOfType(EventCardEngarded::class);
                 Assert::count(1, $engardes, 'en garde');
                 Assert::same($foe->Id, $engardes[0]->cardId, 'target');
                 Assert::same($action->Id, $engardes[0]->abilityId, 'ability');
-
+                Assert::same(77, $engardes[0]->batchId, 'shared batch');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
             },
 
-            'act wounds performer and skips En Garde when target is already en garde' => function () {
+            'surviving CharacterTargeted skips En Garde when target is already en garde' => function () {
                 $world = new TestWorld();
-                [, $action, $performer, $foe] = $this->scene($world);
+                [$scheme, $action, , $foe] = $this->scene($world);
                 $foe->Engaged = false;
-                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
-                $action->actFromActionWithId(
-                    $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01152a,
-                    'highDramaPlayerTurn_01152a',
-                    $foe->Id
-                );
+                $action->handleEvent($this->targeted($world, $action, $scheme, $foe, false));
 
-                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
-                Assert::count(1, $wounds, 'wound');
-                Assert::same($performer->Id, $wounds[0]->characterId, 'performer');
                 Assert::count(0, $world->theah->queuedOfType(EventCardEngarded::class), 'no engarde');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            'canceled CharacterTargeted queues no effect' => function () {
+                $world = new TestWorld();
+                [$scheme, $action, , $foe] = $this->scene($world);
+
+                $action->handleEvent($this->targeted($world, $action, $scheme, $foe, true));
+
+                Assert::count(0, $world->theah->queuedEvents, 'UL / Cloud Bottle cancel');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [$scheme, $action, , $foe] = $this->scene($world);
+                $event = $this->targeted($world, $action, $scheme, $foe, false);
+                $event->abilityId = 'someOtherAbility';
+
+                $action->handleEvent($event);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'state constant registered' => function () {

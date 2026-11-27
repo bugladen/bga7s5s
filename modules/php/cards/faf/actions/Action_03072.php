@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03072 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -77,6 +78,11 @@ class Action_03072 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "03072", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargetedCharacter($event);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -118,56 +124,80 @@ class Action_03072 extends RiskCityAction implements IAbilityThatTargetsCharacte
 
             $owner = $this->getOwningCard($game->theah);
 
-            // WHY snapshot before queue: unequip/discard events are not applied mid-act,
-            // so re-reading Attachments would still include cards about to be destroyed.
-            $toDestroy = [];
-            $toEngage = [];
-            foreach ($this->getRealAttachments($game->theah, $character) as $attachment)
-            {
-                if ($attachment->Engaged)
-                {
-                    $toDestroy[] = $attachment;
-                }
-                else
-                {
-                    $toEngage[] = $attachment;
-                }
-            }
-
-            foreach ($toDestroy as $attachment)
-            {
-                $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
-                    $attachment->ControllerId,
-                    $attachment->AttachedToId,
-                    $attachment->Id
-                );
-                $game->theah->eventCheck($unequipEvent);
-                $game->theah->queueEvent($unequipEvent);
-
-                $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
-                    $attachment,
-                    $owner->Id,
-                    $asEffect = true
-                );
-                $game->theah->queueEvent($discardEvent);
-            }
-
-            foreach ($toEngage as $attachment)
-            {
-                $engageEvent = EventFactory::createCardEngagedEvent(
-                    $owner->ControllerId,
-                    $attachment->Id,
-                    $owner->Id,
-                    $this->Id
-                );
-                $game->theah->queueEvent($engageEvent);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. The attachment destroy/engage + ActionResolved emit
+            // from handleEvent only when EventCharacterTargeted survives (Cloud Bottle / UL cancel
+            // it). Nothing is a cost, so everything is gated; attachments are read at survive time.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
         }
+    }
+
+    private function resolveTargetedCharacter(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $owner = $this->getOwningCard($theah);
+        $character = $theah->getCharacterById($event->targetId);
+        if ($owner === null || $character === null)
+        {
+            return;
+        }
+
+        $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+        // WHY snapshot before queue: unequip/discard events are not applied mid-handler,
+        // so re-reading Attachments would still include cards about to be destroyed.
+        $toDestroy = [];
+        $toEngage = [];
+        foreach ($this->getRealAttachments($theah, $character) as $attachment)
+        {
+            if ($attachment->Engaged)
+            {
+                $toDestroy[] = $attachment;
+            }
+            else
+            {
+                $toEngage[] = $attachment;
+            }
+        }
+
+        foreach ($toDestroy as $attachment)
+        {
+            $unequipEvent = EventFactory::createAttachmentUnequippedEvent(
+                $attachment->ControllerId,
+                $attachment->AttachedToId,
+                $attachment->Id
+            );
+            $unequipEvent->batchId = $batchId;
+            $theah->eventCheck($unequipEvent);
+            $theah->queueEvent($unequipEvent);
+
+            $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent(
+                $attachment,
+                $owner->Id,
+                $asEffect = true
+            );
+            $discardEvent->batchId = $batchId;
+            $theah->queueEvent($discardEvent);
+        }
+
+        foreach ($toEngage as $attachment)
+        {
+            $engageEvent = EventFactory::createCardEngagedEvent(
+                $owner->ControllerId,
+                $attachment->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $engageEvent->batchId = $batchId;
+            $theah->queueEvent($engageEvent);
+        }
+
+        // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+        $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
     }
 
     private function getValidTargets(Theah $theah, Character $performer): array

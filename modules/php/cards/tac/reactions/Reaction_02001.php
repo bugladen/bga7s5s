@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventChallengeRejected;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterIntervened;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityThatTargetsCharacters
@@ -79,6 +80,25 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
                 $event->theah->queueEvent($reactionEvent);
             }
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $andriana = $this->getOwningCharacter($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            if ($andriana === null || $character === null)
+            {
+                return;
+            }
+
+            $theah->queueEvent(EventFactory::createSorcererAbilityStartEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location));
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $andriana->Id, 1, $andriana->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $theah->queueEvent($woundEvent);
+
+            $theah->queueEvent(EventFactory::createSorcererAbilityPlayedEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location));
+        }
     }
 
     public function isValidTargetForAbility(Game $game, Character $character): array
@@ -114,14 +134,18 @@ class Reaction_02001 extends CardReaction implements ISorcererAbility, IAbilityT
             $andriana = $this->getOwningCharacter($game->theah);
             $character = $game->theah->getCharacterById($this->CharacterId);
 
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location);
-            $game->theah->queueEvent($sorceryStartEvent);
-
-            $event = EventFactory::createCharacterBeingWoundedEvent($character->Id, $andriana->Id, 1, $andriana->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($event);
-
-            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($andriana->ControllerId, $andriana->Id, $this->Id, $andriana->Id, $character->Id, $character->Location);
-            $game->theah->queueEvent($sorceryPlayedEvent);
+            // WHY: Fire targeting alone here. Sorcerer start/played + wound emit from handleEvent
+            // only when EventCharacterTargeted survives (Cloud Bottle / UL / Maryam). The target
+            // travels on the event, so CharacterId can be cleared below.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $andriana->ControllerId,
+                $character->Id,
+                $andriana->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->notify->all("message", clienttranslate('${andriana_inject_code}: ${player_name} used Reaction to wound ${character_inject_code}'), [
                 "andriana_inject_code" => $andriana->getInjectCode(),

@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -77,6 +78,44 @@ class Reaction_05FunkyCheese extends CardReaction implements IAbilityThatTargets
     public function handleEvent(Event $event)
     {
         parent::handleEvent($event);
+
+        // WHY: Wound Leichenberg + target only when EventCharacterTargeted survives (Cloud Bottle /
+        // UL / Maryam cancel that hook). The self-wound is gated too: a canceled reaction must not
+        // leave Leichenberg paying a pure cost for an effect that never happened. Checked BEFORE the
+        // isAvailable gate because setUsed() already ran at pick time.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+
+            // WHY: Printed order — Wound Leichenberg, then the target (Excalibur dual-wound).
+            $woundSelf = EventFactory::createCharacterBeingWoundedEvent(
+                $owner->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $woundSelf->batchId = $batchId;
+            $event->theah->queueEvent($woundSelf);
+
+            $woundTarget = EventFactory::createCharacterBeingWoundedEvent(
+                $target->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $woundTarget->batchId = $batchId;
+            $event->theah->queueEvent($woundTarget);
+            return;
+        }
 
         if (! ($event instanceof EventPressureOccuring) || ! $this->isAvailable())
         {
@@ -162,24 +201,17 @@ class Reaction_05FunkyCheese extends CardReaction implements IAbilityThatTargets
                 "target_inject_code" => $target->getInjectCode(),
             ]);
 
-            // WHY: Printed order — Wound Leichenberg, then the target (Excalibur dual-wound).
-            $woundSelf = EventFactory::createCharacterBeingWoundedEvent(
-                $owner->Id,
-                $owner->Id,
-                1,
-                $owner->getInjectCode(),
-                $this->Id
-            );
-            $game->theah->queueEvent($woundSelf);
-
-            $woundTarget = EventFactory::createCharacterBeingWoundedEvent(
+            // WHY: Fire targeting alone here; both wounds emit from handleEvent only when
+            // EventCharacterTargeted survives. setUsed stays at pick (choosing pays the reaction).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
                 $target->Id,
                 $owner->Id,
-                1,
-                $owner->getInjectCode(),
                 $this->Id
             );
-            $game->theah->queueEvent($woundTarget);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $this->setUsed($game->theah, true);
         }

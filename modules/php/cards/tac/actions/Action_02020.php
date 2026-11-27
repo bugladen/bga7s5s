@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_02020 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -135,6 +136,46 @@ class Action_02020 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "02020", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
+
+        // WHY: Engage-or-wound only when EventCharacterTargeted survives (see step 2 of
+        // actFromActionWithId — attachment engage is the cost and is not gated).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            // WHY already Engaged → auto-wound: print has no en-garde target filter
+            // (unlike B.7 _04027). Mirror Duckfoot _01049 / Point of Order _04049 —
+            // "if they do not" is automatic when they cannot engage.
+            if ($character->Engaged)
+            {
+                $theah->game->notify->all("message", clienttranslate('${owner_inject_code}: ${character_inject_code} is already Engaged and is wounded.'), [
+                    "owner_inject_code" => $owner->getInjectCode(),
+                    "character_inject_code" => $character->getInjectCode(),
+                ]);
+
+                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent->batchId = $batchId;
+                $theah->queueEvent($woundEvent);
+            }
+            else
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "02020_2", $this->Id);
+                $transitionEvent->batchId = $batchId;
+                $theah->queueEvent($transitionEvent);
+            }
+
+            // WHY unbatched: same as 01160 — a racing deleteEventBatch must not strip the resolve.
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -243,27 +284,19 @@ class Action_02020 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $characterId = $game->globals->get(Game::CHOSEN_CARD);
             $character = $game->theah->getCharacterById($characterId);
 
-            // WHY already Engaged → auto-wound: print has no en-garde target filter
-            // (unlike B.7 _04027). Mirror Duckfoot _01049 / Point of Order _04049 —
-            // "if they do not" is automatic when they cannot engage.
-            if ($character->Engaged)
-            {
-                $game->notify->all("message", clienttranslate('${owner_inject_code}: ${character_inject_code} is already Engaged and is wounded.'), [
-                    "owner_inject_code" => $owner->getInjectCode(),
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
-
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-                $game->theah->queueEvent($woundEvent);
-            }
-            else
-            {
-                $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "02020_2", $this->Id);
-                $game->theah->queueEvent($transitionEvent);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Engaging the attachment is the paid cost ("Engage ... •"), queued above OUTSIDE
+            // the targeting batch so a canceled targeting does not refund it (Matchlock 01156 seat).
+            // The engage-or-wound resolution emits from handleEvent only when EventCharacterTargeted
+            // survives (Cloud Bottle / UL / Maryam cancel that hook).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("attachmentChosen");
         }

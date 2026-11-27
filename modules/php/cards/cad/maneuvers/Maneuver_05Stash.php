@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -138,6 +139,33 @@ class Maneuver_05Stash extends Maneuver implements IAbilityThatTargetsCharacters
         parent::handleEvent($event);
 
         // EventManeuverCanceled handler not needed
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $theah->game->notify->all('message', '${maneuver_inject_code}: ${player_name} engages ${character_inject_code}.', [
+                'maneuver_inject_code' => $owner->getInjectCode(),
+                'player_name' => $theah->game->getPlayerNameById($owner->ControllerId),
+                'character_inject_code' => $target->getInjectCode(),
+            ]);
+
+            $engageEvent = EventFactory::createCardEngagedEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $engageEvent->batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $theah->eventCheck($engageEvent);
+            $theah->queueEvent($engageEvent);
+        }
 
         if ($event instanceof EventResolveManeuver && $event->maneuverId == $this->Id)
         {
@@ -286,20 +314,20 @@ class Maneuver_05Stash extends Maneuver implements IAbilityThatTargetsCharacters
                 throw new UserException($errorMessage);
             }
 
-            $game->notify->all('message', '${maneuver_inject_code}: ${player_name} engages ${character_inject_code}.', [
+            $game->notify->all('message', '${maneuver_inject_code}: ${player_name} targets ${character_inject_code}.', [
                 'maneuver_inject_code' => $owner->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($owner->ControllerId),
                 'character_inject_code' => $target->getInjectCode(),
             ]);
 
-            $engageEvent = EventFactory::createCardEngagedEvent(
-                $owner->ControllerId,
-                $target->Id,
-                $owner->Id,
-                $this->Id
-            );
-            $game->theah->eventCheck($engageEvent);
-            $game->theah->queueEvent($engageEvent);
+            // WHY: Fire targeting alone here. The Engage emits from handleEvent only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL cancel it). The adversary's
+            // earlier discard-or-decline choice is not part of the targeting. No ActionResolved:
+            // a Maneuver never had one (same as Maneuver_02057).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

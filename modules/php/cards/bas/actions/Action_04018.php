@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04018 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -159,6 +160,72 @@ class Action_04018 extends RiskAction implements IAbilityThatTargetsCharacters
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "04018", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        // WHY: Move + trailing discard only when EventCharacterTargeted survives. The printed
+        // text says "Target an enemy character" — Cloud Bottle / UL / Maryam cancel that hook,
+        // and queuing the move beside the pick meant "when targeted" reactions never saw this
+        // Action (journal 2026-11-27-02 / Pattern B.5). Nothing here is a cost: the move is
+        // the effect, so it is gated too.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargetedCharacter($event);
+        }
+    }
+
+    private function resolveTargetedCharacter(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $game = $theah->game;
+        $owner = $this->getOwningCard($theah);
+        $target = $theah->getCharacterById($event->targetId);
+        // WHY CHOSEN_PERFORMER: still set while the targeting event dispatches (same global
+        // the arg / validate paths read).
+        $performer = $theah->getCharacterById((int)$game->globals->get(Game::CHOSEN_PERFORMER));
+        if ($owner === null || $target === null || $performer === null)
+        {
+            return;
+        }
+
+        $destination = $target->Location;
+        $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+        $moveEvent = EventFactory::createCardMovingEvent(
+            $performer->ControllerId,
+            $performer->Id,
+            $performer->Location,
+            $destination,
+            $engage = false,
+            $owner->Id,
+            $this->Id
+        );
+        $moveEvent->batchId = $batchId;
+        $theah->eventCheck($moveEvent);
+        $theah->queueEvent($moveEvent);
+
+        // WHY: ActionResolved (priority 8) before Transition (priority 9) — same as
+        // Action_04005 / Action_01095b. HD action wraps; discard is a trailing multi-player effect.
+        // ActionResolved stays unbatched (like 01160) so it survives a batch strip.
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+        $theah->queueEvent($actionResolvedEvent);
+
+        $this->PlayersToDiscard = $this->getPlayersWhoMustDiscard(
+            $theah,
+            $destination,
+            $performer->ControllerId
+        );
+        $owner->IsUpdated = true;
+
+        if (count($this->PlayersToDiscard) > 0)
+        {
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04018_2", $this->Id);
+            $theah->queueEvent($transition);
+        }
+        else
+        {
+            $game->notify->all("message", clienttranslate('${card_inject_code}: No other player who controls a Sorcerer or Monster there has a card to discard.'), [
+                "card_inject_code" => $owner->getInjectCode(),
+            ]);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -228,43 +295,25 @@ class Action_04018 extends RiskAction implements IAbilityThatTargetsCharacters
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $destination = $character->Location;
 
-            $moveEvent = EventFactory::createCardMovingEvent(
+            $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($performer->ControllerId),
+                "card_inject_code" => $owner->getInjectCode(),
+                "character_inject_code" => $character->getInjectCode(),
+            ]);
+
+            // WHY: Fire targeting alone here. Move, ActionResolved and the trailing discard
+            // transition emit from handleEvent only when EventCharacterTargeted is not canceled.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
                 $performer->ControllerId,
-                $performer->Id,
-                $performer->Location,
-                $destination,
-                $engage = false,
+                $character->Id,
                 $owner->Id,
                 $this->Id
             );
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
-
-            // WHY: ActionResolved (priority 8) before Transition (priority 9) — same as
-            // Action_04005 / Action_01095b. HD action wraps; discard is a trailing multi-player effect.
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
-
-            $this->PlayersToDiscard = $this->getPlayersWhoMustDiscard(
-                $game->theah,
-                $destination,
-                $performer->ControllerId
-            );
-            $owner->IsUpdated = true;
-
-            if (count($this->PlayersToDiscard) > 0)
-            {
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04018_2", $this->Id);
-                $game->theah->queueEvent($transition);
-            }
-            else
-            {
-                $game->notify->all("message", clienttranslate('${card_inject_code}: No other player who controls a Sorcerer or Monster there has a card to discard.'), [
-                    "card_inject_code" => $owner->getInjectCode(),
-                ]);
-            }
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

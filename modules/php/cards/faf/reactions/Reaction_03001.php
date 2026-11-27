@@ -9,6 +9,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\CardReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -97,6 +98,20 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
             $transition = EventFactory::createReactionTransitionEvent($cesca->ControllerId, $cesca->Id, $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $cesca = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($cesca === null || $target === null)
+            {
+                return;
+            }
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+            $event->theah->queueEvent($woundEvent);
+        }
     }
 
     public function performReaction(Game $game, int $state, string $internalId, string $reactionId): void
@@ -120,8 +135,17 @@ class Reaction_03001 extends CardReaction implements IAbilityThatTargetsCharacte
                 throw new UserException($errorMessage);
             }
 
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $cesca->Id, 1, $cesca->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($woundEvent);
+            // WHY: Fire targeting alone here. The wound emits from handleEvent only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL / Maryam cancel that hook).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $cesca->ControllerId,
+                $target->Id,
+                $cesca->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->notify->all("message", clienttranslate('${reaction_inject_code}: ${player_name} used City Reaction to wound ${character_inject_code}.'), [
                 "reaction_inject_code" => $cesca->getInjectCode(),

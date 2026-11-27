@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04032;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_04032_Test extends TestCase
@@ -52,8 +53,24 @@ class Action_04032_Test extends TestCase
                 $targetMsg = array_values($targetMsgs)[0];
                 Assert::same($foe->getInjectCode(), $targetMsg['args']['character_inject_code'], 'target in log');
                 Assert::same($giacinto->getInjectCode(), $targetMsg['args']['card_inject_code'], 'card in log');
+
+                // Pick queues ONLY the targeting hook; target + opponent prompt wait for survival.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no prompt beside pick');
+                Assert::true($world->game->globals->get(Game::CHOSEN_TARGET) !== $foe->Id, 'target not stored at pick');
+
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target stored on survive');
                 Assert::same('04032_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'their response');
                 Assert::same(2, $world->theah->queuedOfType(EventTransition::class)[0]->playerId, 'opponent acts');
+                Assert::same($hook->batchId, $world->theah->queuedOfType(EventTransition::class)[0]->batchId, 'prompt shares batch');
 
                 $world->game->currentPlayerId = 2;
                 $action->actFromActionRevealHand($world->game, States::HIGH_DRAMA_PLAYER_TURN_04032_2);
@@ -89,6 +106,38 @@ class Action_04032_Test extends TestCase
 
                 $giacinto->Engaged = true;
                 Assert::false($action->isAvailableToPlayer(1, $world->theah), 'engaged');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no prompt and no stale CHOSEN_TARGET.
+            'canceled CharacterTargeted queues nothing and stores no target' => function () {
+                $world = new TestWorld();
+                $giacinto = $world->placeCharacter(new _04032(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_04032 $action */
+                $action = $giacinto->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+                Assert::true($world->game->globals->get(Game::CHOSEN_TARGET) !== $foe->Id, 'no stale target');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $giacinto = $world->placeCharacter(new _04032(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_04032 $action */
+                $action = $giacinto->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
         ];
     }

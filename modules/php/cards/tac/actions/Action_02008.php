@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
@@ -75,6 +76,11 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "02008", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->placeRiskUnderTarget($event);
         }
     }
 
@@ -168,46 +174,75 @@ class Action_02008 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 throw new UserException($errorMessage);
             }
 
-            $riskCardId = $game->globals->get(Game::CHOSEN_CARD);
-            $riskCard = $game->theah->getCardById($riskCardId);
-
-            //Place original card in special hiding location
-            $game->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $riskCard);
-
-            $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($riskCard->ControllerId, $riskCard->Id, $isHidden = true);
-            $game->theah->queueEvent($moveEvent);
-
+            // WHY: Fire targeting alone here (state _2 has no Back). Hiding the discard Risk,
+            // creating the clone, equip, Sorcerer played and ActionResolved all run from
+            // handleEvent only when EventCharacterTargeted survives (Cloud Bottle / UL cancel
+            // it) — otherwise a canceled hook would still strand the Risk in the hidden pile.
+            // Sorcerer start was already queued at the Risk pick (stage 1) and is not gated.
             $owner = $this->getOwningCard($game->theah);
-            $card = $game->createCardInLocation('02008_RiskClone', $character->Location, $owner->ControllerId, $owner->ControllerId);
-            $game->theah->addCardToWorld($card);
-            $card->Name = $riskCard->Name;
-            $card->Image = $riskCard->Image;
-
-            if ($card instanceof _02008_RiskClone)
-            {
-                $card->ClonedCardId = $riskCard->Id;
-                $card->TargetCharacterId = $character->Id;
-            }
-            $game->updateCardObjectInDb($card);
-
-            $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} placed a Risk from their Discard Pile under ${character_name}'), [
-                "owner_inject_code" => $owner->getInjectCode(),
-                "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                "character_name" => $character->Name,
-            ]);
-
-            // getRequiredAttachTargetId not needed as this is a Risk, not an Attachment
-            $attachEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $character->Id, $card->Id, 0, 0, $asAction = false, '', $isQuiet = true, $owner->Id, $this->Id);
-            $game->theah->queueEvent($attachEvent);
-
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $sorceryEndEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $character->Id, $character->Location);
-            $game->theah->queueEvent($sorceryEndEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }
+    }
+
+    private function placeRiskUnderTarget(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $game = $theah->game;
+        $owner = $this->getOwningCard($theah);
+        $character = $theah->getCharacterById($event->targetId);
+        $riskCard = $theah->getCardById($game->globals->get(Game::CHOSEN_CARD));
+        if ($owner === null || $character === null || $riskCard === null)
+        {
+            return;
+        }
+
+        $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+        //Place original card in special hiding location
+        $game->moveCard($riskCard->Id, Game::LOCATION_PERMANENTLY_HIDDEN, 0, $riskCard);
+
+        $moveEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($riskCard->ControllerId, $riskCard->Id, $isHidden = true);
+        $moveEvent->batchId = $batchId;
+        $theah->queueEvent($moveEvent);
+
+        $card = $game->createCardInLocation('02008_RiskClone', $character->Location, $owner->ControllerId, $owner->ControllerId);
+        $theah->addCardToWorld($card);
+        $card->Name = $riskCard->Name;
+        $card->Image = $riskCard->Image;
+
+        if ($card instanceof _02008_RiskClone)
+        {
+            $card->ClonedCardId = $riskCard->Id;
+            $card->TargetCharacterId = $character->Id;
+        }
+        $game->updateCardObjectInDb($card);
+
+        $game->notify->all("message", clienttranslate('${owner_inject_code}: ${player_name} placed a Risk from their Discard Pile under ${character_name}'), [
+            "owner_inject_code" => $owner->getInjectCode(),
+            "player_name" => $game->getPlayerNameById($owner->ControllerId),
+            "character_name" => $character->Name,
+        ]);
+
+        // getRequiredAttachTargetId not needed as this is a Risk, not an Attachment
+        $attachEvent = EventFactory::createAttachmentEquippedEvent($owner->ControllerId, $character->Id, $card->Id, 0, 0, $asAction = false, '', $isQuiet = true, $owner->Id, $this->Id);
+        $attachEvent->batchId = $batchId;
+        $theah->queueEvent($attachEvent);
+
+        $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
+        $sorceryEndEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performerId, $character->Id, $character->Location);
+        $theah->queueEvent($sorceryEndEvent);
+
+        // ActionResolved stays unbatched (01160 convention).
+        $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
     }
 }

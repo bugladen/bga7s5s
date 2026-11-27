@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01171 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -49,6 +50,37 @@ class Action_01171 extends RiskAction implements IAbilityThatTargetsCharacters
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01171", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Manipulate (engage, or send Home if already Engaged) only when
+        // EventCharacterTargeted survives. Engaged state is read at resolution.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            if (! $character->Engaged)
+            {
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+                $engageEvent->batchId = $batchId;
+                $theah->queueEvent($engageEvent);
+            }
+            else
+            {
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+                $moveEvent->batchId = $batchId;
+                $theah->queueEvent($moveEvent);
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -131,19 +163,19 @@ class Action_01171 extends RiskAction implements IAbilityThatTargetsCharacters
             }
 
             $owner = $this->getOwningCard($game->theah);
-            if (! $character->Engaged)
-            {
-                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
-                $game->theah->queueEvent($engageEvent);
-            }
-            else
-            {
-                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
-                $game->theah->queueEvent($moveEvent);
-            }
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Engage / send Home + ActionResolved emit from
+            // handleEvent only when EventCharacterTargeted survives (Cloud Bottle / UL / Maryam
+            // cancel that hook).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

@@ -13,6 +13,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -226,39 +227,78 @@ class Reaction_04058 extends RiskReaction implements ISorcererAbility, IAbilityT
                 'performer_inject_code' => $performer->getInjectCode(),
             ]);
 
-            $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent(
+            // WHY: Fire targeting alone here. Sorcerer start, the redirected wound and Sorcerer
+            // played emit from the EventCharacterTargeted branch below only when targeting
+            // survives (Cloud Bottle / UL / Maryam). Saved state (performerId / chosenTargetId /
+            // characterWoundedEvent) therefore stays alive until that hook runs; it is reset there.
+            // If targeting is canceled the intercepted wound is NOT re-released: the redirect
+            // already replaced it and the redirected wound was the part that got countered.
+            $this->chosenTargetId = $character->Id;
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
                 $owner->ControllerId,
-                $owner->Id,
-                $this->Id,
-                $performer->Id,
                 $character->Id,
-                $character->Location
-            );
-            $event->theah->queueEvent($sorceryStartEvent);
-
-            // WHY: No "(If they are able)" on print — redirect unconditionally (do not re-check source ability).
-            $this->releaseEvent($game, $characterId);
-
-            $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent(
-                $owner->ControllerId,
                 $owner->Id,
-                $this->Id,
-                $performer->Id,
-                $character->Id,
-                $character->Location
+                $this->Id
             );
-            $event->theah->queueEvent($sorceryPlayedEvent);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $event->theah->eventCheck($targetedEvent);
+            $event->theah->queueEvent($targetedEvent);
 
             $this->setUsed($game->theah, true);
+            $owner->IsUpdated = true;
+        }
+
+        if ($event instanceof EventCharacterTargeted
+            && $event->abilityId == $this->Id
+            && $this->chosenTargetId !== null
+            && $this->chosenTargetId == $event->targetId)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            $performer = $this->performerId !== null ? $theah->getCharacterById($this->performerId) : null;
+
+            if (! $event->canceled && $owner !== null && $character !== null && $performer !== null)
+            {
+                $sorceryStartEvent = EventFactory::createSorcererAbilityStartEvent(
+                    $owner->ControllerId,
+                    $owner->Id,
+                    $this->Id,
+                    $performer->Id,
+                    $character->Id,
+                    $character->Location
+                );
+                $theah->queueEvent($sorceryStartEvent);
+
+                // WHY: No "(If they are able)" on print — redirect unconditionally (do not re-check source ability).
+                $this->releaseEvent($theah->game, $character->Id, $event->batchId);
+
+                $sorceryPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent(
+                    $owner->ControllerId,
+                    $owner->Id,
+                    $this->Id,
+                    $performer->Id,
+                    $character->Id,
+                    $character->Location
+                );
+                $theah->queueEvent($sorceryPlayedEvent);
+            }
+
+            // WHY: Reset on both paths so a canceled targeting does not leave stale sticky state.
+            $this->characterWoundedEvent = null;
             $this->resetSavedState($owner);
         }
     }
 
-    private function releaseEvent(Game $game, int $characterId): void
+    private function releaseEvent(Game $game, int $characterId, ?int $batchId = null): void
     {
         if ($this->characterWoundedEvent)
         {
             $this->characterWoundedEvent->characterId = $characterId;
+            if ($batchId !== null)
+            {
+                $this->characterWoundedEvent->batchId = $batchId;
+            }
             $game->theah->queueEvent($this->characterWoundedEvent);
             $this->characterWoundedEvent = null;
         }

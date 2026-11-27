@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01081_Test extends TestCase
@@ -177,12 +178,41 @@ class Action_01081_Test extends TestCase
 
             'target choice puts both characters en garde in one batch and resolves the action' => function () {
                 $world = new TestWorld();
-                [, $action, $mine, $foe] = $this->scene($world);
+                [$risk, $action, $mine, $foe] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $mine->Id);
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_01081, 'x', $foe->Id);
 
-                $engarde = $world->theah->queuedOfType(EventCardEngarded::class);
+                // Pick queues ONLY CharacterTargeted.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(1, $world->theah->queuedEvents, 'nothing else at pick');
+                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+
+                // Canceled hook: nothing. Foreign ability: ignored.
+                $world->theah->queuedEvents = [];
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $foe->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'cancel queues nothing');
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ignored');
+
+                // Survive: both en gardes share the targeting batch, then ActionResolved.
+                $hook->abilityId = $action->Id;
+                $hook->batchId = $targeted[0]->batchId;
+                $action->handleEvent($hook);
+
+                $engarde =$world->theah->queuedOfType(EventCardEngarded::class);
                 Assert::count(2, $engarde, 'both en garde');
                 Assert::same($foe->Id, $engarde[0]->cardId, 'target first');
                 Assert::same($mine->Id, $engarde[1]->cardId, 'performer second');
@@ -199,7 +229,6 @@ class Action_01081_Test extends TestCase
                     array_map(fn($e) => $e::class, $world->theah->queuedEvents),
                     'order'
                 );
-                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
             },
 
             'target choice refuses our own character' => function () {

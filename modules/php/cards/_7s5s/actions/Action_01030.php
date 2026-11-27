@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -59,6 +60,37 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01030", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Engage performer + Sorcerer start + pressure stage only when targeting survives
+        // (Cloud Bottle / UL cancel it). Engage is gated with the effect so a canceled hook
+        // does not leave a pure cost (01015 seat). CHOSEN_TARGET is set here, not at the pick,
+        // so a cancel leaves no stale target behind.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+            $performer = $event->theah->getCharacterById($game->globals->get(Game::CHOSEN_PERFORMER));
+            $character = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $performer === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+
+            $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $event->theah->queueEvent($engageEvent);
+
+            $startEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
+            $startEvent->batchId = $batchId;
+            $event->theah->queueEvent($startEvent);
+
+            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01030_2", $this->Id);
+            $transitionEvent->batchId = $batchId;
+            $event->theah->queueEvent($transitionEvent);
         }
 
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
@@ -141,22 +173,18 @@ class Action_01030 extends RiskAction implements ISorcererAbility, IAbilityThatT
             }
 
 
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-
             $game->notify->all("message", clienttranslate('${player_name} chose ${character_inject_code} as target for ${card_inject_code}.'), [
                 'player_name' => $game->getPlayerNameById($performer->ControllerId),
                 'character_inject_code' => $character->getInjectCode(),
                 'card_inject_code' => $owner->getInjectCode(),
             ]);
 
-            $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $performer->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
-
-            $startEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $character->Id, $character->Location);
-            $game->theah->queueEvent($startEvent);
-
-            $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01030_2", $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+            // WHY: Fire targeting alone here; engage / Sorcerer start / 01030_2 emit from
+            // handleEvent only when EventCharacterTargeted is not canceled.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

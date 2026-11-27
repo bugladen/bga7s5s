@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -79,6 +80,11 @@ class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "03056", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargeted($event);
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -126,46 +132,75 @@ class Action_03056 extends RiskCityAction implements IAbilityThatTargetsCharacte
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-            // WHY: Stash source before claim/reactions — board may shift before the Renown chooser.
-            $game->globals->set(Game::CHOSEN_LOCATION, $character->Location);
 
-            // WHY: "they claim it" = target's controller via the targeted character (not you).
-            if ($game->theah->canLocationBeClaimedBy($character->ControllerId, $character->Location))
-            {
-                $claimEvent = EventFactory::createLocationClaimedEvent(
-                    $character->ControllerId,
-                    $character->Id,
-                    $character->Location
-                );
-                $game->theah->queueEvent($claimEvent);
-            }
-            else
-            {
-                $game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
-                    'i18n' => ['location'],
-                    'location' => $character->Location,
-                ]);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
-                $game->gamestate->nextState("targetChosen");
-                return;
-            }
-
-            $cityLocation = $game->theah->getCityLocation($character->Location);
-            if ($cityLocation !== null && $cityLocation->Renown > 0)
-            {
-                $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "03056_2", $this->Id);
-                $game->theah->queueEvent($transition);
-            }
-            else
-            {
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
-            }
+            // WHY: Fire targeting alone here; claim / Renown stage / ActionResolved emit from
+            // handleEvent only when EventCharacterTargeted survives (Cloud Bottle / UL cancel it).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
+        }
+    }
+
+    private function resolveTargeted(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $game = $theah->game;
+        $owner = $this->getOwningCard($theah);
+        $character = $theah->getCharacterById($event->targetId);
+        if ($owner === null || $character === null)
+        {
+            return;
+        }
+
+        $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+        // WHY: CHOSEN_TARGET / CHOSEN_LOCATION are set on survive, not at the pick, so a
+        // canceled hook leaves no stale target. Source location is stashed before claim /
+        // reactions — board may shift before the Renown chooser.
+        $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+        $game->globals->set(Game::CHOSEN_LOCATION, $character->Location);
+
+        // WHY: "they claim it" = target's controller via the targeted character (not you).
+        if ($theah->canLocationBeClaimedBy($character->ControllerId, $character->Location))
+        {
+            $claimEvent = EventFactory::createLocationClaimedEvent(
+                $character->ControllerId,
+                $character->Id,
+                $character->Location
+            );
+            $claimEvent->batchId = $batchId;
+            $theah->queueEvent($claimEvent);
+        }
+        else
+        {
+            $game->notify->all("message", clienttranslate('${location} cannot be claimed.'), [
+                'i18n' => ['location'],
+                'location' => $character->Location,
+            ]);
+
+            // ActionResolved stays unbatched (01160 convention).
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
+            return;
+        }
+
+        $cityLocation = $theah->getCityLocation($character->Location);
+        if ($cityLocation !== null && $cityLocation->Renown > 0)
+        {
+            $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "03056_2", $this->Id);
+            $transition->batchId = $batchId;
+            $theah->queueEvent($transition);
+        }
+        else
+        {
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
         }
     }
 

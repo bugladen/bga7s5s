@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\techniques\Technique_04cd29;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_04cd29_Test extends TestCase
@@ -25,6 +26,19 @@ class Action_04cd29_Test extends TestCase
     public function name(): string
     {
         return 'Action_04cd29';
+    }
+
+    private function targeted(TestWorld $world, int $playerId, $target, $source, Action_04cd29 $action): EventCharacterTargeted
+    {
+        $event = new EventCharacterTargeted();
+        $event->playerId = $playerId;
+        $event->targetId = $target->Id;
+        $event->sourceId = $source->Id;
+        $event->abilityId = $action->Id;
+        $event->batchId = 77;
+        $event->canceled = false;
+        $event->theah = $world->theah;
+        return $event;
     }
 
     /**
@@ -140,19 +154,83 @@ class Action_04cd29_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
             },
 
-            'a legal target is wounded and the action resolves' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can
+            // cancel before the wound exists (same shape as Bleed Out / Action_01160).
+            'picking a legal target queues only CharacterTargeted' => function () {
                 $world = new TestWorld();
                 [$tijani, $action] = $this->ready($world);
                 $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_FORUM, 2);
                 $target->Engaged = true;
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04CD29, '', $target->Id);
-                $wound = $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0];
-                Assert::same($target->Id, $wound->characterId, 'target');
-                Assert::same($tijani->Id, $wound->sourceId, 'tijani');
-                Assert::same($action->Id, $wound->abilityId, 'action');
-                Assert::same(1, $world->theah->queuedOfType(EventActionResolved::class)[0]->playerId, 'controller');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($target->Id, $targeted[0]->targetId, 'target');
+                Assert::same($tijani->Id, $targeted[0]->sourceId, 'tijani');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::same(1, $targeted[0]->playerId, 'controller');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
                 Assert::same('targetChosen', $world->game->gamestate->transitions[0], 'transition');
+            },
+
+            'surviving CharacterTargeted wounds the target and resolves the action' => function () {
+                $world = new TestWorld();
+                [$tijani, $action] = $this->ready($world);
+                $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_FORUM, 2);
+                $target->Engaged = true;
+
+                $targeted = $this->targeted($world, 1, $target, $tijani, $action);
+                $action->handleEvent($targeted);
+
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(1, $wounds, 'wound');
+                Assert::same($target->Id, $wounds[0]->characterId, 'target');
+                Assert::same($tijani->Id, $wounds[0]->sourceId, 'tijani');
+                Assert::same($action->Id, $wounds[0]->abilityId, 'action');
+                Assert::same(1, $wounds[0]->wounds, 'one wound');
+                Assert::same(77, $wounds[0]->batchId, 'shared batch');
+                Assert::same(1, $world->theah->queuedOfType(EventActionResolved::class)[0]->playerId, 'controller');
+            },
+
+            'canceled CharacterTargeted queues no wound and no resolve' => function () {
+                $world = new TestWorld();
+                [$tijani, $action] = $this->ready($world);
+                $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_FORUM, 2);
+                $target->Engaged = true;
+
+                $targeted = $this->targeted($world, 1, $target, $tijani, $action);
+                $targeted->canceled = true;
+                $action->handleEvent($targeted);
+                Assert::count(0, $world->theah->queuedEvents, 'cancelled');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [$tijani, $action] = $this->ready($world);
+                $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_FORUM, 2);
+                $target->Engaged = true;
+
+                $targeted = $this->targeted($world, 1, $target, $tijani, $action);
+                $targeted->abilityId = 'other';
+                $action->handleEvent($targeted);
+                Assert::count(0, $world->theah->queuedEvents, 'other ability');
+            },
+
+            // WHY: board can change between pick and the targeting hook resolving —
+            // Finesse is re-checked on the surviving path, but the action still resolves.
+            'surviving CharacterTargeted re-checks Finesse before wounding' => function () {
+                $world = new TestWorld();
+                [$tijani, $action] = $this->ready($world);
+                $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_FORUM, 2);
+                $target->Engaged = true;
+
+                $targeted = $this->targeted($world, 1, $target, $tijani, $action);
+                $target->ModifiedFinesse = $tijani->ModifiedFinesse;
+                $action->handleEvent($targeted);
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'still resolves');
             },
 
             'controller 0 resolves as the active player' => function () {
@@ -163,6 +241,11 @@ class Action_04cd29_Test extends TestCase
                 $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_FORUM, 2);
                 $target->Engaged = true;
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04CD29, '', $target->Id);
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class)[0];
+                Assert::same(2, $targeted->playerId, 'active on targeting');
+
+                $world->theah->queuedEvents = [];
+                $action->handleEvent($targeted);
                 Assert::same(2, $world->theah->queuedOfType(EventActionResolved::class)[0]->playerId, 'active');
             },
         ];

@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01015_Test extends TestCase
@@ -23,6 +24,19 @@ class Action_01015_Test extends TestCase
     public function name(): string
     {
         return 'Action_01015';
+    }
+
+    private function scene(TestWorld $world): array
+    {
+        $scheme = $world->placeCard(new _01015(), Game::LOCATION_PLAYER_HOME, 1);
+        $performer = $world->placeCharacter(new GenericCharacter('Performer'), Game::LOCATION_CITY_DOCKS, 1);
+        $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
+        $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+
+        /** @var Action_01015 $action */
+        $action = $scheme->getActions()[0];
+
+        return [$scheme, $action, $performer, $ally];
     }
 
     public function tests(): array
@@ -112,15 +126,12 @@ class Action_01015_Test extends TestCase
                 Assert::same('01015', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'transition');
             },
 
-            'act destroys performer and wounds target' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before destroy + wound are emitted (same seat as Action_01160 Bleed Out).
+            'pick queues only CharacterTargeted' => function () {
                 $world = new TestWorld();
-                $scheme = $world->placeCard(new _01015(), Game::LOCATION_PLAYER_HOME, 1);
-                $performer = $world->placeCharacter(new GenericCharacter('Performer'), Game::LOCATION_CITY_DOCKS, 1);
-                $ally = $world->placeCharacter(new GenericCharacter('Ally'), Game::LOCATION_CITY_DOCKS, 1);
-                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                [$scheme, $action, $performer, $ally] = $this->scene($world);
 
-                /** @var Action_01015 $action */
-                $action = $scheme->getActions()[0];
                 $action->actFromActionWithId(
                     $world->game,
                     States::HIGH_DRAMA_PLAYER_TURN_01015,
@@ -128,15 +139,70 @@ class Action_01015_Test extends TestCase
                     $ally->Id
                 );
 
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($ally->Id, $targeted[0]->targetId, 'target');
+                Assert::same($scheme->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterDestroyed::class), 'no destroy yet');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
+                Assert::same(['characterChosen'], $world->game->gamestate->transitions, 'nextState');
+            },
+
+            'surviving CharacterTargeted destroys performer, wounds target, resolves' => function () {
+                $world = new TestWorld();
+                [$scheme, $action, $performer, $ally] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $ally->Id;
+                $targeted->sourceId = $scheme->Id;
+                $targeted->batchId = 77;
+                $targeted->canceled = false;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
                 $destroys = $world->theah->queuedOfType(EventCharacterDestroyed::class);
                 Assert::count(1, $destroys, 'destroy');
                 Assert::same($performer->Id, $destroys[0]->characterId, 'performer destroyed');
+                Assert::same(77, $destroys[0]->batchId, 'destroy shares batch');
 
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'wound');
                 Assert::same($ally->Id, $wounds[0]->characterId, 'ally wounded');
+                Assert::same($action->Id, $wounds[0]->abilityId, 'ability');
+                Assert::same(77, $wounds[0]->batchId, 'wound shares batch');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['characterChosen'], $world->game->gamestate->transitions, 'nextState');
+            },
+
+            'canceled CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                [, $action, , $ally] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $ally->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'no destroy / wound / resolve');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, , $ally] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = 'other';
+                $targeted->targetId = $ally->Id;
+                $targeted->canceled = false;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
         ];
     }

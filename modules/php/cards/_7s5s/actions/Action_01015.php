@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 
@@ -64,6 +65,36 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $scheme = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "01015", $this->Id);
             $event->queueEvent($transitionEvent);            
+        }
+
+        // WHY: Destroy + wound + resolve are ALL resolution effects of the action, so all are
+        // gated on the targeting surviving. If targeting is canceled, the performer must not be
+        // destroyed while the wound is stripped.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $scheme = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            $performerId = $theah->game->globals->get(Game::CHOSEN_PERFORMER);
+            $performer = $theah->getCharacterById($performerId);
+            if ($scheme === null || $target === null || $performer === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            $performer->unEquipAllAttachments($theah);
+            $destroyEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $scheme->getInjectCode());
+            $destroyEvent->batchId = $batchId;
+            $theah->queueEvent($destroyEvent);
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $batchId;
+            $theah->queueEvent($woundEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -127,18 +158,24 @@ class Action_01015 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 throw new UserException($errorMessage);
             }
 
-            $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
-            $performer = $game->theah->getCharacterById($performerId);
+            $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($scheme->ControllerId),
+                "card_inject_code" => $scheme->getInjectCode(),
+                "character_inject_code" => $character->getInjectCode(),
+            ]);
 
-            $performer->unEquipAllAttachments($game->theah);
-            $destroyEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $scheme->getInjectCode());
-            $game->theah->queueEvent($destroyEvent);
-
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $scheme->Id, 1, $scheme->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($woundEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Destroy performer + wound + ActionResolved emit from
+            // handleEvent only when EventCharacterTargeted is not canceled (Cloud Bottle / UL / Maryam).
+            // Queuing them beside the pick meant "when targeted" reactions never saw this action.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $scheme->ControllerId,
+                $character->Id,
+                $scheme->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

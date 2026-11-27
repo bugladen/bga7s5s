@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01194 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -66,6 +67,30 @@ class Action_01194 extends CharacterAction implements IAbilityThatTargetsCharact
         {
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01194", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Wound only when EventCharacterTargeted survives. Cloud Bottle / UL / Maryam
+        // cancel that hook. The attachment unequip + discard is the COST and stays in
+        // actFromActionWithId (always applies).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $adelheide = $this->getOwningCharacter($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($adelheide === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $adelheide->Id, 1, $adelheide->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $batchId;
+            $theah->eventCheck($woundEvent);
+            $theah->queueEvent($woundEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($adelheide->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -176,16 +201,22 @@ class Action_01194 extends CharacterAction implements IAbilityThatTargetsCharact
             $discardEvent = EventFactory::createAttachmentDiscardedFromPlayEvent($attachment, $adelheide->Id, $asEffect = false);
             $game->theah->eventCheck($discardEvent);
 
-            //Wound the target character
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($targetCharacter->Id, $adelheide->Id, 1, $adelheide->getInjectCode(), $this->Id);
-            $game->theah->eventCheck($woundEvent);
-
+            // Cost: unequip + discard always happen.
             $game->theah->queueEvent($unequipEvent);
             $game->theah->queueEvent($discardEvent);
-            $game->theah->queueEvent($woundEvent);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($adelheide->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Wound + ActionResolved emit from handleEvent only when
+            // EventCharacterTargeted is not canceled (01160 / Vulture seat).
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $adelheide->ControllerId,
+                $targetCharacter->Id,
+                $adelheide->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

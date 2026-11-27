@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 // Covert Action: Send a Bureaucracy or Discovery in your discard pile to The Locker •
@@ -115,6 +116,11 @@ class Action_05Serenissima extends CharacterAction implements IAbilityThatTarget
             $owner = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "05Serenissima", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargeted($event);
         }
     }
 
@@ -234,16 +240,67 @@ class Action_05Serenissima extends CharacterAction implements IAbilityThatTarget
                 throw new UserException($errorMessage);
             }
 
+            // WHY: Permission pre-check stays at the pick so a veto still surfaces to the player
+            // here (a throw inside the survive hook would crash event dispatch). The event
+            // actually queued is rebuilt in handleEvent.
+            $game->theah->eventCheck(EventFactory::createCardEngardedEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            ));
+
+            // WHY: Fire targeting alone here. Locker (the • cost), remove-from-discard,
+            // En Garde and ActionResolved emit from handleEvent only when EventCharacterTargeted
+            // survives (Cloud Bottle / UL cancel it) — gated with the effect so a canceled
+            // hook does not permanently lose a discard card for nothing (01015 seat).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
+
+            $game->gamestate->nextState("characterChosen");
+        }
+    }
+
+    private function resolveTargeted(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $game = $theah->game;
+        $owner = $this->getOwningCharacter($theah);
+        $target = $theah->getCharacterById($event->targetId);
+        if ($owner === null || $target === null)
+        {
+            return;
+        }
+
+        $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+        $discardCardId = (int)$game->globals->get(Game::CHOSEN_CARD);
+        $discardCard = $theah->getCardById($discardCardId) ?? $game->getCardObjectFromDb($discardCardId);
+        $discardName = $game->getPlayerDiscardDeckName($owner->ControllerId);
+
+        // WHY: If the cost card left the discard pile while targeting resolved, the cost cannot
+        // be paid — skip the effect but still resolve the action so the turn does not stall.
+        if ($discardCard !== null && $discardCard->Location == $discardName)
+        {
             $game->notify->all("message", '${owner_inject_code}: ${card_inject_code} is sent to The Locker from the discard pile.', [
                 "owner_inject_code" => $owner->getInjectCode(),
                 "card_inject_code" => $discardCard->getInjectCode(),
             ]);
 
             $removeEvent = EventFactory::createCardRemovedFromPlayerDiscardPileEvent($discardCard->OwnerId, $discardCard->Id);
-            $game->theah->queueEvent($removeEvent);
+            $removeEvent->batchId = $batchId;
+            $theah->queueEvent($removeEvent);
 
             $lockerEvent = EventFactory::createCardSentToLockerEvent($discardCard->OwnerId, $discardCard->Id);
-            $game->theah->queueEvent($lockerEvent);
+            $lockerEvent->batchId = $batchId;
+            $theah->queueEvent($lockerEvent);
 
             // WHY createCardEngardedEvent (not Engaged): Engarde sets Engaged=false (02051).
             // Action_01152a incorrectly uses Engaged for an En Garde effect — do not copy it.
@@ -253,13 +310,11 @@ class Action_05Serenissima extends CharacterAction implements IAbilityThatTarget
                 $owner->Id,
                 $this->Id
             );
-            $game->theah->eventCheck($engardeEvent);
-            $game->theah->queueEvent($engardeEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
-
-            $game->gamestate->nextState("characterChosen");
+            $engardeEvent->batchId = $batchId;
+            $theah->queueEvent($engardeEvent);
         }
+
+        // ActionResolved stays unbatched (01160 convention).
+        $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
     }
 }

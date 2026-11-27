@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04042 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -135,6 +136,36 @@ class Action_04042 extends CharacterAction implements IAbilityThatTargetsCharact
             $owner = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04042", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $game = $theah->game;
+            $owner = $this->getOwningCharacter($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            $location = (string)$game->globals->get(Game::CHOSEN_LOCATION);
+            if ($owner === null || $target === null || $location === '')
+            {
+                return;
+            }
+
+            // WHY engage=false: En Garde is only a precondition; printed text has no Engage cost.
+            $moveEvent = EventFactory::createCardMovingEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $target->Location,
+                $location,
+                $engage = false,
+                $owner->Id,
+                $this->Id
+            );
+            $moveEvent->batchId = $event->batchId ?? $game->getNextEventBatchId();
+            $theah->eventCheck($moveEvent);
+            $theah->queueEvent($moveEvent);
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
         }
     }
 
@@ -264,20 +295,14 @@ class Action_04042 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($game->translate("Location must be a City location you do not control."));
             }
 
-            // WHY engage=false: En Garde is only a precondition; printed text has no Engage cost.
-            $moveEvent = EventFactory::createCardMovingEvent(
-                $owner->ControllerId,
-                $target->Id,
-                $target->Location,
-                $location,
-                $engage = false,
-                $owner->Id,
-                $this->Id
-            );
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
+            // WHY: Targeting fires at the FINAL confirm (destination), not at the character pick:
+            // the character pick routes straight into the `_2` destination GameState (with Back),
+            // so firing earlier would leave a stale targeting event if the player backs out.
+            // The destination rides CHOSEN_LOCATION so handleEvent can emit the move only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL cancel it). Same seat as 04028.
+            $game->globals->set(Game::CHOSEN_LOCATION, $location);
 
-            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} moves ${character_inject_code} to ${location_name}.'), [
+            $game->notify->all("message", clienttranslate('${card_inject_code}: ${player_name} targets ${character_inject_code}, moving them to ${location_name}.'), [
                 "i18n" => ["location_name"],
                 "card_inject_code" => $owner->getInjectCode(),
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
@@ -285,8 +310,10 @@ class Action_04042 extends CharacterAction implements IAbilityThatTargetsCharact
                 "location_name" => $location,
             ]);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("locationChosen");
         }

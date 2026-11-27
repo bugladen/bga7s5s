@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04042;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 
 class Action_04042_Test extends TestCase
 {
@@ -75,7 +76,36 @@ class Action_04042_Test extends TestCase
                 Assert::true($blocked, 'your location');
 
                 $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04042_2, '', [Game::LOCATION_CITY_BAZAAR]);
+                // Targeting fires at the destination confirm; the move waits for it to survive.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+
+                // WHY: canceled hook (Cloud Bottle / UL) must not move or resolve.
+                $canceled = clone $targeted[0];
+                $canceled->canceled = true;
+                $canceled->theah = $world->theah;
+                $world->theah->takeQueuedEvents();
+                $action->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedEvents, 'canceled queues nothing');
+
+                $foreign = clone $targeted[0];
+                $foreign->abilityId = 'someone-else';
+                $foreign->theah = $world->theah;
+                $action->handleEvent($foreign);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ability ignored');
+
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
                 $move = $world->theah->queuedOfType(EventCardMoving::class)[0];
+                Assert::same($hook->batchId, $move->batchId, 'move shares batch');
                 Assert::false($move->engage, 'en garde was only a precondition');
                 Assert::same(1, $move->initiatingPlayerId, 'kaj controller');
                 Assert::same(Game::LOCATION_CITY_BAZAAR, $move->toLocation, 'bazaar');

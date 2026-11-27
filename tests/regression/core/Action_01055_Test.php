@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IRangedAbility;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRangedAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -203,7 +204,25 @@ class Action_01055_Test extends TestCase
                     [Game::LOCATION_CITY_FORUM]
                 );
 
+                // Targeting fires at the destination confirm; nothing else beside it.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventRangedAbilityPlayed::class), 'no ranged beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+                Assert::same(['locationChosen'], $world->game->gamestate->transitions, 'transition');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::same($hook->batchId, $moves[0]->batchId, 'move shares batch');
                 Assert::count(1, $moves, 'move');
                 Assert::same($foe->Id, $moves[0]->cardId, 'target moves');
                 Assert::same(Game::LOCATION_CITY_DOCKS, $moves[0]->fromLocation, 'from');
@@ -219,7 +238,35 @@ class Action_01055_Test extends TestCase
                 Assert::same(Game::LOCATION_CITY_FORUM, $ranged[0]->targetLocation, 'location');
 
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['locationChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no move, no Ranged played, no resolve.
+            'canceled CharacterTargeted does not move, play ranged or resolve' => function () {
+                $world = new TestWorld();
+                [, $action, $performer, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_FORUM);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, $performer, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_FORUM);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'step 2 rejects a non-adjacent location' => function () {

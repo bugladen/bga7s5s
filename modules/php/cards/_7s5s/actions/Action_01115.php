@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01115 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -66,6 +67,27 @@ class Action_01115 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01115", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            // WHY CHOSEN_PERFORMER: still set while the targeting event dispatches.
+            $performer = $theah->getCharacterById((int)$theah->game->globals->get(Game::CHOSEN_PERFORMER));
+            if ($owner === null || $character === null || $performer === null)
+            {
+                return;
+            }
+
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $character->Id, $character->Location, $performer->Location, $engage = false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $theah->eventCheck($moveEvent);
+            $theah->queueEvent($moveEvent);
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($performer->ControllerId));
         }
     }
 
@@ -136,12 +158,12 @@ class Action_01115 extends RiskCityAction implements IAbilityThatTargetsCharacte
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $character->Id, $character->Location, $performer->Location, $engage = false, $owner->Id, $this->Id);
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. The move + ActionResolved emit from handleEvent
+            // only when EventCharacterTargeted survives (Cloud Bottle / UL cancel it).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($performer->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

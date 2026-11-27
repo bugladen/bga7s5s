@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02025;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownMovingBetweenLocations;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
@@ -50,6 +51,15 @@ class Action_02025_Test extends TestCase
         /** @var Action_02025 $action */
         $action = $scheme->getActions()[0];
         return [$scheme, $action, $diplomat, $foe];
+    }
+
+    /** Deliver the queued targeting hook as a surviving (not canceled) event. */
+    private function survive(TestWorld $world, Action_02025 $action, EventCharacterTargeted $hook): void
+    {
+        $world->theah->takeQueuedEvents();
+        $hook->canceled = false;
+        $hook->theah = $world->theah;
+        $action->handleEvent($hook);
     }
 
     public function tests(): array
@@ -163,7 +173,21 @@ class Action_02025_Test extends TestCase
                     [Game::LOCATION_CITY_FORUM]
                 );
 
+                // Targeting fires at the destination confirm; nothing else beside it.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventRenownMovingBetweenLocations::class), 'no renown beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
+                Assert::same(['locationChosen'], $world->game->gamestate->transitions, 'named');
+
+                $this->survive($world, $action, $targeted[0]);
+
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::same($targeted[0]->batchId, $moves[0]->batchId, 'moves share the targeting batch');
                 Assert::count(2, $moves, 'two moves');
                 $moveIds = array_map(fn($m) => $m->cardId, $moves);
                 Assert::true(in_array($foe->Id, $moveIds, true), 'foe');
@@ -176,7 +200,36 @@ class Action_02025_Test extends TestCase
                 Assert::count(1, $world->theah->queuedOfType(EventRenownRemovedFromLocation::class), 'removed');
                 Assert::count(1, $world->theah->queuedOfType(EventRenownAddedToLocation::class), 'added');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['locationChosen'], $world->game->gamestate->transitions, 'named');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no moves, no Renown shift, no resolve.
+            'canceled CharacterTargeted does nothing' => function () {
+                $world = new TestWorld();
+                [, $action, $diplomat, $foe] = $this->scene($world);
+                $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $diplomat->Id);
+                $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_FORUM);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, $diplomat, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $diplomat->Id);
+                $world->game->globals->set(Game::CHOSEN_LOCATION, Game::LOCATION_CITY_FORUM);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'act location skips Renown move when source has zero' => function () {
@@ -192,6 +245,8 @@ class Action_02025_Test extends TestCase
                     'highDramaPlayerTurn_02025_2',
                     [Game::LOCATION_CITY_FORUM]
                 );
+
+                $this->survive($world, $action, $world->theah->queuedOfType(EventCharacterTargeted::class)[0]);
 
                 Assert::count(2, $world->theah->queuedOfType(EventCardMoving::class), 'moves');
                 Assert::count(0, $world->theah->queuedOfType(EventRenownMovingBetweenLocations::class), 'no renown');

@@ -24,6 +24,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01194_Test extends TestCase
@@ -46,6 +47,18 @@ class Action_01194_Test extends TestCase
         /** @var Action_01194 $action */
         $action = $adelheide->getActions()[0];
         return [$adelheide, $action, $att, $foe];
+    }
+
+    private function targeted(TestWorld $world, Action_01194 $action, _01194 $adelheide, GenericCharacter $target, bool $canceled): EventCharacterTargeted
+    {
+        $targeted = new EventCharacterTargeted();
+        $targeted->abilityId = $action->Id;
+        $targeted->targetId = $target->Id;
+        $targeted->sourceId = $adelheide->Id;
+        $targeted->batchId = 77;
+        $targeted->canceled = $canceled;
+        $targeted->theah = $world->theah;
+        return $targeted;
     }
 
     private function equip(TestWorld $world, Character $host, Attachment $attachment): Attachment
@@ -196,15 +209,44 @@ class Action_01194_Test extends TestCase
                 Assert::same($att->Id, $discards[0]->cardId, 'card');
                 Assert::false($discards[0]->asEffect, 'cost');
 
+                // WHY: unequip + discard are the COST; wound + ActionResolved wait for
+                // EventCharacterTargeted so Cloud Bottle / UL can cancel.
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($adelheide->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+
+                Assert::same(['characterChosen'], $world->game->gamestate->transitions, 'done');
+                Assert::count(0, $world->theah->queuedOfType(EventCardAddedToCityDiscardPile::class), 'not city');
+            },
+
+            'surviving CharacterTargeted wounds target and resolves' => function () {
+                $world = new TestWorld();
+                [$adelheide, $action, , $foe] = $this->scene($world);
+
+                $action->handleEvent($this->targeted($world, $action, $adelheide, $foe, false));
+
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'wound');
                 Assert::same($foe->Id, $wounds[0]->characterId, 'target');
                 Assert::same($adelheide->Id, $wounds[0]->sourceId, 'source');
                 Assert::same(1, $wounds[0]->wounds, '1 wound');
-
+                Assert::same(77, $wounds[0]->batchId, 'shared batch');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['characterChosen'], $world->game->gamestate->transitions, 'done');
-                Assert::count(0, $world->theah->queuedOfType(EventCardAddedToCityDiscardPile::class), 'not city');
+            },
+
+            'canceled CharacterTargeted queues no wound' => function () {
+                $world = new TestWorld();
+                [$adelheide, $action, , $foe] = $this->scene($world);
+
+                $action->handleEvent($this->targeted($world, $action, $adelheide, $foe, true));
+
+                Assert::count(0, $world->theah->queuedEvents, 'UL / Cloud Bottle cancel');
             },
 
             'step 1 refuses an attachment Adelheide does not have' => function () {

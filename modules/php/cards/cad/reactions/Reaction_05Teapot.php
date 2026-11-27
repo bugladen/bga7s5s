@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -154,44 +155,85 @@ class Reaction_05Teapot extends RiskReaction implements ISorcererAbility, IAbili
                 return;
             }
 
-            $game->notify->all('message', '${reaction_inject_code}: ${player_name} used Reaction to move ${character_inject_code} Home.', [
+            $game->notify->all('message', '${reaction_inject_code}: ${player_name} uses Reaction targeting ${character_inject_code}.', [
                 'reaction_inject_code' => $owner->getInjectCode(),
                 'player_name' => $game->getPlayerNameById($owner->ControllerId),
                 'character_inject_code' => $target->getInjectCode(),
             ]);
 
-            $event->theah->queueEvent(EventFactory::createSorcererAbilityStartEvent(
-                $owner->ControllerId,
-                $owner->Id,
-                $this->Id,
-                $performer->Id,
-                $target->Id,
-                $target->Location
-            ));
-
-            // WHY engage = false: printed text is Move only (no Engage).
-            // WHY sourceId/abilityId: lets "redirect a targeted ability" effects (Cross of the
-            // Martyrs) recognise this as a targeted ability.
-            $event->theah->queueEvent(EventFactory::createCardMovingEvent(
+            // WHY: Fire targeting alone here. Sorcerer start, the Home move and Sorcerer played emit
+            // from the EventCharacterTargeted branch below only when targeting survives (Cloud
+            // Bottle / UL / Maryam). performerId / toLocation / chosenTargetId therefore stay alive
+            // until that hook runs; it resets them on BOTH survive and cancel so a canceled
+            // targeting leaves no stale sticky state (Reaction_04058 seat). setUsed stays here:
+            // the Risk is already paid, so it is spent whether or not the hook survives.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
                 $owner->ControllerId,
                 $target->Id,
-                $target->Location,
-                Game::LOCATION_PLAYER_HOME,
-                false,
                 $owner->Id,
                 $this->Id
-            ));
-
-            $event->theah->queueEvent(EventFactory::createSorcererAbilityPlayedEvent(
-                $owner->ControllerId,
-                $owner->Id,
-                $this->Id,
-                $performer->Id,
-                $target->Id,
-                $target->Location
-            ));
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $event->theah->eventCheck($targetedEvent);
+            $event->theah->queueEvent($targetedEvent);
 
             $this->setUsed($event->theah, true);
+            $owner->IsUpdated = true;
+        }
+
+        // WHY: This branch is deliberately NOT behind isAvailable() — setUsed already ran at the
+        // post-pay step above, so isAvailable() is false by the time the hook is delivered
+        // (Reaction_05Quack seat). Matched on abilityId + the stored target so another card's
+        // targeting event cannot trigger it.
+        if ($event instanceof EventCharacterTargeted
+            && $event->abilityId == $this->Id
+            && $this->chosenTargetId != 0
+            && $this->chosenTargetId == $event->targetId)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $performer = $theah->getCharacterById($this->performerId);
+            $target = $theah->getCharacterById($event->targetId);
+
+            if (! $event->canceled && $owner !== null && $performer !== null && $target !== null)
+            {
+                $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+                $theah->queueEvent(EventFactory::createSorcererAbilityStartEvent(
+                    $owner->ControllerId,
+                    $owner->Id,
+                    $this->Id,
+                    $performer->Id,
+                    $target->Id,
+                    $target->Location
+                ));
+
+                // WHY engage = false: printed text is Move only (no Engage).
+                // WHY sourceId/abilityId: lets "redirect a targeted ability" effects (Cross of the
+                // Martyrs) recognise this as a targeted ability.
+                $moveEvent = EventFactory::createCardMovingEvent(
+                    $owner->ControllerId,
+                    $target->Id,
+                    $target->Location,
+                    Game::LOCATION_PLAYER_HOME,
+                    false,
+                    $owner->Id,
+                    $this->Id
+                );
+                $moveEvent->batchId = $batchId;
+                $theah->queueEvent($moveEvent);
+
+                $theah->queueEvent(EventFactory::createSorcererAbilityPlayedEvent(
+                    $owner->ControllerId,
+                    $owner->Id,
+                    $this->Id,
+                    $performer->Id,
+                    $target->Id,
+                    $target->Location
+                ));
+            }
+
+            // WHY: Reset on both paths so a canceled targeting does not leave stale sticky state.
             $this->resetState($owner);
         }
     }

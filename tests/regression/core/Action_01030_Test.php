@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01030;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventPressureOccuring;
@@ -78,7 +79,7 @@ class Action_01030_Test extends TestCase
                 Assert::same('01030', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'transition');
             },
 
-            'act engages performer and queues sorcerer start plus 01030_2' => function () {
+            'act queues only CharacterTargeted (no engage / start / stage yet)' => function () {
                 $world = new TestWorld();
                 $risk = $world->placeCard(new _01030(), Game::LOCATION_HAND, 1);
                 $strega = $world->placeCharacter(
@@ -98,10 +99,87 @@ class Action_01030_Test extends TestCase
                     $foe->Id
                 );
 
-                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
-                Assert::same($strega->Id, $world->theah->queuedOfType(EventCardEngaged::class)[0]->cardId, 'engage performer');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage yet');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'no start yet');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no stage yet');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET), 'no stale target before survive');
+            },
+
+            'surviving CharacterTargeted engages performer, starts sorcerer, queues 01030_2' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01030(), Game::LOCATION_HAND, 1);
+                $strega = $world->placeCharacter(
+                    new GenericCharacter('Strega', ['Sorcerer', 'Strega']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $strega->Id);
+
+                /** @var Action_01030 $action */
+                $action = $risk->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $risk->Id;
+                $targeted->batchId = 77;
+                $targeted->canceled = false;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target set on survive');
+                $engage = $world->theah->queuedOfType(EventCardEngaged::class);
+                Assert::same($strega->Id, $engage[0]->cardId, 'engage performer');
+                Assert::same(77, $engage[0]->batchId, 'engage shares batch');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'sorcerer start');
-                Assert::same('01030_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'next');
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::same('01030_2', $transitions[0]->transition, 'next');
+                Assert::same(77, $transitions[0]->batchId, 'stage shares batch');
+            },
+
+            'canceled CharacterTargeted queues nothing and leaves no target' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01030(), Game::LOCATION_HAND, 1);
+                $strega = $world->placeCharacter(
+                    new GenericCharacter('Strega', ['Sorcerer', 'Strega']),
+                    Game::LOCATION_CITY_DOCKS,
+                    1
+                );
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $strega->Id);
+
+                /** @var Action_01030 $action */
+                $action = $risk->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET), 'no stale target');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _01030(), Game::LOCATION_HAND, 1);
+                /** @var Action_01030 $action */
+                $action = $risk->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = 'someone-else';
+                $targeted->targetId = 1;
+                $targeted->canceled = false;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'stateFromAction queues pressure with Pull the Strand flag and sorcerer played' => function () {

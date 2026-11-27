@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCharacters;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\_02057;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\maneuvers\Maneuver_02057;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -40,6 +41,17 @@ class Maneuver_02057_Test extends TestCase
         /** @var Maneuver_02057 $maneuver */
         $maneuver = $risk->getManeuvers()[0];
         return [$risk, $maneuver, $actor, $adversary, $bystander];
+    }
+
+    private function targeted(TestWorld $world, Maneuver_02057 $maneuver, GenericCharacter $target, _02057 $risk, int $batchId): EventCharacterTargeted
+    {
+        $event = new EventCharacterTargeted();
+        $event->abilityId = $maneuver->Id;
+        $event->targetId = $target->Id;
+        $event->sourceId = $risk->Id;
+        $event->batchId = $batchId;
+        $event->theah = $world->theah;
+        return $event;
     }
 
     public function tests(): array
@@ -107,22 +119,56 @@ class Maneuver_02057_Test extends TestCase
                 Assert::false($away, 'location');
             },
 
-            'wounds a Brute twice and anyone else once' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before any wound is emitted.
+            'pick queues only EventCharacterTargeted' => function () {
                 $world = new TestWorld();
                 [$risk, $maneuver, , , $bystander] = $this->scene($world);
                 $maneuver->actFromManeuverWithId($world->game, States::DUEL_RESOLVE_MANEUVER_02057, 'duelResolveManeuver_02057', $bystander->Id);
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($bystander->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($maneuver->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::same([null], $world->game->gamestate->transitions, 'empty transition');
+            },
+
+            'surviving CharacterTargeted wounds a Brute twice and anyone else once, sharing the batch' => function () {
+                $world = new TestWorld();
+                [$risk, $maneuver, , , $bystander] = $this->scene($world);
+                $maneuver->handleEvent($this->targeted($world, $maneuver, $bystander, $risk, 41));
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'once');
                 Assert::same($bystander->Id, $wounds[0]->characterId, 'target');
                 Assert::same($risk->Id, $wounds[0]->sourceId, 'source');
                 Assert::same($maneuver->Id, $wounds[0]->abilityId, 'ability');
-                Assert::same([null], $world->game->gamestate->transitions, 'empty transition');
+                Assert::same(41, $wounds[0]->batchId, 'shares batch');
 
                 $world->theah->takeQueuedEvents();
-                $world->game->gamestate->transitions = [];
                 $bystander->addTrait($world->game, 'Brute');
-                $maneuver->actFromManeuverWithId($world->game, States::DUEL_RESOLVE_MANEUVER_02057, 'duelResolveManeuver_02057', $bystander->Id);
-                Assert::count(2, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'brute again');
+                $maneuver->handleEvent($this->targeted($world, $maneuver, $bystander, $risk, 42));
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::count(2, $wounds, 'brute again');
+                Assert::same(42, $wounds[0]->batchId, 'first shares batch');
+                Assert::same(42, $wounds[1]->batchId, 'second shares batch');
+            },
+
+            'canceled or foreign CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                [$risk, $maneuver, , , $bystander] = $this->scene($world);
+
+                $canceled = $this->targeted($world, $maneuver, $bystander, $risk, 5);
+                $canceled->canceled = true;
+                $maneuver->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedEvents, 'canceled');
+
+                $other = $this->targeted($world, $maneuver, $bystander, $risk, 6);
+                $other->abilityId = 'other';
+                $maneuver->handleEvent($other);
+                Assert::count(0, $world->theah->queuedEvents, 'other ability');
             },
 
             'rejects a missing character or a participant' => function () {

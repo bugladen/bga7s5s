@@ -19,6 +19,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01171_Test extends TestCase
@@ -45,6 +46,17 @@ class Action_01171_Test extends TestCase
         /** @var Action_01171 $action */
         $action = $risk->getActions()[0];
         return [$risk, $action, $performer, $merc];
+    }
+
+    private function targeted(TestWorld $world, Action_01171 $action, GenericCharacter $target, _01171 $risk, int $batchId): EventCharacterTargeted
+    {
+        $event = new EventCharacterTargeted();
+        $event->abilityId = $action->Id;
+        $event->targetId = $target->Id;
+        $event->sourceId = $risk->Id;
+        $event->batchId = $batchId;
+        $event->theah = $world->theah;
+        return $event;
     }
 
     public function tests(): array
@@ -167,10 +179,11 @@ class Action_01171_Test extends TestCase
                 );
             },
 
-            'unengaged Mercenary is engaged (not moved Home)' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before the engage / Home move is emitted.
+            'pick queues only EventCharacterTargeted' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $merc] = $this->scene($world);
-                $merc->Engaged = false;
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
                 $action->actFromActionWithId(
@@ -179,33 +192,47 @@ class Action_01171_Test extends TestCase
                     'highDramaPlayerTurn_01171',
                     $merc->Id
                 );
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($merc->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage yet');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no Home yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
+                // WHY: act calls bare nextState() — FakeGamestate records null.
+                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+            },
+
+            'surviving CharacterTargeted engages an unengaged Mercenary (not moved Home)' => function () {
+                $world = new TestWorld();
+                [$risk, $action, , $merc] = $this->scene($world);
+                $merc->Engaged = false;
+
+                $action->handleEvent($this->targeted($world, $action, $merc, $risk, 77));
 
                 $engages = $world->theah->queuedOfType(EventCardEngaged::class);
                 Assert::count(1, $engages, 'engage');
                 Assert::same($merc->Id, $engages[0]->cardId, 'merc');
                 Assert::same($risk->Id, $engages[0]->sourceId, 'source');
                 Assert::same($action->Id, $engages[0]->abilityId, 'ability');
+                Assert::same(77, $engages[0]->batchId, 'shares batch');
                 Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no Home');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                // WHY: act calls bare nextState() — FakeGamestate records null.
-                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
             },
 
-            'already-engaged Mercenary moves Home instead of engaging' => function () {
+            'surviving CharacterTargeted moves an already-engaged Mercenary Home instead of engaging' => function () {
                 $world = new TestWorld();
-                [$risk, $action, $performer, $merc] = $this->scene($world);
+                [$risk, $action, , $merc] = $this->scene($world);
                 $merc->Engaged = true;
-                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
-                $action->actFromActionWithId(
-                    $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_01171,
-                    'highDramaPlayerTurn_01171',
-                    $merc->Id
-                );
+                $action->handleEvent($this->targeted($world, $action, $merc, $risk, 88));
 
                 Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage');
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::same(88, $moves[0]->batchId, 'shares batch');
                 Assert::count(1, $moves, 'Home');
                 Assert::same($merc->Id, $moves[0]->cardId, 'merc');
                 Assert::same(Game::LOCATION_CITY_DOCKS, $moves[0]->fromLocation, 'from');
@@ -213,6 +240,21 @@ class Action_01171_Test extends TestCase
                 Assert::false($moves[0]->engage, 'no engage on move');
                 Assert::same($risk->Id, $moves[0]->sourceId, 'source');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            'canceled or foreign CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                [$risk, $action, , $merc] = $this->scene($world);
+
+                $canceled = $this->targeted($world, $action, $merc, $risk, 5);
+                $canceled->canceled = true;
+                $action->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedEvents, 'canceled');
+
+                $other = $this->targeted($world, $action, $merc, $risk, 6);
+                $other->abilityId = 'other';
+                $action->handleEvent($other);
+                Assert::count(0, $world->theah->queuedEvents, 'other ability');
             },
 
             'refuses a non-Mercenary at the same location' => function () {

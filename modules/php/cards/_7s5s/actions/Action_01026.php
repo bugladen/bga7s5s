@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01026 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -55,6 +56,41 @@ class Action_01026 extends RiskAction implements IAbilityThatTargetsCharacters
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01026", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Manipulate (engage, or send Home if already engaged) only when
+        // EventCharacterTargeted survives. Cloud Bottle / UL / Maryam cancel that hook.
+        // Destroying the performer is the COST and stays in actFromActionWithId — it always
+        // happens even if the targeting is canceled (a cost, not an effect).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $character = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            // WHY: ControllerId from the Risk (performer may already be destroyed by now and
+            // is not guaranteed to still resolve).
+            if (! $character->Engaged)
+            {
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+                $engageEvent->batchId = $batchId;
+                $theah->queueEvent($engageEvent);
+            }
+            else
+            {
+                $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+                $moveEvent->batchId = $batchId;
+                $theah->queueEvent($moveEvent);
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -121,19 +157,18 @@ class Action_01026 extends RiskAction implements IAbilityThatTargetsCharacters
             $destroyedEvent = EventFactory::createCharacterDestroyedEvent($performer->ControllerId, $performer->Id, $owner->getInjectCode());
             $game->theah->queueEvent($destroyedEvent);
 
-            if (! $character->Engaged)
-            {
-                $engageEvent = EventFactory::createCardEngagedEvent($performer->ControllerId, $character->Id, $owner->Id, $this->Id);
-                $game->theah->queueEvent($engageEvent);
-            }
-            else
-            {
-                $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
-                $game->theah->queueEvent($moveEvent);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Destroy performer above is the cost. Manipulate + ActionResolved emit from
+            // handleEvent only when EventCharacterTargeted is not canceled.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

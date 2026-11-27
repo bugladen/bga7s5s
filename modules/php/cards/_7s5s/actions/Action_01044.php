@@ -12,10 +12,14 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
+    // 1 = engage the target, 2 = move the target Home; set at _3 confirm, read by the survive hook.
+    private const MANIPULATION = "action01044Manipulation";
+
     public function __construct()
     {
         parent::__construct();
@@ -201,42 +205,15 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
                 $attachmentId = $game->globals->get(Game::CHOSEN_ATTACHMENT);
                 $attachment = $game->theah->getAttachmentById($attachmentId);
 
-                $owner = $this->getOwningCard($game->theah);
-
-                $aam = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
-                $game->theah->eventCheck($event);
-                $game->theah->queueEvent($event);
-
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $character->Id, $aam->Id, $this->Id);
-                $game->theah->eventCheck($event);
-                $game->theah->queueEvent($event);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
-
+                $this->queueAttachmentEngageCost($game, $this->getOwningCard($game->theah));
+                $this->queueCharacterTargeted($game, $character, 1);
             }
 
             //Chooses to send the character home
             if ($id == 2)
             {
-                $attachmentId = $game->globals->get(Game::CHOSEN_ATTACHMENT);
-                $attachment = $game->theah->getAttachmentById($attachmentId);
-
-                $owner = $this->getOwningCard($game->theah);
-
-                $aam = $this->getOwningCard($game->theah);
-                $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $aam->Id, $this->Id);
-                $game->theah->eventCheck($event);
-                $game->theah->queueEvent($event);
-
-                $movedHome = EventFactory::createCardMovingEvent($game->getActivePlayerId(), $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $aam->Id, $this->Id);
-                $game->theah->eventCheck($movedHome);
-                $game->theah->queueEvent($movedHome);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
-
+                $this->queueAttachmentEngageCost($game, $this->getOwningCard($game->theah));
+                $this->queueCharacterTargeted($game, $character, 2);
             }
 
             $game->gamestate->nextState("manipulationChosen");
@@ -283,5 +260,81 @@ class Action_01044 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01044", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        // WHY: Engage-them / move-Home only when EventCharacterTargeted survives. Cloud Bottle /
+        // UL / Maryam cancel that hook — resolving beside the pick meant "when targeted"
+        // reactions never saw this Action (same seat as Bleed Out 01160).
+        // The Engage/Home choice is read from a global stashed at pick; cleared on BOTH
+        // survive and cancel so a canceled hook cannot leave a stale choice behind.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id)
+        {
+            $game = $event->theah->game;
+            $manipulation = (int)$game->globals->get(self::MANIPULATION, 0);
+            $game->globals->set(self::MANIPULATION, 0);
+
+            if ($event->canceled)
+            {
+                return;
+            }
+
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            if ($manipulation == 1)
+            {
+                $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+                $engageEvent->batchId = $batchId;
+                $event->theah->eventCheck($engageEvent);
+                $event->theah->queueEvent($engageEvent);
+            }
+            elseif ($manipulation == 2)
+            {
+                $movedHome = EventFactory::createCardMovingEvent($owner->ControllerId, $character->Id, $character->Location, Game::LOCATION_PLAYER_HOME, false, $owner->Id, $this->Id);
+                $movedHome->batchId = $batchId;
+                $event->theah->eventCheck($movedHome);
+                $event->theah->queueEvent($movedHome);
+            }
+
+            // ActionResolved stays unbatched (01160) so a racing deleteEventBatch cannot strip it.
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
+        }
+    }
+
+    // WHY: "Engage your performer's attachment •" is a cost paid at the confirm click. It is
+    // queued OUTSIDE the targeting batch so a canceled hook does not refund it.
+    private function queueAttachmentEngageCost(Game $game, $owner): void
+    {
+        $attachmentId = $game->globals->get(Game::CHOSEN_ATTACHMENT);
+        $attachment = $game->theah->getAttachmentById($attachmentId);
+
+        $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $attachment->Id, $owner->Id, $this->Id);
+        $game->theah->eventCheck($event);
+        $game->theah->queueEvent($event);
+    }
+
+    // WHY targeting fires at the Engage/Home confirm (not the earlier _2 character pick):
+    // _3 has a Back button to _2, so firing at the pick would let a player re-target and
+    // re-trigger "when targeted" reactions; confirm is the point of no return.
+    private function queueCharacterTargeted(Game $game, Character $character, int $manipulation): void
+    {
+        $owner = $this->getOwningCard($game->theah);
+        $game->globals->set(self::MANIPULATION, $manipulation);
+
+        $targetedEvent = EventFactory::createCharacterTargetedEvent(
+            $owner->ControllerId,
+            $character->Id,
+            $owner->Id,
+            $this->Id
+        );
+        $targetedEvent->batchId = $game->getNextEventBatchId();
+        $game->theah->eventCheck($targetedEvent);
+        $game->theah->queueEvent($targetedEvent);
     }
 }

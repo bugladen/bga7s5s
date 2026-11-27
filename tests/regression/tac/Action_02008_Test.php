@@ -21,6 +21,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\tac\actions\Action_02008;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentEquipping;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
@@ -51,6 +52,17 @@ class Action_02008_Test extends TestCase
         /** @var Action_02008 $action */
         $action = $kiss->getActions()[0];
         return [$kiss, $action, $strega, $discarded, $foe];
+    }
+
+    /** Deliver the queued CharacterTargeted back as a surviving hook (batchId kept). */
+    private function survive(TestWorld $world, Action_02008 $action, $kiss, $foe): EventCharacterTargeted
+    {
+        $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+        $hook = $targeted[count($targeted) - 1];
+        $hook->theah = $world->theah;
+        $hook->canceled = false;
+        $action->handleEvent($hook);
+        return $hook;
     }
 
     public function tests(): array
@@ -197,6 +209,8 @@ class Action_02008_Test extends TestCase
                     $foe->Id
                 );
 
+                $this->survive($world, $action, $kiss, $foe);
+
                 Assert::same(Game::LOCATION_PERMANENTLY_HIDDEN, $discarded->Location, 'original hidden');
                 Assert::count(1, $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class), 'removed');
 
@@ -219,6 +233,70 @@ class Action_02008_Test extends TestCase
                 Assert::count(1, $played, 'sorcery end');
                 Assert::same($kiss->Id, $played[0]->sourceId, 'source');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            'act step 2 queues only CharacterTargeted; cancel leaves the Risk in discard' => function () {
+                $world = new TestWorld();
+                [$kiss, $action, $strega, $discarded, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $strega->Id);
+                $world->game->globals->set(Game::CHOSEN_CARD, $discarded->Id);
+                $discardName = $world->game->getPlayerDiscardDeckName(1);
+
+                $action->actFromActionWithId(
+                    $world->game,
+                    States::HIGH_DRAMA_PLAYER_TURN_02008_2,
+                    'highDramaPlayerTurn_02008_2',
+                    $foe->Id
+                );
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($kiss->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(1, $world->theah->queuedEvents, 'nothing else queued');
+                Assert::same($discardName, $discarded->Location, 'risk still in discard');
+                Assert::count(0, $world->game->createdCardsInLocation, 'no clone yet');
+                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+
+                // Canceled hook: nothing happens.
+                $world->theah->queuedEvents = [];
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $foe->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'cancel queues nothing');
+                Assert::same($discardName, $discarded->Location, 'cancel: risk still in discard');
+                Assert::count(0, $world->game->createdCardsInLocation, 'cancel: no clone');
+
+                // Foreign ability id is ignored.
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ignored');
+                Assert::same($discardName, $discarded->Location, 'foreign: risk still in discard');
+            },
+
+            'survive: equip event shares the targeting batch' => function () {
+                $world = new TestWorld();
+                [$kiss, $action, $strega, $discarded, $foe] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $strega->Id);
+                $world->game->globals->set(Game::CHOSEN_CARD, $discarded->Id);
+
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $foe->Id;
+                $hook->sourceId = $kiss->Id;
+                $hook->batchId = 77;
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::same(77, $world->theah->queuedOfType(EventAttachmentEquipping::class)[0]->batchId, 'equip batch');
+                Assert::same(77, $world->theah->queuedOfType(EventCardRemovedFromPlayerDiscardPile::class)[0]->batchId, 'remove batch');
             },
 
             'act step 2 rejects own character' => function () {

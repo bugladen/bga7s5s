@@ -15,7 +15,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Tests\Harness\TestWorld;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04021;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04028;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04028;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 
 class Action_04028_Test extends TestCase
 {
@@ -52,8 +54,33 @@ class Action_04028_Test extends TestCase
                 Assert::same('characterChosen', end($world->game->gamestate->transitions), 'target click waits');
                 Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move yet');
 
+                // WHY: CharacterTargeted fires at the destination confirm (after all choices, so
+                // Back never strands a stale targeting). Moves come only from the surviving handler.
                 $action->actFromActionWithIds($world->game, States::HIGH_DRAMA_PLAYER_TURN_04028_2, '', [Game::LOCATION_CITY_FORUM]);
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move before targeting resolves');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
+                Assert::same('locationChosen', end($world->game->gamestate->transitions), 'to the hub');
+
+                $canceled = clone $targeted[0];
+                $canceled->canceled = true;
+                $canceled->theah = $world->theah;
+                $action->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'cancel: no move');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'cancel: not resolved');
+
+                $survived = clone $targeted[0];
+                $survived->canceled = false;
+                $survived->theah = $world->theah;
+                $action->handleEvent($survived);
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::same($targeted[0]->batchId, $moves[0]->batchId, 'shared targeting batch');
                 Assert::same($foe->Id, $moves[0]->cardId, 'target first');
                 Assert::same($musketeer->Id, $moves[1]->cardId, 'performer second');
                 Assert::false($moves[0]->engage, 'target not engaged');

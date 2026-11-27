@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatTargetsCharacters
@@ -63,6 +64,11 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01172", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargetedCharacter($event);
         }
     }
 
@@ -136,36 +142,60 @@ class Action_01172 extends RiskAction implements ISorcererAbility, IAbilityThatT
                 "performer_inject_code" => $performer->getInjectCode(),
             ]);
 
-            // WHY: Start before wound so Torsten (Reaction_01122) can stack cancel before the
-            // performer wound processes. Shared batchId — cancel's deleteEventBatch strips the
-            // wound (it does not target Torsten, so deleteEventsTargetingCard alone misses it).
-            // Played after ActionResolved — Cesca journal 2026-09-01-01.
-            $batchId = $game->getNextEventBatchId();
-
-            $sorcererAbilityStartedEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $sorcererAbilityStartedEvent->batchId = $batchId;
-            $game->theah->queueEvent($sorcererAbilityStartedEvent);
-
-            if (! $performer->hasTrait('Strega', $owner))
-            {
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-                $woundEvent->batchId = $batchId;
-                $game->theah->queueEvent($woundEvent);
-            }
-
-            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $owner->Id, $this->Id);
-            $moveEvent->batchId = $batchId;
-            $game->theah->queueEvent($moveEvent);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $actionResolvedEvent->batchId = $batchId;
-            $game->theah->queueEvent($actionResolvedEvent);
-
-            $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $sorcererAbilityPlayedEvent->batchId = $batchId;
-            $game->theah->queueEvent($sorcererAbilityPlayedEvent);
+            // WHY: Fire targeting alone here. SorcererAbilityStart, the performer wound (the "•"
+            // cost), the move, ActionResolved and SorcererAbilityPlayed all emit from handleEvent
+            // only when EventCharacterTargeted survives — a canceled targeting must not leave the
+            // performer wounded for nothing or a dangling Start (Action_01012 seat).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }
+    }
+
+    private function resolveTargetedCharacter(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $game = $theah->game;
+        $owner = $this->getOwningCard($theah);
+        $target = $theah->getCharacterById($event->targetId);
+        // WHY CHOSEN_PERFORMER: still set while the targeting event dispatches.
+        $performer = $theah->getCharacterById((int)$game->globals->get(Game::CHOSEN_PERFORMER));
+        if ($owner === null || $target === null || $performer === null)
+        {
+            return;
+        }
+
+        // WHY: Start before wound so Torsten (Reaction_01122) can stack cancel before the
+        // performer wound processes. Shared batchId — cancel's deleteEventBatch strips the
+        // wound (it does not target Torsten, so deleteEventsTargetingCard alone misses it).
+        // Played after ActionResolved — Cesca journal 2026-09-01-01.
+        // The batch is the targeting event's batch so everything stays one unit.
+        $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+        $sorcererAbilityStartedEvent = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+        $sorcererAbilityStartedEvent->batchId = $batchId;
+        $theah->queueEvent($sorcererAbilityStartedEvent);
+
+        if (! $performer->hasTrait('Strega', $owner))
+        {
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $batchId;
+            $theah->queueEvent($woundEvent);
+        }
+
+        $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $performer->Location, false, $owner->Id, $this->Id);
+        $moveEvent->batchId = $batchId;
+        $theah->queueEvent($moveEvent);
+
+        $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+        $actionResolvedEvent->batchId = $batchId;
+        $theah->queueEvent($actionResolvedEvent);
+
+        $sorcererAbilityPlayedEvent = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+        $sorcererAbilityPlayedEvent->batchId = $batchId;
+        $theah->queueEvent($sorcererAbilityPlayedEvent);
     }
 }

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharacters
@@ -48,6 +49,23 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $scheme = $this->getOwningCard($event->theah);
             $transistion = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "01148", $this->Id);
             $event->theah->queueEvent($transistion);
+        }
+
+        // WHY: Enter the discard / engage-or-wound loop only when EventCharacterTargeted survives.
+        // "01148_4" is the EVENTS-hub key that routes to highDramaPhase01148_2 (the loop entry).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId === $this->Id && ! $event->canceled)
+        {
+            $scheme = $this->getOwningCard($event->theah);
+            if ($scheme === null)
+            {
+                return;
+            }
+
+            $event->theah->game->globals->set(Game::CHOSEN_TARGET, $event->targetId);
+
+            $loopEntry = EventFactory::createTransitionEvent($scheme->ControllerId, $scheme->Id, "01148_4", $this->Id);
+            $loopEntry->batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+            $event->theah->queueEvent($loopEntry);
         }
     }
 
@@ -136,7 +154,22 @@ class Action_01148 extends SchemeCityAction implements IAbilityThatTargetsCharac
 
 
 
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
+            $scheme = $this->getOwningCard($game->theah);
+
+            // WHY: Fire targeting alone here. CHOSEN_TARGET + the hop into the discard loop
+            // (01148_2) happen in handleEvent only when EventCharacterTargeted survives, so a
+            // canceled hook (Cloud Bottle / UL / Maryam) leaves no stale target and no free
+            // engage/wound. Discards in _3 are paid per engage/wound AFTER targeting resolved,
+            // so they need no gating.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $scheme->ControllerId,
+                $character->Id,
+                $scheme->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("mercenaryChosen");
         }

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04049 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -79,6 +80,40 @@ class Action_04049 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04049", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+
+        // WHY: Engage-or-move prompt only when EventCharacterTargeted survives (Cloud Bottle /
+        // UL / Maryam cancel that hook — same seat as Bleed Out 01160).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $game = $theah->game;
+            $owner = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+            $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+            // WHY already Engaged → skip Engage/Decline: print has no en-garde target filter
+            // (unlike B.7 _04027). Mirror Duckfoot _01049 — auto-resolve the "if they do not" half.
+            if ($target->Engaged)
+            {
+                $game->notify->all("message", clienttranslate('${character_inject_code} is already Engaged and must move to an adjacent City location.'), [
+                    "character_inject_code" => $target->getInjectCode(),
+                ]);
+
+                $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, "04049_3", $this->Id);
+            }
+            else
+            {
+                $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, "04049_2", $this->Id);
+            }
+            $transitionEvent->batchId = $batchId;
+            $theah->queueEvent($transitionEvent);
         }
     }
 
@@ -165,8 +200,6 @@ class Action_04049 extends RiskCityAction implements IAbilityThatTargetsCharacte
                 throw new UserException($errorMessage);
             }
 
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-
             $owner = $this->getOwningCard($game->theah);
             $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
@@ -174,22 +207,19 @@ class Action_04049 extends RiskCityAction implements IAbilityThatTargetsCharacte
                 "character_inject_code" => $character->getInjectCode(),
             ]);
 
-            // WHY already Engaged → skip Engage/Decline: print has no en-garde target filter
-            // (unlike B.7 _04027). Mirror Duckfoot _01049 — auto-resolve the "if they do not" half.
-            if ($character->Engaged)
-            {
-                $game->notify->all("message", clienttranslate('${character_inject_code} is already Engaged and must move to an adjacent City location.'), [
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
-
-                $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "04049_3", $this->Id);
-                $game->theah->queueEvent($transitionEvent);
-            }
-            else
-            {
-                $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "04049_2", $this->Id);
-                $game->theah->queueEvent($transitionEvent);
-            }
+            // WHY: Fire targeting alone here. CHOSEN_TARGET + the Engage/Decline prompt (or the
+            // already-Engaged auto-move) open from handleEvent only when EventCharacterTargeted
+            // is not canceled — Cloud Bottle / UL / Maryam. A canceled hook must not leave a
+            // stale CHOSEN_TARGET behind.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

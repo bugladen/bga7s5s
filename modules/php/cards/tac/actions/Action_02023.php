@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_02023 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -88,6 +89,27 @@ class Action_02023 extends CharacterAction implements IAbilityThatTargetsCharact
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "02023", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $game = $theah->game;
+            $target = $theah->getCharacterById($event->targetId);
+            $performer = $theah->getCharacterById((int)$game->globals->get(Game::CHOSEN_PERFORMER));
+            $location = (string)$game->globals->get(Game::CHOSEN_LOCATION);
+            if ($target === null || $performer === null || $location === '')
+            {
+                return;
+            }
+
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $location, $engage = false, $performer->Id, $this->Id);
+            $moveEvent->batchId = $event->batchId ?? $game->getNextEventBatchId();
+            $theah->eventCheck($moveEvent);
+            $theah->queueEvent($moveEvent);
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($performer->ControllerId));
         }
     }
 
@@ -191,11 +213,17 @@ class Action_02023 extends CharacterAction implements IAbilityThatTargetsCharact
             $characterId = $game->globals->get(Game::CHOSEN_TARGET);
             $character = $game->theah->getCharacterById($characterId);
 
-            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $character->Id, $character->Location, $location, $engage = false, $performer->Id, $this->Id);
-            $game->theah->queueEvent($moveEvent);
+            // WHY: Targeting fires at the FINAL confirm (destination), not at the character pick:
+            // the character pick routes straight into the `_2` destination GameState (with Back),
+            // so firing earlier would leave a stale targeting event if the player backs out.
+            // The destination rides CHOSEN_LOCATION so handleEvent can emit the move only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL cancel it). Same seat as 04028.
+            $game->globals->set(Game::CHOSEN_LOCATION, $location);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($performer->ControllerId, $character->Id, $performer->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("locationChosen");
         }

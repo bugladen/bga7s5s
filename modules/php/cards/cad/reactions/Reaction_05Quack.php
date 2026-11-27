@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardAddedToCityDiscardPile;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 // Covert Reaction: When you discard a Discovery or Alquimia • Wound target opposing character.
@@ -141,6 +142,30 @@ class Reaction_05Quack extends CardReaction implements IAbilityThatTargetsCharac
     {
         parent::handleEvent($event);
 
+        // WHY: Wound only when EventCharacterTargeted survives (Cloud Bottle / UL / Maryam cancel
+        // that hook). Checked BEFORE the isAvailable gate: setUsed() already ran at pick time, so
+        // the reaction is no longer "available" by the time the hook is delivered.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCharacter($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                $target->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $woundEvent->batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+            $event->theah->queueEvent($woundEvent);
+            return;
+        }
+
         if (! $this->isAvailable())
         {
             return;
@@ -237,14 +262,17 @@ class Reaction_05Quack extends CardReaction implements IAbilityThatTargetsCharac
                 "target_inject_code" => $target->getInjectCode(),
             ]);
 
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+            // WHY: Fire targeting alone here; the wound emits from handleEvent only when
+            // EventCharacterTargeted survives. setUsed stays at pick (choosing pays the reaction).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
                 $target->Id,
                 $owner->Id,
-                1,
-                $owner->getInjectCode(),
                 $this->Id
             );
-            $game->theah->queueEvent($woundEvent);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $this->setUsed($game->theah, true);
         }

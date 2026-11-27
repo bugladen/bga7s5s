@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04027;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04027;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -46,8 +47,33 @@ class Action_04027_Test extends TestCase
                 $ids = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_04027, '')['ids'];
                 Assert::same([$foe->Id], $ids, 'leader excluded');
 
+                // WHY: pick queues ONLY CharacterTargeted; the opponent's engage/decline prompt
+                // comes from the surviving-targeting handler (Cloud Bottle / UL can cancel first).
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04027, '', $foe->Id);
-                Assert::same('04027_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'their choice');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no prompt before targeting resolves');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET, 0), 'target not sticky at pick');
+
+                $canceled = clone $targeted[0];
+                $canceled->canceled = true;
+                $canceled->theah = $world->theah;
+                $action->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'cancel: no prompt');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET, 0), 'cancel leaves no target');
+
+                $survived = clone $targeted[0];
+                $survived->canceled = false;
+                $survived->theah = $world->theah;
+                $action->handleEvent($survived);
+                $prompt = $world->theah->queuedOfType(EventTransition::class)[0];
+                Assert::same('04027_2', $prompt->transition, 'their choice');
+                Assert::same($foe->ControllerId, $prompt->playerId, 'target controller chooses');
+                Assert::same($foe->Id, (int) $world->game->globals->get(Game::CHOSEN_TARGET), 'target set on survive');
                 Assert::same('characterChosen', end($world->game->gamestate->transitions), 'not resolved yet');
                 Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolve');
 

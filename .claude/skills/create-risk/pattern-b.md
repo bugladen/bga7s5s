@@ -175,7 +175,7 @@ This is **not** B.1 (location chooser) and **not** B.3 (Target opponent / forced
 8. **Discard act:** `createCardDiscardedFromHandEvent(..., asEffect: true)` + notify; validate player ∈ `$PlayersToDiscard` and card ∈ their hand.
 9. **Timing note:** discard-player list may be computed at target confirm against the destination **before** the move event applies. That matches post-move for *other* players' Sorcerer/Monster presence (your performer moving does not change that set; acting player is excluded anyway).
 10. **JS:** character-chooser trio for `"NNNNN"`; for `"NNNNN_2"`: `factionHand.setSelectionMode('single')` + `actChooseDiscardCard` / `onCardDiscarded` + `EventHandlers.js` enable when selection length &gt; 0 (mirror `highDramaPhase04005_2`).
-11. **Skip `EventCharacterTargeted`** unless you need Vittoria-style redirect sync — bulk of recent Target Actions (`_04008`, `_03011`, `_01115`) omit it; `_01162` / `_01078` are the exceptions that fire it.
+11. **Printed "Target <character>" ⇒ fire `EventCharacterTargeted`** (queue it with `batchId` + `eventCheck`; gate effects in `handleEvent` on `abilityId == $this->Id && !canceled`; costs stay outside). This supersedes the old "skip unless Vittoria" advice — `_04018`, `_04027`, `_04028`, `_01026`, `_01152a/b`, `_01194` were swept to fire it (journal 2026-11-27-02). Older Target Actions that still omit it (`_04008` etc. may be mid-sweep) are bugs, not precedent.
 12. **No Cesca allow-list** unless the Action is also Sorcerer.
 
 **Contrast:**

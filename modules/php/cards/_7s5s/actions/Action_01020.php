@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01020 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -50,6 +51,31 @@ class Action_01020 extends CharacterAction implements IAbilityThatTargetsCharact
         {
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01020", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCharacter($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            $owner->unEquipAllAttachments($theah);
+            $destroyEvent = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
+            $destroyEvent->batchId = $batchId;
+            $theah->queueEvent($destroyEvent);
+
+            $moveEvent = EventFactory::createCardMovingEvent($owner->ControllerId, $target->Id, $target->Location, $owner->Location, false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $batchId;
+            $theah->queueEvent($moveEvent);
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
         }
     }
 
@@ -103,15 +129,13 @@ class Action_01020 extends CharacterAction implements IAbilityThatTargetsCharact
                 throw new UserException($errorMessage);
             }
 
-            $owner->unEquipAllAttachments($game->theah);
-            $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
-            $game->theah->queueEvent($event);
-
-            $event = EventFactory::createCardMovingEvent($owner->ControllerId, $target->Id, $target->Location, $owner->Location, false, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Destroy Dante (the "cost") + the move + ActionResolved
+            // all emit from handleEvent only when EventCharacterTargeted survives — a canceled
+            // targeting must not leave Dante destroyed for nothing (Action_01015 / 01019 seat).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

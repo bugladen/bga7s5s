@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 
 class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsCharacters
 {
@@ -31,6 +32,36 @@ class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsChara
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01152b", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Engage the target only when EventCharacterTargeted survives. Cloud Bottle /
+        // UL / Maryam cancel that hook — queuing the effect beside the pick meant "when
+        // targeted" reactions never saw this Action. The performer wound is the COST and
+        // stays in actFromActionWithId (unbatched, always applies).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $scheme = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($scheme === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            // WHY: Already engaged is a legal target (players may take the wound for
+            // beneficial wound effects), so skip the effect rather than refuse.
+            if (! $target->Engaged)
+            {
+                $engageEvent = EventFactory::createCardEngagedEvent($scheme->ControllerId, $target->Id, $scheme->Id, $this->Id);
+                $engageEvent->batchId = $batchId;
+                $theah->eventCheck($engageEvent);
+                $theah->queueEvent($engageEvent);
+            }
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($scheme->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -93,17 +124,19 @@ class Action_01152b extends SchemeCityAction implements IAbilityThatTargetsChara
             $game->theah->eventCheck($event);
             $game->theah->queueEvent($event);
 
-            // WHY: Wound is the cost and always applies. Engage may fail — already engaged
-            // is a legal target so players can take the wound for beneficial wound effects.
-            if (! $target->Engaged)
-            {
-                $event = EventFactory::createCardEngagedEvent($performer->ControllerId, $target->Id, $scheme->Id, $this->Id);
-                $game->theah->eventCheck($event);
-                $game->theah->queueEvent($event);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Wound is the cost and always applies (outside the targeting batch). The
+            // Engage effect + ActionResolved emit from handleEvent only when
+            // EventCharacterTargeted is not canceled.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $scheme->ControllerId,
+                $target->Id,
+                $scheme->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
         }

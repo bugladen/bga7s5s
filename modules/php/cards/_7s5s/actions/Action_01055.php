@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCharacters, IRangedAbility
@@ -70,6 +71,30 @@ class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01055", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $game = $theah->game;
+            $owner = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            $performer = $theah->getCharacterById((int)$game->globals->get(Game::CHOSEN_PERFORMER));
+            $location = (string)$game->globals->get(Game::CHOSEN_LOCATION);
+            if ($owner === null || $target === null || $performer === null || $location === '')
+            {
+                return;
+            }
+
+            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $location, $engage = false, $owner->Id, $this->Id);
+            $moveEvent->batchId = $event->batchId ?? $game->getNextEventBatchId();
+            $theah->eventCheck($moveEvent);
+            $theah->queueEvent($moveEvent);
+
+            // RangedAbilityPlayed / ActionResolved stay unbatched (01049 / 01160 convention) so a
+            // racing deleteEventBatch cannot strip the resolve.
+            $theah->queueEvent(EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $location));
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($performer->ControllerId));
         }
     }
 
@@ -170,15 +195,18 @@ class Action_01055 extends RiskCityAction implements IAbilityThatTargetsCharacte
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $moveEvent = EventFactory::createCardMovingEvent($performer->ControllerId, $target->Id, $target->Location, $location, $engage = false, $owner->Id, $this->Id);
-            $game->theah->eventCheck($moveEvent);
-            $game->theah->queueEvent($moveEvent);
 
-            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $location);
-            $game->theah->queueEvent($rangedAbilityPlayedEvent);
+            // WHY: Targeting fires at the FINAL confirm (destination), not at the character pick:
+            // the character pick routes straight into the `_2` destination GameState (with Back),
+            // so firing earlier would leave a stale targeting event if the player backs out.
+            // The destination rides CHOSEN_LOCATION so handleEvent can emit the move only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL cancel it). Same seat as 04028.
+            $game->globals->set(Game::CHOSEN_LOCATION, $location);
 
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($performer->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->notify->all("message", clienttranslate('${player_name} chose to have ${performer_inject_code} move ${target_inject_code} to ${location_name}.'), [
                 "i18n" => ["location_name", "performer_inject_code"],

@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01148_Test extends TestCase
@@ -101,9 +102,11 @@ class Action_01148_Test extends TestCase
                 Assert::false(in_array($farMerc->Id, $args['charactersIds'], true), 'far merc');
             },
 
-            'choosing a valid Mercenary sets CHOSEN_TARGET' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before the discard loop opens. CHOSEN_TARGET is set on survive, not here.
+            'choosing a valid Mercenary queues only EventCharacterTargeted' => function () {
                 $world = new TestWorld();
-                [, $action, $performer, $merc] = $this->scene($world);
+                [$scheme, $action, $performer, $merc] = $this->scene($world);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
 
                 $action->actFromActionWithId(
@@ -113,8 +116,57 @@ class Action_01148_Test extends TestCase
                     $merc->Id
                 );
 
-                Assert::same($merc->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($merc->Id, $targeted[0]->targetId, 'target');
+                Assert::same($scheme->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(1, $world->theah->queuedEvents, 'only the targeting');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET, 0), 'no stale target');
                 Assert::same(['mercenaryChosen'], $world->game->gamestate->transitions, 'named');
+            },
+
+            'surviving CharacterTargeted sets CHOSEN_TARGET and hops into the loop (01148_4 -> _2)' => function () {
+                $world = new TestWorld();
+                [$scheme, $action, , $merc] = $this->scene($world);
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $merc->Id;
+                $targeted->sourceId = $scheme->Id;
+                $targeted->batchId = 77;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::same($merc->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::count(1, $transitions, 'one hop');
+                Assert::same('01148_4', $transitions[0]->transition, 'routes to 01148_2');
+                Assert::same($scheme->Id, $transitions[0]->sourceId, 'source');
+                Assert::same(77, $transitions[0]->batchId, 'shares batch');
+            },
+
+            'canceled or foreign CharacterTargeted queues nothing and leaves no target' => function () {
+                $world = new TestWorld();
+                [$scheme, $action, , $merc] = $this->scene($world);
+
+                $canceled = new EventCharacterTargeted();
+                $canceled->abilityId = $action->Id;
+                $canceled->targetId = $merc->Id;
+                $canceled->sourceId = $scheme->Id;
+                $canceled->canceled = true;
+                $canceled->theah = $world->theah;
+                $action->handleEvent($canceled);
+
+                $other = new EventCharacterTargeted();
+                $other->abilityId = 'other';
+                $other->targetId = $merc->Id;
+                $other->theah = $world->theah;
+                $action->handleEvent($other);
+
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET, 0), 'no stale target');
             },
 
             'refuses a non-Mercenary target' => function () {

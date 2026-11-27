@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03061;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_03061_Test extends TestCase
@@ -78,7 +79,37 @@ class Action_03061_Test extends TestCase
                 Assert::true($threw, 'leader rejected');
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03061, 'x', $target->Id);
-                $move = $world->theah->queuedOfType(EventCardMoving::class)[0];
+
+                // Pick queues ONLY CharacterTargeted.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($target->Id, $targeted[0]->targetId, 'target');
+                Assert::same($scheme->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move at pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved at pick');
+
+                // Canceled hook: nothing. Foreign ability: ignored.
+                $world->theah->queuedEvents = [];
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $target->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'cancel queues nothing');
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ignored');
+
+                // Survive: move shares the batch, then ActionResolved.
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 77;
+                $action->handleEvent($hook);
+                Assert::same(77, $world->theah->queuedOfType(EventCardMoving::class)[0]->batchId, 'move batch');
+                $move =$world->theah->queuedOfType(EventCardMoving::class)[0];
                 Assert::same(Game::LOCATION_CITY_DOCKS, $move->toLocation, 'docks');
                 Assert::false($move->engage, 'no engage');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');

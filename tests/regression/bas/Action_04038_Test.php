@@ -15,7 +15,9 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04033;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\_04038;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04038;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingHealed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 
 class Action_04038_Test extends TestCase
 {
@@ -49,7 +51,39 @@ class Action_04038_Test extends TestCase
                 Assert::false(in_array($healthy->Id, $ids, true), 'healthy en garde is skipped');
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04038, '', $target->Id);
+
+                // Pick queues ONLY CharacterTargeted (Cloud Bottle / UL can cancel it).
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($target->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(1, $world->theah->queuedEvents, 'nothing else at pick');
+                Assert::same('characterChosen', end($world->game->gamestate->transitions), 'to EVENTS');
+
+                // Canceled hook: nothing. Foreign ability: ignored.
+                $world->theah->queuedEvents = [];
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $target->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'cancel queues nothing');
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ignored');
+
+                // Survive: effects share the batch; ActionResolved follows.
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 77;
+                $action->handleEvent($hook);
                 Assert::same($target->Id, $world->theah->queuedOfType(EventCardEngarded::class)[0]->cardId, 'en garde');
+                Assert::same(77, $world->theah->queuedOfType(EventCardEngarded::class)[0]->batchId, 'en garde batch');
+                Assert::same(77, $world->theah->queuedOfType(EventCharacterBeingHealed::class)[0]->batchId, 'heal batch');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
                 Assert::same($target->Id, $world->theah->queuedOfType(EventCharacterBeingHealed::class)[0]->characterId, 'heal');
                 Assert::same(1, $world->theah->queuedOfType(EventCharacterBeingHealed::class)[0]->wounds, 'one wound');
 

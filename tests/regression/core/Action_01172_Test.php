@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -162,6 +163,20 @@ class Action_01172_Test extends TestCase
                 Assert::same($performer->getInjectCode(), $msg['args']['performer_inject_code'], 'performer in log');
                 Assert::same($risk->getInjectCode(), $msg['args']['card_inject_code'], 'card in log');
 
+                // Pick queues ONLY the targeting hook; effects wait for it to survive.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($target->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::count(1, $world->theah->queuedEvents, 'only the hook beside pick');
+                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
                 $order = array_map(fn($e) => $e::class, $world->theah->queuedEvents);
                 Assert::same(
                     [
@@ -202,7 +217,34 @@ class Action_01172_Test extends TestCase
                 Assert::same($target->Id, $played->targetId, 'played target');
                 Assert::same(Game::LOCATION_CITY_FORUM, $played->targetLocation, 'played from-loc');
                 Assert::same($start->batchId, $played->batchId, 'played same batch');
-                Assert::same([null], $world->game->gamestate->transitions, 'bare nextState');
+                Assert::same($hook->batchId, $start->batchId, 'shares the targeting batch');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no dangling Start, no pure-cost wound.
+            'canceled CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                [, $action, $performer, $target] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $target->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, $performer, $target] = $this->scene($world);
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $target->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'Strega performer skips the wound but still emits Sorcerer Start/Played' => function () {
@@ -216,6 +258,11 @@ class Action_01172_Test extends TestCase
                     'highDramaPlayerTurn_01172',
                     $target->Id
                 );
+                $hook = $world->theah->queuedOfType(EventCharacterTargeted::class)[0];
+                $world->theah->takeQueuedEvents();
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
 
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'start');

@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01019 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -50,6 +51,33 @@ class Action_01019 extends CharacterAction implements IAbilityThatTargetsCharact
             $owner = $this->getOwningCharacter($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "01019", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+
+        // WHY: Destroy + wound + resolve are all resolution effects, so all are gated on the
+        // targeting surviving. A canceled action must not destroy Buratino for nothing.
+        // unEquipAllAttachments mutates state, so it lives on the surviving path only.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCharacter($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            $owner->unEquipAllAttachments($theah);
+            $destroyEvent = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
+            $destroyEvent->batchId = $batchId;
+            $theah->queueEvent($destroyEvent);
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $batchId;
+            $theah->queueEvent($woundEvent);
+
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
         }
     }
 
@@ -114,15 +142,17 @@ class Action_01019 extends CharacterAction implements IAbilityThatTargetsCharact
                 "target_inject_code" => $target->getInjectCode(),
             ]);
 
-            $owner->unEquipAllAttachments($game->theah);
-            $event = EventFactory::createCharacterDestroyedEvent($owner->ControllerId, $owner->Id, $owner->getInjectCode());
-            $game->theah->queueEvent($event);
-
-            $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($event);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Destroy Buratino + wound + ActionResolved emit from
+            // handleEvent only when EventCharacterTargeted survives (Cloud Bottle / UL / Maryam).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

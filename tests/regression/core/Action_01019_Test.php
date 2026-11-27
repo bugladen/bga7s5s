@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01019_Test extends TestCase
@@ -73,7 +74,9 @@ class Action_01019_Test extends TestCase
                 Assert::same('01019', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'transition');
             },
 
-            'act destroys Buratino and wounds target' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before Buratino is destroyed (same seat as Action_01015 / Action_01160).
+            'pick queues only CharacterTargeted' => function () {
                 $world = new TestWorld();
                 $buratino = $world->placeCharacter(new _01019(), Game::LOCATION_CITY_DOCKS, 1);
                 $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
@@ -87,12 +90,76 @@ class Action_01019_Test extends TestCase
                     $foe->Id
                 );
 
-                Assert::same($buratino->Id, $world->theah->queuedOfType(EventCharacterDestroyed::class)[0]->characterId, 'destroy');
-                Assert::same($foe->Id, $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0]->characterId, 'wound');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($buratino->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterDestroyed::class), 'no destroy yet');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved');
                 Assert::contains('targets ${target_inject_code}', $world->game->notify->messages[0]['message'], 'log names the target');
                 Assert::same($foe->getInjectCode(), $world->game->notify->messages[0]['args']['target_inject_code'], 'target inject');
-                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
                 Assert::same(['characterChosen'], $world->game->gamestate->transitions, 'nextState');
+            },
+
+            'surviving CharacterTargeted destroys Buratino, wounds target, resolves' => function () {
+                $world = new TestWorld();
+                $buratino = $world->placeCharacter(new _01019(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01019 $action */
+                $action = $buratino->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $buratino->Id;
+                $targeted->batchId = 77;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                $destroys = $world->theah->queuedOfType(EventCharacterDestroyed::class);
+                Assert::same($buratino->Id, $destroys[0]->characterId, 'destroy');
+                Assert::same(77, $destroys[0]->batchId, 'destroy shares batch');
+                $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
+                Assert::same($foe->Id, $wounds[0]->characterId, 'wound');
+                Assert::same($action->Id, $wounds[0]->abilityId, 'ability');
+                Assert::same(77, $wounds[0]->batchId, 'wound shares batch');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            'canceled CharacterTargeted queues nothing (Buratino survives)' => function () {
+                $world = new TestWorld();
+                $buratino = $world->placeCharacter(new _01019(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01019 $action */
+                $action = $buratino->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $action->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->canceled = true;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'no destroy / wound / resolve');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $buratino = $world->placeCharacter(new _01019(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+
+                /** @var Action_01019 $action */
+                $action = $buratino->getActions()[0];
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = 'other';
+                $targeted->targetId = $foe->Id;
+                $targeted->theah = $world->theah;
+                $action->handleEvent($targeted);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
         ];
     }

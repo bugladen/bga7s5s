@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventDuelNewRound;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventManeuverCanceled;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
@@ -89,6 +90,36 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
 
                 $transitionEvent = EventFactory::createTransitionEvent($playerId, $owner->Id, "03022", $this->Id);
                 $event->theah->queueEvent($transitionEvent);
+            }
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $game = $event->theah->game;
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->targetId);
+            if ($owner !== null && $character !== null)
+            {
+                // WHY skip if already En Garded (re-read at survive): hub still notifies; re-engarde spam is noise.
+                if ($character->Engaged)
+                {
+                    $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
+                    $engardeEvent->batchId = $event->batchId ?? $game->getNextEventBatchId();
+                    $event->theah->queueEvent($engardeEvent);
+
+                    $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${player_name} En Gardes ${character_inject_code}.'), [
+                        "maneuver_inject_code" => $owner->getInjectCode(),
+                        "player_name" => $game->getPlayerNameById($owner->ControllerId),
+                        "character_inject_code" => $character->getInjectCode(),
+                    ]);
+                }
+                else
+                {
+                    $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${character_inject_code} is already En Garded.'), [
+                        "maneuver_inject_code" => $owner->getInjectCode(),
+                        "character_inject_code" => $character->getInjectCode(),
+                    ]);
+                }
             }
         }
 
@@ -184,25 +215,14 @@ class Maneuver_03022 extends Maneuver implements IAbilityThatTargetsCharacters
 
             $owner = $this->getOwningCard($game->theah);
 
-            // WHY skip if already En Garded: hub still notifies; re-engarde spam is noise.
-            if ($character->Engaged)
-            {
-                $engardeEvent = EventFactory::createCardEngardedEvent($character->ControllerId, $character->Id, $owner->Id, $this->Id);
-                $game->theah->queueEvent($engardeEvent);
-
-                $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${player_name} En Gardes ${character_inject_code}.'), [
-                    "maneuver_inject_code" => $owner->getInjectCode(),
-                    "player_name" => $game->getPlayerNameById($owner->ControllerId),
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
-            }
-            else
-            {
-                $game->notify->all("message", clienttranslate('${maneuver_inject_code}: ${character_inject_code} is already En Garded.'), [
-                    "maneuver_inject_code" => $owner->getInjectCode(),
-                    "character_inject_code" => $character->getInjectCode(),
-                ]);
-            }
+            // WHY: Fire targeting alone here (also for an already En Garded target — it is still
+            // a legal target). The En Garde emits from handleEvent only when EventCharacterTargeted
+            // survives (Cloud Bottle / UL cancel it). The state's "" transition already routes to
+            // the DUEL_END_OF_ROUND_EVENTS hub, so the hook is delivered there.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Quack;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Reaction_05Quack_Test extends TestCase
@@ -152,7 +153,9 @@ class Reaction_05Quack_Test extends TestCase
                 Assert::count(0, $world->theah->queuedEvents, 'wrong trait');
             },
 
-            'wounding queues target and spends the reaction' => function () {
+            // WHY: pick queues ONLY CharacterTargeted so Cloud Bottle / UL / Maryam can cancel
+            // before the wound is emitted.
+            'pick queues only CharacterTargeted and spends the reaction' => function () {
                 $world = new TestWorld();
                 $quack = $world->placeCharacter(new _05Quack(), Game::LOCATION_CITY_DOCKS, 1);
                 $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 0);
@@ -162,15 +165,68 @@ class Reaction_05Quack_Test extends TestCase
                 $reaction = $quack->getReactions()[0];
 
                 $reaction->handleEvent($this->discard($world, $discovery->Id));
+                $world->theah->takeQueuedEvents();
                 $reaction->performReaction($world->game, 0, $reaction->Id, "wound-{$foe->Id}");
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'foe');
+                Assert::same($quack->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($reaction->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::true($reaction->Used, 'used');
+                Assert::same(['done'], $world->game->gamestate->transitions, 'done');
+            },
+
+            // WHY: the reaction is already Used by the time the hook arrives — the survive branch
+            // must run before the isAvailable gate.
+            'surviving CharacterTargeted wounds the target with the shared batch even after setUsed' => function () {
+                $world = new TestWorld();
+                $quack = $world->placeCharacter(new _05Quack(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->theah->setLocationController(Game::LOCATION_CITY_DOCKS, 0);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Reaction_05Quack $reaction */
+                $reaction = $quack->getReactions()[0];
+                $reaction->Used = true;
+
+                $targeted = new EventCharacterTargeted();
+                $targeted->abilityId = $reaction->Id;
+                $targeted->targetId = $foe->Id;
+                $targeted->sourceId = $quack->Id;
+                $targeted->batchId = 77;
+                $targeted->theah = $world->theah;
+                $reaction->handleEvent($targeted);
 
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'wounded');
                 Assert::same($foe->Id, $wounds[0]->characterId, 'foe');
                 Assert::same($quack->Id, $wounds[0]->sourceId, 'source');
                 Assert::same($reaction->Id, $wounds[0]->abilityId, 'ability');
-                Assert::true($reaction->Used, 'used');
-                Assert::same(['done'], $world->game->gamestate->transitions, 'done');
+                Assert::same(77, $wounds[0]->batchId, 'shares batch');
+            },
+
+            'canceled or foreign CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                $quack = $world->placeCharacter(new _05Quack(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Reaction_05Quack $reaction */
+                $reaction = $quack->getReactions()[0];
+
+                $canceled = new EventCharacterTargeted();
+                $canceled->abilityId = $reaction->Id;
+                $canceled->targetId = $foe->Id;
+                $canceled->canceled = true;
+                $canceled->theah = $world->theah;
+                $reaction->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedEvents, 'canceled');
+
+                $other = new EventCharacterTargeted();
+                $other->abilityId = 'other';
+                $other->targetId = $foe->Id;
+                $other->theah = $world->theah;
+                $reaction->handleEvent($other);
+                Assert::count(0, $world->theah->queuedEvents, 'other ability');
             },
 
             'pass does not spend the reaction' => function () {

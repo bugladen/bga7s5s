@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_04049_Test extends TestCase
@@ -53,15 +54,41 @@ class Action_04049_Test extends TestCase
                 $world->fireOn($risk, $triggered);
                 Assert::same('04049', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'opens');
 
+                // WHY: pick queues ONLY CharacterTargeted (Cloud Bottle / UL cancel it); the prompt
+                // opens from the survive hook. Already Engaged → auto-move stage.
+                $world->theah->takeQueuedEvents();
                 $low->Engaged = true;
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04049, '', $low->Id);
-                Assert::same('04049_3', $world->theah->queuedOfType(EventTransition::class)[1]->transition, 'already engaged must move');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($low->Id, $targeted[0]->targetId, 'target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no prompt beside pick');
+                Assert::same(null, $world->game->globals->get(Game::CHOSEN_TARGET), 'target not stored before survive');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::same('04049_3', $transitions[0]->transition, 'already engaged must move');
+                Assert::same($hook->batchId, $transitions[0]->batchId, 'shared batch');
+                Assert::same($low->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target stored on survive');
 
                 $low->Engaged = false;
                 $world->theah->takeQueuedEvents();
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04049, '', $low->Id);
-                Assert::same('04049_2', $world->theah->queuedOfType(EventTransition::class)[0]->playerId === 2 ? $world->theah->queuedOfType(EventTransition::class)[0]->transition : '', 'opponent chooses');
-                Assert::same(2, $world->theah->queuedOfType(EventTransition::class)[0]->playerId, 'target controller');
+                $hook = $world->theah->queuedOfType(EventCharacterTargeted::class)[0];
+                $world->theah->takeQueuedEvents();
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                $transitions = $world->theah->queuedOfType(EventTransition::class);
+                Assert::same('04049_2', $transitions[0]->transition, 'opponent chooses');
+                Assert::same(2, $transitions[0]->playerId, 'target controller');
+                Assert::same($hook->batchId, $transitions[0]->batchId, 'shared batch');
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04049_2, '', 1);
                 $engage = $world->theah->queuedOfType(EventCardEngaged::class)[0];
@@ -96,6 +123,43 @@ class Action_04049_Test extends TestCase
                 $peer->ModifiedInfluence = $performer->ModifiedInfluence;
                 [$equal] = $action->isValidTargetForAbility($world->game, $peer);
                 Assert::false($equal, 'not strictly lower');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no prompt, no move, no stale CHOSEN_TARGET.
+            'canceled CharacterTargeted opens nothing' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04049(), Game::LOCATION_HAND, 1);
+                $low = $world->placeCharacter(new GenericCharacter('Low'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_04049 $action */
+                $action = $risk->getActions()[0];
+
+                $hook = new EventCharacterTargeted();
+                $hook->playerId = 1;
+                $hook->targetId = $low->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+                Assert::same(null, $world->game->globals->get(Game::CHOSEN_TARGET), 'no target stored');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04049(), Game::LOCATION_HAND, 1);
+                $low = $world->placeCharacter(new GenericCharacter('Low'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_04049 $action */
+                $action = $risk->getActions()[0];
+
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $low->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
         ];
     }

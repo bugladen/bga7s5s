@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04032 extends CharacterAction implements IAbilityThatTargetsCharacters
@@ -78,6 +79,23 @@ class Action_04032 extends CharacterAction implements IAbilityThatTargetsCharact
             $owner = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04032", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCharacter($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $theah->game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+
+            $promptEvent = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, "04032_2", $this->Id);
+            $promptEvent->batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $theah->queueEvent($promptEvent);
         }
     }
 
@@ -278,7 +296,6 @@ class Action_04032 extends CharacterAction implements IAbilityThatTargetsCharact
             }
 
             $owner = $this->getOwningCharacter($game->theah);
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
 
             // WHY: Opponent then chooses reveal/pass off-turn. Without a target line here,
             // spectators (and the opponent glancing away) only see the action fired, not who.
@@ -289,8 +306,15 @@ class Action_04032 extends CharacterAction implements IAbilityThatTargetsCharact
                 "character_inject_code" => $character->getInjectCode(),
             ]);
 
-            $transition = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "04032_2", $this->Id);
-            $game->theah->queueEvent($transition);
+            // WHY: Fire targeting alone here. CHOSEN_TARGET + the reveal-or-pass prompt (Transition
+            // 04032_2 to the target's controller) are set/queued from handleEvent only when
+            // EventCharacterTargeted survives — a canceled hook must not leave a stale target or
+            // hand the opponent a prompt (Action_01049 seat). The reveal/discard/move stages after
+            // that are untouched; they are not re-targeted.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $character->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("targetChosen");
         }

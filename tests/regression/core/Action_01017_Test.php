@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterDestroyed;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_01017_Test extends TestCase
@@ -78,10 +79,60 @@ class Action_01017_Test extends TestCase
                     $foe->Id
                 );
 
-                Assert::same($alcee->Id, $world->theah->queuedOfType(EventCharacterDestroyed::class)[0]->characterId, 'destroy');
-                Assert::same($foe->Id, $world->theah->queuedOfType(EventCardEngaged::class)[0]->cardId, 'engage');
-                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterDestroyed::class), 'no destroy beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage beside pick');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'no resolved beside pick');
                 Assert::same(['characterChosen'], $world->game->gamestate->transitions, 'nextState');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                $destroys = $world->theah->queuedOfType(EventCharacterDestroyed::class);
+                Assert::same($alcee->Id, $destroys[0]->characterId, 'destroy');
+                Assert::same($hook->batchId, $destroys[0]->batchId, 'destroy shares batch');
+                $engages = $world->theah->queuedOfType(EventCardEngaged::class);
+                Assert::same($foe->Id, $engages[0]->cardId, 'engage');
+                Assert::same($hook->batchId, $engages[0]->batchId, 'engage shares batch');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — Alcee must NOT be destroyed for nothing.
+            'canceled CharacterTargeted does not destroy, engage or resolve' => function () {
+                $world = new TestWorld();
+                $alcee = $world->placeCharacter(new _01017(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_01017 $action */
+                $action = $alcee->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $alcee = $world->placeCharacter(new _01017(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_01017 $action */
+                $action = $alcee->getActions()[0];
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
         ];
     }

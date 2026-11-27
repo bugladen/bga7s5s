@@ -14,6 +14,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Teapot;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Teapot;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
@@ -70,7 +71,27 @@ class Reaction_05Teapot_Test extends TestCase
                 $triggered->reactionId = 'character-' . $foe->Id;
                 $world->fireOn($risk, $triggered);
 
+                // Post-pay queues ONLY the targeting hook; Start / move / Played wait for it to
+                // survive. Used is set here, and the sticky state stays alive until the hook runs.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($reaction->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move beside hook');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'no start beside hook');
+                Assert::true($reaction->Used, 'spent at pay');
+                Assert::same($foe->Id, $reaction->chosenTargetId, 'state kept for the hook');
+
+                // WHY: Used is already true — the survive branch must not sit behind isAvailable().
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $world->fireOn($risk, $hook);
+                Assert::same(0, $reaction->chosenTargetId, 'state reset after hook');
+
                 $moves = $world->theah->queuedOfType(EventCardMoving::class);
+                Assert::same($hook->batchId, $moves[0]->batchId, 'move shares batch');
                 Assert::count(1, $moves, 'move');
                 Assert::same($foe->Id, $moves[0]->cardId, 'foe moves');
                 Assert::same(Game::LOCATION_CITY_DOCKS, $moves[0]->fromLocation, 'from the city');
@@ -79,6 +100,51 @@ class Reaction_05Teapot_Test extends TestCase
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'start');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'played');
                 Assert::true($reaction->Used, 'spent');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no Start, no move, and the sticky state is
+            // reset (a canceled targeting must not leave a stale target behind). The Risk stays spent.
+            'canceled CharacterTargeted queues nothing and resets the saved state' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _05Teapot(), Game::LOCATION_HAND, 1);
+                $sorcerer = $world->placeCharacter(new _04041(), Game::LOCATION_PLAYER_HOME, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Reaction_05Teapot $reaction */
+                $reaction = $risk->getReactions()[0];
+
+                $world->fireOn($risk, $this->moved($sorcerer->Id, Game::LOCATION_CITY_DOCKS));
+                $sorcerer->Location = Game::LOCATION_CITY_DOCKS;
+                $reaction->performReaction($world->game, 0, '', 'character-' . $foe->Id);
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                $triggered->reactionId = 'character-' . $foe->Id;
+                $world->fireOn($risk, $triggered);
+
+                $hook = $world->theah->queuedOfType(EventCharacterTargeted::class)[0];
+                $world->theah->takeQueuedEvents();
+                $hook->canceled = true;
+                $world->fireOn($risk, $hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+                Assert::same(0, $reaction->chosenTargetId, 'target cleared');
+                Assert::same(0, $reaction->performerId, 'performer cleared');
+                Assert::true($reaction->Used, 'still spent');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _05Teapot(), Game::LOCATION_HAND, 1);
+                $world->placeCharacter(new _04041(), Game::LOCATION_PLAYER_HOME, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Reaction_05Teapot $reaction */
+                $reaction = $risk->getReactions()[0];
+                $reaction->chosenTargetId = $foe->Id;
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $world->fireOn($risk, $hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
+                Assert::same($foe->Id, $reaction->chosenTargetId, 'state untouched');
             },
 
             // WHY: Pass leaves the Risk in hand for a later qualifying move.

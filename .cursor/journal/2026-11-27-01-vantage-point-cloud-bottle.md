@@ -28,3 +28,15 @@ Updated Pattern D.1.2 + checklist 26c/58 + references — CharacterTargeted canc
 
 ## Unfinished
 Did not audit other RiskReactions that pick a "target character" without CharacterTargeted (D.1.2 was the only documented engage-or-wound RiskReaction; other multi-stage character picks may still miss the hook).
+
+## Follow-up audit (user asked)
+126 implement `IAbilityThatTargetsCharacters`; only 16 emit `createCharacterTargetedEvent` in-file.
+
+Categories among the 110 non-emitters:
+- ~31 challenge-shaped → FrameworkActionsTrait challenge picker emits CharacterTargeted (covered)
+- ~67 likely real gaps: interface + effect events (wound/move/engage/locker/discard/…) and not challenge-shaped
+- ~12 unclear
+
+Confirmed cousins still missing the hook (spot-check): `Action_01049`, `Action_01156`, `Action_05Vulture`, `Reaction_05Teapot`. Skill docs intentionally skip for Pattern B.5 (`Action_04018`) "unless Vittoria sync needed" — that skip is wrong for Cloud Bottle too if print says Target.
+
+Not fixing the backlog here — only Vantage Point was reported. Full sweep is a separate task; prefer emitter-side fixes over widening Terraria.

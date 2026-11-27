@@ -18,6 +18,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03014;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_05Vulture_Test extends TestCase
@@ -83,8 +84,10 @@ class Action_05Vulture_Test extends TestCase
                 Assert::same('05Vulture', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'chooser');
             },
 
+            // WHY: Act queues ONLY CharacterTargeted so Cloud Bottle / UL can cancel
+            // before the wound. Survive path emits wound + ActionResolved.
             'wounds a chosen Scion or equipped opposing character' => function () {
-                ['world' => $world, 'action' => $action, 'scion' => $scion, 'equipped' => $equipped, 'bare' => $bare] = $this->scene();
+                ['world' => $world, 'vulture' => $vulture, 'action' => $action, 'scion' => $scion, 'equipped' => $equipped, 'bare' => $bare] = $this->scene();
 
                 $ids = $action->getArgsFromAction($world->game, States::HIGH_DRAMA_PLAYER_TURN_05VULTURE, '')['ids'];
                 Assert::same([$scion->Id, $equipped->Id], array_values($ids), 'scion and equipped');
@@ -93,9 +96,36 @@ class Action_05Vulture_Test extends TestCase
                 Assert::false($ok, 'bare rejected');
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_05VULTURE, '', $scion->Id);
-                Assert::same($scion->Id, $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0]->characterId, 'wound');
-                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($scion->Id, $targeted[0]->targetId, 'target');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound beside pick');
                 Assert::same('characterChosen', end($world->game->gamestate->transitions), 'done');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::same($scion->Id, $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0]->characterId, 'wound');
+                Assert::same($vulture->Id, $world->theah->queuedOfType(EventCharacterBeingWounded::class)[0]->sourceId, 'source');
+                Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            'canceled CharacterTargeted does not wound' => function () {
+                ['world' => $world, 'vulture' => $vulture, 'action' => $action, 'scion' => $scion] = $this->scene();
+
+                $hook = new EventCharacterTargeted();
+                $hook->playerId = 1;
+                $hook->targetId = $scion->Id;
+                $hook->sourceId = $vulture->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 7;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedEvents, 'canceled');
             },
 
             'rejects Covert resolve after the location becomes controlled' => function () {

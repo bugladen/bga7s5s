@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -141,6 +142,51 @@ class Action_03054 extends SchemeCityAction implements IAbilityThatTargetsCharac
             $event->theah->queueEvent($transitionEvent);
         }
 
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $owner = $this->getOwningCard($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+            $fromLocation = $target->Location;
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
+                $target->Id,
+                $owner->Id,
+                1,
+                $owner->getInjectCode(),
+                $this->Id
+            );
+            $woundEvent->batchId = $batchId;
+            $theah->queueEvent($woundEvent);
+
+            // WHY: Skip Home move if this wound will destroy them — otherwise a later
+            // EventCardMoved could yank them from the locker back to Home.
+            $willDie = ($target->Wounds + 1 >= $target->ModifiedResolve);
+            if (! $willDie)
+            {
+                $moveEvent = EventFactory::createCardMovingEvent(
+                    $owner->ControllerId,
+                    $target->Id,
+                    $fromLocation,
+                    Game::LOCATION_PLAYER_HOME,
+                    false,
+                    $owner->Id,
+                    $this->Id
+                );
+                $moveEvent->batchId = $batchId;
+                $theah->queueEvent($moveEvent);
+            }
+
+            // ActionResolved stays unbatched (01160 convention) so a batch strip cannot eat it.
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
+        }
+
         if ($event instanceof EventLocationPressureResult && $event->abilityId == $this->Id)
         {
             $owner = $this->getOwningCard($event->theah);
@@ -227,36 +273,15 @@ class Action_03054 extends SchemeCityAction implements IAbilityThatTargetsCharac
             }
 
             $owner = $this->getOwningCard($game->theah);
-            $fromLocation = $target->Location;
 
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent(
-                $target->Id,
-                $owner->Id,
-                1,
-                $owner->getInjectCode(),
-                $this->Id
-            );
-            $game->theah->queueEvent($woundEvent);
-
-            // WHY: Skip Home move if this wound will destroy them — otherwise a later
-            // EventCardMoved could yank them from the locker back to Home.
-            $willDie = ($target->Wounds + 1 >= $target->ModifiedResolve);
-            if (! $willDie)
-            {
-                $moveEvent = EventFactory::createCardMovingEvent(
-                    $owner->ControllerId,
-                    $target->Id,
-                    $fromLocation,
-                    Game::LOCATION_PLAYER_HOME,
-                    false,
-                    $owner->Id,
-                    $this->Id
-                );
-                $game->theah->queueEvent($moveEvent);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. The performer wound + Resolve pressure already
+            // happened in the earlier stage (the paid cost, outside this batch). The target
+            // wound, Home move and ActionResolved emit from handleEvent only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL cancel it).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

@@ -17,6 +17,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\actions\Action_04018;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_04018_Test extends TestCase
@@ -52,8 +53,33 @@ class Action_04018_Test extends TestCase
                 Assert::true(in_array($sorcerer->Id, $args['ids'], true), 'adjacent');
                 Assert::false(in_array($bazaar->Id, $args['ids'], true), 'bazaar is not adjacent at two players');
 
+                // WHY: pick queues ONLY CharacterTargeted (Cloud Bottle / UL / Maryam can cancel);
+                // move + trailing discard come from the surviving-targeting handler.
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_04018, '', $sorcerer->Id);
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($sorcerer->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'no move yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no discard prompt yet');
+                Assert::same('characterChosen', end($world->game->gamestate->transitions), 'to the hub');
+
+                $canceled = clone $targeted[0];
+                $canceled->canceled = true;
+                $canceled->theah = $world->theah;
+                $action->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedOfType(EventCardMoving::class), 'cancel: no move');
+                Assert::same([], $action->PlayersToDiscard, 'cancel: no discard list');
+
+                $survived = clone $targeted[0];
+                $survived->canceled = false;
+                $survived->theah = $world->theah;
+                $action->handleEvent($survived);
                 $move = $world->theah->queuedOfType(EventCardMoving::class)[0];
+                Assert::same($targeted[0]->batchId, $move->batchId, 'shared batch');
                 Assert::same(Game::LOCATION_CITY_FORUM, $move->toLocation, 'forum');
                 Assert::false($move->engage, 'no engage');
                 Assert::same([2], $action->PlayersToDiscard, 'sorcerer controller');

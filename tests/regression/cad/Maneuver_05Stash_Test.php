@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\maneuvers\Maneuver_05Stash;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventAttachmentUnequipped;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromPlay;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -110,7 +111,33 @@ class Maneuver_05Stash_Test extends TestCase
                 Assert::true(in_array($adversary->Id, $args['ids'], true), 'adversary also en garde');
 
                 $maneuver->actFromManeuverWithId($world->game, States::DUEL_RESOLVE_MANEUVER_05STASH_2, '', $otherFoe->Id);
-                Assert::same($otherFoe->Id, $world->theah->queuedOfType(EventCardEngaged::class)[0]->cardId, 'engaged');
+
+                // Pick queues ONLY the targeting hook; the Engage waits for it to survive.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($otherFoe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($maneuver->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngaged::class), 'no engage beside pick');
+
+                // WHY: Cloud Bottle / UL cancel the hook — nothing engages.
+                $canceled = clone $targeted[0];
+                $canceled->canceled = true;
+                $world->theah->takeQueuedEvents();
+                $world->fireOn($risk, $canceled);
+                Assert::count(0, $world->theah->queuedEvents, 'canceled queues nothing');
+
+                $foreign = clone $targeted[0];
+                $foreign->abilityId = 'someone-else';
+                $world->fireOn($risk, $foreign);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ability ignored');
+
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $world->fireOn($risk, $hook);
+                $engage = $world->theah->queuedOfType(EventCardEngaged::class)[0];
+                Assert::same($otherFoe->Id, $engage->cardId, 'engaged');
+                Assert::same($hook->batchId, $engage->batchId, 'engage shares batch');
 
                 // Fresh resolve: discard path unequips + discards from play.
                 $world2 = new TestWorld();

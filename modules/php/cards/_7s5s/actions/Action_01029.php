@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01029 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -78,6 +79,29 @@ class Action_01029 extends RiskAction implements IAbilityThatTargetsCharacters
         {
             $transition = EventFactory::createTransitionEvent($event->playerId, $this->OwnerId, "01029", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Engage only when EventCharacterTargeted survives. Cloud Bottle / UL / Maryam
+        // cancel that hook — engaging beside the pick meant "when targeted" reactions never
+        // saw this Action (same seat as Bleed Out 01160).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+
+            $engageEvent = EventFactory::createCardEngagedEvent($owner->ControllerId, $target->Id, $owner->Id, $this->Id);
+            $engageEvent->batchId = $batchId;
+            $event->theah->queueEvent($engageEvent);
+
+            // ActionResolved stays unbatched (01160) so a racing deleteEventBatch cannot strip it.
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
+            $event->theah->queueEvent($actionResolvedEvent);
         }
     }
 
@@ -147,12 +171,17 @@ class Action_01029 extends RiskAction implements IAbilityThatTargetsCharacters
     
             $owner = $this->getOwningCard($game->theah);
     
-            $target = $game->theah->getCardById($id);
-            $event = EventFactory::createCardEngagedEvent($game->getActivePlayerId(), $target->Id, $owner->Id, $this->Id);
-            $game->theah->queueEvent($event);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Engage + ActionResolved emit from handleEvent
+            // only when EventCharacterTargeted is not canceled.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

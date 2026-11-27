@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04027 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -82,6 +83,27 @@ class Action_04027 extends RiskAction implements IAbilityThatTargetsCharacters
         {
             $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, "04027", $this->Id);
+            $event->theah->queueEvent($transitionEvent);
+        }
+
+        // WHY: Opponent's Engage / Decline prompt only when targeting survives. Nothing is a
+        // cost here, so the whole effect chain (prompt → engage or claim → ActionResolved) is
+        // gated. On cancel nothing queues; UL / Terraria resolve the action themselves.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            // WHY set here (not at pick): a canceled CharacterTargeted must not leave a
+            // stale CHOSEN_TARGET for the next action (Flintlock 01049 seat).
+            $event->theah->game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+
+            // WHY: Transition event sets the active player to the target's controller.
+            $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, "04027_2", $this->Id);
             $event->theah->queueEvent($transitionEvent);
         }
     }
@@ -162,8 +184,6 @@ class Action_04027 extends RiskAction implements IAbilityThatTargetsCharacters
                 throw new UserException($errorMessage);
             }
 
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-
             $owner = $this->getOwningCard($game->theah);
             $game->notify->all("message", clienttranslate('${player_name} uses ${card_inject_code} targeting ${character_inject_code}.'), [
                 "player_name" => $game->getPlayerNameById($owner->ControllerId),
@@ -171,8 +191,19 @@ class Action_04027 extends RiskAction implements IAbilityThatTargetsCharacters
                 "character_inject_code" => $character->getInjectCode(),
             ]);
 
-            $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "04027_2", $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+            // WHY: Fire targeting alone here. CHOSEN_TARGET + 04027_2 prompt emit from
+            // handleEvent only when EventCharacterTargeted is not canceled — Cloud Bottle /
+            // UL / Maryam must be able to stop it before the opponent is even asked.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

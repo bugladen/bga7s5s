@@ -21,6 +21,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardSentToLocker;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityStart;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
@@ -162,6 +163,38 @@ class Action_02051_Test extends TestCase
 
                 $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_02051, 'highDramaPhase02051', $engaged->Id);
 
+                // Pick queues CharacterTargeted + the Risk's own Locker move (cost, unbatched so a
+                // canceled hook cannot strand the Risk in Purgatory). Everything else waits.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($engaged->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(1, $world->theah->queuedOfType(EventCardSentToLocker::class), 'locker at pick');
+                Assert::same(0, $world->theah->queuedOfType(EventCardSentToLocker::class)[0]->batchId ?? 0, 'locker unbatched');
+                Assert::count(2, $world->theah->queuedEvents, 'only targeting + locker');
+                Assert::same([null], $world->game->gamestate->transitions, 'sole empty transition');
+
+                // Canceled hook: nothing. Foreign ability: ignored.
+                $before = count($world->theah->queuedEvents);
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $engaged->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count($before, $world->theah->queuedEvents, 'cancel queues nothing');
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $action->handleEvent($hook);
+                Assert::count($before, $world->theah->queuedEvents, 'foreign ignored');
+
+                // Survive: engage performer + engarde share the batch.
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 77;
+                $action->handleEvent($hook);
+
                 $start = $world->theah->queuedOfType(EventSorcererAbilityStart::class);
                 $engage = $world->theah->queuedOfType(EventCardEngaged::class);
                 $engarde = $world->theah->queuedOfType(EventCardEngarded::class);
@@ -171,6 +204,8 @@ class Action_02051_Test extends TestCase
                 Assert::count(1, $start, 'start');
                 Assert::same($sorcerer->Id, $start[0]->performerId, 'performer');
                 Assert::same($action->Id, $start[0]->abilityId, 'ability');
+                Assert::same(77, $engage[0]->batchId, 'engage batch');
+                Assert::same(77, $engarde[0]->batchId, 'engarde batch');
                 Assert::same($sorcerer->Id, $engage[0]->cardId, 'engage performer');
                 Assert::same($risk->Id, $engage[0]->sourceId, 'engage source');
                 Assert::same($engaged->Id, $engarde[0]->cardId, 'en garde');
@@ -179,7 +214,6 @@ class Action_02051_Test extends TestCase
                 Assert::same($engaged->Id, $played[0]->targetId, 'played target');
                 Assert::same($engaged->Location, $played[0]->targetLocation, 'played location');
                 Assert::same($risk->ControllerId, $resolved[0]->playerId, 'resolved');
-                Assert::same([null], $world->game->gamestate->transitions, 'sole empty transition');
             },
 
             'confirm rejects a missing or illegal target' => function () {

@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01012 extends CharacterAction implements ISorcererAbility, IAbilityThatTargetsCharacters
@@ -48,6 +49,38 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
             $sibella = $this->getOwningCharacter($event->theah);
             $transition = EventFactory::createTransitionEvent($sibella->ControllerId, $sibella->Id, "01012", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Sibella's self-wound, the Sorcerer start/played pair, the target wound and
+        // ActionResolved are all resolution effects, so all wait for EventCharacterTargeted to
+        // survive. Cloud Bottle / UL / Maryam cancel that hook; queuing beside the pick meant
+        // "when targeted" reactions never saw this action (journal 2026-11-27-02).
+        // Self-wound is gated too: a canceled action must not leave Sibella paying a pure cost.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $theah = $event->theah;
+            $performer = $this->getOwningCharacter($theah);
+            $target = $theah->getCharacterById($event->targetId);
+            if ($performer === null || $target === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $theah->game->getNextEventBatchId();
+
+            $selfWound = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode());
+            $selfWound->batchId = $batchId;
+            $theah->queueEvent($selfWound);
+
+            $theah->queueEvent(EventFactory::createSorcererAbilityStartEvent($performer->ControllerId, $performer->Id, $this->Id, $performer->Id, $target->Id, $target->Location));
+
+            $targetWound = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
+            $targetWound->batchId = $batchId;
+            $theah->queueEvent($targetWound);
+
+            $theah->queueEvent(EventFactory::createSorcererAbilityPlayedEvent($performer->ControllerId, $performer->Id, $this->Id, $performer->Id, $target->Id, $target->Location));
+
+            $theah->queueEvent(EventFactory::createActionResolvedEvent($performer->ControllerId));
         }
     }
 
@@ -102,28 +135,23 @@ class Action_01012 extends CharacterAction implements ISorcererAbility, IAbility
                 throw new UserException($errorMessage);
             }
 
-            $performer = $this->getOwningCharacter($game->theah);
-
             $owner = $this->getOwningCharacter($game->theah);
             $game->notify->all("message", clienttranslate('${owner_inject_code}: ${target_inject_code} is the target.'), [
                 "owner_inject_code" => $owner->getInjectCode(),
                 "target_inject_code" => $target->getInjectCode(),
             ]);
 
-            $event = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $performer->Id, 1, $performer->getInjectCode());
-            $game->theah->queueEvent($event);
-
-            $event = EventFactory::createSorcererAbilityStartEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $game->theah->queueEvent($event);
-
-            $event = EventFactory::createCharacterBeingWoundedEvent($target->Id, $performer->Id, 1, $performer->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($event);
-
-            $event = EventFactory::createSorcererAbilityPlayedEvent($owner->ControllerId, $owner->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-            $game->theah->queueEvent($event);
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here. Self-wound, Sorcerer events, target wound and
+            // ActionResolved emit from handleEvent only when EventCharacterTargeted survives.
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $target->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("opposingCharacterChosen");
         }

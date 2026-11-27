@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_04038 extends RiskCityAction implements IAbilityThatTargetsCharacters
@@ -86,6 +87,47 @@ class Action_04038 extends RiskCityAction implements IAbilityThatTargetsCharacte
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "04038", $this->Id);
             $event->theah->queueEvent($transition);
         }
+
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+
+            // WHY: Engaged / wounded re-read at survive — "complete as much as possible".
+            if ($character->Engaged)
+            {
+                $engardeEvent = EventFactory::createCardEngardedEvent(
+                    $character->ControllerId,
+                    $character->Id,
+                    $owner->Id,
+                    $this->Id
+                );
+                $engardeEvent->batchId = $batchId;
+                $event->theah->queueEvent($engardeEvent);
+            }
+
+            if ($character->Wounds > 0)
+            {
+                $healEvent = EventFactory::createCharacterBeingHealedEvent(
+                    $character->Id,
+                    $owner->Id,
+                    1,
+                    $owner->getInjectCode(),
+                    $this->Id
+                );
+                $healEvent->batchId = $batchId;
+                $event->theah->queueEvent($healEvent);
+            }
+
+            // ActionResolved stays unbatched (01160 convention).
+            $event->theah->queueEvent(EventFactory::createActionResolvedEvent($owner->ControllerId));
+        }
     }
 
     public function getArgsFromAction(Game $game, int $state, string $stateName): array
@@ -154,31 +196,17 @@ class Action_04038 extends RiskCityAction implements IAbilityThatTargetsCharacte
                 "character_inject_code" => $character->getInjectCode(),
             ]);
 
-            if ($character->Engaged)
-            {
-                $engardeEvent = EventFactory::createCardEngardedEvent(
-                    $character->ControllerId,
-                    $character->Id,
-                    $owner->Id,
-                    $this->Id
-                );
-                $game->theah->queueEvent($engardeEvent);
-            }
-
-            if ($character->Wounds > 0)
-            {
-                $healEvent = EventFactory::createCharacterBeingHealedEvent(
-                    $character->Id,
-                    $owner->Id,
-                    1,
-                    $owner->getInjectCode(),
-                    $this->Id
-                );
-                $game->theah->queueEvent($healEvent);
-            }
-
-            $actionResolvedEvent = EventFactory::createActionResolvedEvent($owner->ControllerId);
-            $game->theah->queueEvent($actionResolvedEvent);
+            // WHY: Fire targeting alone here; En Garde / heal / ActionResolved emit from
+            // handleEvent only when EventCharacterTargeted survives (Cloud Bottle / UL cancel it).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState("characterChosen");
         }

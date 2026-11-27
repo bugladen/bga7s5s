@@ -20,6 +20,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_02036a_Test extends TestCase
@@ -143,12 +144,54 @@ class Action_02036a_Test extends TestCase
                     $foe->Id
                 );
 
+                // Pick queues ONLY the targeting hook; target stays unset and no prompt yet.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'targeting hook');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'hook target');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'hook ability');
+                Assert::true($targeted[0]->batchId !== null, 'batch');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no prompt beside pick');
+                Assert::true($world->game->globals->get(Game::CHOSEN_TARGET) !== $foe->Id, 'target not stored at pick');
+                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+
+                $world->theah->takeQueuedEvents();
+                $hook = $targeted[0];
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+
                 Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::same('02036_2', $transitions[0]->transition, 'name');
                 Assert::same(2, $transitions[0]->playerId, 'their turn');
                 Assert::same($scheme->Id, $transitions[0]->sourceId, 'source');
-                Assert::same(['targetChosen'], $world->game->gamestate->transitions, 'transition');
+                Assert::same($hook->batchId, $transitions[0]->batchId, 'prompt shares batch');
+            },
+
+            // WHY: Cloud Bottle / UL cancel the hook — no prompt and no stale CHOSEN_TARGET.
+            'canceled CharacterTargeted queues nothing and stores no target' => function () {
+                $world = new TestWorld();
+                [, $action, , $foe] = $this->scene($world);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 9;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'nothing queued');
+                Assert::true($world->game->globals->get(Game::CHOSEN_TARGET) !== $foe->Id, 'no stale target');
+            },
+
+            'CharacterTargeted for another ability is ignored' => function () {
+                $world = new TestWorld();
+                [, $action, , $foe] = $this->scene($world);
+                $hook = new EventCharacterTargeted();
+                $hook->targetId = $foe->Id;
+                $hook->abilityId = 'someone-else';
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'ignored');
             },
 
             'discarding a hand card avoids the move Home' => function () {

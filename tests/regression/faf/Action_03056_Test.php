@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\_03056;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\faf\actions\Action_03056;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationClaimed;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownAddedToLocation;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRenownRemovedFromLocation;
@@ -28,9 +29,70 @@ class Action_03056_Test extends TestCase
         return 'Action_03056';
     }
 
+    /**
+     * Pick the target (queues CharacterTargeted only), then deliver that same event back
+     * as a surviving hook so the effects emit.
+     */
+    private function pickAndSurvive(TestWorld $world, Action_03056 $action, $risk, $foe): void
+    {
+        $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03056, 'x', $foe->Id);
+        $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+        $hook = $targeted[count($targeted) - 1];
+        $hook->theah = $world->theah;
+        $hook->canceled = false;
+        $action->handleEvent($hook);
+    }
+
     public function tests(): array
     {
         return [
+            'pick queues only CharacterTargeted; cancel leaves nothing; survive claims with shared batch' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _03056(), Game::LOCATION_HAND, 1);
+                $performer = $world->placeCharacter(new GenericCharacter('Performer'), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                /** @var Action_03056 $action */
+                $action = $risk->getActions()[0];
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
+                $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 1);
+
+                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03056, 'x', $foe->Id);
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(1, $world->theah->queuedEvents, 'nothing else queued');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET), 'no stale target');
+
+                // Canceled hook: nothing.
+                $world->theah->queuedEvents = [];
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $action->Id;
+                $hook->targetId = $foe->Id;
+                $hook->canceled = true;
+                $hook->theah = $world->theah;
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'cancel queues nothing');
+                Assert::same(0, (int) $world->game->globals->get(Game::CHOSEN_TARGET), 'cancel: no stale target');
+
+                // Foreign ability: ignored.
+                $hook->canceled = false;
+                $hook->abilityId = 'other';
+                $action->handleEvent($hook);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ability ignored');
+
+                // Survive: claim + Renown stage share the batch.
+                $hook->abilityId = $action->Id;
+                $hook->batchId = 77;
+                $action->handleEvent($hook);
+                Assert::same($foe->Id, $world->game->globals->get(Game::CHOSEN_TARGET), 'target on survive');
+                Assert::same(Game::LOCATION_CITY_DOCKS, $world->game->globals->get(Game::CHOSEN_LOCATION), 'source stashed');
+                Assert::same(77, $world->theah->queuedOfType(EventLocationClaimed::class)[0]->batchId, 'claim batch');
+                Assert::same(77, $world->theah->queuedOfType(EventTransition::class)[0]->batchId, 'stage batch');
+            },
+
             'is a risk city action that needs a performer' => function () {
                 $action = new Action_03056();
                 Assert::instanceOf(RiskCityAction::class, $action, 'risk city');
@@ -63,7 +125,7 @@ class Action_03056_Test extends TestCase
                 $action->handleEvent($triggered);
                 Assert::same('03056', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'picker');
 
-                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03056, 'x', $foe->Id);
+                $this->pickAndSurvive($world, $action, $risk, $foe);
                 $claim = $world->theah->queuedOfType(EventLocationClaimed::class)[0];
                 Assert::same(2, $claim->playerId, 'they claim');
                 Assert::same($foe->Id, $claim->performerId, 'their character');
@@ -73,7 +135,7 @@ class Action_03056_Test extends TestCase
                 $world->theah->queuedEvents = [];
                 $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 1);
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
-                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03056, 'x', $foe->Id);
+                $this->pickAndSurvive($world, $action, $risk, $foe);
                 Assert::same('03056_2', $world->theah->queuedOfType(EventTransition::class)[0]->transition, 'renown');
                 Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not yet');
 
@@ -106,7 +168,7 @@ class Action_03056_Test extends TestCase
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
                 $world->theah->setLocationRenown(Game::LOCATION_CITY_DOCKS, 2);
                 $world->theah->setLocationCanBeClaimed(Game::LOCATION_CITY_DOCKS, false);
-                $action->actFromActionWithId($world->game, States::HIGH_DRAMA_PLAYER_TURN_03056, 'x', $foe->Id);
+                $this->pickAndSurvive($world, $action, $risk, $foe);
                 Assert::count(0, $world->theah->queuedOfType(EventLocationClaimed::class), 'no claim');
                 Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no renown step');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');

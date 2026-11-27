@@ -10,6 +10,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\EventFactory;
 use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventResolveManeuver;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
@@ -60,6 +61,37 @@ class Maneuver_02057 extends Maneuver implements IAbilityThatTargetsCharacters
             $owner = $this->getOwningCard($event->theah);
             $transitionEvent = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "02057", $this->Id);
             $event->theah->queueEvent($transitionEvent);
+        }
+
+        // WHY: Wound only when EventCharacterTargeted survives. Brute is re-read here so the second
+        // wound reflects the target's traits at resolution, and both wounds share one batch so a
+        // racing cancel strips them together.
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $character = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $character === null)
+            {
+                return;
+            }
+
+            $batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $batchId;
+            $event->theah->queueEvent($woundEvent);
+
+            if ($character->hasTrait("Brute"))
+            {
+                $event->theah->game->notify->all("message", clienttranslate('${card_inject_code}: ${character_inject_code} has Brute. Wounding again.'), [
+                    'card_inject_code' => $owner->getInjectCode(),
+                    'character_inject_code' => $character->getInjectCode(),
+                ]);
+
+                $woundEvent2 = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
+                $woundEvent2->batchId = $batchId;
+                $event->theah->queueEvent($woundEvent2);
+            }
         }
     }
 
@@ -120,19 +152,17 @@ class Maneuver_02057 extends Maneuver implements IAbilityThatTargetsCharacters
                 'character_inject_code' => $character->getInjectCode(),
             ]);
 
-            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-            $game->theah->queueEvent($woundEvent);
-
-            if ($character->hasTrait("Brute"))
-            {
-                $game->notify->all("message", clienttranslate('${card_inject_code}: ${character_inject_code} has Brute. Wounding again.'), [
-                    'card_inject_code' => $owner->getInjectCode(),
-                    'character_inject_code' => $character->getInjectCode(),
-                ]);
-
-                $woundEvent2 = EventFactory::createCharacterBeingWoundedEvent($character->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
-                $game->theah->queueEvent($woundEvent2);
-            }
+            // WHY: Fire targeting alone here; the wound(s) emit from handleEvent only when
+            // EventCharacterTargeted survives (Cloud Bottle / UL / Maryam cancel that hook).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

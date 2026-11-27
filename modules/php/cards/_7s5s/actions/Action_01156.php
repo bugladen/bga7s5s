@@ -12,6 +12,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharacters, IRangedAbility
@@ -60,6 +61,63 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
             $transitionName = $this->IsEffectsOnlyCopy ? "01156_2" : "01156";
             $transition = EventFactory::createTransitionEvent($owner->ControllerId, $owner->Id, $transitionName, $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Wound / engage-or-wound only when EventCharacterTargeted survives. Cloud Bottle /
+        // UL / Maryam cancel that hook — resolving beside the pick meant "when targeted"
+        // reactions never saw this Action (same seat as Bleed Out 01160 / Vantage Point 04020).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $this->resolveTargetedCharacter($event);
+        }
+    }
+
+    private function resolveTargetedCharacter(EventCharacterTargeted $event): void
+    {
+        $theah = $event->theah;
+        $game = $theah->game;
+        $target = $theah->getCharacterById($event->targetId);
+        $musket = $this->getOwningCard($theah);
+        $performer = $this->getOwningCharacter($theah);
+        if ($target === null || $musket === null || $performer === null)
+        {
+            return;
+        }
+
+        // WHY shared batchId: if this Action queues before Cloud Bottle's HAND cancel during
+        // CharacterTargeted dispatch, deleteEventBatch strips the wound / choice-transition
+        // siblings. RangedAbilityPlayed / ActionResolved stay unbatched like 01160 so the
+        // action still resolves.
+        $batchId = $event->batchId ?? $game->getNextEventBatchId();
+
+        if ($target->Engaged)
+        {
+            $game->notify->all("message", clienttranslate('${character_inject_code} was already Engaged and must take the wound from ${musket_inject_code}.'), [
+                "character_inject_code" => $target->getInjectCode(),
+                "musket_inject_code" => $musket->getInjectCode(),
+            ]);
+
+            $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
+            $woundEvent->batchId = $batchId;
+            $theah->queueEvent($woundEvent);
+
+            $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($musket->ControllerId, $musket->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
+            $theah->queueEvent($rangedAbilityPlayedEvent);
+
+            $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
+            $theah->queueEvent($actionResolvedEvent);
+        }
+        else
+        {
+            $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+            $game->notify->all("message", clienttranslate('${target_player_name} must decide to Engage ${character_inject_code} or suffer a wound.'), [
+                "target_player_name" => $game->getPlayerNameById($target->ControllerId),
+                "character_inject_code" => $target->getInjectCode(),
+            ]);
+
+            $transition = EventFactory::createTransitionEvent($target->ControllerId, $musket->Id, "01156_3", $this->Id);
+            $transition->batchId = $batchId;
+            $theah->queueEvent($transition);
         }
     }
 
@@ -168,53 +226,35 @@ class Action_01156 extends AttachmentAction implements IAbilityThatTargetsCharac
             }
 
             $musket = $this->getOwningCard($game->theah);
-            if ($target->Engaged)
+            $game->notify->all("message", clienttranslate('${player_name} has used the action of ${musket_inject_code} targeting ${character_inject_code}.'), [
+                "player_name" => $game->getPlayerNameById($performer->ControllerId),
+                "character_inject_code" => $target->getInjectCode(),
+                "musket_inject_code" => $musket->getInjectCode(),
+            ]);
+
+            // WHY: Discard is the cost, paid whether or not the targeting hook survives
+            // (the card is already parked) — only the effects wait on EventCharacterTargeted.
+            if (! $this->IsEffectsOnlyCopy)
             {
-                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${musket_inject_code} and selected ${character_inject_code} as the target, who was already Engaged.'), [
-                    "player_name" => $game->getPlayerNameById($performer->ControllerId),
-                    "character_inject_code" => $target->getInjectCode(),
-                    "musket_inject_code" => $musket->getInjectCode(),
-                ]);
-
-                if (! $this->IsEffectsOnlyCopy)
-                {
-                    $discardCardId = $game->globals->get(Game::CHOSEN_CARD);
-                    $discardCard = $game->getCardObjectFromDb($discardCardId);
-                    $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
-                    $game->theah->queueEvent($discardEvent);
-                }
-
-                $woundEvent = EventFactory::createCharacterBeingWoundedEvent($target->Id, $musket->Id, 1, $musket->getInjectCode(), $this->Id);
-                $game->theah->queueEvent($woundEvent);
-
-                $rangedAbilityPlayedEvent = EventFactory::createRangedAbilityPlayedEvent($musket->ControllerId, $musket->Id, $this->Id, $performer->Id, $target->Id, $target->Location);
-                $game->theah->queueEvent($rangedAbilityPlayedEvent);
-
-                $actionResolvedEvent = EventFactory::createActionResolvedEvent($performer->ControllerId);
-                $game->theah->queueEvent($actionResolvedEvent);
+                $discardCardId = $game->globals->get(Game::CHOSEN_CARD);
+                $discardCard = $game->getCardObjectFromDb($discardCardId);
+                $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
+                $game->theah->queueEvent($discardEvent);
             }
-            else
-            {
-                $game->globals->set(Game::CHOSEN_TARGET, $target->Id);
-                $game->notify->all("message", clienttranslate('${player_name} has used the action of ${musket_inject_code} and selected ${character_inject_code} as the target.
-                ${target_player_name} must decide to Engage or suffer a wound.'), [
-                    "player_name" => $game->getPlayerNameById($performer->ControllerId),
-                    "target_player_name" => $game->getPlayerNameById($target->ControllerId),
-                    "character_inject_code" => $target->getInjectCode(),
-                    "musket_inject_code" => $musket->getInjectCode(),
-                ]);
-    
-                if (! $this->IsEffectsOnlyCopy)
-                {
-                    $discardCardId = $game->globals->get(Game::CHOSEN_CARD);
-                    $discardCard = $game->getCardObjectFromDb($discardCardId);
-                    $discardEvent = EventFactory::createCardDiscardedFromHandEvent($discardCard->OwnerId, $discardCard->Id, $musket->Id);
-                    $game->theah->queueEvent($discardEvent);
-                }
 
-                $transition = EventFactory::createTransitionEvent($target->ControllerId, $musket->Id, "01156_3", $this->Id);
-                $game->theah->queueEvent($transition);
-            }
+            // WHY: Fire targeting alone here. Wound / engage-or-wound emit from handleEvent
+            // only when EventCharacterTargeted is not canceled, so Cloud Bottle and other
+            // "when targeted" reactions see the pick.
+            $batchId = $game->getNextEventBatchId();
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $musket->ControllerId,
+                $target->Id,
+                $musket->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $batchId;
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

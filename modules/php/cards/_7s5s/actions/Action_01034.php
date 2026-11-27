@@ -11,6 +11,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\Game;
 use Bga\Games\SeventhSeaCityOfFiveSails\States;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\Event;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\Theah;
 
 class Action_01034 extends RiskAction implements IAbilityThatTargetsCharacters
@@ -54,6 +55,24 @@ class Action_01034 extends RiskAction implements IAbilityThatTargetsCharacters
             $owner = $this->getOwningCard($event->theah);
             $transition = EventFactory::createTransitionEvent($event->playerId, $owner->Id, "01034", $this->Id);
             $event->theah->queueEvent($transition);
+        }
+
+        // WHY: Target's may-engage choice only when EventCharacterTargeted survives
+        // (Cloud Bottle / UL / Maryam cancel that hook — same seat as Bleed Out 01160).
+        if ($event instanceof EventCharacterTargeted && $event->abilityId == $this->Id && ! $event->canceled)
+        {
+            $owner = $this->getOwningCard($event->theah);
+            $target = $event->theah->getCharacterById($event->targetId);
+            if ($owner === null || $target === null)
+            {
+                return;
+            }
+
+            $event->theah->game->globals->set(Game::CHOSEN_TARGET, $target->Id);
+
+            $transitionEvent = EventFactory::createTransitionEvent($target->ControllerId, $owner->Id, "01034_2", $this->Id);
+            $transitionEvent->batchId = $event->batchId ?? $event->theah->game->getNextEventBatchId();
+            $event->theah->queueEvent($transitionEvent);
         }
     }
 
@@ -129,14 +148,25 @@ class Action_01034 extends RiskAction implements IAbilityThatTargetsCharacters
             $performerId = $game->globals->get(Game::CHOSEN_PERFORMER);
             $performer = $game->theah->getCharacterById($performerId);
 
-            $game->globals->set(Game::CHOSEN_TARGET, $character->Id);
-            
             $owner = $this->getOwningCard($game->theah);
+
+            // WHY unbatched: "Wound your performer •" is a cost, already paid by picking — it must
+            // NOT share the targeting batchId, or a Cloud Bottle / UL cancel would strip (refund) it.
             $woundEvent = EventFactory::createCharacterBeingWoundedEvent($performer->Id, $owner->Id, 1, $owner->getInjectCode(), $this->Id);
             $game->theah->queueEvent($woundEvent);
 
-            $transitionEvent = EventFactory::createTransitionEvent($character->ControllerId, $owner->Id, "01034_2", $this->Id);
-            $game->theah->queueEvent($transitionEvent);
+            // WHY: Fire targeting alone for the effect. CHOSEN_TARGET + the engage-or-en-garde
+            // choice open from handleEvent only when EventCharacterTargeted is not canceled
+            // (a canceled hook must not leave a stale CHOSEN_TARGET behind).
+            $targetedEvent = EventFactory::createCharacterTargetedEvent(
+                $owner->ControllerId,
+                $character->Id,
+                $owner->Id,
+                $this->Id
+            );
+            $targetedEvent->batchId = $game->getNextEventBatchId();
+            $game->theah->eventCheck($targetedEvent);
+            $game->theah->queueEvent($targetedEvent);
 
             $game->gamestate->nextState();
         }

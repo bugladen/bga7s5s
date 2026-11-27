@@ -15,6 +15,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Stash;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Stash;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\reactions\RiskReaction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngarded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventLocationPressureResult;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
@@ -110,9 +111,58 @@ class Reaction_05Stash_Test extends TestCase
                 Assert::false(in_array("character-{$ready->Id}", $ids, true), 'ready not engardeable');
 
                 $reaction->performReaction($world->game, 0, '', 'character-' . $engaged->Id);
-                Assert::same($engaged->Id, $world->theah->queuedOfType(EventCardEngarded::class)[0]->cardId, 'engarde');
-                Assert::true($reaction->Used, 'spent');
+                // Pick queues ONLY CharacterTargeted; Used already (setUsed at pick); no engarde yet.
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($engaged->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($reaction->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngarded::class), 'no engarde yet');
+                Assert::true($reaction->Used, 'spent at pick');
+                Assert::same($engaged->Id, $reaction->chosenTargetId, 'target kept for the hook');
+
+                // Survive (hook delivered AFTER setUsed — must not be behind isAvailable): engarde, batch shared.
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $reaction->Id;
+                $hook->targetId = $engaged->Id;
+                $hook->batchId = 77;
+                $hook->canceled = false;
+                $world->fireOn($risk, $hook);
+                $engarde = $world->theah->queuedOfType(EventCardEngarded::class);
+                Assert::same($engaged->Id, $engarde[0]->cardId, 'engarde');
+                Assert::same(77, $engarde[0]->batchId, 'engarde batch');
                 Assert::same('', $reaction->stage, 'reset');
+                Assert::same(0, $reaction->chosenTargetId, 'sticky target cleared');
+                Assert::same('', $reaction->pressureLocation, 'location cleared');
+            },
+
+            'canceled targeting engardes nothing and clears state; foreign ability ignored' => function () {
+                ['world' => $world, 'risk' => $risk, 'reaction' => $reaction, 'engaged' => $engaged] = $this->scene();
+                $world->fireOn($risk, $this->failedPressure(1, Game::LOCATION_CITY_DOCKS));
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                $world->fireOn($risk, $triggered);
+                $reaction->performReaction($world->game, 0, '', 'character-' . $engaged->Id);
+                Assert::same($engaged->Id, $reaction->chosenTargetId, 'target stored');
+                $world->theah->takeQueuedEvents();
+
+                $foreign = new EventCharacterTargeted();
+                $foreign->abilityId = 'other';
+                $foreign->targetId = $engaged->Id;
+                $foreign->canceled = false;
+                $world->fireOn($risk, $foreign);
+                Assert::count(0, $world->theah->queuedEvents, 'foreign ignored');
+                Assert::same($engaged->Id, $reaction->chosenTargetId, 'foreign leaves state');
+
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $reaction->Id;
+                $hook->targetId = $engaged->Id;
+                $hook->canceled = true;
+                $world->fireOn($risk, $hook);
+                Assert::count(0, $world->theah->queuedOfType(EventCardEngarded::class), 'no engarde');
+                Assert::same(0, $reaction->chosenTargetId, 'cleared on cancel');
+                Assert::same('', $reaction->pressureLocation, 'location cleared on cancel');
             },
 
             'hides on success, opponent pressure, empty city, or no Engaged targets' => function () {

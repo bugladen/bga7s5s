@@ -16,6 +16,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\bas\reactions\Reaction_04058;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Wardog;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\reactions\Reaction_05Wardoga;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventEnteringPayState;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventRiskReactionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventSorcererAbilityPlayed;
@@ -83,10 +84,68 @@ class Reaction_04058_Test extends TestCase
                 $triggered->reactionId = 'redirect-' . $foe->Id;
                 $world->fireOn($risk, $triggered);
                 Assert::true($reaction->Used, 'spent');
+
+                // WHY: pay completion queues ONLY CharacterTargeted; Sorcerer start, the wound
+                // and Sorcerer played wait for it to survive (Cloud Bottle / UL / Maryam).
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'target');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($reaction->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'no start yet');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'no played yet');
+
+                $survived = $targeted[0];
+                $survived->theah = $world->theah;
+                $world->fireOn($risk, $survived);
                 $redirected = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
-                Assert::same($foe->Id, end($redirected)->characterId, 'wound moved');
+                Assert::count(1, $redirected, 'wound released');
+                Assert::same($foe->Id, $redirected[0]->characterId, 'wound moved');
+                Assert::same($survived->batchId, $redirected[0]->batchId, 'shares batch');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'start');
                 Assert::count(1, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'played');
+                Assert::same(null, $reaction->chosenTargetId, 'state reset after survive');
+                Assert::same(null, $reaction->performerId, 'performer reset');
+            },
+
+            // WHY: A canceled targeting drops the redirected wound entirely and clears sticky
+            // state; the intercepted original wound is not re-released.
+            'canceled CharacterTargeted drops the redirected wound and resets state' => function () {
+                $world = new TestWorld();
+                $risk = $world->placeCard(new _04058(), Game::LOCATION_HAND, 1);
+                $sorcerer = $world->placeCharacter(new _04041(), Game::LOCATION_CITY_DOCKS, 1);
+                $foe = $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_DOCKS, 2);
+                $source = $world->placeCard(new _04047(), Game::LOCATION_HAND, 2);
+                /** @var Reaction_04058 $reaction */
+                $reaction = $risk->getReactions()[0];
+
+                $wound = new EventCharacterBeingWounded();
+                $wound->characterId = $sorcerer->Id;
+                $wound->sourceId = $source->Id;
+                $wound->abilityId = $source->getActions()[0]->Id;
+                $wound->wounds = 1;
+                $world->fireOn($risk, $wound);
+                Assert::true($wound->canceled, 'intercepted');
+
+                $reaction->performReaction($world->game, 0, '', 'redirect-' . $foe->Id);
+                $triggered = new EventRiskReactionTriggered();
+                $triggered->internalId = $reaction->Id;
+                $triggered->reactionId = 'redirect-' . $foe->Id;
+                $world->fireOn($risk, $triggered);
+
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class)[0];
+                $targeted->theah = $world->theah;
+                $targeted->canceled = true;
+                $world->theah->takeQueuedEvents();
+                $world->fireOn($risk, $targeted);
+
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityStart::class), 'no start');
+                Assert::count(0, $world->theah->queuedOfType(EventSorcererAbilityPlayed::class), 'no played');
+                Assert::same(null, $reaction->chosenTargetId, 'state reset');
+                Assert::same(null, $reaction->performerId, 'performer reset');
             },
 
             // WHY: Smuggled Long Rifle Covert Reaction wounds from an equipped attachment

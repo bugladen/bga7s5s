@@ -22,6 +22,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionTriggered;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
 class Action_02020_Test extends TestCase
@@ -53,6 +54,17 @@ class Action_02020_Test extends TestCase
         /** @var Action_02020 $action */
         $action = $risk->getActions()[0];
         return [$risk, $action, $performer, $foe, $attachment];
+    }
+
+    private function targeted(TestWorld $world, Action_02020 $action, GenericCharacter $target, _02020 $risk, int $batchId): EventCharacterTargeted
+    {
+        $event = new EventCharacterTargeted();
+        $event->abilityId = $action->Id;
+        $event->targetId = $target->Id;
+        $event->sourceId = $risk->Id;
+        $event->batchId = $batchId;
+        $event->theah = $world->theah;
+        return $event;
     }
 
     public function tests(): array
@@ -188,11 +200,11 @@ class Action_02020_Test extends TestCase
                 Assert::true($threw, 'rejected');
             },
 
-            // WHY already Engaged → auto-wound: print has no en-garde filter.
-            'act step 2 engages attachment and auto-wounds Engaged target' => function () {
+            // WHY: attachment engage is the paid cost (queued unbatched); the engage-or-wound
+            // resolution waits for a surviving EventCharacterTargeted.
+            'act step 2 engages attachment (cost) and queues only CharacterTargeted for the effect' => function () {
                 $world = new TestWorld();
                 [$risk, $action, $performer, $foe, $attachment] = $this->scene($world);
-                $foe->Engaged = true;
                 $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
                 $world->game->globals->set(Game::CHOSEN_CARD, $foe->Id);
 
@@ -204,38 +216,67 @@ class Action_02020_Test extends TestCase
                 );
 
                 $engages = $world->theah->queuedOfType(EventCardEngaged::class);
-                Assert::count(1, $engages, 'engage attachment');
+                Assert::count(1, $engages, 'engage attachment cost');
                 Assert::same($attachment->Id, $engages[0]->cardId, 'attachment');
+                Assert::true(empty($engages[0]->batchId), 'cost is outside the targeting batch');
+                $targeted = $world->theah->queuedOfType(EventCharacterTargeted::class);
+                Assert::count(1, $targeted, 'one targeting');
+                Assert::same($foe->Id, $targeted[0]->targetId, 'foe');
+                Assert::same($risk->Id, $targeted[0]->sourceId, 'source');
+                Assert::same($action->Id, $targeted[0]->abilityId, 'ability');
+                Assert::true($targeted[0]->batchId > 0, 'batched');
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no wound yet');
+                Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no opponent choice yet');
+                Assert::count(0, $world->theah->queuedOfType(EventActionResolved::class), 'not resolved yet');
+                Assert::same(['attachmentChosen'], $world->game->gamestate->transitions, 'named');
+            },
+
+            // WHY already Engaged → auto-wound: print has no en-garde filter.
+            'surviving CharacterTargeted auto-wounds an Engaged target with the shared batch' => function () {
+                $world = new TestWorld();
+                [$risk, $action, , $foe] = $this->scene($world);
+                $foe->Engaged = true;
+
+                $action->handleEvent($this->targeted($world, $action, $foe, $risk, 77));
+
                 $wounds = $world->theah->queuedOfType(EventCharacterBeingWounded::class);
                 Assert::count(1, $wounds, 'auto wound');
                 Assert::same($foe->Id, $wounds[0]->characterId, 'foe');
                 Assert::same($risk->Id, $wounds[0]->sourceId, 'source');
+                Assert::same(77, $wounds[0]->batchId, 'shares batch');
                 Assert::count(0, $world->theah->queuedOfType(EventTransition::class), 'no opponent choice');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
-                Assert::same(['attachmentChosen'], $world->game->gamestate->transitions, 'named');
             },
 
-            'act step 2 engages attachment and transitions 02020_2 when target is en garde' => function () {
+            'surviving CharacterTargeted transitions 02020_2 when target is en garde' => function () {
                 $world = new TestWorld();
-                [$risk, $action, $performer, $foe, $attachment] = $this->scene($world);
-                $world->game->globals->set(Game::CHOSEN_PERFORMER, $performer->Id);
-                $world->game->globals->set(Game::CHOSEN_CARD, $foe->Id);
+                [$risk, $action, , $foe] = $this->scene($world);
 
-                $action->actFromActionWithId(
-                    $world->game,
-                    States::HIGH_DRAMA_PLAYER_TURN_02020_2,
-                    'highDramaPlayerTurn_02020_2',
-                    $attachment->Id
-                );
+                $action->handleEvent($this->targeted($world, $action, $foe, $risk, 88));
 
-                Assert::count(1, $world->theah->queuedOfType(EventCardEngaged::class), 'engage');
                 Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'no auto wound');
                 $transitions = $world->theah->queuedOfType(EventTransition::class);
                 Assert::count(1, $transitions, 'opponent choice');
                 Assert::same('02020_2', $transitions[0]->transition, 'name');
                 Assert::same(2, $transitions[0]->playerId, 'opponent');
                 Assert::same($risk->Id, $transitions[0]->sourceId, 'source owner card');
+                Assert::same(88, $transitions[0]->batchId, 'shares batch');
                 Assert::count(1, $world->theah->queuedOfType(EventActionResolved::class), 'resolved');
+            },
+
+            'canceled or foreign CharacterTargeted queues nothing' => function () {
+                $world = new TestWorld();
+                [$risk, $action, , $foe] = $this->scene($world);
+
+                $canceled = $this->targeted($world, $action, $foe, $risk, 5);
+                $canceled->canceled = true;
+                $action->handleEvent($canceled);
+                Assert::count(0, $world->theah->queuedEvents, 'canceled');
+
+                $other = $this->targeted($world, $action, $foe, $risk, 6);
+                $other->abilityId = 'other';
+                $action->handleEvent($other);
+                Assert::count(0, $world->theah->queuedEvents, 'other ability');
             },
 
             'act step 3 id 1 engages the target' => function () {
