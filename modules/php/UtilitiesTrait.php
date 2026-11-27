@@ -147,41 +147,6 @@ trait UtilitiesTrait
     }
 
     /**
-     * Namespace prefix for classes this game may restore from PHP serialize blobs.
-     * Trailing backslash keeps sibling namespaces (e.g. other Bga\Games\* games) out.
-     */
-    private const UNSERIALIZE_ALLOWED_NAMESPACE_PREFIX = 'Bga\\Games\\SeventhSeaCityOfFiveSails\\';
-
-    /**
-     * Build unserialize() allowed_classes from class names present in the payload.
-     *
-     * WHY: BGA Studio security scan (php-unsafe-unserialize) refuses bare unserialize().
-     * We must pass allowed_classes. Hardcoding every card/event/action class is brittle
-     * (1000+ files). Extracting O:/C: class names and allowing only our game namespace
-     * satisfies the scanner while blocking foreign gadget classes. Filtering by prefix
-     * matters — a payload-sourced allowlist with no filter would still admit gadgets.
-     *
-     * @return array<int, string>|false false when the payload has no objects (scalars/arrays)
-     */
-    private function allowedClassesFromSerialized(string $data): array|false
-    {
-        preg_match_all('/[OC]:\d+:"([^"]+)"/', $data, $matches);
-        if ($matches[1] === []) {
-            return false;
-        }
-
-        $allowed = [];
-        foreach (array_unique($matches[1]) as $class) {
-            if (!str_starts_with($class, self::UNSERIALIZE_ALLOWED_NAMESPACE_PREFIX)) {
-                throw new \Exception("Refused to unserialize unexpected class: {$class}");
-            }
-            $allowed[] = $class;
-        }
-
-        return $allowed;
-    }
-
-    /**
      * Safely unserialize data, attempting to fix corrupted protected property null bytes.
      * 
      * When serialized PHP data with protected properties is copied from logs/bug reports,
@@ -196,7 +161,7 @@ trait UtilitiesTrait
         // We must catch the exception to allow the repair logic below to run.
         $originalErrorMsg = 'unknown error';
         try {
-            $result = @unserialize($data, ['allowed_classes' => $this->allowedClassesFromSerialized($data)]);
+            $result = @unserialize($data);
             if ($result !== false) {
                 return $result;
             }
@@ -264,7 +229,7 @@ trait UtilitiesTrait
 
         $errorMsg = 'unknown error';
         try {
-            $result = @unserialize($fixed, ['allowed_classes' => $this->allowedClassesFromSerialized($fixed)]);
+            $result = @unserialize($fixed);
             if ($result !== false) {
                 return $result;
             }
