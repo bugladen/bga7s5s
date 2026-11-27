@@ -81,7 +81,8 @@ class Action_01192 extends CharacterAction
     {
         $args = parent::getArgsFromAction($game, $state, $stateName);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
+        // @@@STALE_STATE_SHIM_01192@@@ drop || _3 when shim removed
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192 || $state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
             $gustavo = $this->getOwningCharacter($game->theah);
             $count = $gustavo->ModifiedInfluence;
@@ -103,7 +104,8 @@ class Action_01192 extends CharacterAction
     {
         parent::actFromActionPass($game, $state);
      
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
+        // @@@STALE_STATE_SHIM_01192@@@ drop || _3 when shim removed
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192 || $state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
             $gustavo = $this->getOwningCharacter($game->theah);
 
@@ -131,7 +133,8 @@ class Action_01192 extends CharacterAction
     {
         parent::actFromActionWithId($game, $state, $stateName, $id);
 
-        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192)
+        // @@@STALE_STATE_SHIM_01192@@@ drop || _3 when shim removed
+        if ($state == States::HIGH_DRAMA_PLAYER_TURN_01192 || $state == States::HIGH_DRAMA_PLAYER_TURN_01192_3)
         {
             $gustavo = $this->getOwningCard($game->theah);
             if ($gustavo instanceof Character)

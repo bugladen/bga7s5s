@@ -52,6 +52,9 @@ class Card_01192_Test extends TestCase
 
             'state constants registered' => function () {
                 Assert::same(401192, States::HIGH_DRAMA_PLAYER_TURN_01192, '01192');
+                // @@@STALE_STATE_SHIM_01192@@@ drop these asserts when shim removed
+                Assert::same(4011922, States::HIGH_DRAMA_PLAYER_TURN_01192_2, '01192_2');
+                Assert::same(4011923, States::HIGH_DRAMA_PLAYER_TURN_01192_3, '01192_3');
             },
         ];
     }

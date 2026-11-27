@@ -1420,6 +1420,10 @@
                     this.chooseList.setSelectionMode(0);
                 }
             },
+            // @@@STALE_STATE_SHIM_01192@@@ delete this alias when shim removed
+            'highDramaPhase01192_3': () => {
+                methods['highDramaPhase01192']();
+            },
     
             'highDramaPhase01194': () => {
                 if (this.isCurrentPlayerActive()) 

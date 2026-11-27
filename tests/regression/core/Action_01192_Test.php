@@ -180,6 +180,25 @@ class Action_01192_Test extends TestCase
                 Assert::same(['pass'], $world->game->gamestate->transitions, 'pass');
             },
 
+            // @@@STALE_STATE_SHIM_01192@@@ delete this whole case when shim removed
+            'compat 01192_3 pass sinks revealed cards' => function () {
+                $world = new TestWorld();
+                [, $action] = $this->inCity($world);
+                $a = $world->placeCard(new _01026(), 'Deck-1', 1);
+                $world->game->topFactionCards = [['id' => $a->Id], ['id' => $a->Id]];
+
+                $args = $action->getArgsFromAction(
+                    $world->game,
+                    States::HIGH_DRAMA_PLAYER_TURN_01192_3,
+                    'highDramaPhase01192_3'
+                );
+                Assert::count(2, $args['cards'], 'args via _3');
+
+                $action->actFromActionPass($world->game, States::HIGH_DRAMA_PLAYER_TURN_01192_3);
+                Assert::count(2, $world->theah->queuedOfType(EventCardAddedToFactionDeck::class), 'sink');
+                Assert::same(['pass'], $world->game->gamestate->transitions, 'pass');
+            },
+
             'act refuses a card not among the top cards' => function () {
                 $world = new TestWorld();
                 [, $action] = $this->inCity($world);

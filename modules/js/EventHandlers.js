@@ -249,6 +249,10 @@ return declare('seventhseacityoffivesails.eventhandlers', null, {
                     dojo.addClass('actChooseCardSelected', 'disabled');
                 }
             },
+            // @@@STALE_STATE_SHIM_01192@@@ delete this alias when shim removed
+            'highDramaPhase01192_3': () => {
+                methods['highDramaPhase01192']();
+            },
 
             'highDramaPhase02002_2': () => {
                 if (this.chooseList.getSelectedItems().length > 0) {

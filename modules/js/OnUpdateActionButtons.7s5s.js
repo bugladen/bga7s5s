@@ -867,6 +867,10 @@
                 this.statusBar.addActionButton(_('Pass'), () => this.bgaPerformAction('actFromCardPass', {}), { id: 'actPass', color: 'alert' }) 
                 dojo.addClass('actChooseCardSelected', 'disabled');
             },
+            // @@@STALE_STATE_SHIM_01192@@@ delete this alias when shim removed
+            'highDramaPhase01192_3': () => {
+                methods['highDramaPhase01192']();
+            },
     
             'highDramaPhase01194': () => {
                 args.args.attachments.forEach((attachment) => {
