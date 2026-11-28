@@ -14,9 +14,12 @@ use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01058;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01105;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01106;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01106_RiskClone;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\_01172;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01058;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01105;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01106;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\_7s5s\actions\Action_01172;
+use Bga\Games\SeventhSeaCityOfFiveSails\cards\cad\_05Serenissima;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\IAbilityThatTargetsCards;
 use Bga\Games\SeventhSeaCityOfFiveSails\cards\actions\RiskAction;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventActionResolved;
@@ -26,6 +29,7 @@ use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardDiscardedFromHand;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardEngaged;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardMoving;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCardRemovedFromPlayerDiscardPile;
+use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterBeingWounded;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventCharacterTargeted;
 use Bga\Games\SeventhSeaCityOfFiveSails\theah\events\EventTransition;
 
@@ -200,6 +204,81 @@ class Action_01106_Test extends TestCase
                     'performer chooser (RequiresPerformerSelected)'
                 );
                 Assert::same(['actionChosen'], $world->game->gamestate->transitions, 'transition');
+            },
+
+            // WHY: Improvising probes Pull while it still has the opponent's ControllerId.
+            // Patricia's hasTrait fiction requires same-controller queryCard — without the
+            // temporary ControllerId swap she is not a Sorcerer for the discarded Pull,
+            // so Improvising never offers it.
+            'available when Patricia is the only Sorcerer and Pull is in opponent discard' => function () {
+                $world = new TestWorld();
+                $improv = $world->placeCard(new _01106(), Game::LOCATION_HAND, 1);
+                $world->placeCharacter(new _05Serenissima(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_FORUM, 2);
+                $discardName = $world->game->getPlayerDiscardDeckName(2);
+                $pull = $world->placeCard(new _01172(), $discardName, 2);
+                Assert::same(2, $pull->ControllerId, 'discard still opponent-controlled');
+                /** @var Action_01106 $action */
+                $action = $improv->getActions()[0];
+
+                Assert::true($action->isAvailableToPlayer(1, $world->theah), 'Patricia fiction unlocks Pull');
+                Assert::same(2, $pull->ControllerId, 'ControllerId restored after probe');
+            },
+
+            'args step 2 lists Pull when Patricia is the only Sorcerer' => function () {
+                $world = new TestWorld();
+                $improv = $world->placeCard(new _01106(), Game::LOCATION_HAND, 1);
+                $world->placeCharacter(new _05Serenissima(), Game::LOCATION_CITY_DOCKS, 1);
+                $world->placeCharacter(new GenericCharacter('Foe'), Game::LOCATION_CITY_FORUM, 2);
+                $discardName = $world->game->getPlayerDiscardDeckName(2);
+                $pull = $world->placeCard(new _01172(), $discardName, 2);
+                $world->game->globals->set(Game::CHOSEN_OPPONENT, 2);
+                /** @var Action_01106 $action */
+                $action = $improv->getActions()[0];
+
+                $args = $action->getArgsFromAction(
+                    $world->game,
+                    States::HIGH_DRAMA_PLAYER_TURN_01106_2,
+                    'highDramaPlayerTurn_01106_2'
+                );
+
+                Assert::count(1, $args['actions'], 'Pull action listed');
+                Assert::same($pull->getActions()[0]->Id, $args['actions'][0]['id'], 'Action_01172');
+                Assert::same(2, $pull->ControllerId, 'ControllerId restored after args');
+            },
+
+            // WHY: After Improvising clones Pull, ControllerId is the thief — Patricia's
+            // Strega fiction must skip the "wound unless Strega" cost on resolve.
+            'Improvised Pull with Patricia performer skips the Strega wound' => function () {
+                $world = new TestWorld();
+                $patricia = $world->placeCharacter(new _05Serenissima(), Game::LOCATION_CITY_DOCKS, 1);
+                $target = $world->placeCharacter(new GenericCharacter('Target'), Game::LOCATION_CITY_FORUM, 2);
+
+                $original = $world->placeCard(new _01172(), Game::LOCATION_PERMANENTLY_HIDDEN, 2);
+                $clone = $world->placeCard(new _01106_RiskClone(), 'Discard-2', 1);
+                $clone->OwnerId = 2;
+                $clone->ControllerId = 1;
+                $clone->ClonedCardId = $original->Id;
+
+                /** @var Action_01172 $stolenAction */
+                $stolenAction = $original->getActions()[0];
+                $clonedAction = clone $stolenAction;
+                $clonedAction->setOwnerId($clone->Id);
+                $clone->addAction($clonedAction, $world->game, false);
+
+                $world->game->globals->set(Game::CHOSEN_PERFORMER, $patricia->Id);
+
+                $hook = new EventCharacterTargeted();
+                $hook->abilityId = $clonedAction->Id;
+                $hook->targetId = $target->Id;
+                $hook->sourceId = $clone->Id;
+                $hook->batchId = 11;
+                $hook->canceled = false;
+                $hook->theah = $world->theah;
+                $clonedAction->handleEvent($hook);
+
+                Assert::count(0, $world->theah->queuedOfType(EventCharacterBeingWounded::class), 'Strega fiction skips wound');
+                Assert::count(1, $world->theah->queuedOfType(EventCardMoving::class), 'move still queues');
             },
 
             // WHY (live report): Improvising → Press the Advantage. Costs paid, target

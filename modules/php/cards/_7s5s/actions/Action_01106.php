@@ -73,7 +73,15 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
                             }
                             [$discount, $explanations] = $theah->getActionFromHandDiscount(null, $action);
                             $cost = $card->WealthCost - $discount;
-                            if ($adjustedWealth >= $cost && $action->isAvailableToPlayer($playerId, $theah, $overrideInHandCheck = true))
+                            // WHY ControllerId swap: probe runs on the discarded Risk before
+                            // RiskClone exists. Opponent ControllerId blocks Patricia/Uwe
+                            // hasTrait fiction (same-controller gate) even though the thief
+                            // will own the clone. Treat as controlled by Improvising player
+                            // for this availability check only.
+                            if ($adjustedWealth >= $cost
+                                && $this->withDiscardRiskControlledBy($card, $playerId, fn() =>
+                                    $action->isAvailableToPlayer($playerId, $theah, $overrideInHandCheck = true)
+                                ))
                             {
                                 return true;
                             }
@@ -148,7 +156,12 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
                             }
                             [$discount, $explanations] = $game->theah->getActionFromHandDiscount(null, $action);
                             $cost = $card->WealthCost - $discount;
-                            if ($handWealth >= $cost && $action->isAvailableToPlayer($owner->ControllerId, $game->theah, $overrideInHandCheck = true))
+                            // WHY ControllerId swap: same as isAvailableToPlayer — list only
+                            // what the thief could play after the clone takes control.
+                            if ($handWealth >= $cost
+                                && $this->withDiscardRiskControlledBy($card, $owner->ControllerId, fn() =>
+                                    $action->isAvailableToPlayer($owner->ControllerId, $game->theah, $overrideInHandCheck = true)
+                                ))
                             {
                                 $actions[] = $action->getPropertyArray($game);
                             }
@@ -271,6 +284,24 @@ class Action_01106 extends RiskAction implements IAbilityThatTargetsCards
             // not by Improvising itself — RiskClone cleanup keys off that event.
 
             $game->gamestate->nextState("actionChosen");
+        }
+    }
+
+    /**
+     * Temporarily treat a discarded Risk as controlled by $playerId while running $fn.
+     * Restores the prior ControllerId even if $fn throws.
+     */
+    private function withDiscardRiskControlledBy(Risk $card, int $playerId, callable $fn): mixed
+    {
+        $savedControllerId = $card->ControllerId;
+        $card->ControllerId = $playerId;
+        try
+        {
+            return $fn();
+        }
+        finally
+        {
+            $card->ControllerId = $savedControllerId;
         }
     }
 }
